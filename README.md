@@ -12,7 +12,8 @@ Things granted:
 * People are free to modify and compile the code for personal use.
 * People are free to redistribute the code, or mods for the code.
 * It can be used for non-commercial purposes.
-* * If you are making money off it, I ask 1% (of net profit) if this value would exceed $25.
+* If you are making money off it, I ask 1% (of net profit) if this value would exceed $25.
+* Can be used under MIT terms if you pay me the 1%.
 
 Drop of ND:
 * Originally the ND was intended as a restriction on distributing otherwise fully complete games.
