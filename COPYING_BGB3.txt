@@ -13,7 +13,9 @@ furnished to do so, subject to the following conditions:
 1. The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
-2. For commercial use, the copyright holder is paid 1% of net profits if this value exceeds $25 USD. This includes sale of the Software and/or the sale of services which make use of the Software.
+2. For commercial use, the copyright holder is paid 1% of net profits if this
+value exceeds $25 USD. This includes sale of the Software and/or the sale of
+services which make use of the Software.
 
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
