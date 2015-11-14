@@ -1,0 +1,63 @@
+//Basic Human Skeleton
+//
+//Ankle is 4" off ground
+//Shin is 15"
+//Thigh is 15"
+//Hips 14"
+//Base of Rib Cage 7"
+//Height between hips and neck 20"
+//Width of Shoulders 14"
+//Length of Upper Arm 10
+//Length of Lower Arm 8
+//Length of Neck 6"
+//Length of wrist to palm 4"
+
+ 0 -1	"Hip"		[   0 0 34 ]
+ 1  0	"LHip"		[  -4 0 34 ]
+ 2  1	"LKnee"		[  -4 0 19 ]
+ 3  2	"LAnkle"	[  -4 0  4 ]
+ 4  0	"RHip"		[   4 0 34 ]
+ 5  4	"RKnee"		[   4 0 19 ]
+ 6  5	"RAnkle"	[   4 0  4 ]
+ 7  0	"Spine"		[   0 0 41 ]
+ 8  7	"Spine2"	[   0 0 48 ]
+ 9  8	"Neck"		[   0 0 54 ]
+10  9	"LShoulder"	[  -7 0 54 ]
+11 10	"LElbow"	[ -17 0 54 ]
+12 11	"LWrist"	[ -25 0 54 ]
+13  9	"RShoulder"	[   7 0 54 ]
+14 13	"RElbow"	[  17 0 54 ]
+15 14	"RWrist"	[  25 0 54 ]
+16  9	"Head"		[   0 0 60 ]
+17 12	"LAttach"	[ -29 0 54 ]
+18 15	"RAttach"	[  29 0 54 ]
+
+//LLeg
+bbox 3		[ -6 -2 0 ]	[ -2 10 4 ]	0 1
+sphere 3	[ -4 0 4 ]			1 3 1
+capsule 2	[ -4 0 4 ]	[ -4 0 19 ]	2 3 1
+capsule 1	[ -4 0 19 ]	[ -4 0 34 ]	3 5 1
+
+//RLeg
+bbox 6		[ 2 -2 0 ]	[ 6 10 4 ]	0 1
+sphere 6	[ 4 0 4 ]			1 3 1
+capsule 5	[ 4 0 4 ]	[ 4 0 19 ]	2 3 1
+capsule 4	[ 4 0 19 ]	[ 4 0 34 ]	3 5 1
+
+//torso
+capsule 0	[ -4 0 38 ]	[ 4 0 38 ]	3 6 1
+capsule 7	[ -4 0 44 ]	[ 4 0 44 ]	4 6 1
+capsule 8	[ -4 0 48 ]	[ 4 0 48 ]	4 6 1
+capsule 9	[ -4 0 54 ]	[ 4 0 54 ]	4 5 1
+
+sphere 16	[ 0 0 64 ]			7 8 4
+
+//sphere 10	[ -7 0 54 ]			3 4 4
+capsule 10	[ -7 0 54 ]	[ -17 0 54 ]	2 3 1
+capsule 11	[ -17 0 54 ]	[ -25 0 54 ]	2 3 1
+capsule 12	[ -25 0 54 ]	[ -30 0 54 ]	2 3 1
+
+//sphere 13	[ 7 0 54 ]			3 4 4
+capsule 13	[ 7 0 54 ]	[ 17 0 54 ]	2 3 1
+capsule 14	[ 17 0 54 ]	[ 25 0 54 ]	2 3 1
+capsule 15	[ 25 0 54 ]	[ 30 0 54 ]	2 3 1

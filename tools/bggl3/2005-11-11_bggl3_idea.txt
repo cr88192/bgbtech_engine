@@ -1,0 +1,151 @@
+BGGL-3 Idea
+
+Another scripting language for the parametric construction of geometry.
+
+Goals:
+The language should be simplistic, and a workable implementation should be easily creatable;
+Language should be fairly standalone, but may have a library of basic operations.
+
+Ideas:
+Lisp-like;
+Lexical+dynamic scope;
+Dynamic typing (possibly weak);
+Likely a specialized typesystem;
+Garbage collection is not required (typically, the script will end before the heap is exhausted);
+Will use direct interpretation of parse trees (allowing use of potentially ambiguous constructs).
+
+
+Names:
+Unlike most lispy languages, I am likely to rather restrict name characters. A..Z, a..z, 0..9, _
+Names are to begin with either a letter or an underscore.
+Names will be case sensitive.
+
+An exception to this will be the names in the start of expressions, which may also contain the symbols (~!%^&*-+=|\<>?/).
+
+Syntax:
+{<fname> <args*>}		Basic expression
+[<item*>]			List of items, space seperated
+(...)				Group of expressions (executed serially)
+				The return value will be that of the last 
+				expression.
+{<number*> [<args*>]}	Numeric vector
+{<vector*> [<args*>]}	Matrix
+
+<number>i			Complex
+<name>:			Keyword
+
+"text"			String
+//text			Line comment
+/*text*/			Block comment
+
+x.y				Refers to a sub-element
+x->y				Calls Y with X
+x<-y				Calls X with Y (left associative)
+'<expr>			Expr as a value
+
+\args body			Closure shorthand
+{name: args}=body		Named function
+
+Operators:
+Thoughts exist for use of infix mathematical operators.
+Operators will use precedence levels.
+
+{}, (), []		braces, parenthesis, lists
+. <- ->		dot, left-call, right-call
+^			exponent
+* / \\ %		multiply, divide, integer divide, modulo
++ -			add, subtract
+< > <= >= == !=	comparison
+= := 			bind, assign
+
+V*V			Dot product
+V*S			Scale Vector by S
+V/S			Scale Vector by 1/S
+V^V			2D or 3D cross product
+
+(<op>)		May be used to get the function for an operator.
+
+Note: for the '.', '-', and '+' operators, no preceding whitespace is allowed.
+
+Functions
+{fun <args> <body>}
+\<args> <body>
+
+{fun {x y} x+y}
+\{x y}x+y
+\{x}x^2
+
+Functions will follow lexical scoping rules (the scope will be bound to a function when the function is created).
+
+{<name>: <args*>}=<body>
+may be used for declaring a named function.
+
+Keywords
+Keywords will be similar to, but different than, symbols.
+A keyword will allways evaluate to itself, and may thus be used as a marker for named properties.
+
+Keywords will also match with literal symbols, such that a symbol may be used to look up something marked as a keyword. Symbols, however, will normally work to refer to other things.
+
+
+Builtins
+print			print items
+println		print items on a line
+sqrt			square root
+log2, log10, ln	logarithms
+{log base value}	arbitrary logarithm
+sin, cos, tan	trigonometry functions
+asin, acos, atan	trigonometry functions
+{atan2 y x}		arc-tangent with 2 values vs y/x
+
+{len v}		Length (aka norm) of a vector
+{norm v}		Normalize a vector (called 'norm' as it is shorter)
+{ndot v n}		Distance of v above the plane n.
+{npoint v n}	Point v clamped to plane n.
+{ndir n}		Vector part of a normal
+{ndist n}		Distance of a normal
+
+{graph <name> <xs> <ys> {<mx> <my>} {<nx> <ny>} <func>}
+
+Geometry
+Geometric data will be layed out informally using lists.
+Mesh: [faces...]
+Face: [<vecs*>]
+
+The exact layout of the data is likely to depend on the file format and extra features. A particular output filter will thus expect a particular layout.
+
+TriMesh
+[
+	[{x0 y0 z0} {x1 y1 z1} {x2 y2 z2}]*
+]
+
+SMD
+[
+nodes:
+	[
+		[<id> <name> <parent>]
+	]
+frames:
+	[
+		[
+			[<bode> {px py pz} {rx ry rz}]
+		]
+	]
+mesh:
+	[
+		[
+			skin_name
+			[{x y z} {nx ny nz} {s t}
+				[[<bone> <wegiht>]*]]+3
+		]
+	]
+]
+
+Map
+[
+	[
+		[key value]*
+		[
+			[{nx ny nz nd} {sx sy sz sd} {tx ty tz td} texname]*
+		]*
+	]
+]

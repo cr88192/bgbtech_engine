@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title></title>
+</head>
+<body>
+Thoughts About the Implementation of Solids and Collision Response<br>
+<br>
+It is my experience that there has been a lack of sufficiently detailed info
+on the web related to the implementation of geometric solids and calculation
+of "adequate" contact forces.<br>
+<br>
+This will not attempt to go into much depth, but will aim to explain things
+well enough to at least ease implementation.<br>
+<br>
+Seperating Axis Theory<br>
+ For any 2 non-penetrating convex solids, there will exist an axis by which
+the objects can be seperated.<br>
+ If any axis is found where the objects' extents do not overlap, it can be
+said that the objects do not interpenetrate.<br>
+<br>
+It is thus my opinion that the ability to project an object along an axis
+should be a basic implementation factor.<br>
+<br>
+Boxes<br>
+In my experience at the time of this writing, Bounding Boxes are one of the
+main types of bounding volume. Arguably, it is most important that bounding
+box behavior be good, even at the possible cost of other types. It is my
+experience, however, that bounding boxes are fairly difficult to handle effectively.<br>
+<br>
+In a vaguely realistic mechanical simulation, many other types will have
+behavior that is inappropriate for the object in question.<br>
+If a brick falls from some height above the ground, it would be rather unrealistic
+to have the brick roll around on the ground as if it were a can of spray
+paint, or, worse, to behave like some kind of ball. A cube will adequately
+model the desired mechanical behavior of many common objects.<br>
+<br>
+AABBs<br>
+AABBs are a simpler <br>
+</body>
+</html>

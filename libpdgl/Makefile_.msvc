@@ -1,0 +1,140 @@
+CFLAGS=/I. /Iinclude /I../include
+CC=cl
+EXE=.exe
+
+all: includes libs apps FORCE
+
+FORCE:
+
+%.obj: %.c
+	cl $(CFLAGS) /c /Fo$@ $<
+
+PDGL_G_OBJS = \
+	base/render/fonts.obj \
+	base/render/console.obj \
+	base/render/concmds.obj \
+	base/render/gl_draw.obj \
+	base/render/gl_texture.obj \
+	base/render/drawtext.obj \
+	base/render/pcx.obj \
+	base/render/png.obj \
+	base/render/jpg1.obj \
+	\
+	base/render/out_avi.obj \
+	base/render/gl_shader.obj \
+	\
+	base/sound/sound2.obj \
+	base/sound/snd_mix2.obj \
+	base/sound/snd_wav.obj \
+	base/sound/snd_lqac.obj \
+	base/sound/snd_mp3.obj \
+	base/sound/snd_ogg.obj \
+	base/sound/snd_voice.obj \
+	base/sound/snd_flac1.obj \
+	\
+	base/sound/mpglib/layer1.obj \
+	base/sound/mpglib/layer2.obj \
+	base/sound/mpglib/common.obj \
+	base/sound/mpglib/dct64_i386.obj \
+	base/sound/mpglib/decode_i386.obj \
+	base/sound/mpglib/layer3.obj \
+	base/sound/mpglib/tabinit.obj \
+	base/sound/mpglib/interface.obj
+
+#	base/sound/snd_pdsif.obj \
+#	base/sound/snd_mp3.obj
+
+PDGL_OBJS = \
+	$(PDGL_G_OBJS) \
+	base/system/gl_win2.obj \
+	base/system/gl_glx.obj \
+	base/system/mouse_win.obj \
+	base/system/input.obj \
+	base/system/snd_win2.obj \
+	base/system/snd_stub.obj \
+	base/system/misc_win.obj \
+	base/system/asm_x86.obj
+
+#	base/system/snd_win32.obj \
+
+
+PDGLUI_OBJS = \
+	gui2/build.obj \
+	gui2/forms.obj \
+	gui2/menus.obj \
+	gui2/textarea.obj \
+	gui2/message.obj \
+	gui2/widget.obj \
+	gui2/widget_input.obj \
+	gui2/widget_box.obj \
+	gui2/widget_union.obj \
+	gui2/widget_label.obj \
+	gui2/widget_scroll.obj \
+	gui2/widget_list.obj \
+	gui2/widget_tree.obj \
+	\
+	ui/ui_loadsave.obj \
+	ui/ui_texfinder.obj \
+	ui/ui_camera.obj
+
+PDGL_HEAD = \
+	include/pdgl/auto.h \
+	include/pdgl/tyauto.h
+
+PDGLUI_HEAD = \
+	include/pdglui/auto.h \
+	include/pdglui/tyauto.h
+
+PDGL_SRCS = \
+	$(PDGL_OBJS:.obj=.c)
+
+PDGLUI_SRCS = \
+	$(PDGLUI_OBJS:.obj=.c)
+
+
+autohead.exe: autohead.c
+	cl /Feautohead.exe autohead.c
+
+adler32.exe: adler32.c
+	cl /Feadler32.exe adler32.c
+
+include/pdgl/auto.h: autohead.exe $(PDGL_SRCS)
+	autohead.exe -api PDGL_API $(PDGL_SRCS) > include/pdgl/auto.h
+
+include/pdgl/tyauto.h: adler32.exe include/pdgl/types.txt
+	adler32.exe -header include/pdgl/types.txt include/pdgl/tyauto.h
+
+include/pdglui/auto.h: autohead.exe $(PDGLUI_SRCS)
+	autohead.exe -api PDGLUI_API $(PDGLUI_SRCS) > include/pdglui/auto.h
+
+include/pdglui/tyauto.h: adler32.exe include/pdglui/types.txt
+	adler32.exe -header include/pdglui/types.txt include/pdglui/tyauto.h
+
+#libpdgl.lib: include/pdgl/auto.h include/pdgl/tyauto.h $(PDGL_OBJS)
+#	lib /out:libpdgl.lib $(PDGL_OBJS)
+
+#libpdglui.lib: include/pdglui/auto.h include/pdglui/tyauto.h $(PDGLUI_OBJS)
+#	lib /out:libpdglui.lib $(PDGLUI_OBJS)
+
+libpdgl.dll: $(PDGL_SRCS)
+	cl /LD /Felibpdgl.dll $(PDGL_SRCS) /Iinclude /I../include /DPDGL_DLL \
+		/Z7 ../bgbasm.lib ../bgbgc.lib ../bgbdy.lib ../libbsgen.lib \
+		../libbgbmid.lib ../libtrem.lib \
+		../bgbcc.lib ../libvecmath.lib \
+		opengl32.lib gdi32.lib user32.lib winmm.lib
+
+libpdglui.dll: $(PDGLUI_SRCS)
+	cl /LD /Felibpdglui.dll $(PDGLUI_SRCS) /Iinclude /I../include \
+		/DPDGLUI_DLL /Z7 libpdgl.lib \
+		../bgbasm.lib ../bgbgc.lib ../bgbdy.lib ../libbsgen.lib \
+		../bgbcc.lib ../libvecmath.lib \
+		opengl32.lib gdi32.lib user32.lib winmm.lib
+
+libpdgl.html: $(PDGL_SRCS) $(PDGLUI_SRCS)
+	bgbdoc libpdgl.html $(PDGL_SRCS) $(PDGLUI_SRCS) $(PDGL_HDRS)
+
+includes: $(PDGL_HEAD) $(PDGLUI_HEAD)
+libs: libpdgl.dll libpdglui.dll
+apps:
+
+clean:

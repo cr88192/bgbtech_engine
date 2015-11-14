@@ -1,0 +1,8 @@
+Written 2006 By Brendan G Bohannon
+
+I am realeasing this into the public domain.
+
+Anyone is free to do whatever they want, however, any credit given to me would be appriciated.
+
+Note that the code for CRC combining (zpack_util.c, ZPACK_CombineCRC32) was not originally written by me, but was borrowed from ZLib:
+	(C) 1995-2006 by Mark Adler and Jean-loup Gailly.

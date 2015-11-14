@@ -1,0 +1,142 @@
+#include <pdgl.h>
+
+#ifndef PDGL_STUB_H
+#define PDGL_STUB_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int main_kill=0;
+int main_doshot=0;
+
+char **pdgl_argv;
+int pdgl_argc;
+
+int pdgl_xs, pdgl_ys;
+int pdgl_time, pdgl_dt;
+ushort *pdgl_keybuf;
+
+int pdgl_mx, pdgl_my, pdgl_mb;		//mouse pos
+int pdgl_lmx, pdgl_lmy, pdgl_lmb;	//last most pos
+int pdgl_dmx, pdgl_dmy;			//mouse pos delta
+int pdgl_omx, pdgl_omy;			//last non-clicking mouse pos
+float pdgl_dt_f;
+int pdgl_maxhz=60;
+
+HINSTANCE	global_hInstance;
+int			global_nCmdShow;
+
+#ifdef __cplusplus
+}
+#endif
+
+int pdgl_main(int argc, char **argv);
+
+int pdgl_main_startup(int argc, char *argv[]);
+int pdgl_main_body();
+int pdgl_main_shutdown();
+
+int main (int argc, char **argv)
+{
+	char buf[256], *s, *t;
+	int i, j, x, y, w, h;
+	int ct, dt;
+
+	pdgl_argc=argc;
+	pdgl_argv=argv;
+
+	GC22_StackBase(&argc);
+	MM22_BaseHeap(1<<26);
+
+	GfxDrv_Init();
+	GfxDrv_Start();
+
+	printf("PDGL: Startup\n");
+
+	i=pdgl_main_startup(pdgl_argc, pdgl_argv);
+
+	if(i>=0)
+	{
+		printf("PDGL: Main\n");
+
+		ct=0;
+		dt=PDGL_DeltaMS(&ct);
+		while(1)
+		{
+			//framerate limiter
+			i=ct;
+			dt=PDGL_DeltaMS(&i);
+			if((pdgl_maxhz>0) && (dt<(1000/pdgl_maxhz)))
+			{
+//				printf("dt %d %d\n", dt, ct);
+				j=1000/(2*pdgl_maxhz);
+				Sleep(j);
+				continue;
+			}
+
+			ct=i;
+
+//			printf("dt %d\n", dt);
+
+			pdgl_time=ct;
+			pdgl_dt=dt;
+			GfxDrv_GetWindowSize(&pdgl_xs, &pdgl_ys);
+			pdgl_keybuf=PDGL_GetKeybuf();
+
+//			printf("kbuf %p\n", pdgl_keybuf);
+
+			pdgl_lmx=pdgl_mx;
+			pdgl_lmy=pdgl_my;
+			pdgl_lmb=pdgl_mb;
+
+			Mouse_GetPos(&pdgl_mx, &pdgl_my, &pdgl_mb);
+
+			pdgl_dmx=pdgl_mx-pdgl_lmx;
+			pdgl_dmy=pdgl_my-pdgl_lmy;
+
+			if(!(pdgl_lmb&1))
+			{
+				pdgl_omx=pdgl_mx;
+				pdgl_omy=pdgl_my;
+			}
+
+			pdgl_dt_f=pdgl_dt/1000.0;
+
+			GfxDrv_BeginDrawing();
+			i=pdgl_main_body();
+
+			if(main_doshot==1)
+			{
+				Tex_DoScreenshot();
+				main_doshot=0;
+			}
+
+			if(main_doshot==2)
+			{
+//				Tex_DoScreenshotFrame();
+				PDGL_AVI_DoScreenshotFrame(pdgl_dt_f);
+			}else
+			{
+				PDGL_AVI_NoCapture();
+			}
+
+			GfxDrv_EndDrawing();
+
+			if((i<0) || main_kill)break;
+		}
+
+		printf("PDGL: Main Break\n");
+
+		i=pdgl_main_shutdown();
+	}
+
+	PDGL_AVI_NoCapture();
+
+	GfxDrv_VID_Shutdown();
+	vf_umount(NULL);
+
+	return(i);
+}
+
+#endif

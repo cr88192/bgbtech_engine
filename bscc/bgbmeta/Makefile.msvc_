@@ -1,0 +1,107 @@
+ARCH_CFLAGS=/I../include /Z7
+CFLAGS=/DBGBCC_DLL /Iinclude $(ARCH_CFLAGS)
+
+CFLAGS_META=/DBGBCC_BGBMETA $(CFLAGS)
+CFLAGS_DLL=$(CFLAGS) \
+	../bgbdy.lib ../bgbsxil.lib ../bgbgc.lib ../bgbasm.lib ../zpack.lib
+
+LDFLAGS = /Z7
+
+OBJS=\
+	cparse/cparse_token.obj \
+	cparse/cparse_misc.obj \
+	cparse/cparse_type.obj \
+	cparse/cparse_def.obj \
+	cparse/cparse_expr2.obj \
+	cparse/cparse_stmt.obj \
+	cparse/preproc.obj \
+	\
+	jparse/jp_token2.obj \
+	jparse/jp_misc.obj \
+	jparse/jp_type.obj \
+	jparse/jp_def.obj \
+	jparse/jp_tyexpr.obj \
+	jparse/jp_expr2.obj \
+	jparse/jp_stmt.obj \
+	\
+	cc/cc_compile.obj \
+	cc/cc_expr.obj \
+	cc/cc_index.obj \
+	cc/cc_reduce.obj \
+	\
+	cc/ccm_compile.obj \
+	cc/cc_gast.obj \
+	\
+	mm/cc_tokord.obj \
+	\
+	mm/ccx_node.obj \
+	mm/ccx_print.obj \
+	mm/ccx_parse.obj \
+	mm/ccx_sbxe.obj \
+	mm/cc_malloc.obj \
+
+#	jparse/jp_preproc.obj \
+
+#	\
+#	cc_api.obj \
+#	cc_cache.obj
+
+#	cc_sig.obj
+
+META_OBJS = \
+	$(OBJS) \
+	mm/dyll_metapath.obj \
+	bgbmeta.obj
+
+DLL_OBJS = \
+	$(OBJS) \
+	cc_api.obj \
+	cc_cache.obj
+	
+
+SRCS=$(OBJS:.obj=.c)
+META_SRCS=$(META_OBJS:.obj=.c)
+DLL_SRCS=$(DLL_OBJS:.obj=.c)
+
+DEP_HDRS=\
+	include/bgbcc_auto.h \
+	include/bgbcc_autom.h
+
+# parse0.exe 
+
+LIBS=bgbcc.dll
+APPS=bgbmeta.exe bgbcc.exe
+
+all: libs apps
+
+libs: $(LIBS)
+apps: $(APPS)
+includes: $(DEP_HDRS)
+
+
+autohead.exe: autohead.c
+	cl /Feautohead.exe autohead.c /Z7
+
+gen_ord.exe: gen_ord.c
+	cl /Fegen_ord.exe gen_ord.c
+
+mm/cc_tokord.c: gen_ord.exe bgbcc_token.txt
+	./gen_ord.exe
+
+include/bgbcc_auto.h: autohead.exe $(DLL_SRCS)
+	./autohead.exe -api BGBCC_API $(DLL_SRCS) > include/bgbcc_auto.h
+
+include/bgbcc_autom.h: autohead.exe $(META_SRCS)
+	./autohead.exe -api BGBCC_API $(META_SRCS) > include/bgbcc_autom.h
+
+bgbmeta.exe: $(DEP_HDRS) $(META_SRCS)
+	cl /Febgbmeta.exe $(META_SRCS) $(CFLAGS_META)
+
+bgbcc.dll: $(DEP_HDRS) $(DLL_SRCS)
+	cl /LD /Febgbcc.dll $(DLL_SRCS) $(CFLAGS_DLL)
+
+bgbcc.exe: $(DEP_HDRS) bgbcc.c $(DLL_SRCS)
+	cl /Febgbcc.exe bgbcc.c $(DLL_SRCS) $(CFLAGS_DLL)
+		
+
+clean:

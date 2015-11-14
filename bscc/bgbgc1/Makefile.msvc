@@ -1,0 +1,21 @@
+BUILD=.
+MKSUF=.msvc
+LIBSUF=.lib
+DLLSUF=.dll
+EXESUF=.exe
+BINSUF=.exe
+OBJSUF=.obj
+DLLPF=
+
+CC_OUTEXE=cl /Fe
+CC_OUTDLL=cl /LD /Fe
+CC_OUTOBJ=cl /c /Fo
+CC_OUTTOOL=cl /Fe
+
+CFLAGS=/Iinclude /Zi
+DLL_CFLAGS=$(CFLAGS) /DBGBGC_DLL
+LDFLAGS=bgbgc.lib
+DLL_LDFLAGS=
+
+include Makefile.inc
+

@@ -1,0 +1,135 @@
+Persistent Store
+
+Stores will use about 48 bits for the address space.
+
+Space will be allocated using a cell-based allocator.
+Cells will be 16-bytes, and 8 bits will be used for each cell bitmap entry.
+
+Each cell entry will use the low 4 bits for a cell type:
+0=free;
+1=cons;
+2=object header;
+3=object body;
+4..15=reserved.
+
+A second level bitmap will be used for groups of cells (256 at a time).
+
+The second level bitmap will use the low 4 bits to indicate the status for the group of cells:
+0=all cells are free;
+1=192+ consecutive cells free;
+2=128+ consecutive cells free;
+3=96+ consecutive cells free;
+4=64+ consecutive cells free;
+5=48+ consecutive cells free;
+6=32+ consecutive cells free;
+7=24+ consecutive cells free;
+8=16+ consecutive cells free;
+9=12+ consecutive cells free;
+10=8+ consecutive cells free;
+11=4 consecutive cells free;
+12=3 consecutive cells free;
+13=2 consecutive cells free;
+14=1 consecutive cell free;
+15=group is full.
+
+The next 2 bits will indicate contents of the group:
+0=free or hetrogenous;
+1=homogenous cons;
+2=homogenous object body;
+3=reserved.
+
+In the homogenous cases, the lower bitmaps' contents are ignored, thus the bitmaps only need be filled in when they have hetrogeneous contents.
+
+A 3rd and 4th level bitmap will exist as well, which will refer to groups rather than cells, the 3rd level managing 1MB chunks of space, and the 4th 256MB chunks.
+
+Address Space Layout:
+0xC00000000000, First-level Bitmap
+0xA00000000000, Second-level Bitmap
+0x900000000000, Third Bitmap
+0x800000000000, Fourth Bitmap
+0x000000000000, Data
+
+
+File Layout
+Will be based around 16kB pages
+
+Page tables will consist of 4096 32-bit entries, each a linear page number, with the low 24 bits being the linear page number.
+
+There will be 3 levels of page-tables.
+
+The top-level of the page table will be located in linear-page 0.
+
+
+Thought:
+4GB limited store.
+Will use a page-table layout similar to x86, and pages will be 4kB, with 32 bit page-table entries. 24 bits will be used for the page number and 8 for flags.
+
+Address Space Layout:
+0xC0000000, First-level Bitmap
+0xA0000000, Second-level Bitmap
+0x90000000, Third Bitmap
+0x80000000, Fourth Bitmap
+0x00000000, Data
+
+Consider expand bitmaps 2nd, 3rd, and 4th bitmaps to use 32 bits per entry.
+
+The low 8 bits will give the longest run of free cells.
+In the 2nd bitmap, this will be an exact number.
+
+0=all free
+230=8192+ consecutive cells free;
+231=6144+ consecutive cells free;
+232=4096+ consecutive cells free;
+233=3072+ consecutive cells free;
+234=2048+ consecutive cells free;
+235=1536+ consecutive cells free;
+236=1024+ consecutive cells free;
+237=758+ consecutive cells free;
+238=512+ consecutive cells free;
+239=384+ consecutive cells free;
+240=256+ consecutive cells free;
+241=192+ consecutive cells free;
+242=128+ consecutive cells free;
+243=96+ consecutive cells free;
+244=64+ consecutive cells free;
+245=48+ consecutive cells free;
+246=32+ consecutive cells free;
+247=24+ consecutive cells free;
+248=16+ consecutive cells free;
+249=12+ consecutive cells free;
+250=8+ consecutive cells free;
+251=4 consecutive cells free;
+252=3 consecutive cells free;
+253=2 consecutive cells free;
+254=1 consecutive cell free;
+255=all used
+
+Alternate Scheme:
+0=all free;
+...
+230=60 consecutive cells free;
+231=56 consecutive cells free;
+232=52 consecutive cells free;
+233=48 consecutive cells free;
+234=44 consecutive cells free;
+235=40 consecutive cells free;
+236=36 consecutive cells free;
+237=32 consecutive cells free;
+238=30 consecutive cells free;
+239=28 consecutive cells free;
+240=24 consecutive cells free;
+241=20 consecutive cells free;
+242=18 consecutive cells free;
+243=16 consecutive cells free;
+244=14 consecutive cells free;
+245=12 consecutive cells free;
+246=10 consecutive cells free;
+247=8 consecutive cells free;
+248=7 consecutive cells free;
+249=6 consecutive cells free;
+250=5 consecutive cells free;
+251=4 consecutive cells free;
+252=3 consecutive cells free;
+253=2 consecutive cells free;
+254=1 consecutive cell free;
+255=all used

@@ -1,0 +1,52 @@
+var obj0, obj1;
+
+function Test1_End()
+{
+	BS_EndCamera();
+}
+
+function Test1_Event0()
+{
+	BS_Speak("Long ago, the world was filled with humans");
+	BS_DelayEval(5, "Test1_Event1()");
+
+	obj1=G_FindTargetname(null, "look1");
+	BS_TurnCameraTarget(obj1, 100);
+}
+
+function Test1_Event1()
+{
+	BS_Speak("Oh no, the [metujan] tower");
+	BS_DelayEval(5, "Test1_Event2()");
+
+	BS_TempUseTargets("ev_exp");
+
+	obj1=G_FindTargetname(null, "look1");
+//	BS_TurnCameraTarget(obj1, 100);
+	BecomeExplosion1(obj1);
+//	BS_PointExplosion1(BS_GetClient().origin);
+	BS_SetSky("unit1_");
+}
+
+function Test1_Event2()
+{
+	BS_Speak("many humans died that day");
+	BS_DelayEval(5, "Test1_End()");
+
+	obj1=G_FindTargetname(null, "look1");
+//	BecomeExplosion1(obj1);
+//	BS_TurnCameraTarget(obj1, 100);
+}
+
+println("Greetings T1");
+
+// obj0=G_Find(NULL, "classname", "player");
+
+obj0=G_FindTargetname(null, "cam0");
+obj1=G_FindTargetname(null, "look0");
+BS_BeginCamera();
+// BS_SetCameraBase(obj0);
+BS_SetCameraBase(obj0, 100, 100);
+BS_SetCameraTarget(obj1, 100);
+
+BS_DelayEval(5, "Test1_Event0()");

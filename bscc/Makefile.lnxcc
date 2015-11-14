@@ -1,0 +1,37 @@
+# BUILD = /usr
+BUILD = .
+TOOLS_BASE = .
+INSTBASE=/usr
+INST_INC=/usr/include
+INST_BIN=/usr/bin
+INST_DLL=/usr/lib64
+INST_LIB=/usr/lib64
+INST_META=/usr/lib64
+
+PATH := $(TOOLS_BASE):$(PATH)
+
+BUILD=.
+MKSUF=.lnxcc
+LIBSUF=.a
+DLLSUF=.so
+EXESUF=.elf
+OBJSUF=.o
+
+CC=$(TARG)-gcc
+CC_OUTEXE=$(CC) -o 
+CC_OUTDLL=$(CC) -shared -o 
+CC_OUTOBJ=$(CC) -c -o 
+
+EXE = .elf
+BIN = .bin
+O = .o
+A = .a
+
+include Makefile.inc
+
+clean: FORCE
+	rm -rf $(shell find -name \*.o)
+	rm -rf $(shell find -name \*.a)
+	rm -rf $(shell find -name \*.so)
+	rm -rf $(shell find -name \*.elf)
+

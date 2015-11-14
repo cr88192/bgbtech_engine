@@ -1,0 +1,542 @@
+BGBTech Image Codec 1
+
+Goal: Fast decoding for video maps.
+Should be able to directly encode/decode DXTn images.
+
+Basic format derived from BTJ-NBCES.
+
+(Most) Multibyte values will be big-endian.
+
+Note that a valid decoder need not be able to accept all possible combinations of features, only the specific combination of features it expects (This format is more intended for task specific usage than as an interchange format).
+
+Will reuse concepts for tag layers and component layers.
+
+
+== General ==
+
+Images may have multiple layers.
+
+The origin point for images will be in the lower-left corner of the image canvas (0,0), with +X as right and +Y as up.
+
+All textures within a given tag-layer will currently be required to use the same colorspace.
+
+For video, all subsequent frames may need to have the same image format as laid out in the initial frame.
+
+For DXTn Block Pack and video, the last preceding I-Frame frame will provide the initial contents of the sliding window for decoding the next P-Frame frame. If using mipmaps, the start of the P-Frame is also to be aligned on a scanline boundary.
+
+IOW:
+	I-Frame Mip 0
+	I-Frame Mip 1
+	...
+	I-Frame Mip N
+	Pad To Scanline
+	P-Frame Mip 0
+	P-Frame Mip 1
+	...
+
+I-Frames and P-Frames are to be marked explicitly.
+If a frame is neither an I-Frame nor a P-Frame, it is a standalone image frame. A P-Frame will require a preceding I-Frame.
+
+
+=== Layer IDs ===
+
+The layerid will be the primary key used for identifying image layers. The layers and layer IDs will be established in the base-frame, and as a result all layers are required to be present in the base frame, but need not necessarily have any image data. 
+
+In subsequent frames, layers may be omitted, but the layer IDs for each layer are to reflect those established in the base image. Similarly, I-Frame and P-Frame resolutions and image format and layout are required to match.
+
+TagLayer IDs will indicate the position of the layer within the image starting at 1 (Though layer 1 will be special and exist for defining the canvas and for single-layer images). All tag-layer IDs are to be unique.
+
+Component Layer IDs will be assigned sequentially (starting at 1). All component layer IDs are to be unique.
+
+Note that Component Layer and Tag Layer IDs will be independent.
+
+
+=== Markers ===
+
+<0xFF:BYTE> <marker:BYTE> <size:WORD> <data:BYTE[size-2]>
+
+<0xFF:BYTE> <marker:BYTE> <0x0000:WORD>
+	<size:DWORD> <data:BYTE[size-6]>
+
+<0xFF:BYTE> <marker:BYTE> <0x0001:WORD>
+	<size:QWORD> <data:BYTE[size-10]>
+
+Marker:
+	EscapeSimple:	0x00		Escaped 0xFF Byte
+	EscapeLevel:	0x01-0x1F	Levels 1-31
+	EscapeMarker:	0x20-0x3F	Escape 0xE0-0xFF ^ 0xC0
+	EscapeMarker2:	0x40-0x7F	Escape2 Level 1-2
+	Reserved:		0x80-0xBF
+	ReservedJPEG:	0xC0-0xDF	Legacy JPEG Markers, Not Used
+	APP0-APP15:		0xE0-0xEF	Application Markers
+	FMT0-FMT13:		0xF0-0xFD	Markers, Must Understand
+	COM:			0xFE		Comment Marker, Ignored
+
+Data within a marker will be 0xFF escaped.
+This will mean any literal 0xFF bytes will be replaced with an escape marker (initially 0x00, but for nested-structures, escape-levels are used).
+
+Escaped Bytes 0xE0-0xFF will be remapped to 0x20-0x3F.
+Escaped Bytes 0x20-0x5F will have 0x20 added.
+Levels may represent either nested 0xFF escapes, or bytes which happened to fall inside this range.
+
+Note that entropy coded data (Huffman / Deflate / Arithmetic) will only directly use EscapeSimple, such that the logic to read or emit bytes will not need to deal with the more complex mapping rules.
+
+
+Data within an unknown APPn marker should be silently ignored by a decoder.
+Data within an unknown FMTn marker should result in the image being rejected.
+
+
+APP11/APP12/FMT12/FMT13 markers may be optionally split into multiple parts via a continuation markers, which will be a marker of matching type but with 0 for the FOURCC or tag.
+
+
+=== APP11 / FMT11 ===
+
+ tag: ASCIIZ
+ args:ASCIIZ[]
+
+Note that APP11 markers are presently limited to ASCII data.
+
+
+=== APP12 / FMT12 ===
+
+ tag: FOURCC
+ data:BYTE[]
+
+
+=== APP13 / FMT13 ===
+
+ tag: ASCIIZ
+ data:BYTE[]
+
+
+== BTIC1 Wrapper ==
+
+FMT13: "BTIC1"
+FMT13: "BTIC1Z"
+FMT13: "BTIC1A"
+FMT13: "BTIC1AZ"
+
+This marker will contain all data for the image.
+
+The second (Z suffix) form, will Deflate encode the image data, and will use a Zlib header, with method=8 for Deflate, and 9 for Deflate64.
+
+The third (A suffix) form, will use an Arithmetic-Coded version (BitRange).
+The fourth (AZ suffix) form, deflate the image data and then use arithmetic coding.
+
+The contents of this marker's data will be a collection of tag-layers and their corresponding component-layers and images (for Base and Base I-Frames).
+
+A normal I-Frame or P-Frame will instead contain a collection of 'CLID' markers followed by their associated image data.
+
+The CLID Marker will indicate whether the images are I-Frame or P-Frame images. Note that an I-Frame may only contain I-Frame markers, and a P-Frame may only contain P-Frame markers.
+
+Note that layer definitions and 'CLID' markers may not appear within the same frame.
+
+
+== Layers ==
+
+Two types of layers will exist, those being component layers and tag layers.
+Component layers will identify individual images, representing the various components in the texture.
+
+Tag layers will be more like the traditional layers within a graphics program. These tag-layers may be used independently of each other.
+
+The "TagLayer" and "CompLayer" markers will be the primary means of defining these layers, however frames may may use 'CLID' instead, which references layers defined in prior frames.
+
+
+=== TagLayer ===
+
+FMT13: "TagLayer"
+	name:BYTE[32]		Tag Layer Name
+	layerID:DWORD		LayerID of Layer
+	xorg:DWORD			X Origin of Layer
+	yorg:DWORD			Y Origin of Layer
+	xsize:DWORD			X Size of Layer
+	ysize:DWORD			Y Size of Layer
+	xcenter:DWORD		X Center of Layer
+	ycenter:DWORD		Y Center of Layer
+	flags:DWORD			Layer Flags
+
+FMT12: "LEND"
+	Marks the end of a given tag-layer.
+
+The tag-layer is followed by zero or more component layers.
+
+
+Note that while it may seem redundant to give the image size twice, the sizes will represent different sizes. The layer header size will represent the images' size relative to the canvas, whereas the image header will encode the physically-encoded size for the stored image (potentially padded up to a power-of-2). Usually, these should both be the same values, and also a power-of-2 size (This will be required for video-maps).
+
+These sizes will be in pixels.
+
+The origin will indicate the position of the layer image (relative to its center) within the canvas.
+
+The center will indicate the center of a layer image (in pixels) relative to its lower-left corner.
+
+LayerID gives a layer ID for each image. This is required to be unique for all layer-images within a compound image, and is required to match that of the same layer (same tag-layer and component) within the base-frame.
+
+
+Note that tag-layer 1 is special:
+It will have an empty name;
+Its properties will define those of the canvas;
+If present, any component layers will be part of a special background layer, but may be absent for layered images.
+
+In single layer images, this layer will be the sole layer.
+
+
+=== CompLayer ===
+
+FMT13: "CompLayer"
+	name:BYTE[8]		Component Layer Name
+	layerID:DWORD		LayerID of Image
+	flags:DWORD			Layer Flags
+
+Flags:
+	IFRAME	1
+	PFRAME	2
+
+Note that it is currently invalid to have both IFRAME and PFRAME set.
+If neither is set, then the image is a Base Image.
+
+
+Denotes the start of a given Component Layer.
+This marker is directly followed by the relevant image data (terminated by a FMT12:"TEND" marker).
+
+Layer Names:
+	"RGBA": RGBA Base Layer
+	"XYZD": XYZ Normals+Depth
+	"SpRGBS": Specular RGB+Scale
+	"LuRGBS": Luma RGB+Scale
+
+Note that the specular exponent scale will represent a normalized value to be multiplied with the value given in the material definition.
+
+Likewise for the Luma scale, which will indicate the brightness of the emitted light.
+
+
+== Texture Images ==
+
+=== BTIC1 Image ===
+
+Stores a single or mipmap image.
+
+Note that for mipmap images, the layers will be packed end-to-end.
+
+FMT12: "CLID" (Component Layer ID)
+	layerID:DWORD		LayerID of Image
+	flags:DWORD			Image Flags
+
+The flags will be the same as those for CompLayer.
+
+FMT12: "THDR" (Image Header)
+	width:DWORD			Image Width
+	height:DWORD		Image Height
+	imgtype:WORD		Image Type
+	mip_start:BYTE		MipMap Level Start
+	mip_end:BYTE		MipMap Level End
+	filtmode:BYTE		Filter Modes (Depends on ImageType)
+	clrtype:BYTE		Colorspace Type (Depends on ImageType)
+	pixtype:BYTE		Pixel Type (Depends on ImageType)
+
+FMT12: "TDAT" (Image Data)
+	data:BYTE[]			Image Data
+
+FMT12: "TLDA" (Image Literal Data)
+	data:BYTE[]			Image Literal Data
+
+FMT12: "TDAZ" (Image Data, Deflated)
+	data:BYTE[]			Image Data, Deflated
+
+FMT12: "TLDZ" (Image Literal Data, Deflated)
+	data:BYTE[]			Image Literal Data, Deflated
+
+FMT12: "TEND" (End Of Image)
+	Marks the end of a component-layer image.
+
+Image Types:
+	0	RGBA	(Raw RGBA)
+	1	RGB		(Raw RGB)
+	2	-
+	3	BGRA
+	4	BGR
+	5	YUVA	(Raw YUVA)
+	6	YUV		(Raw YUV)
+	7	Y		(Raw Luma)
+	8	YA		(Raw Luma+Alpha)
+	...
+	16	BC1 / DXT1 (Opaque)
+	17	BC2 / DXT3
+	18	BC3 / DXT5
+	19	BC4		(Y)
+	20	BC5		(YA)
+	21	BC6
+	22	BC7
+	23	BC1F / DXT1F (Fast)
+	24	BC3F / DXT5F (Fast)
+	25	BC1A / DXT1A (DXT1 + Alpha)
+	26	DXT5_UVAY (UVAY)
+
+Filter Modes:
+	0	None (RGB / YUV / DXTn)
+	1	Scanline Filtering (RGB / YUV)
+	2	Simple Block Filtering (RGB / YUV)
+	3	Block Pack (DXTn)
+	4	Block Pack 2 (DXTn)
+
+Clrtype:
+	0	RGB(A)	(RGB / DXTn)
+	1	YCbCr	(YUV / UVAY)
+	2	RCT		(YUV / UVAY)
+	3	MJXR1	(YUV / UVAY)
+
+RCT:
+	Y=(R+2G+B)/4
+		Y=G+(B+R-2*G)/4
+	U=B-G
+	V=R-G
+
+	G=Y-(U+V)/4
+	B=G+U
+	R=G+V
+
+MJXR1:
+	Y=G-(2*G-B-R)/4
+	U=B-R
+	V=(2*G-B-R)/2
+
+	G=Y+V/2
+	R=G-V-U/2
+	B=G-V+U/2
+
+
+=== Scanline and Block Filtering ===
+
+Scanline filtering and block-filtering will store the filter bytes prior to the image data. Scanline filtering will apply the filter for a single scanline, whereas block-filtering will apply it to an 8x8 block of pixels.
+
+Pixel Type:
+	0	Default		(Default / Undefined)
+	1	Byte		(Raw Byte, RGBA/YUVA)
+	2	Short		(Raw Signed 16-bit, RGBA/YUVA)
+	3	UShort		(Raw Unsigned 16-bit, RGBA/YUVA)
+	4	ByteVL		(Byte, VLI-Packed)
+	5	ShortVL		(16-Bit Signed Short, VLI-Packed)
+	6	UShortVL	(16-Bit Unsigned Short, VLI-Packed)
+	7	Float16VL	(16-Bit Float, VLI-Packed)
+
+This is specific to RGB(A) and YUV(A) modes, N/A for DXTn.
+
+Note that float16 data will be treated as if it were unsigned-short data.
+
+
+Pixels:
+	C A
+	B x
+
+Filters (Scanline or Block):
+	0	None	(P=0)
+	1	Left	(P=B)
+	2	Up		(P=A)
+	3	Average	(P=(A+B)/2)
+	4	Paeth	(...)
+	5	Linear	(P=A+B-C)
+
+Block Only (Possible):
+	16	Hadamard
+	17	DCT
+	18	RDCT
+
+DC Coefficients will use Paeth prediction for block filtering.
+
+Paeth:
+	P0=A+B-C
+	Pick P value closest to P0.
+
+
+=== DXTn ===
+
+Filter for DXTn / BCn texture compression.
+DXTn packs bits starting from the LSB.
+
+DXTn stores a 4x4 block of pixels using colors interpolated from 2 pixel values.
+
+Pixel Block:
+	A B C D
+	E F G H
+	I J K L
+	M N O P
+
+Color: 5:6:5 (LE WORD)
+	Red: Bits 11-15
+	Green: Bits 5-10
+	Blue: Bits 0-4
+	
+DXT1 / DXT5 RGB
+
+Color0: Color
+Color1: Color
+pixels: BYTE[4] (2 bpp)
+	DCBA
+	HGFE
+	LKJI
+	PONM
+
+Pixel Bits:
+	0=Color0
+	1=Color1
+	2=	0.66*Color0 + 0.33*Color1 (DXT5)
+		0.5*Color0 + 0.5*Color1(DXT1)
+	3=	0.33*Color0 + 0.66*Color1 (DXT5)
+		Transparent / Black (DXT1)
+
+DXT5
+
+Alpha0: BYTE
+Alpha1: BYTE
+alphas: BYTE[6] (3bpp)
+Color0: Color
+Color1: Color
+pixels: BYTE[4]
+
+
+DXT5 Alpha / BC4: 
+	Alpha0: BYTE
+	Alpha1: BYTE
+	alphas: BYTE[6] (3bpp for each pixel)
+
+if(Alpha0<=Alpha1)
+{
+	0=Alpha0, 1=Alpha1;
+	2-5=interpolated alphas;
+	6=0, 7=255.
+}else
+{
+	0=Alpha0, 1=Alpha1;
+	2-7=interpolated alphas;
+}
+
+
+=== DXT5 UVAY ===
+
+DXT5 UVAY: YUVA Embedded in DXT5 Textures.
+
+Colorspace:
+	Y, U, V, A
+
+"A" may encode either Alpha or a UV Scale factor.
+
+Values between 0 and 127 encode Alpha (With Scale=1.0), and 128-255 encode Scale (With Alpha=1.0).
+
+Note that A=128 means Scale=2.0, and A=255 means Scale=1.0/63.
+
+	0-127: Alpha=2.0*B, Scale=2.0 or 1.0.
+	128-255: Alpha=1.0, Scale=2.0-(4.0*B-2.0) or 1.0-(2.0*B-1.0).
+
+The use of a Scale allows more accurate reproduction of colors.
+
+Assertion: For alpha-blending, reduced color precision is acceptable.
+
+Scale Values:
+	128 -> 2.0	136	-> 1.875	144	-> 1.75	152	-> 1.625
+	160	-> 1.5	168	-> 1.375	176	-> 1.25	184	-> 1.125
+	192	-> 1.0	200	-> 0.875	208	-> 0.75	216	-> 0.625
+	224	-> 0.5	232	-> 0.376	240	-> 0.25	248 -> 0.125
+
+Within the DXT5 image, components are encoded as in the order (U, V, A, Y), or essentially: R'=U, G'=V, B'=A, A'=Y.
+
+Note that when stored, UV components will be both inverse-scaled and have a DC bias added.
+
+IOW: 256, 0 with Scale=2.0 would be stored as 255,128 and 128,-128 as 192,64.
+
+Whether scale is 1.0 or 2.0 will depend on the colorspace, with the 2.0 definition being used for colorspaces which would otherwise require 9 bits to store the UV values.
+
+
+=== VLI Pack ===
+
+Images will be packed in terms of variable-length quantaties.
+
+Each block tag will be encoded in the form (byte):
+0-127				Literal Value (0..127, -64..63).
+128-191	X			Literal Value (128..16383, -8192..8191).
+192-223	XX			Literal Value (16384..2097152, -1048576..1048575).
+224-238 I			LZ/RLE Run (2-16 items, Index)
+239		LI			LZ/RLE Run (Length, Index)
+240		XXX			24-Bit Value
+241		XXXX		32-Bit Value
+242-246				Literal Blocks (2-6 Values)
+247		L			Literal Blocks (L Values)
+248-255				Reserved
+
+Values may be interpreted as signed or unsigned.
+Normal values will be signed, whereas indices and lengths will be unsigned.
+
+Sign will be folded into the LSB following the pattern:
+0, -1, 1, -2, 2, ...
+
+
+=== Block Pack ===
+
+DXTn packed images.
+
+Images will be packed in terms of 8-byte blocks. Formats using 16-byte blocks (such as DXT5) will store blocks instead as 2 planes.
+
+
+Each block tag will be encoded in the form (byte):
+0 <block:QWORD>		Literal Block.
+1-127				Single byte block index.
+128-191	X			Two byte block index (16384 blocks).
+192-223	XX			Three byte block index (2097152 blocks).
+224-238 I			LZ/RLE Run (2-16 blocks, Index)
+239		LI			LZ/RLE Run (Length, Index)
+240		XXX			24-Bit Index
+241		XXXX		32-Bit Index
+242-246				Literal Blocks (2-6 Blocks)
+247		L			Literal Blocks (L Blocks)
+248-255				Reserved
+
+The block index will indicate how many blocks backwards to look for a matching block (1 will repeat the prior block).
+
+Length/Index values will use the same organization as above, only limited to encoding numeric values.
+
+0-127				0-127.
+128-191	X			128-16383.
+192-223	XX			16384-2097151.
+240		XXX			24-Bit Index (0-16777215)
+241		XXXX		32-Bit Index (0-4294967295)
+
+Note that DXT5 images will be split into 2 block-planes, with the first encoding the alpha component, followed by the plane encoding the RGB components.
+
+
+=== Block Pack 2 ===
+
+DXTn packed images.
+
+This format will be similar to Block Pack, but with a few minor differences.
+Literal Blocks will be folded out into a separate literal blocks array.
+
+Raster-Relative indexing will be added.
+
+Each block tag will be encoded in the form (byte):
+0					Literal Block.
+1-127				Single byte block index.
+128-191	X			Two byte block index (16384 blocks).
+192-223	XX			Three byte block index (2097152 blocks).
+224-238 I			LZ/RLE Run (2-16 blocks, Index)
+239		LI			LZ/RLE Run (Length, Index)
+240		XXX			24-Bit Index
+241		XXXX		32-Bit Index
+242-246				Literal Blocks (2-6 Blocks)
+247		L			Literal Blocks (L Blocks)
+248-250	J			Raster Relative 1-3, X (Sign Folded X)
+251		IJ			Raster Relative 4+, YX (Sign Folded X)
+252-255				Escape (2-byte commands)
+
+And for literal Values:
+0-127				0-127.
+128-191	X			128-16383.
+192-223	XX			16384-2097151.
+240		XXX			24-Bit Index (0-16777215)
+241		XXXX		32-Bit Index (0-4294967295)
+248-250	J			Raster Relative 1-3, X (Sign Folded X)
+251		IJ			Raster Relative 4+, YX (Sign Folded X)
+
+Blocks will be pulled in sequentially from a 'Block Literal Data' array, which will contain the raw DXTn blocks.
+
+Raster relative values will be relative to the scanline in blocks for mip-level 0.
+So, for example, if the mip-level 0 is 1024x1024, then the scanline will be 256.
+
+Note that if both raster-relative indexes and mipmaps are being used, then for P-Frames the P-Frame image is to be aligned to a scanline coordinate.

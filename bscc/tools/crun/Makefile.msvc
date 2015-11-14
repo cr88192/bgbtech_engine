@@ -1,0 +1,27 @@
+CFLAGS=/I. /Z7 /TP
+
+SRCS = \
+	crun0.c \
+	crun_core.c \
+	crun_cortxt.c
+
+all: crun.exe
+
+autohead.exe: autohead.c
+	cl /Feautohead.exe autohead.c
+
+text2c.exe: text2c.c
+	cl /Fetext2c.exe text2c.c
+
+crun_auto.h: autohead.exe $(SRCS)
+	./autohead.exe $(SRCS) > crun_auto.h
+
+crun_cortxt.c: text2c.exe crun_core.c
+	./text2c.exe crun_core.c \
+		crun_cortxt.c crun_coretext
+
+# crun.exe: $(SRCS) crun_auto.h
+#	cl /Fecrun.exe $(SRCS) $(CFLAGS)
+
+crun.exe: $(SRCS) crun_auto.h
+	cl /Fecrun.exe crun0.c $(CFLAGS)

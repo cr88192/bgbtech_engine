@@ -1,0 +1,428 @@
+.data
+
+
+.text
+
+
+fib:
+push ebp; mov ebp, esp
+;push_rs @ 0, fibtst.c:18
+;fn @ 0, fibtst.c:18
+;push_i @ 0, fibtst.c:18
+;ln @ 1, fibtst.c:18
+;push_rs @ 0, fibtst.c:17
+;load @ 0, fibtst.c:17
+mov eax, [ebp+8]
+;push_i @ 1, fibtst.c:17
+;push_rs @ 2, fibtst.c:17
+;jmp_le @ 2, fibtst.c:17
+cmp eax, 2
+jle LHDniKBUnMskGPWOFu
+;push_rs @ 0, fibtst.c:17
+;fn @ 0, fibtst.c:17
+;push_rs @ 0, fibtst.c:17
+;mark_s @ 0, fibtst.c:17
+;push_rs @ 0, fibtst.c:17
+;load @ 0, fibtst.c:17
+mov eax, [ebp+8]
+;push_i @ 1, fibtst.c:17
+;sub @ 2, fibtst.c:17
+sub eax, 1
+;arg @ 1, fibtst.c:17
+push eax
+;call_s @ 1, fibtst.c:17
+call fib
+;push_rs @ 1, fibtst.c:17
+;mark_s @ 1, fibtst.c:17
+mov [esp+0], eax
+;push_rs @ 1, fibtst.c:17
+;load @ 1, fibtst.c:17
+mov eax, [ebp+8]
+;push_i @ 2, fibtst.c:17
+;sub @ 3, fibtst.c:17
+sub eax, 2
+;arg @ 2, fibtst.c:17
+push eax
+;call_s @ 2, fibtst.c:17
+call fib
+;add @ 2, fibtst.c:17
+mov ecx, [esp+4]
+add ecx, eax
+;ret @ 1, fibtst.c:17
+mov eax, ecx
+add esp, 8
+pop ebp; ret
+LHDniKBUnMskGPWOFu:
+;push_rs @ 0, fibtst.c:17
+;fn @ 0, fibtst.c:17
+;push_i @ 0, fibtst.c:17
+;ln @ 1, fibtst.c:17
+;push_i @ 0, fibtst.c:18
+;ret @ 1, fibtst.c:18
+mov eax, 1
+pop ebp; ret
+;ret_v @ 0, fibtst.c:18
+pop ebp; ret
+
+
+hash_str:
+push ebp; mov ebp, esp
+sub esp, 28
+;push_rs @ 0, fibtst.c:63
+;fn @ 0, fibtst.c:63
+;push_i @ 0, fibtst.c:63
+;ln @ 1, fibtst.c:63
+;push_rs @ 0, fibtst.c:59
+;fn @ 0, fibtst.c:59
+;push_i @ 0, fibtst.c:59
+;ln @ 1, fibtst.c:59
+;push_i @ 0, fibtst.c:61
+;push_rs @ 1, fibtst.c:61
+;store @ 1, fibtst.c:61
+mov dword [ebp-28], 0
+;push_rs @ 0, fibtst.c:61
+;fn @ 0, fibtst.c:61
+;push_i @ 0, fibtst.c:61
+;ln @ 1, fibtst.c:61
+AIDgKFIgfPEoLgorpU:
+;push_rs @ 0, fibtst.c:62
+;load @ 0, fibtst.c:62
+mov eax, [ebp+8]
+;push_i @ 1, fibtst.c:62
+;loadindex @ 2, fibtst.c:62
+movsx ecx, [eax]
+;push_rs @ 1, fibtst.c:62
+;jmp_false @ 1, fibtst.c:62
+and ecx, ecx; jz DeLFjfAIVLcLMMLdca
+;push_rs @ 0, fibtst.c:62
+;fn @ 0, fibtst.c:62
+;push_rs @ 0, fibtst.c:62
+;load @ 0, fibtst.c:62
+mov eax, [ebp-28]
+;push_i @ 1, fibtst.c:62
+;mul @ 2, fibtst.c:62
+imul eax, 251
+;push_rs @ 1, fibtst.c:62
+;load @ 1, fibtst.c:62
+mov ecx, [ebp+8]
+;dup @ 2, fibtst.c:62
+mov edx, ecx
+push eax
+;inc @ 3, fibtst.c:62
+push ecx
+push edx
+push dword 0x00000001
+pop edx
+pop eax
+lea eax, [eax+edx*1]
+;push_rs @ 3, fibtst.c:62
+;store @ 3, fibtst.c:62
+mov [ebp+8], eax
+;push_i @ 2, fibtst.c:62
+;loadindex @ 3, fibtst.c:62
+pop eax
+movsx ecx, [eax]
+;add @ 2, fibtst.c:62
+pop eax
+add eax, ecx
+;push_rs @ 1, fibtst.c:62
+;store @ 1, fibtst.c:62
+mov [ebp-28], eax
+;push_rs @ 0, fibtst.c:62
+;jmp @ 0, fibtst.c:62
+jmp AIDgKFIgfPEoLgorpU
+DeLFjfAIVLcLMMLdca:
+;push_rs @ 0, fibtst.c:62
+;fn @ 0, fibtst.c:62
+;push_i @ 0, fibtst.c:62
+;ln @ 1, fibtst.c:62
+;push_rs @ 0, fibtst.c:63
+;load @ 0, fibtst.c:63
+mov eax, [ebp-28]
+;push_i @ 1, fibtst.c:63
+;and @ 2, fibtst.c:63
+and eax, 4095
+;ret @ 1, fibtst.c:63
+mov esp, ebp
+pop ebp; ret
+;ret_v @ 0, fibtst.c:63
+mov esp, ebp
+pop ebp; ret
+
+
+bscc_main:
+push ebp; mov ebp, esp
+sub esp, 44
+;push_rs @ 0, fibtst.c:87
+;fn @ 0, fibtst.c:87
+;push_i @ 0, fibtst.c:87
+;ln @ 1, fibtst.c:87
+;push_rs @ 0, fibtst.c:68
+;fn @ 0, fibtst.c:68
+;push_i @ 0, fibtst.c:68
+;ln @ 1, fibtst.c:68
+;push_rs @ 0, fibtst.c:69
+;fn @ 0, fibtst.c:69
+;push_i @ 0, fibtst.c:69
+;ln @ 1, fibtst.c:69
+;push_rs @ 0, fibtst.c:71
+;mark_s @ 0, fibtst.c:71
+;push_rt @ 0, fibtst.c:71
+push dword AAgJAdAHXqiNBswCeO
+;arg @ 1, fibtst.c:71
+;call_s @ 1, fibtst.c:71
+call printf
+;pop @ 1, fibtst.c:71
+;push_rs @ 0, fibtst.c:71
+;fn @ 0, fibtst.c:71
+;push_i @ 0, fibtst.c:71
+;ln @ 1, fibtst.c:71
+;push_rs @ 0, fibtst.c:73
+;mark_s @ 0, fibtst.c:73
+;call_s @ 0, fibtst.c:73
+add esp, 4
+call clock
+;push_rs @ 1, fibtst.c:73
+;store @ 1, fibtst.c:73
+mov [ebp-40], eax
+;push_rs @ 0, fibtst.c:73
+;fn @ 0, fibtst.c:73
+;push_i @ 0, fibtst.c:73
+;ln @ 1, fibtst.c:73
+;push_rs @ 0, fibtst.c:74
+;mark_s @ 0, fibtst.c:74
+;push_i @ 0, fibtst.c:74
+;arg @ 1, fibtst.c:74
+push dword 0x00000024
+;call_s @ 1, fibtst.c:74
+call fib
+;push_rs @ 1, fibtst.c:74
+;store @ 1, fibtst.c:74
+mov [ebp-36], eax
+;push_rs @ 0, fibtst.c:74
+;fn @ 0, fibtst.c:74
+;push_i @ 0, fibtst.c:74
+;ln @ 1, fibtst.c:74
+;push_rs @ 0, fibtst.c:75
+;mark_s @ 0, fibtst.c:75
+;call_s @ 0, fibtst.c:75
+add esp, 4
+call clock
+;push_rs @ 1, fibtst.c:75
+;load @ 1, fibtst.c:75
+mov ecx, [ebp-40]
+;sub @ 2, fibtst.c:75
+sub eax, ecx
+;push_rs @ 1, fibtst.c:75
+;store @ 1, fibtst.c:75
+mov [ebp-44], eax
+;push_rs @ 0, fibtst.c:75
+;fn @ 0, fibtst.c:75
+;push_i @ 0, fibtst.c:75
+;ln @ 1, fibtst.c:75
+;push_rs @ 0, fibtst.c:77
+;mark_s @ 0, fibtst.c:77
+;push_rs @ 0, fibtst.c:77
+;larg @ 0, fibtst.c:77
+mov eax, [ebp-44]
+push eax
+;push_rs @ 1, fibtst.c:77
+;larg @ 1, fibtst.c:77
+mov eax, [ebp-36]
+push eax
+;push_rt @ 2, fibtst.c:77
+push dword DotVLGBdjSeiHVijsR
+;arg @ 3, fibtst.c:77
+;call_s @ 3, fibtst.c:77
+call printf
+;pop @ 1, fibtst.c:77
+;push_rs @ 0, fibtst.c:77
+;fn @ 0, fibtst.c:77
+;push_i @ 0, fibtst.c:77
+;ln @ 1, fibtst.c:77
+;push_rs @ 0, fibtst.c:79
+;mark_s @ 0, fibtst.c:79
+;push_rs @ 0, fibtst.c:79
+;mark_s @ 0, fibtst.c:79
+;push_rt @ 0, fibtst.c:79
+mov dword [esp+8], BuCBsmJAEdULKHEPBI
+;arg @ 1, fibtst.c:79
+;call_s @ 1, fibtst.c:79
+add esp, 8
+call hash_str
+;arg @ 1, fibtst.c:79
+mov [esp+0], eax
+;push_rt @ 1, fibtst.c:79
+push dword DttPTiJtxOpUOVSMvv
+;arg @ 2, fibtst.c:79
+;call_s @ 2, fibtst.c:79
+call printf
+;pop @ 1, fibtst.c:79
+;push_rs @ 0, fibtst.c:79
+;fn @ 0, fibtst.c:79
+;push_i @ 0, fibtst.c:79
+;ln @ 1, fibtst.c:79
+;push_i @ 0, fibtst.c:81
+;push_rs @ 1, fibtst.c:81
+;store @ 1, fibtst.c:81
+mov dword [ebp-32], 0x00000000
+mov dword [ebp-28], 0x00000000
+;push_rs @ 0, fibtst.c:81
+;fn @ 0, fibtst.c:81
+;push_i @ 0, fibtst.c:81
+;ln @ 1, fibtst.c:81
+;push_rs @ 0, fibtst.c:83
+;load @ 0, fibtst.c:83
+movq xmm6, [ebp-32]
+;push_rs @ 1, fibtst.c:83
+;jmp_true @ 1, fibtst.c:83
+add esp, 8
+movq [esp-8], xmm6
+mov eax, [esp-8]
+or eax, [esp-4]; jnz FnIHDVKbHHLCAeQSmE
+;push_rs @ 0, fibtst.c:83
+;fn @ 0, fibtst.c:83
+;push_rs @ 0, fibtst.c:83
+;mark_s @ 0, fibtst.c:83
+;push_rt @ 0, fibtst.c:83
+push dword NGxsUdOGULcuCeorSd
+;arg @ 1, fibtst.c:83
+;call_s @ 1, fibtst.c:83
+call printf
+;pop @ 1, fibtst.c:83
+add esp, 4
+FnIHDVKbHHLCAeQSmE:
+;push_rs @ 0, fibtst.c:83
+;fn @ 0, fibtst.c:83
+;push_i @ 0, fibtst.c:83
+;ln @ 1, fibtst.c:83
+;push_i @ 0, fibtst.c:87
+;ret @ 1, fibtst.c:87
+xor eax, eax
+mov esp, ebp
+pop ebp; ret
+;ret_v @ 0, fibtst.c:87
+mov esp, ebp
+pop ebp; ret
+
+
+main:
+push ebp; mov ebp, esp
+sub esp, 36
+;push_rs @ 0, fibtst.c:104
+;fn @ 0, fibtst.c:104
+;push_i @ 0, fibtst.c:104
+;ln @ 1, fibtst.c:104
+;push_rs @ 0, fibtst.c:92
+;fn @ 0, fibtst.c:92
+;push_i @ 0, fibtst.c:92
+;ln @ 1, fibtst.c:92
+;push_rs @ 0, fibtst.c:94
+;mark_s @ 0, fibtst.c:94
+;call_s @ 0, fibtst.c:94
+call clock
+;push_rs @ 1, fibtst.c:94
+;store @ 1, fibtst.c:94
+mov [ebp-32], eax
+;push_rs @ 0, fibtst.c:94
+;fn @ 0, fibtst.c:94
+;push_i @ 0, fibtst.c:94
+;ln @ 1, fibtst.c:94
+;push_rs @ 0, fibtst.c:98
+;mark_s @ 0, fibtst.c:98
+;push_i @ 0, fibtst.c:98
+;arg @ 1, fibtst.c:98
+push dword 0x00000024
+;call_s @ 1, fibtst.c:98
+call fib
+;push_rs @ 1, fibtst.c:98
+;store @ 1, fibtst.c:98
+mov [ebp-28], eax
+;push_rs @ 0, fibtst.c:98
+;fn @ 0, fibtst.c:98
+;push_i @ 0, fibtst.c:98
+;ln @ 1, fibtst.c:98
+;push_rs @ 0, fibtst.c:101
+;mark_s @ 0, fibtst.c:101
+;call_s @ 0, fibtst.c:101
+add esp, 4
+call clock
+;push_rs @ 1, fibtst.c:101
+;load @ 1, fibtst.c:101
+mov ecx, [ebp-32]
+;sub @ 2, fibtst.c:101
+sub eax, ecx
+;push_rs @ 1, fibtst.c:101
+;store @ 1, fibtst.c:101
+mov [ebp-36], eax
+;push_rs @ 0, fibtst.c:101
+;fn @ 0, fibtst.c:101
+;push_i @ 0, fibtst.c:101
+;ln @ 1, fibtst.c:101
+;push_rs @ 0, fibtst.c:102
+;mark_s @ 0, fibtst.c:102
+;push_rs @ 0, fibtst.c:102
+;load @ 0, fibtst.c:102
+mov eax, [ebp-36]
+;push_f @ 1, fibtst.c:102
+;mul @ 2, fibtst.c:102
+movss xmm6, [DvahSGIbcidUBiWbAt]
+cvtsi2ss xmm5, eax
+mulss xmm5, xmm6
+;push_i @ 1, fibtst.c:102
+;div @ 2, fibtst.c:102
+movss xmm0, [GgvsBnJFVVQiLfJxIr]
+divss xmm5, xmm0
+;arg @ 1, fibtst.c:102
+cvtss2sd xmm5, xmm5
+movsd [esp-8], xmm5
+;push_rs @ 1, fibtst.c:102
+;larg @ 1, fibtst.c:102
+mov eax, [ebp-28]
+mov [esp-12], eax
+;push_rt @ 2, fibtst.c:102
+mov dword [esp-16], QGCOhOAoAvqdDfODXW
+;arg @ 3, fibtst.c:102
+;call_s @ 3, fibtst.c:102
+sub esp, 16
+call printf
+;pop @ 1, fibtst.c:102
+;push_rs @ 0, fibtst.c:102
+;fn @ 0, fibtst.c:102
+;push_i @ 0, fibtst.c:102
+;ln @ 1, fibtst.c:102
+;push_rs @ 0, fibtst.c:104
+;mark_s @ 0, fibtst.c:104
+;push_rs @ 0, fibtst.c:104
+;mark_s @ 0, fibtst.c:104
+;push_rt @ 0, fibtst.c:104
+mov dword [esp+12], BuCBsmJAEdULKHEPBI
+;arg @ 1, fibtst.c:104
+;call_s @ 1, fibtst.c:104
+add esp, 12
+call hash_str
+;arg @ 1, fibtst.c:104
+mov [esp+0], eax
+;push_rt @ 1, fibtst.c:104
+push dword DttPTiJtxOpUOVSMvv
+;arg @ 2, fibtst.c:104
+;call_s @ 2, fibtst.c:104
+call printf
+;pop @ 1, fibtst.c:104
+;ret_v @ 0, fibtst.c:104
+add esp, 8
+mov esp, ebp
+pop ebp; ret
+
+
+.data
+AAgJAdAHXqiNBswCeO db "test\n", 0
+DotVLGBdjSeiHVijsR db "fibtst %d %d\n", 0
+BuCBsmJAEdULKHEPBI db "foobarbaz", 0
+DttPTiJtxOpUOVSMvv db "hashtst %d\n", 0
+NGxsUdOGULcuCeorSd db "LI-Z\n", 0
+QGCOhOAoAvqdDfODXW db "%d %fms\n", 0
+align 16
+OdJwstEVDCqaAOVNJv dq 1000.000000
+DvahSGIbcidUBiWbAt dd 1000.000000
+GgvsBnJFVVQiLfJxIr dd 60.000000

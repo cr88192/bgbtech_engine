@@ -1,0 +1,581 @@
+FRBC-Aleph2 (Idea)
+
+
+Idea:
+* Partial Revival of Aleph.
+* Aleph-2 will be an x86-based register-based bytecode format.
+* The goal will be for it to be JIT-able into machine code for multiple targets.
+
+
+Compatibility with x86:
+* This will not be binary compatible with x86, however conversion (via JIT) shouldn't be particularly difficult
+* The floating point registers will likely be mapped directly to SSE registers.
+* On 32-bit x86, it will likely be needed to partially emulate the register set.
+
+
+== ISA ==
+
+=== Registers ===
+
+R0-R15: GPR Registers 0-15
+* R0B-R15B: Byte Registers
+* R0W-R15W: Word Registers
+* R0D-R15D: DWord Registers
+* R0Q-R15Q: QWord Registers
+* R0N-R15N: Native-Size Registers
+
+F0-F15: Float Registers
+* F0S-F15S: Single Float Registers
+* F0D-F15D: Double Registers
+
+Alternate Names:
+* rAX: R0, AL/AX/EAX/RAX/NAX
+* rCX: R1, CL/CX/ECX/RCX/NCX
+* rDX: R2, DL/DX/EDX/RDX/NDX
+* rBX: R3, BL/BX/EBX/RBX/NBX
+* rSP: R4, SPL/SP/ESP/RSP/NSP
+* rBP: R5, BPL/BP/EBP/RBP/NBP
+* rSI: R6, SIL/SI/ESI/RSI/NSI
+* rDI: R7, DIL/DI/EDI/RDI/NDI
+
+
+rIP: Instruction-Pointer Register
+* In most cases, it will be interpreted as pointing to the following instruction.
+
+rFLAGS: Flags Pseudo Register
+* In this ISA, this register will only have a defined state when an integer or compare operation is paired with an operation which depends on the use of the status flags (such as Jcc). In other cases, its contents are undefined.
+
+
+==== Native Size Registers ====
+
+These registers will have a size which depends on the native operating mode.
+
+These will be the same size as a pointer or reference, which may or may not be the same size as an underlying machine pointer. Implicitly, raw pointers will be assumed.
+
+
+==== Register Identity ====
+
+It will be required that register identity be preserved.
+* Leaving and returning control flow will leave values in their appropriate registers.
+* Altering the value of a register in one context will effect its value in another context.
+* It is undefined whether or not the logical registers map directly to physical CPU registers.
+** It is reasonable for them to map to temporaries, so long as the behavior is preserved.
+* It is not required that the value of registers be preserved across a call which would not otherwise preserve these registers according to the ABI.
+** For example, a call out of the interpreter will not mandate preserving callee-save registers.
+
+
+=== Mod/RM ===
+
+
+Mod/RM
+* mod(2), reg(3), rm(3)
+* mod=00, [reg]
+** RM=100, SIB2
+** RM=101, [rIP+disp32]
+* mod=01, [reg+disp8]
+** RM=100, SIB
+** RM=101, [meta32rel]
+* mod=10, [reg+disp32]
+** RM=100, SIB
+** RM=101, Reserved
+* mod=11, reg
+
+
+SIB (Scale, Index, Base)
+** sc(2), idx(3), base(3)
+* 00
+** [base+1*index+disp]
+* 01
+** [base+2*index+disp]
+* 10
+** [base+4*index+disp]
+* 11
+** [base+8*index+disp]
+*** index=100
+*** Scale=1: No Index
+*** Scale!=1: Reserved
+
+
+SIB2 (Word)
+* ssss-WRXB ddiiibbb
+* ss=0000..1000 (Scale=1..256)
+** [base+scale*index+disp]
+* ss=1001:
+** [base+N*index+disp]
+* ss=1010:
+** [base+N*index+N*disp]
+* WRXB
+** W: 0=32-bit, 1=64-bit
+** R: Bit 3 of Reg
+** X: Bit 3 of Index
+** B: Bit 3 of Base
+* dd=00 (disp=none)
+* dd=01 (disp=byte)
+* dd=10 (disp=dword)
+* dd=11 (disp=meta32rel)
+
+
+Meta32Rel
+* Rel32 value to Metadata
+* Base: Holds the Object or Array handle
+* Index: Holds an index into an array
+
+
+=== Prefixes ===
+
+* X, Rex Prefix
+** 1000WRXB
+** Partially redundant with SIB2
+*** N/A if SIB2 is used.
+* W, Word Size Prefix, 16-bit Ops
+** 0x66
+* T, Word Size Prefix, 32-bit Ops
+** Not Emitted (0x66)
+* V, Address Prefix (None)
+* S, Address Prefix (Native)
+
+* G, Float Prefix
+** 0x3F
+** Indicates that the operation is a scalar float or double operation.
+*** 32 or 64 bit only for now.
+
+
+=== Core Listing (Base/Integer) ===
+
+ adc              X80/2,ib                rm8,i8
+                  WX83/2,ib               rm16,i8
+                  TX83/2,ib               rm32,i8
+                  WX81/2,iw               rm16,i16
+                  TX81/2,id               rm32,i32
+                  X12/r                   r8,rm8
+                  WX13/r                  r16,rm16
+                  TX13/r                  r32,rm32
+                  X10/r                   rm8,r8
+                  WX11/r                  rm16,r16
+                  TX11/r                  rm32,r32
+ add              X80/0,ib                rm8,i8
+                  WX83/0,ib               rm16,i8
+                  TX83/0,ib               rm32,i8
+                  X02/r                   r8,rm8
+                  X00/r                   rm8,r8
+                  WX81/0,iw               rm16,i16
+                  WX03/r                  r16,rm16
+                  WX01/r                  rm16,r16
+                  TX81/0,id               rm32,i32
+                  TX01/r                  rm32,r32
+                  TX03/r                  r32,rm32
+                  X81/0,id                rm64,i32
+                  X01/r                   rm64,r64
+                  X03/r                   r64,rm64
+ and              X80/4,ib                rm8,i8
+                  WX83/4,ib               rm16,i8
+                  TX83/4,ib               rm32,i8
+                  X20/r                   rm8,r8
+                  X22/r                   r8,rm8
+                  WX81/4,iw               rm16,i16
+                  WX23/r                  r16,rm16
+                  WX21/r                  rm16,r16
+                  TX81/4,id               rm32,i32
+                  TX23/r                  r32,rm32
+                  TX21/r                  rm32,r32
+                  X81/4,id                rm64,i32
+                  X23/r                   r64,rm64
+                  X21/r                   rm64,r64
+ call             TE8,rd                  ar32
+                  WXFF/2                  rm16
+                  TXFF/2                  rm32
+ cmp              X80/7,ib                rm8,i8
+                  WX83/7,ib               rm16,i8
+                  TX83/7,ib               rm32,i8
+                  X3A/r                   r8,rm8
+                  X38/r                   rm8,r8
+                  WX81/7,iw               rm16,i16
+                  WX3B/r                  r16,rm16
+                  WX39/r                  rm16,r16
+                  TX81/7,id               rm32,i32
+                  TX3B/r                  r32,rm32
+                  TX39/r                  rm32,r32
+                  X81/7,id                rm64,i32
+                  X3B/r                   r64,rm64
+                  X39/r                   rm64,r64
+ dec              XFE/1                   rm8
+                  WXFF/1                  rm16
+                  TXFF/1                  rm32
+                  XFF/1                   rm64
+ div              XF6/6                   r8
+                  WXF7/6                  r16
+                  TXF7/6                  r32
+                  XF7/6                   r64
+ idiv             XF6/7                   rm8
+                  WXF7/7                  rm16
+                  TXF7/7                  rm32
+                  XF7/7                   rm64
+                  WX0FA7/r                r16,rm16
+                  TX0FA7/r                r32,rm32
+                  X0FA7/r                 r64,rm64
+ imul             XF6/5                   rm8
+                  WXF7/5                  rm16
+                  TXF7/5                  rm32
+                  XF7/5                   rm64
+                  WX0FAF/r                r16,rm16
+                  TX0FAF/r                r32,rm32
+                  X0FAF/r                 r64,rm64
+                  WX6B/r,ib               r16,rm16,i8
+                  TX6B/r,ib               r32,rm32,i8
+                  WX69/r,iw               r16,rm16,i16
+                  TX69/r,id               r32,rm32,i32
+                  X69/r,id                r64,rm64,i32
+ inc              XFE/0                   rm8
+                  WXFF/0                  rm16
+                  TXFF/0                  rm32
+                  XFF/0                   rm64
+ ja               77,rb                   ar8
+                  T0F87,rd                ar32
+ jae              73,rb                   ar8
+                  T0F83,rd                ar32
+ jb               72,rb                   ar8
+                  T0F82,rd                ar32
+ jbe              76,rb                   ar8
+                  T0F86,rd                ar32
+ jc               72,rb                   ar8
+                  T0F82,rd                ar32
+ je               74,rb                   ar8
+                  T0F84,rd                ar32
+ jg               7F,rb                   ar8
+                  T0F8F,rd                ar32
+ jge              7D,rb                   ar8
+                  T0F8D,rd                ar32
+ jl               7C,rb                   ar8
+                  T0F8C,rd                ar32
+ jle              7E,rb                   ar8
+                  T0F8E,rd                ar32
+ jna              76,rb                   ar8
+                  T0F86,rd                ar32
+ jnae             72,rb                   ar8
+                  T0F82,rd                ar32
+ jnb              73,rb                   ar8
+                  T0F83,rd                ar32
+ jnbe             77,rb                   ar8
+                  T0F87,rd                ar32
+ jnc              73,rb                   ar8
+                  T0F83,rd                ar32
+ jne              75,rb                   ar8
+                  T0F85,rd                ar32
+ jng              7E,rb                   ar8
+                  T0F8E,rd                ar32
+ jnge             7C,rb                   ar8
+                  T0F8C,rd                ar32
+ jnl              7D,rb                   ar8
+                  T0F8D,rd                ar32
+ jnle             7F,rb                   ar8
+                  T0F8F,rd                ar32
+ jno              71,rb                   ar8
+                  T0F81,rd                ar32
+ jnp              7B,rb                   ar8
+                  T0F8B,rd                ar32
+ jns              79,rb                   ar8
+                  T0F89,rd                ar32
+ jnz              75,rb                   ar8
+                  T0F85,rd                ar32
+ jo               70,rb                   ar8
+                  T0F80,rd                ar32
+ jp               7A,rb                   ar8
+                  T0F8A,rd                ar32
+ jpe              7A,rb                   ar8
+                  T0F8A,rd                ar32
+ jpo              7B,rb                   ar8
+                  T0F8B,rd                ar32
+ js               78,rb                   ar8
+                  T0F88,rd                ar32
+ jz               74,rb                   ar8
+                  T0F84,rd                ar32
+ jmp              EB,rb                   ar8
+                  TE9,rd                  ar32
+                  TXFF/4                  rm32
+ lea              WX8D/r                  r16,rm16
+                  TX8D/r                  r32,rm32
+                  X8D/r                   r64,rm64
+ mov              X8A/r                   r8,rm8
+                  WX8B/r                  r16,rm16
+                  TX8B/r                  r32,rm32
+                  X88/r                   rm8,r8
+                  WX89/r                  rm16,r16
+                  TX89/r                  rm32,r32
+                  XB0|r,ib                r8,i8
+                  WXB8|r,iw               r16,i16
+                  TXB8|r,id               r32,i32
+                  XB8|r,iq                r64,i64
+                  XC6/0,ib                rm8,i8
+                  WXC7/0,iw               rm16,i16
+                  TXC7/0,id               rm32,i32
+ movsxb           WX0FBE/r                r16,rm8
+                  TX0FBE/r                r32,rm8
+                  X0FBE/r                 r64,rm8
+ movsxw           TX0FBF/r                r32,rm16
+                  X0FBF/r                 r64,rm32
+ movzxb           WX0FB6/r                r16,rm8
+                  TX0FB6/r                r32,rm8
+                  X0FB6/r                 r64,rm8
+ movzxw           TX0FB7/r                r32,rm16
+                  X0FB7/r                 r64,rm32
+ mul              XF6/4                   rm8
+                  WXF7/4                  rm16
+                  TXF7/4                  rm32
+                  XF7/4                   rm64
+ neg              XF6/3                   rm8
+                  WXF7/3                  rm16
+                  TXF7/3                  rm32
+                  XF7/3                   rm64
+ nop              90
+                  0F1F/0                  rm32
+ nop2             6690
+ not              XF6/2                   rm8
+                  WXF7/2                  rm16
+                  TXF7/2                  rm32
+                  XF7/2                   rm64
+ or               X80/1,ib                rm8,i8
+                  WX83/1,ib               rm16,i8
+                  TX83/1,ib               rm32,i8
+                  X0A/r                   r8,rm8
+                  X08/r                   rm8,r8
+                  WX81/1,iw               rm16,i16
+                  WX0B/r                  r16,rm16
+                  WX09/r                  rm16,r16
+                  TX81/1,id               rm32,i32
+                  TX0B/r                  r32,rm32
+                  TX09/r                  rm32,r32
+                  X81/1,id                rm64,i32
+                  X0B/r                   r64,rm64
+                  X09/r                   rm64,r64
+ pop              WX58|r                  r16
+                  TX58|r                  r32
+                  WX8F/0                  rm16
+                  TX8F/0                  rm32
+                  X8F/0                   rm64
+ push             WX50|r                  r16
+                  TX50|r                  r32
+                  WXFF/6                  rm16
+                  TXFF/6                  rm32
+                  XFF/6                   rm64
+                  6A,ib                   i8
+                  W68,iw                  i16
+                  T68,id                  i32
+ rol              XD2/0                   rm8,r8
+                  XC0/0,ib                rm8,i8
+                  WXD3/0                  rm16,r8
+                  WXC1/0,ib               rm16,i8
+                  TXD3/0                  rm32,r8
+                  TXC1/0,ib               rm32,i8
+                  XD3/0                   rm64,r8
+                  XC1/0,ib                rm64,i8
+ ror              XD2/1                   rm8,r8
+                  XC0/1,ib                rm8,i8
+                  WXD3/1                  rm16,r8
+                  WXC1/1,ib               rm16,i8
+                  TXD3/1                  rm32,r8
+                  TXC1/1,ib               rm32,i8
+                  XD3/1                   rm64,r8
+                  XC1/1,ib                rm64,i8
+ ret              C3
+ sar              XD2/7                   rm8,r8
+                  XC0/7,ib                rm8,i8
+                  WXD3/7                  rm16,r8
+                  WXC1/7,ib               rm16,i8
+                  TXD3/7                  rm32,r8
+                  TXC1/7,ib               rm32,i8
+                  XD3/7                   rm64,r8
+                  XC1/7,ib                rm64,i8
+ sbb              X80/3,ib                rm8,i8
+                  WX83/3,ib               rm16,i8
+                  TX83/3,ib               rm32,i8
+                  X1A/r                   r8,rm8
+                  X18/r                   rm8,r8
+                  WX81/3,iw               rm16,i16
+                  WX1B/r                  r16,rm16
+                  WX19/r                  rm16,r16
+                  TX81/3,id               rm32,i32
+                  TX1B/r                  r32,rm32
+                  TX19/r                  rm32,r32
+                  X81/3,id                rm64,i32
+                  X1B/r                   r64,rm64
+                  X19/r                   rm64,r64
+ shl              XD2/4                   rm8,r8
+                  XC0/4,ib                rm8,i8
+                  WXD3/4                  rm16,r8
+                  WXC1/4,ib               rm16,i8
+                  TXD3/4                  rm32,r8
+                  TXC1/4,ib               rm32,i8
+                  XD3/4                   rm64,r8
+                  XC1/4,ib                rm64,i8
+ shr              XD2/5                   rm8,r8
+                  XC0/5,ib                rm8,i8
+                  WXD3/5                  rm16,r8
+                  WXC1/5,ib               rm16,i8
+                  TXD3/5                  rm32,r8
+                  TXC1/5,ib               rm32,i8
+                  XD3/5                   rm64,r8
+                  XC1/5,ib                rm64,i8
+ shld             WX0FA4/r,ib             rm16,r16,i8
+                  WX0FA5/r                rm16,r16,cl
+                  TX0FA4/r,ib             rm32,r32,i8
+                  TX0FA5/r                rm32,r32,cl
+                  X0FA4/r,ib              rm64,r64,i8
+                  X0FA5/r                 rm64,r64,cl
+ shrd             WX0FAC/r,ib             rm16,r16,i8
+                  WX0FAD/r                rm16,r16,cl
+                  TX0FAC/r,ib             rm32,r32,i8
+                  TX0FAD/r                rm32,r32,cl
+                  X0FAC/r,ib              rm64,r64,i8
+                  X0FAD/r                 rm64,r64,cl
+ sub              X80/5,ib                rm8,i8
+                  WX83/5,ib               rm16,i8
+                  TX83/5,ib               rm32,i8
+                  X2A/r                   r8,rm8
+                  X28/r                   rm8,r8
+                  WX81/5,iw               rm16,i16
+                  WX2B/r                  r16,rm16
+                  WX29/r                  rm16,r16
+                  TX81/5,id               rm32,i32
+                  TX2B/r                  r32,rm32
+                  TX29/r                  rm32,r32
+                  X81/5,id                rm64,i32
+                  X2B/r                   r64,rm64
+                  X29/r                   rm64,r64
+ test             XF6/0,ib                rm8,i8
+                  WXF7/0,iw               rm16,i16
+                  TXF7/0,id               rm32,i32
+                  X84/r                   rm8,r8
+                  WX85/r                  rm16,r16
+                  TX85/r                  rm32,r32
+                  XF7/0,id                rm64,i32
+                  X85/r                   rm64,r64
+ xchg             X86/r                   rm8,r8
+                  X86/r                   r8,rm8
+                  WX87/r                  rm16,r16
+                  WX87/r                  r16,rm16
+                  TX87/r                  rm32,r32
+                  TX87/r                  r32,rm32
+                  X87/r                   rm64,r64
+                  X87/r                   r64,rm64
+ xor              X80/6,ib                rm8,i8
+                  WX83/6,ib               rm16,i8
+                  TX83/6,ib               rm32,i8
+                  X32/r                   r8,rm8
+                  X30/r                   rm8,r8
+                  WX81/6,iw               rm16,i16
+                  WX33/r                  r16,rm16
+                  WX31/r                  rm16,r16
+                  TX81/6,id               rm32,i32
+                  TX33/r                  r32,rm32
+                  TX31/r                  rm32,r32
+                  X81/6,id                rm64,i32
+                  X33/r                   r64,rm64
+                  X31/r                   rm64,r64
+
+
+=== Core Listing (Float) ===
+
+ add              GTX81/0,id              grm32,f32
+                  GTX01/r                 grm32,gr32
+                  GTX03/r                 gr32,grm32
+                  GX81/0,iq               grm64,f64
+                  GX01/r                  grm64,gr64
+                  GX03/r                  gr64,grm64
+ cmp              GTX81/7,id              grm32,f32
+                  GTX3B/r                 gr32,grm32
+                  GTX39/r                 grm32,gr32
+                  GX81/7,iq               grm64,f64
+                  GX3B/r                  gr64,grm64
+                  GX39/r                  grm64,gr64
+ div              GTX0FA7/r               gr32,grm32
+                  GX0FA7/r                gr64,grm64
+ mov              GTX8B/r                 gr32,grm32
+                  GTX89/r                 grm32,gr32
+                  GX8B/r                  gr64,grm64
+                  GX89/r                  grm64,gr64
+                  GTXB8|r,id              gr32,f32
+                  GXB8|r,iq               gr64,f64
+                  GTXC7/0,id              grm32,f32
+                  GXC7/0,iq               grm64,f64
+ mul              GTX0FAF/r               gr32,grm32
+                  GX0FAF/r                gr64,grm64
+                  GTX69/r,id              gr32,grm32,f32
+                  GX69/r,iq               gr64,grm64,f64
+ neg              GTXF7/3                 grm32
+                  GXF7/3                  grm64
+ sub              GTX81/5,id              grm32,i32
+                  GTX2B/r                 gr32,grm32
+                  GTX29/r                 grm32,gr32
+                  GX81/5,id               grm64,i64
+                  GX2B/r                  gr64,grm64
+                  GX29/r                  grm64,gr64
+ xchg             GTX87/r                 grm32,gr32
+                  GTX87/r                 gr32,grm32
+                  GX87/r                  grm64,gr64
+                  GX87/r                  gr64,grm64
+
+
+=== Opcode Map ===
+
+
+== ABI ==
+
+The logical ABI will be similar to x86 cdecl.
+
+Arguments will be pushed onto the stack in right to left order, with the stack expanding downwards.
+
+Stack elements will be N-sized, and NBP will be used for stack-frame chaining.
+
+
+No stack alignment (beyond N) will be assumed.
+
+* Caller-Save: rAX, rCX, rDX, rBX, R8, R9, R10, R11, F0-F5
+* Callee-Save: rSI, rDI, rSP, rBP, R12-R15, F6-F15
+
+Objects and structures will be passed and returned via pointers.
+
+
+=== Metadata ===
+
+Metadata will be given as pointers to logical nodes.
+
+Notes will be given as pairs of ASCIIZ strings in key/value form, and are optionally packed with a naive LZ scheme.
+
+"nodepath", "key1", "value1", "key2", "value2", ..., 0x00, (Child Nodes), 0x00
+
+Strings may contain M-UTF8 characters, however, these characters may (depending on context) be interpreted as numeric values.
+
+* 0x00..0x7F: Raw ASCII Character
+* 0x80..0xBF: Byte in a multi-byte character, invalid as the start of a character
+* 0xC0..0xDF: Start of a 2-byte character
+* 0xE0..0xEF: Start of a 3-byte character
+* 0xF0: Escape Byte
+** Followed by a single byte.
+** 0x00..0x0F will escape 0xFF..0xF0 (Reversed Order)
+** Other values are reserved.
+* 0xF1-0xF6: 3-8 characters, followed by relative 16-bit offset
+* 0xF7: 8-bit length, followed by relative 16-bit offset
+* 0xF8: 16-bit length, followed by relative 32-bit offset
+** These will directly copy bytes from a given address into the string.
+** These will copy raw bytes.
+* 0xF9: relative 16-bit offset, full string reference.
+* 0xFA: relative 32-bit offset, full string reference.
+** These will directly copy a string.
+** The string may be itself packed, at which point it will be logically expanded as part of the copy operation.
+** The null character will also be copied, so a string copy will also end the current string.
+* 0xFB: logical signed integer value (DWORD)
+* 0xFC: Logical Node Link, relative 32-bit offset.
+
+Integers:
+* May be encoded in decimal (as an ASCII formatted integer, ex: "-421")
+* May be encoded in hex, as an ASCII hex number in '0x' form ("0xB0F0").
+* May be encoded as a codepoint, the logical integer value of the codepoint will be used.
+* May be encoded using an 0xFB byte.
+
+
+Child nodes will each follow the same basic pattern, and are subject to arbitrary levels of nesting.
+
+The nodepath will give a QName for each node.
+
+It may also be encoded as a backlink to the parent node, with the current node-name as:
+* ParentNodePath '/' RestOfString

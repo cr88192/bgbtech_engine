@@ -1,0 +1,74 @@
+Well, it seems I had forgotten how a lot of this stuff works, so I ended up digging through older code and looking at the code to figure it back out again.
+
+History:
+It seems the ancestor of this GC was written in 2002 or so in my VMSYS project "memory3_1.c". At the time, it was a precise GC. It made use of tagged references, and was a cell-based allocator. Cells at this time were 8 bytes.
+
+The bitmap also used 4-bit entries:
+	2 bit type (bits 0,1):
+		0=free, 1=cons, 2=obj-head, 3=body.
+	2 bit mark (bits 2,3):
+		0=white, 1=grey, 2=black, 3="extra black".
+
+It competed against "memory2_1.c", also written in early 2002, which was a conservative GC based on first-fit and freelists.
+
+I vaguely remember this conflict, it was an annoying PITA as they could not directly share data, and was one of the factors leading to the downfall of VMSYS...
+
+So, later VMSYS collapsed (2003 or so), and I had created 'pdlib', which was much more minimalistic.
+
+"objtype.c" seems to be in existence by this point (objtype had its origins in pdlib). It was originally intended as a general-purpose representation for structural datatypes.
+
+
+Early 2004 was the creation of the first versions of PDSYS, which consisted of a lot of scavenged parts from VMSYS.
+
+It looks by this point I had created "memory2_2.c", which consisted of a lot of parts from '3_1' mutated to operate as a conservative collector, like '2_1'.
+Notable changes:
+	The cell size is now 16 bytes;
+	The cell type is now: 0=free, 1=head, 2=body, 3=resv.
+
+
+Late 2006:
+
+Created a new VM (BGB-Script / BS1), which used a precise GC and tagged reference scheme similar to VMSYS, GC used 8-bit cell-maps vs 4-bit maps.
+
+Looking at it, BS1 used the high 4 bits for a ref-count:
+	Bits 4-6, ref-count (0..6, 7=many)
+	Bit 7, appears to be a "safe" bit
+		If the count safely underflows, this prevents GC.
+
+
+Mid 2007:
+Major project re-organization, GC was then reorganized into more or less its present form, with 8-bit/1-byte bitmaps, although it seems only the low 4 bits are really used for anything.
+
+Objtype was highly stripped down, becomming more or less its present form (with a few parts remaining primarily vestigial).
+
+'mm_lobj.c' seems to have come into existence at this point (mid/late 2007).
+
+
+So, here is some info:
+The cell size is 16 bytes.
+
+Each cell uses a byte to describe it:
+Type (bits 0,1):
+	0=free, 1=head, 2=body, 3=reserved
+Mark (bits 2,3):
+	0=white, 1=black, 2="extra black", 3=lock
+
+The "extra black" tag is used for new objects, basically so that it will take 2 GC passes to free them, preventing them from being accidentally collected before they have had a chance to be stored anywhere.
+
+Lock means that the object can't be collected until it is unlocked.
+
+It doesn't appear that the upper 4 bits are in use at this point (2009-01-13). Correction: Bit 4 was "atomic".
+
+Could implement a ref-counting scheme for "precise" objects, likely using a similar scheme:
+Bits 4-6:
+	0=Conservative/Generic
+	1=Atomic
+	2=Defiled
+	3=Precise, Cnt=0 (Safe)
+	4=Precise, Cnt=1
+	5=Precise, Cnt=2
+	6=Precise, Cnt=3
+	7=Precise, Cnt=many
+
+Bit 7: Conservative Mark
+Set whenever an object is marked conservatively, and cleared on sweep.

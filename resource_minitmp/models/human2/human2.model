@@ -1,0 +1,12 @@
+//Basic Human Definition
+
+bones bones1.bone
+
+vmesh body25_3.ac
+
+anim walk stagger1.anim
+anim cruc cruc0.anim
+anim fall fall0.anim
+anim throw throw0.anim
+
+origin 0 0 34

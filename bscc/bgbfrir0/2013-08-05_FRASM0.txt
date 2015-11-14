@@ -1,0 +1,15 @@
+FRASM Syntax
+
+will use C-style comments.
+
+
+argument=symbol | string | number
+arglist=argument (',' argument)*
+
+label:
+opcode arglist [';']
+
+function qname sig flags
+{
+	opcodes
+}

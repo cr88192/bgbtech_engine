@@ -1,0 +1,11 @@
+//Infantry
+
+bones proto_ins0.bone
+
+vmesh insane1.ac
+
+// anim gun0 gun0.anim
+
+
+origin 0 0 32
+scale 1 1 1

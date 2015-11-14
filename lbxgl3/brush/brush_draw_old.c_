@@ -1,0 +1,609 @@
+#include <lbxgl2.h>
+
+extern float cam_org[3];
+extern float cam_ang[3];
+extern float cam_rot[9];
+
+int LBXGL_Brush_CheckSphereFrustum(float *org, float rad)
+{
+	float f, g;
+
+	f=V3F_DOT(org, cam_fw)-V3F_DOT(cam_org, cam_fw);
+	if(f<=(-rad))return(0);
+
+	g=f+rad;
+	f=(V3F_DOT(org, cam_rt)-V3F_DOT(cam_org, cam_rt))/g;
+	if(f<=(-rad-1))return(0);
+	if(f>=(rad+1))return(0);
+
+	f=(V3F_DOT(org, cam_up)-V3F_DOT(cam_org, cam_up))/g;
+	if(f<=(-rad-1))return(0);
+	if(f>=(rad+1))return(0);
+
+	return(1);
+}
+
+int LBXGL_Brush_CheckBrushFrustum(LBXGL_Brush *brush)
+{
+	float f, g, h;
+
+#if 0
+	LBXGL_Brush_GetPlaneExtents(brush, cam_clip_bk, &f, &g);
+	if(f>=0)return(0);
+
+	LBXGL_Brush_GetPlaneExtents(brush, cam_clip_lf, &f, &g);
+	if(f>=0)return(0);
+
+	LBXGL_Brush_GetPlaneExtents(brush, cam_clip_rt, &f, &g);
+	if(f>=0)return(0);
+
+	LBXGL_Brush_GetPlaneExtents(brush, cam_clip_up, &f, &g);
+	if(f>=0)return(0);
+
+	LBXGL_Brush_GetPlaneExtents(brush, cam_clip_dn, &f, &g);
+	if(f>=0)return(0);
+#endif
+
+#if 1
+	LBXGL_Brush_GetBBoxPlaneExtents(brush, cam_clip_bk, &f, &g);
+	if(f>=0)return(0);
+
+	LBXGL_Brush_GetBBoxPlaneExtents(brush, cam_clip_lf, &f, &g);
+	if(f>=0)return(0);
+
+	LBXGL_Brush_GetBBoxPlaneExtents(brush, cam_clip_rt, &f, &g);
+	if(f>=0)return(0);
+
+	LBXGL_Brush_GetBBoxPlaneExtents(brush, cam_clip_up, &f, &g);
+	if(f>=0)return(0);
+
+	LBXGL_Brush_GetBBoxPlaneExtents(brush, cam_clip_dn, &f, &g);
+	if(f>=0)return(0);
+#endif
+
+	return(1);
+}
+
+int LBXGL_Brush_CheckBrushShadowFrustum(LBXGL_Brush *brush, float *org)
+{
+	float f, g, h;
+
+#if 0
+	f=V3F_DOT(brush->org, cam_fw)-V3F_DOT(cam_org, cam_fw);
+	g=V3F_DOT(org, cam_fw)-V3F_DOT(cam_org, cam_fw);
+	if((f<=g) && (f<=(-brush->rad)))return(0);
+
+	h=f+brush->rad;
+	f=V3F_DOT(brush->org, cam_rt)-V3F_DOT(cam_org, cam_rt);
+	g=V3F_DOT(org, cam_rt)-V3F_DOT(cam_org, cam_rt);
+
+	f/=h; g/=h;
+	if((f<=g) && (f<=(-brush->rad-1)))return(0);
+	if((f>=g) && (f>=(brush->rad+1)))return(0);
+#endif
+
+#if 0
+	LBXGL_Brush_GetPlaneExtents(brush, cam_clip_bk, &f, &g);
+	h=V3F_NDOT(org, cam_clip_bk);
+	if((f>=h) && (f>=0))return(0);
+
+	LBXGL_Brush_GetPlaneExtents(brush, cam_clip_lf, &f, &g);
+	h=V3F_NDOT(org, cam_clip_lf);
+	if((f>=h) && (f>=0))return(0);
+
+	LBXGL_Brush_GetPlaneExtents(brush, cam_clip_rt, &f, &g);
+	h=V3F_NDOT(org, cam_clip_rt);
+	if((f>=h) && (f>=0))return(0);
+
+	LBXGL_Brush_GetPlaneExtents(brush, cam_clip_up, &f, &g);
+	h=V3F_NDOT(org, cam_clip_up);
+	if((f>=h) && (f>=0))return(0);
+
+	LBXGL_Brush_GetPlaneExtents(brush, cam_clip_dn, &f, &g);
+	h=V3F_NDOT(org, cam_clip_dn);
+	if((f>=h) && (f>=0))return(0);
+#endif
+
+#if 1
+	LBXGL_Brush_GetBBoxPlaneExtents(brush, cam_clip_bk, &f, &g);
+	h=V3F_NDOT(org, cam_clip_bk);
+	if((f>=h) && (f>=0))return(0);
+
+	LBXGL_Brush_GetBBoxPlaneExtents(brush, cam_clip_lf, &f, &g);
+	h=V3F_NDOT(org, cam_clip_lf);
+	if((f>=h) && (f>=0))return(0);
+
+	LBXGL_Brush_GetBBoxPlaneExtents(brush, cam_clip_rt, &f, &g);
+	h=V3F_NDOT(org, cam_clip_rt);
+	if((f>=h) && (f>=0))return(0);
+
+	LBXGL_Brush_GetBBoxPlaneExtents(brush, cam_clip_up, &f, &g);
+	h=V3F_NDOT(org, cam_clip_up);
+	if((f>=h) && (f>=0))return(0);
+
+	LBXGL_Brush_GetBBoxPlaneExtents(brush, cam_clip_dn, &f, &g);
+	h=V3F_NDOT(org, cam_clip_dn);
+	if((f>=h) && (f>=0))return(0);
+#endif
+
+	return(1);
+}
+
+void LBXGL_Brush_DrawFaces(LBXGL_Brush *brush)
+{
+	float r, g, b, tr, tg, tb;
+	int i, j, k;
+
+	if(!brush->xyz)LBXGL_Brush_BuildFaces(brush);
+
+//	glEnable(GL_TEXTURE_2D);
+//	glColor4f(1, 1, 1, 1);
+
+	if(brush->flags&LBXGL_BRFL_HIDDEN)
+		return;
+
+	if(brush->flags&LBXGL_BRFL_ALPHA)
+		glEnable(GL_CULL_FACE);
+
+//	*(int *)-1=-1;
+
+	r=1; g=1; b=1;
+
+	if(brush->grp && (brush->grp->flags&LBXGL_BRFL_SEL))
+		{ g=0.75; b=0.25; }
+	if(brush->se_owner && (brush->se_owner->flags&LBXGL_SEFL_SEL))
+		{ g=0.75; b=0.25; }
+
+	if(brush->flags&LBXGL_BRFL_OPSEL) { g=0.5; }
+	if(brush->flags&LBXGL_BRFL_SEL) { r=0.5; b=0.5; }
+
+	if(brush->rgb)
+//	if(0)
+	{
+		r=0.1; g=0.1; b=0.1;
+
+
+		k=0;
+		for(i=0; i<brush->n_poly; i++)
+		{
+			LBXGL_Shader_BindTexture(brush->texnum[i]);
+
+			LBXGL_Shader_Normal3fv(brush->norm+i*4);
+			LBXGL_Shader_BeginPoly();
+			for(j=0; j<brush->numvec[i]; j++)
+			{
+				tr=(brush->rgb[k*3+0]/255.0)+r;
+				tg=(brush->rgb[k*3+1]/255.0)+g;
+				tb=(brush->rgb[k*3+2]/255.0)+b;
+
+				LBXGL_Shader_Color4f(tr, tg, tb, 1);
+				LBXGL_Shader_TexCoord2fv(brush->st+k*2);
+				LBXGL_Shader_Vertex3fv(brush->xyz+k*3);
+				k++;
+			}
+			LBXGL_Shader_EndPoly();
+		}
+
+		return;
+	}
+
+	k=0;
+	for(i=0; i<brush->n_poly; i++)
+	{
+//		glBindTexture(GL_TEXTURE_2D, brush->texnum[i]);
+		LBXGL_Shader_BindTexture(brush->texnum[i]);
+
+#if 0
+		glBegin(GL_POLYGON);
+		for(j=0; j<brush->numvec[i]; j++)
+		{
+			glTexCoord2fv(brush->st+k*2);
+			glVertex3fv(brush->xyz+k*3);
+			k++;
+		}
+		glEnd();
+#endif
+
+#if 1
+		LBXGL_Shader_Normal3fv(brush->norm+i*4);
+		LBXGL_Shader_Color4f(r, g, b, 1);
+		LBXGL_Shader_BeginPoly();
+		for(j=0; j<brush->numvec[i]; j++)
+		{
+			LBXGL_Shader_TexCoord2fv(brush->st+k*2);
+			LBXGL_Shader_Vertex3fv(brush->xyz+k*3);
+			k++;
+		}
+		LBXGL_Shader_EndPoly();
+#endif
+	}
+
+	glDisable(GL_CULL_FACE);
+}
+
+
+void LBXGL_Brush_DrawFacesShadow(LBXGL_Brush *brush)
+{
+	float r, g, b, tr, tg, tb;
+	float f;
+	int i, j, k;
+
+	if(!brush->xyz)LBXGL_Brush_BuildFaces(brush);
+
+	if(brush->flags&LBXGL_BRFL_HIDDEN)return;
+	if(brush->flags&LBXGL_BRFL_ALPHA)return;
+
+//	if(!LBXGL_Brush_CheckSphereFrustum(brush->org, brush->rad))return;
+	if(!LBXGL_Brush_CheckBrushFrustum(brush))return;
+
+	if(brush->rgb)
+	{
+		k=0;
+		for(i=0; i<brush->n_poly; i++)
+		{
+			glBlendFunc(GL_DST_COLOR, GL_ZERO);
+			LBXGL_Shader_BindTexture(brush->texnum[i]);
+
+			LBXGL_Shader_Normal3fv(brush->norm+i*4);
+			LBXGL_Shader_BeginPoly();
+			for(j=0; j<brush->numvec[i]; j++)
+			{
+				tr=(brush->rgb[k*3+0]/255.0);
+				tg=(brush->rgb[k*3+1]/255.0);
+				tb=(brush->rgb[k*3+2]/255.0);
+
+				LBXGL_Shader_Color4f(tr, tg, tb, 1);
+				LBXGL_Shader_TexCoord2fv(brush->st+k*2);
+				LBXGL_Shader_Vertex3fv(brush->xyz+k*3);
+				k++;
+			}
+			LBXGL_Shader_EndPoly();
+		}
+
+		return;
+	}
+
+	k=0;
+	for(i=0; i<brush->n_poly; i++)
+	{
+//		if(V3F_NDOT(cam_org, brush->norm+i*4)<0)
+//			continue;
+
+		glBlendFunc(GL_DST_COLOR, GL_ZERO);
+		LBXGL_Shader_BindTexture(brush->texnum[i]);
+		LBXGL_Shader_Normal3fv(brush->norm+i*4);
+		LBXGL_Shader_Color4f(1, 1, 1, 1);
+		LBXGL_Shader_BeginPoly();
+		for(j=0; j<brush->numvec[i]; j++)
+		{
+			LBXGL_Shader_TexCoord2fv(brush->st+k*2);
+			LBXGL_Shader_Vertex3fv(brush->xyz+k*3);
+			k++;
+		}
+		LBXGL_Shader_EndPoly();
+	}
+
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void LBXGL_Brush_DrawShadowVolume(LBXGL_Brush *brush, float *org)
+{
+	float tva[64*3];
+	float tvb[64*3];
+	float tv0[3], tv1[3], tv2[3], tv3[3];
+	float dv0[3], dv1[3];
+	float *nv, *tv;
+	float f, g, h;
+	int i, j, k, l;
+
+	if(!brush->xyz)LBXGL_Brush_BuildFaces(brush);
+
+	if(brush->flags&LBXGL_BRFL_HIDDEN)return;
+	if(brush->flags&LBXGL_BRFL_ALPHA)return;
+
+//	glDepthFunc(GL_GEQUAL);
+
+	glDisable(GL_TEXTURE_2D);
+	glColor4f(0, 1, 1, 0.1);
+
+	j=0;
+	for(i=0; i<brush->n_poly; i++)
+	{
+		l=brush->numvec[i];
+
+		nv=brush->norm+brush->plnum[i]*4;
+		f=V3F_NDOT(org, nv);
+		if(f==0)continue;
+
+//		if(f>0)continue;
+
+		if(f>0)
+		{
+			for(k=0; k<l; k++)
+			{
+				tv=brush->xyz+(j+k)*3;
+				V3F_COPY(tv, tva+k*3);
+			}
+		}else
+		{
+			for(k=0; k<l; k++)
+			{
+//				tv=brush->xyz+(j+k)*3;
+//				V3F_COPY(tv, tva+(l-k-1)*3);
+
+				tv=brush->xyz+(j+l-k-1)*3;
+				V3F_COPY(tv, tva+k*3);
+			}
+		}
+
+
+#if 1
+		glBegin(GL_POLYGON);
+		for(k=0; k<l; k++)
+			glVertex3fv(tva+k*3);
+		glEnd();
+#endif
+
+		for(k=0; k<l; k++)
+		{
+			V3F_COPY(tva+k*3, tv0);
+			V3F_SUB(tv0, org, dv0);
+//			V3F_NORMALIZE(dv0, dv0);
+			V3F_ADDSCALE(tv0, dv0, 10000, tvb+k*3);
+		}
+
+		glBegin(GL_QUADS);
+		for(k=0; k<l; k++)
+		{
+			glVertex3fv(tva+((k+1)%l)*3);
+			glVertex3fv(tva+k*3);
+			glVertex3fv(tvb+k*3);
+			glVertex3fv(tvb+((k+1)%l)*3);
+		}
+		glEnd();
+
+#if 1
+		glBegin(GL_POLYGON);
+//		for(k=0; k<l; k++)
+		for(k=l-1; k>=0; k--)
+			glVertex3fv(tvb+k*3);
+		glEnd();
+#endif
+
+		j+=l;
+	}
+
+//	glDepthFunc(GL_LEQUAL);
+}
+
+void LBXGL_Brush_DrawBrushDark(LBXGL_Brush *brush)
+{
+	float r, g, b, tr, tg, tb;
+	float f;
+	int i, j, k;
+
+	if(!brush->xyz)LBXGL_Brush_BuildFaces(brush);
+
+	if(brush->flags&LBXGL_BRFL_HIDDEN)return;
+	if(brush->flags&LBXGL_BRFL_ALPHA)return;
+
+//	if(!LBXGL_Brush_CheckSphereFrustum(brush->org, brush->rad))return;
+	if(!LBXGL_Brush_CheckBrushFrustum(brush))return;
+
+	glDisable(GL_TEXTURE_2D);
+	glColor4f(0, 0, 0, 1);
+
+	k=0;
+	for(i=0; i<brush->n_poly; i++)
+	{
+		glBegin(GL_POLYGON);
+		for(j=0; j<brush->numvec[i]; j++)
+		{
+			glVertex3fv(brush->xyz+k*3);
+			k++;
+		}
+		glEnd();
+	}
+}
+
+#if 1
+void LBXGL_Brush_DrawBrushLight(LBXGL_Brush *brush, LBXGL_Light *light)
+{
+	float f, g, d;
+	int i, j, k;
+
+	if(!brush->xyz)LBXGL_Brush_BuildFaces(brush);
+
+	if(brush->flags&LBXGL_BRFL_HIDDEN)return;
+	if(brush->flags&LBXGL_BRFL_ALPHA)return;
+
+	glDisable(GL_TEXTURE_2D);
+	glColor4f(0, 0, 0, 1);
+
+	k=0;
+	for(i=0; i<brush->n_poly; i++)
+	{
+		glBegin(GL_POLYGON);
+		for(j=0; j<brush->numvec[i]; j++)
+		{
+			d=V3F_DIST(brush->xyz+k*3, light->org)/36.0;
+			f=(6.0/255.0*light->val[0])/(d*d+1);
+
+			if(f<0)f=0;
+
+			glColor4f(light->clr[0]*f,
+				light->clr[1]*f,
+				light->clr[2]*f, 1);
+			glVertex3fv(brush->xyz+k*3);
+			k++;
+		}
+		glEnd();
+	}
+}
+#endif
+
+#if 1
+void LBXGL_Brush_DrawBrushLight2(LBXGL_Brush *brush)
+{
+	float f, g, d;
+	int i, j, k;
+
+	if(!brush->xyz)LBXGL_Brush_BuildFaces(brush);
+
+	if(brush->flags&LBXGL_BRFL_HIDDEN)return;
+	if(brush->flags&LBXGL_BRFL_ALPHA)return;
+
+	k=0;
+	for(i=0; i<brush->n_poly; i++)
+	{
+		glNormal3fv(brush->norm+brush->plnum[i]*4);
+		glBegin(GL_POLYGON);
+		for(j=0; j<brush->numvec[i]; j++)
+		{
+			glVertex3fv(brush->xyz+k*3);
+			k++;
+		}
+		glEnd();
+	}
+}
+#endif
+
+#if 0
+void LBXGL_Brush_DrawBrushLightChain(LBXGL_Brush *brush, LBXGL_Light *light)
+{
+	LBXGL_Light *lcur, *llst;
+	float r, g, b;
+	float f, d;
+	int i, j, k;
+
+	if(!brush->xyz)LBXGL_Brush_BuildFaces(brush);
+
+	if(brush->flags&LBXGL_BRFL_HIDDEN)return;
+	if(brush->flags&LBXGL_BRFL_ALPHA)return;
+
+	lcur=light; llst=NULL;
+	while(lcur)
+	{
+		d=(V3F_DIST(lcur->org, brush->org)-brush->rad)/36.0;
+		if(d<0)d=0; f=(6.0*lcur->val[0])/(d*d+1);
+		if(f<32) { lcur=lcur->tnext; continue; }
+		lcur->chain=llst;
+		llst=lcur;
+
+		lcur=lcur->tnext;
+	}
+
+	glDisable(GL_TEXTURE_2D);
+	glColor4f(0, 0, 0, 1);
+
+	r=1; g=1; b=1;
+
+	k=0;
+	for(i=0; i<brush->n_poly; i++)
+	{
+		glBegin(GL_POLYGON);
+		for(j=0; j<brush->numvec[i]; j++)
+		{
+#if 1
+			lcur=llst; r=0; g=0; b=0;
+			while(lcur)
+			{
+				d=V3F_DIST(brush->xyz+k*3, lcur->org)/36.0;
+				f=(6.0/255.0*lcur->val[0])/(d*d+1);
+
+				r+=light->clr[0]*f;
+				g+=light->clr[1]*f;
+				b+=light->clr[2]*f;
+				lcur=lcur->chain;
+			}
+#endif
+
+			if(f<0)f=0;
+			glColor4f(r, g, b, 1);
+			glVertex3fv(brush->xyz+k*3);
+			k++;
+		}
+		glEnd();
+	}
+}
+#endif
+
+#if 1
+void LBXGL_Brush_DrawBrushLightTree(LBXGL_Brush *brush, LBXGL_LightNode *root)
+{
+	LBXGL_Light *lcur, *llst;
+	float r, g, b;
+	float f, d;
+	int i, j, k;
+
+	if(!brush->xyz)LBXGL_Brush_BuildFaces(brush);
+
+	if(brush->flags&LBXGL_BRFL_HIDDEN)return;
+	if(brush->flags&LBXGL_BRFL_ALPHA)return;
+
+	llst=LBXGL_Light_QueryTreeNode(root, brush->org, brush->rad);
+
+	glDisable(GL_TEXTURE_2D);
+	glColor4f(0, 0, 0, 1);
+
+	r=1; g=1; b=1;
+
+	k=0;
+	for(i=0; i<brush->n_poly; i++)
+	{
+		glBegin(GL_POLYGON);
+		for(j=0; j<brush->numvec[i]; j++)
+		{
+#if 1
+			lcur=llst; r=0; g=0; b=0;
+			while(lcur)
+			{
+//				d=V3F_DIST(brush->xyz+k*3, lcur->org)/36.0;
+//				f=(6.0/255.0*lcur->val[0])/(d*d+1);
+
+				f=LBXGL_Shadow_LightGammaPoint(lcur,
+					brush->xyz+k*3, 4);
+
+				r+=lcur->clr[0]*f;
+				g+=lcur->clr[1]*f;
+				b+=lcur->clr[2]*f;
+				lcur=lcur->chain;
+			}
+#endif
+
+			if(f<0)f=0;
+			glColor4f(r, g, b, 1);
+			glVertex3fv(brush->xyz+k*3);
+			k++;
+		}
+		glEnd();
+	}
+}
+#endif
+
+void LBXGL_Brush_DrawList(LBXGL_Brush *fst)
+{
+	LBXGL_Brush *cur;
+
+	cur=fst;
+	while(cur)
+	{
+		LBXGL_Brush_DrawFaces(cur);
+		cur=cur->next;
+	}
+}
+
+void LBXGL_Brush_DrawGroup(LBXGL_BrushGroup *grp)
+{
+	LBXGL_BrushGroup *cur;
+
+	LBXGL_Brush_DrawList(grp->brush);
+
+	cur=grp->first;
+	while(cur)
+	{
+		LBXGL_Brush_DrawGroup(cur);
+		cur=cur->next;
+	}
+}
+

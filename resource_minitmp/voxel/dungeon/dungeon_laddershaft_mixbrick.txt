@@ -1,0 +1,12 @@
+$dung_vox air				  0   0   0
+$dung_vox brick				128   0   0
+$dung_vox stone_brick		 64  64  64
+$dung_vox mobspawner		255   0 255
+$dung_vox torch				255 255   0
+$dung_vox ladder			128 128   0
+
+$dung_allow_nz	ladderceil_xy_mixbrick
+$dung_allow_nz	laddershaft_xy_mixbrick
+
+$dung_allow_pz	ladderfloor_xy_mixbrick
+$dung_allow_pz	laddershaft_mixbrick

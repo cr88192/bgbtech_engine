@@ -1,0 +1,104 @@
+This will intend to focus on the libzpack API.
+For now, libzpack works by including all the sub-files into a single file (libzpack.c). This could potentially be included directly by a frontend, compiled to an object file, compiled to an object file and added to a library, ...
+
+For now, libzpack is not really designed to handle larger files, but rather, larger numbers of smaller files...
+
+
+Special Operations
+
+int ZPACK_Init();
+Init the ZPACK library. Returns 0 on success, -1 on failure.
+
+void ZPACK_SetTimeFunc(u32 (*fn)());
+void ZPACK_SetTimeFuncMS(u32 (*fn)());
+Set the timer functions.
+The former is to return the current time in the format described in the spec.
+The latter may return the time in milliseconds (relative to some arbitrary point, however, this time mod 1000 should if possible align nicely with the time returned by the first function).
+
+Image Level operations
+
+void ZPACK_CreateImage(char *name);
+Create a new image with a given name. Will truncate any images that exist with a given name. This image may be subsequently opened.
+
+ZPACK_Context *ZPACK_OpenImage(char *name, int flag);
+Open an image in read/write mode. Returns NULL if the image did not exist or could not be opened.
+Flag will control how the image is opened:
+	1&=Image is to be opened read-only.
+Note that if the end-of-central-directory marker is absent, it will try to rebuild the central directory by scanning for headers. If no valid headers are found, it will be assumed that this is not a ZIP file.
+
+int ZPACK_CommitImage(ZPACK_Context *ctx);
+Commit any changes made to the image to disk.
+Note: With the change to the ZIP format, this does not write the central directory (which is written with the close function).
+
+int ZPACK_CloseImage(ZPACK_Context *ctx);
+Commit any changes made to the image, then close it.
+Will write the central directory at this point.
+
+
+Generic File Operations
+
+int ZPACK_DeleteFile(ZPACK_Context *ctx, char *name);
+Deletes a file from the image. Returns 0 on success, or -1 on failure.
+
+int ZPACK_StatFile(ZPACK_Context *ctx, char *name, ZPACK_STAT *stat);
+Get information about a file. Returns 0 on success, and -1 on failure.
+
+int ZPACK_SetFileTime(ZPACK_Context *ctx, char *name, u32 t);
+Set a file's date/time field. The time is implemented as described in the spec.
+
+
+File IO Operations
+
+ZPACK_FILE *ZPACK_OpenFile(ZPACK_Context *ctx, char *name, char *mode);
+Open a file.
+Mode gives a string telling how to open the file, and takes the form "(rwa)[+]<opts*>", where:
+	'r' will open a file for reading;
+	'r+' will open a file read/write;
+	'w' will open a file for writing, truncating any existing file;
+	'w+' will open a file for writing and reading;
+	'a' will open a file for appending, creating if not present;
+	'a+' will open for reading and appending.
+opts take the form:
+	'b' indicates that the file is binary;
+	't' indicates that the file is text (presently no effect);
+	'S' indicates that the file should be stored
+		(w/a only, presently no effect);
+	'Z' indicates that the file should be deflated
+		(w/a only, presently no effect).
+
+int ZPACK_Close(ZPACK_FILE *fd);
+Close an open file. This operation may commit any changes to this file to disk.
+
+int ZPACK_Read(ZPACK_FILE *fd, void *buf, int sz);
+Will read sz bytes from the file.
+The return value is the number of bytes read, or 0 if 0 bytes were read or trying to read past an EOF.
+
+int ZPACK_Write(ZPACK_FILE *fd, void *buf, int sz);
+Write sz bytes to a file. Return value is the number of bytes written.
+
+u32 ZPACK_Seek(ZPACK_FILE *fd, u32 offs, int rel);
+Seeks within a file. Rel tells where offs is relative to:
+	0, offs is relative to the start of the file;
+	1, offs is relative to the current position;
+	2, offs is relative to the end of the file.
+
+u32 ZPACK_Tell(ZPACK_FILE *fd);
+Tells the current offset within a file.
+
+
+Directory Operations
+
+int ZPACK_MkDir(ZPACK_Context *ctx, char *name);
+Create a directory.
+
+ZPACK_DIR *ZPACK_OpenDir(ZPACK_Context *ctx, char *name);
+Open a directory.
+
+void ZPACK_CloseDir(ZPACK_DIR *dir);
+Close an open directory.
+
+void ZPACK_RewindDir(ZPACK_DIR *dir);
+Jump back to the first entry in a directory.
+
+char *ZPACK_ReadDir(ZPACK_DIR *dir);
+Read a filename from the directory. Returns a pointer to this name, or NULL if the end of the directory was reached.

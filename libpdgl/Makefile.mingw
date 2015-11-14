@@ -1,0 +1,124 @@
+CFLAGS=-I. -Iinclude -I../include -Werror-implicit-function-declaration -DWIN32
+CC=gcc
+EXE=.exe
+
+all: libpdgl.a libpdglui.a
+
+FORCE:
+
+%.o: %.c
+	gcc $(CFLAGS) -pg -g -c -o $@ $<
+
+PDGL_G_OBJS = \
+	base/render/fonts.o \
+	base/render/console.o \
+	base/render/concmds.o \
+	base/render/gl_draw.o \
+	base/render/gl_texture.o \
+	base/render/drawtext.o \
+	base/render/pcx.o \
+	base/render/png.o \
+	base/render/jpg1.o \
+	\
+	base/render/out_avi.o \
+	base/render/gl_shader.o \
+	\
+	base/sound/sound1.o \
+	base/sound/snd_mix.o \
+	base/sound/snd_wav.o \
+	base/sound/snd_lqac.o \
+	base/sound/snd_mp3.o \
+	base/sound/snd_voice.o \
+	base/sound/snd_flac1.o \
+	\
+	base/sound/mpglib/layer1.o \
+	base/sound/mpglib/layer2.o \
+	base/sound/mpglib/common.o \
+	base/sound/mpglib/dct64_i386.o \
+	base/sound/mpglib/decode_i386.o \
+	base/sound/mpglib/layer3.o \
+	base/sound/mpglib/tabinit.o \
+	base/sound/mpglib/interface.o
+
+#	base/sound/snd_pdsif.o \
+#	base/sound/snd_mp3.o
+
+PDGL_OBJS = \
+	$(PDGL_G_OBJS) \
+	base/system/gl_win.o \
+	base/system/mouse_win.o \
+	base/system/input.o \
+	base/system/snd_win32.o \
+	base/system/misc_win.o \
+	base/system/asm_x86.o
+
+
+PDGLUI_OBJS = \
+	gui2/build.o \
+	gui2/forms.o \
+	gui2/menus.o \
+	gui2/textarea.o \
+	gui2/message.o \
+	gui2/widget.o \
+	gui2/widget_input.o \
+	gui2/widget_box.o \
+	gui2/widget_union.o \
+	gui2/widget_label.o \
+	gui2/widget_scroll.o \
+	gui2/widget_list.o \
+	gui2/widget_tree.o \
+	\
+	ui/ui_loadsave.o \
+	ui/ui_texfinder.o \
+	ui/ui_camera.o
+
+PDGL_HEAD = \
+	include/pdgl/auto.h \
+	include/pdgl/tyauto.h
+
+PDGLUI_HEAD = \
+	include/pdglui/auto.h \
+	include/pdglui/tyauto.h
+
+PDGL_SRCS = \
+	$(PDGL_OBJS:.o=.c)
+
+PDGLUI_SRCS = \
+	$(PDGLUI_OBJS:.o=.c)
+
+
+autohead$(EXE): autohead.c
+	$(CC) -o autohead$(EXE) autohead.c
+
+adler32$(EXE): adler32.c
+	$(CC) -o adler32$(EXE) adler32.c
+
+include/pdgl/auto.h: autohead$(EXE) $(PDGL_SRCS)
+	./autohead$(EXE) $(PDGL_SRCS) > include/pdgl/auto.h
+
+include/pdgl/tyauto.h: adler32$(EXE) include/pdgl/types.txt
+	./adler32$(EXE) -header include/pdgl/types.txt include/pdgl/tyauto.h
+
+include/pdglui/auto.h: autohead$(EXE) $(PDGLUI_SRCS)
+	./autohead$(EXE) $(PDGLUI_SRCS) > include/pdglui/auto.h
+
+include/pdglui/tyauto.h: adler32$(EXE) include/pdglui/types.txt
+	./adler32$(EXE) -header include/pdglui/types.txt include/pdglui/tyauto.h
+
+libpdgl.a: include/pdgl/auto.h include/pdgl/tyauto.h $(PDGL_OBJS)
+	ar -cr libpdgl.a $(PDGL_OBJS)
+
+libpdglui.a: include/pdglui/auto.h include/pdglui/tyauto.h $(PDGLUI_OBJS)
+	ar -cr libpdglui.a $(PDGLUI_OBJS)
+
+libpdgl.html: $(PDGL_SRCS) $(PDGLUI_SRCS)
+	bgbdoc libpdgl.html $(PDGL_SRCS) $(PDGLUI_SRCS) $(PDGL_HDRS)
+
+includes: $(PDGL_HEAD) $(PDGLUI_HEAD)
+libs: libpdgl.a libpdglui.a
+# libs: libpdgl.a
+apps:
+
+clean:
+	rm -rf $(shell find -name \*.o)
+	rm -rf $(shell find -name \*.a)

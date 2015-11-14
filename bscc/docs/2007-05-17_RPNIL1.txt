@@ -1,0 +1,248 @@
+RPN-Based Intermediate Language
+
+Goal:
+an RPN based language existing for the purpose of developing the low-level VM.
+
+The goal of the language will be to compile directly to assembler and make use of the C calling convention.
+
+This language will feature multiple stacks, some of which may or may not exist at runtime.
+
+Some of these stacks may or may not be interlaced, and so, code is to properly maintain a correct LIFO ordering (as if they were a single stack), but is not alowed to assume this (for example, by using an operation presumably targeted for a different stack).
+
+An example of this is ints and floats, where at any given time, a value may be stored on the cpu stack, on a specialized stack (for example, the x87 fpu stack), in a reg (for example, a GPR or SSE reg), ...
+
+Conversion operators will be required in some cases. In many cases, the lang will implicitly convert between types.
+
+
+Oragnization
+
+This language, rather than consisting of a single instruction stream, will be organized into a sequence of blocks. Each block will correspond to a function, method, or anything else needing a block.
+
+A block will define any args or locals, and will then contain a sequence of instructions.
+
+The file will be parsed as a linear token stream. In this lang, each token will be regarded as a sequence of non-whitespace characters, and seperated by whitespace. Quoted strings, however, will be treated as a single token, and comments will be simply ignored.
+
+BLOCK <name> <args> VARS <vars> BODY <ops> END
+FUNC <name> <args> VARS <vars> BODY <ops> END
+
+Args and Variables
+
+Each arg or var will be given as a single token, with a suffix giving the type (ignored in the name).
+
+'name:type', where type is (deprecated):
+	C, char (signed 8 bit byte);
+	B, byte (unsigned 8 bit byte);
+	S, short (signed 16 bit word);
+	W, word (unsigned 16 bit word);
+	I, integer (32 bit, signed);
+	U, unsigned integer (32 bit, unsigned);
+	L, long (64 bit, signed);
+	Y, ulong (64 bit, unsigned);
+	F, float;
+	D, double;
+	Q, pointer or pointer-sized integer;
+	V, void (no type);
+	P*, pointer (followed by the value type);
+	X*, compound type (struct or union), followed by '<name>;'.
+
+
+modified scheme:
+
+qualifiers:
+	P*, pointer to type
+	R*, reference to type
+	C*, complex type
+	G*, imaginary type
+	U*, extended type qualifier
+
+	X*, compound type (struct or union), followed by '<name>;'.
+
+basic types:
+	v, void
+	w, wchar/short
+	b, bool
+	c, char
+	a, signed char
+	h, unsigned char/byte
+	s, short
+	t, unsigned short
+	i, int
+	j, unsigned int
+	l, long
+	m, unsigned long
+	x, long long
+	y, unsigned long long
+	n, 128-bit int
+	o, unsigned 128-bit int
+	f, float
+	d, double
+	e, long double
+	g, 128-bit float
+	z, ...
+	u, custom type
+
+abcdefghij lmno stuvwxyz
+
+if the type is followed by a number (vars only), it indicates that this is an array, with a comma allowing multidimensional arrays.
+
+example:
+bar:PXfoo;4,4
+struct foo *bar[4][4];
+
+However, in most cases multidimensional arrays will be viewed as a special case of 1D arrays.
+
+
+Definitions
+
+PROTO <name> <args> END
+
+A function prototype (maybe used for type conversion and returns).
+If not specified, on a call each arg will be assumed to be whatever type is passed to it, and the return value will be assumed to be an integer of the default size.
+
+STRUCT <name> <body> END
+UNION <name> <body> END
+
+Declares a structure or union type, where each body element is a variable.
+
+Example: STRUCT foo x:I y:I END
+
+Note that definitions may not be nested and anonymous structs are not allowed, requiring any anonymous structs to be formally given a type.
+
+S_PROTO <name> <args> END
+Very similar to a prototype, but instead of declaring a callable function, it declares a function type. These may be used in much the same way as structs or unions, except that variables which are pointers to this type can be called as functions.
+
+
+VAR <name>['='<value>]
+
+Declare a top-level variable.
+If present, value will indicate how to initialize the variable.
+This may be a numerical literal or a string.
+If a variable name, it will indicate a pointer to that variable.
+
+ARR <name> <body> END
+
+Declare an initialized array.
+
+
+Function Body Syntax
+
+Officially, each token will be space-seperated.
+
+$<name>	Symbolic Literal, pushed onto the stack
+<name>	Generally an opcode name.
+<int>		Integer, pushed onto stack
+<int>L	Long integer, pushed onto stack
+<float>F	Float value
+<float>D	Double
+<name>:	Label
+
+%<name>	Shorthand for '$<name> load'
+=<name>	Shorthand for '$<name> store'
+&<name>	Shorthand for '$<name> loada'
+.<name>	Shorthand for '$<name> loadslot'
+=.<name>	Shorthand for '$<name> storeslot'
+
+?<name>	Jump if true
+!<name>	Jump if false
+*<name>	Jump
+
+<><lt>,<gt>	Trinary Jump
+
+Possible Syntax
+{ <body> }	Inlinable block (reusable abstraction over jumps and labels)
+
+<name>(	Begin Function Call ('$<name> mark_s')
+)		Function call (name) ('call_s')
+(		Mark
+*)		Function call (expr) ('call')
+<cmp><name>	Conditional jump to name
+,		Indicates an argument
+
+foo( %x )
+
+
+Some operators will have builtin shorthands:
+	+ - * / % & | ^ (add sub mul div mod and or xor)
+
+Compare operators
+	== != < > <= >=
+
+Unary Operators
+	++ -- +++ ---
+
+
+Value and Control Flow Semantics
+
+Within the language, it will be viewed that value flow and control flow will occure at different times (for example, value flow will occure at compile time, wheras control flow will occure at runtime).
+
+In this sense, a jump will more indicate that control flow will be changed at runtime, and it will be viewed as invalid to use jumps in a way which would risk comprimising proper value flow (determined by a linear forwards scan).
+
+For example, "$x load $y load $L1 jmp exch L1:" would be considered invalid, since a linear forwards scan would give the impression that the exch is executed, when in-fact, it is unreachable.
+
+A similar example, "$x load $y load $L0 jmp_le $x load $L1 jmp L0: $y load L1:", which is invalid on the grounds that which item is on the stack at L1 would depend solely on the branch taken. A simple forwards scan, however, would be given the false impression that there will be 2 values on the stack, which is not correct in this case.
+
+There will be multiple ways to deal with this issue:
+The use of variables, which will be assumed to be self-synchronizing;
+The use of the union stack.
+
+
+Union Stack
+
+beginu: pushes a new union to the union stack;
+endu: pops the union value and pushes it onto the value stack;
+setu: moves the value from the top of the value stack into the top value of the union stack.
+
+The union stack is called as such because it will serve to "merge" multiple values into a single location, and as such allow multiple branches to direct their output into a single value in the flow graph. It is required that all values assigned into a union have the same type.
+
+In effect, these operations will not exist at runtime, but will instead serve to allow the value flow to be kept in sync.
+
+An example: "beginu $x load $y load $L0 jmp_le $x load setu $L1 jmp L0: $y load setu L1: endu".
+
+
+Labels
+
+Labels will be viewed as "syncronization points", in that as a general rule, any intermediate values stored in registers will be forced into variables or onto the stack prior to the label and prior to executing a jump.
+
+At present, the exact state of a variable's flow graph will be undefined immediately following a label or jump (unless the compiler can safely conclude otherwise, such as the variable never having been modified in any code that can potentially loop back to this point).
+
+
+Type Predicate
+a predicate will verify that a type matches a string.
+
+Mode
+	1, top of stack;
+	2, 2nd item;
+	3, 1st or 2nd item;
+	4, 1st and 2nd item.
+
+Modifiers (precede 1 or more flags)
+	!, reject if true
+	&, reject if false (default)
+	|, accept if true
+	^, accept if false
+	t, true (accept)
+	f, false (reject)
+
+Properties
+	b, type is basic
+	p, type is a pointer
+	l, type is literal
+	d, item is 32-bits (or less)
+	q, item is 64 bits
+
+Specific Types
+	C, char (signed 8 bit byte);
+	B, byte (unsigned 8 bit byte);
+	S, short (signed 16 bit word);
+	W, word (unsigned 16 bit word);
+	I, integer (32 bit, signed);
+	U, unsigned integer (32 bit, unsigned);
+	L, long (64 bit, signed);
+	Y, ulong (64 bit, unsigned);
+	F, float;
+	D, double;
+	V, void (no type);
+
+	Q, pointer or pointer-sized integer;
+	P*, pointer (followed by the value type);
+	X*, compound type (struct or union), followed by '<name>;'.

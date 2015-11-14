@@ -1,0 +1,14 @@
+WALPNG_SRCS = \
+	inflate.c \
+	deflate.c \
+	png.c \
+	pcx.c \
+	tga.c \
+	wal.c \
+	awal.c
+
+all: awal
+
+awal: $(WALPNG_SRCS)
+	gcc -o awal -I. $(WALPNG_SRCS)
+	

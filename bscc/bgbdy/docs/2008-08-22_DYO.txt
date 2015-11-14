@@ -1,0 +1,50 @@
+Idea:
+Wrap dynamic object system to have implicit state (presumably via thread-local variable).
+
+dyt dyoThis();	//get 'this' object
+
+dyt dyoGet(char *name);
+void dyoSet(char *name, dyt val);
+
+char *dyoGs(char *name);
+int dyoGi(char *name);
+double dyoGf(char *name);
+...
+
+Get values from dynamic object.
+
+void dyoSs(char *name, char *str);
+void dyoSi(char *name, int val);
+void dyoSf(char *name, double val);
+...
+
+Set values in dynamic object.
+
+dyt dyoC(char *name);
+dyt dyoC1(char *name, dyt a);
+dyt dyoC2(char *name, dyt a, dyt b);
+...
+
+Call a method (same object).
+
+
+dyt dyoM(dyt obj, char *name);
+dyt dyoM1(dyt obj, char *name, dyt a);
+dyt dyoM2(dyt obj, char *name, dyt a, dyt b);
+...
+
+Call a method (different object).
+
+...
+
+
+void dyoSm(char *name, char *fcn);
+void dyoSm1(char *name, char *fcn);
+void dyoSm2(char *name, char *fcn);
+void dyoSm3(char *name, char *fcn);
+...
+
+Set a Method.
+The method will recieve a certain number of arguments (all dyt).
+The fcn field is assumed to be the name of the function to be used as a method handler (it will be dynamically looked up).
+

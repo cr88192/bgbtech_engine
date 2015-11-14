@@ -1,0 +1,242 @@
+[mostly, me rambling, at the end is a few snippets and me talking some about 
+the api].
+
+me sitting around, idly beating against trying to write a simulator.
+why? I don't have much better to do it seems.
+this was originally expected/intended as a sub-project, but is taking an 
+unanticipated amount of time (and has been restarted multiple times with 
+differing approaches to the design/implementation...).
+
+
+me thinking: apparently physics simulation is kind of a pita.
+the collision detection (just in the sense of whether or not a collision 
+occures) is not that hard in itself;
+the forces and other stuff, confusing, but one can guess whether or not they 
+have it right (or beat at it with trial and error);
+the interator/integrator is also not that hard (though realizing one is 
+needed is an issue in itself, in these cases apparently a single step frame 
+"just doesn't cut it"), otherwise it is the same as above.
+
+making it all work well, now, this is a bigger problem. I sit around and 
+eventually figure out that comming up with collision normals that don't suck 
+is a biggie it seems. I have lots of poorly behaved primitive types (some 
+more or less than others).
+
+
+for example many typical games don't bother, really, what does it matter?...
+many games get by just fine primarily with just things like aabbs (or 
+upright cylinders) and bsp models.
+
+after success with something like this, one almost thinks they can handle 
+more in-depth simulators. the problem becomes not so easy. the workings are 
+different, and problems are more difficult (arbitrary orientation+angular 
+movement; numerous solid types; a seperation of force, acceleration, and 
+velocity; ... make many things harder). not only do the normals need to keep 
+things seperate, but they also need to try to get other movements right (in 
+the previous, once things are kept seperate, and maybe having friction, 
+nearly everything else comes "by default").
+
+so we often have games that either:
+use of a simpler quake or similar-style physics engine (typically written by 
+the game developers);
+use some fancier, external library (eg: havok, ode, ...).
+
+do the physics add much anyways? I don't know.
+
+
+thoughts and issues with my effort:
+it is maybe pointless and will go nowhere, I don't know.
+
+maybe I should just focus more on taking what I have in the physics engine 
+and making it more generally useful, vs trying to make everything work 
+"correctly"?...
+
+so what if, current, aabbs and spheres are the only well behaved types (ok, 
+also recently added planes, which were kludged on and work well with 
+spheres/cylinders, but not yet aabbs or obbs as for whatever reason the 
+collisions are missed). bsp's, or at least hull models, will be needed 
+eventually (the hull models need not behave correctly in themselves, more 
+just behave adequately vs. aabbs, which I have done before in previous 
+engines).
+
+don't yet know of a good normals algos for hulls/polyhedra, based mostly on 
+early tests with obbs the current imagined algo is likely to be worse than 
+that presently used for obbs, which doesn't seem good...
+
+somehow a description light on both math and not expecting me to sort 
+through code would be helpful, I feel doubtful, yes, I have looked at the 
+cga faq allready (I found some papers allready that did ok for the basic 
+physics stuff, but didn't really go into collision normals realted issues). 
+some general descriptions would be nice is all (basically, those describing 
+what factors are involved and what should be taken into account).
+
+
+ok, so:
+aabb->aabb, ok, good enough;
+aabb->obb, bad, basically just a special case of the obb->obb case;
+obb->obb, bad, sometimes the behavior is sane, sometimes not, the boxes just 
+wont rest on the ground (an aabb), or will start spinning at high speeds 
+(eg: when a few boxes are in a pile or such);
+aabb/obb->plane, doesn't work presently, though probably not too hard;
+aabb->sphere, ok, though with interpenetration in some cases (it is a range 
+of cases where, the sphere origin manages to end up inside the box, and I 
+have to use "other" algos for locating a better normal);
+obb->sphere, same as above, aabb->sphere and obb->sphere are the same check;
+sphere->sphere, ok, but with a "stickyness" issue (fixed, touching was 
+viewed as contact even though the depth was 0, so sometimes they would stick 
+together);
+sphere->plane, ok, same as above, probably same occurance;
+aabb/obb->cylinder, bad, movement is bizarre, cylinders will, eg, tend to 
+stand upright, interpenetrate, or start spinning at high speeds;
+sphere->cylinder, bad, though maybe better than obb/cylinder;
+cylinder->cylinder, bad, contacts and behavior are irregular;
+cylinder->plane, poor, they like to stand up and slide vs fall over and 
+roll, or roll at some angle where normally they would have fallen over, but 
+behavior is better than with aabbs/obbs;
+plane->plane, not possible due to geometric reasons.
+
+I guess one of the bigger and more general problem:
+
+rather than comming into contact, and reacting in some physically realistic 
+manner, the solids will opt for some unrealistic manner (in terms of gravity 
+and torgue implied at the contact points). a box in motion, would, rather 
+than rocking a little and come to rest, would spin like a wheel, moving up 
+and down avoiding (most) interpenetration, but will not roll forwards (even 
+with some kludgy attempts at friction) and will not stop. objects colliding 
+in free movement, or arranged in a pile, will typically behave better 
+(though in some cases, the torque will apparently go the wrong way, or an 
+object will start spinning and send other objects flying off at typically 
+high speeds...).
+
+another (largely fixed) problem was crap (sometimes most of the objects in 
+the world) just disappearing (usually due to "nan-plosions") in some places 
+I now check (eg: if the impulse velocities or torque have gone nan) and zero 
+them as needed.
+
+other types like trimesh and hulls have some code in place, but are neither 
+complete nor integrated with the simulator, and pose other looming issues 
+(again, sane normals and probably poor behavior).
+
+I could just use half-assed normals, and just not really expect 
+entirely-realistic behavior.
+
+
+with static brush models, planes, ... and moving aabbs, I could probably 
+pull off something "good enough", but, this isn't all that compelling. at 
+least I have elastic collisions and some other features...
+
+
+
+otherwise, I sort of have an api.
+
+the design borrows a lot from gl, namely, it tries for opaqueness to a 
+fairly high degree (it would be nice to allow possibly retargeting to 
+different physics backends, eg, it working as an ode wrapper or such).
+it is also being written to be standalone from my other libraries.
+for these reasons, the interface is largely handle driven and uses non-oo 
+design. imo, in this case traditional oo design would likely hurt the 
+interface, geting/setting properties via object/slot handles and unified 
+functions seems a much more generic approach than highly specialized 
+functions or method calls (method calls also are not handled so cleanly in 
+c, and wrt libs have done it I have often heard complaints about the whole 
+thing anyways...).
+
+
+wherever possible the lib should try to be "low impact", though this may not 
+be possible.
+
+
+there are many glaring holes, but oh well.
+
+new world, setting the gravity and some iterator settings.
+bsdeNewWorld();
+bsdeSetWorldAttrFV(BSDE_GRAVITY, VEC3(0, 0, -9.8), 3);
+bsdeSetWorldAttrF(BSDE_MINSTEP, 0.005);
+bsdeSetWorldAttrF(BSDE_MAXSTEP, 0.01);
+bsdeSetWorldAttrF(BSDE_MAXFRAME, 0.1);
+
+minstep limits how far the timeslice can be subdivided. minstep is by 
+default 0.0001, but making it bigger makes less work need to be done. at 
+present there are some notable performance issues if there get to be very 
+many objects.
+
+vectors need the length passed. this was intended so: the potential exists 
+for using these functions to also read/write slots containing arrays of some 
+sort.
+it makes dealing with the whole "variable length array" issue a little 
+easier.
+as a cost, one has to pass the length...
+
+
+example of making a large cube to work as the ground:
+i=bsdeNewAABB(-1000, -1000, -1, 1000, 1000, 1);
+main_objs[main_nobjs++]=i;
+bsdeSetAttrFV(i, BSDE_ORIGIN, VEC3(0, 0, -10), 3);
+bsdeSetAttrF(i, BSDE_DENSITY, 1000);
+bsdeSetAttrI(i, BSDE_STATIC, 1);
+
+density is the density per cubic unit, in this case 1000 (implying 1Mg/m3, 
+or 1kg/l). static serves as a flag (among other flags), basically telling 
+that the object is effectively immovable.
+
+
+the ground, but a plane:
+i=bsdeNewPlane(0, 0, 1, -10);
+main_objs[main_nobjs++]=i;
+bsdeSetAttrI(i, BSDE_STATIC, 1);
+
+note that effectively integer handles are used to identify objects. this was 
+done for opaqueness, however, internally pointers are used for most things.
+
+
+an object to fall down:
+i=bsdeNewCappedCylinder(2, 1);
+main_objs[main_nobjs++]=i;
+bsdeSetAttrFV(i, BSDE_ORIGIN, VEC3(f, g, 10), 3);
+bsdeSetAttrF(i, BSDE_DENSITY, 1000);
+
+static is not set, so it moves.
+
+
+the lib does not do it's own rendering.
+rather, my frontend uses functions to fetch info about the objects and 
+render them as appropriate.
+
+though possible, presumably, the app would have some better way of rendering 
+objects (eg: an "entity" structure, which keeps track of app related stuff 
+and is kept roughly in sync, at least in terms of relavent properties, with 
+the physics based representation).
+
+
+or whatever...
+
+
+------
+
+as can be guessed, when it came to the modeler I worked on it until it did about what I wanted, and haven't done much since. the pull of physics simulation was greater... 
+as far as I can tell the job thinggy went nowhere. turned in stuff, haven't heard anything back. 
+of course, though gradually closer to usable, the physics simulator still has some problems: slow; buggy; crappy collision behavior. it is still much worse than ode, which is kind of lame. 
+I don't know how many other people go and try to do this... 
+I beat against it for a while, trying to get ever better collision handling (or at least vaguely acceptable, eg, to the levels of something like ode). 
+more recently, I decided to change the focus a little, rather than trying to get everything working well, I will try to get everything working good enough that it could concievably be used as the main physics engine within a (probably crappy) 3d engine (eg: in place of a more basic "aabbs and bsp's" style simulator). 
+so, this prompted adding in the solid types which are needed, but I wasn't getting to due to me trying to get sane behavior from obb's: 
+planes; brushes/convex hulls/convex polyhedra; trimeshes. 
+planes have been added, planes work ok against aabbs and spheres, obbs and cylinders presently behave much as they do when colliding with aabbs or obbs (or each other). this has confused me. 
+I had thought maybe my issue was collision normal related, after all, altering the collision normals does have a strong effect (except for one case, where, I had failed to notice, but the normals were left uninitiallized. the behavior was not that much worse really, but then I noticed that the friction model was the only thing really serving to stabilize collisions...). 
+in the case of planes though, the behavior is about the same, and I "know" the normals are sane in this case (when it comes to a plane, there is really only 1 choice), still, obbs and cylinders like to behave more in a rather un-realistic manner... 
+so, oh well, at least spheres and abbs work about right. 
+convex hulls (aka: "convex polyhedra" or "brushes") were also added (sort of). these are roughly the means by which geometry is represented in the map format (or at least prior to building a bsp tree), so they may prove useful. 
+the code has mostly been beaten together rather crudely and they have not yet really been tested. 
+some shortcuts were taken in implementing them, eg: at present they just use a rather crude but "generic" approach for comming up with the contact origins and normals, namely just adding up all the "sane" normals (those for potentially intersected faces), clamping the origin to the center of the overlap for each plane, and figuring the depth using projection along the target axis. 
+maybe the issue is not so much normals as it is the contact origin? in the case of obbs the origin is unlikely to be accurate, which may be part of the problem. as for cylinders, I don't know. 
+a problem is that, at present a good algo for calculating the origins is lacking. in the case of planes, apparently I was using some kind of projection based algo (it uses math which I have since forgotten and am unclear of). 
+other (actually well behaved) algos tend to be rather long and complicated (involving things like line clipping, lots of projection, ...). maybe this is what is actually necessary?... 
+trimeshes, may be needed eventually but presently I am not bothering. trimeshes present a large number of possible problems (eg: erratic sets of contact information, numerous contacts, and complexity). in the case of them, it would probably make the most sense to convert everything else colliding with them to trimeshes and thus only really have to worry about the trimesh->trimesh case (some code allready exists for this, just previously it was rather poorly behaved). 
+otherwise, there are the needed concepts of constraints and compounds. 
+as for constraints, I don't know. they could probably be treated as a more permanent variation of contacts, and could either be handled within the inner step (as are collisions) or could be done in the outer step (as are gravity and many general forces). in the outer step, they are likely to be less accurate, but much faster (this is why gravity is done here, doing fine-grained updates for gravity resulting in a large amount of slowness...). 
+ok, if done in the inner step constraints would likely impose far more slowness than gravity did. the outer step makes sense. the constraints are likely to be "soft", eg, since they are done less often they will only be enforced every so often, so they may be violated, and in the larger step forces are added to try to re-establish them. in this case, likely like gravity, the presence of obstacles would be able to violate the constraints... 
+compounds could be either done as their own thing (faster probably) or as a special case of systems of constraints (possibly rather slow or inaccurate). 
+another issue is that compounds may need special treatment (eg: collision detected as a unit), but oh well. the work needed for compounds is likely to be a bit lower than that of getting the primitives to work. 
+I still don't have a decent renderer or other systems re-written yet either, which is lame. this wouldn't be hard, just I would need to get to it... 
+then there is everything else. whenever one thing is focused on, everything else becomes less so, and one may never get to it. 
+or whatever...

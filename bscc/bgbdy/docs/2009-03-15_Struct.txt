@@ -1,0 +1,115 @@
+Structs will be essentially similar to classes, and will be created and used in a similar way.
+
+Primary differences will be:
+dycClassV in place of dycClass.
+
+There is no 'dycObject' representing struct instances, as a result, structs will he handled by supplying two items:
+The dycClassV for the struct type;
+A pointer to the data for the struct.
+
+No restrictions will be placed on the data, except that it is required for it to be properly aligned and of a sufficient size.
+
+Structs will also be physically laid out in memory, and are to follow the same basic rules as would be used for a C compiler on the same arch.
+
+Different API calls will be used than for objects.
+
+dycClassV is new type, refers to a particular version of a class and will be used for structs. The reason for using this type is that it is possible for classes to be altered at runtime, while each will still retain the same class identity. A class version, however, reflects a particular state of a class, and as such will not be alterable.
+
+
+void dycBeginStruct(char *name);
+dycClass dycEndStruct();
+
+Begin and End a struct declaration.
+
+
+Most other class-related API calls will work as before with structs.
+
+
+dycClassV dycGetClassVersion(dycClass inf);
+
+Gets the current class-version handle, and will be used for struct related accesses.
+
+
+int dycGetStructSize(dycClassV vinf);
+
+Gets the minimum size needed for a particular struct.
+
+
+dycClass dycGetVersionClass(dycClassV vinf);
+
+Get the class for a given class version.
+
+
+void *dycInitStruct(dycClassV inf, void *obj);
+void *dycInitStructSig(dycClassV inf, void *obj, char *sig, ...);
+void *dycInitStructSigV(dycClassV inf, void *obj, char *sig, va_list args);
+void *dycInitStructSigU(dycClassV inf, void *obj, char *sig, void **args);
+
+Initialize and run constructors for a struct.
+
+
+
+void *dycGetStructPtr(dycClassV vinf, void *obj, dycSlot idx);
+void *dycPtrStructSlot(dycClassV vinf, void *obj, char *name);
+
+Get pointer for a given slot.
+
+
+int dycGetStructsb(dycClassV vinf, void *obj, dycSlot idx);
+int dycGetStructub(dycClassV vinf, void *obj, dycSlot idx);
+int dycGetStructss(dycClassV vinf, void *obj, dycSlot idx);
+int dycGetStructus(dycClassV vinf, void *obj, dycSlot idx);
+int dycGetStructi(dycClassV vinf, void *obj, dycSlot idx);
+s64 dycGetStructl(dycClassV vinf, void *obj, dycSlot idx);
+float dycGetStructf(dycClassV vinf, void *obj, dycSlot idx);
+double dycGetStructd(dycClassV vinf, void *obj, dycSlot idx);
+dyt dycGetStructr(dycClassV vinf, void *obj, dycSlot idx);
+void *dycGetStructp(dycClassV vinf, void *obj, dycSlot idx);
+
+Get the value in the slot, accessed via the slot index.
+
+
+void dycSetStructsb(dycClassV vinf, void *obj, dycSlot idx, int val);
+void dycSetStructub(dycClassV vinf, void *obj, dycSlot idx, int val);
+void dycSetStructss(dycClassV vinf, void *obj, dycSlot idx, int val);
+void dycSetStructus(dycClassV vinf, void *obj, dycSlot idx, int val);
+void dycSetStructi(dycClassV vinf, void *obj, dycSlot idx, int val);
+void dycSetStructl(dycClassV vinf, void *obj, dycSlot idx, s64 val);
+void dycSetStructf(dycClassV vinf, void *obj, dycSlot idx, float val);
+void dycSetStructd(dycClassV vinf, void *obj, dycSlot idx, double val);
+void dycSetStructr(dycClassV vinf, void *obj, dycSlot idx, dyt val);
+void dycSetStructp(dycClassV vinf, void *obj, dycSlot idx, void *val);
+
+Set the value in the slot, accessed via the slot index.
+
+
+void *dycCallStructU(void *obj, dycClassV vinf, dycMethod mth, void **args);
+void *dycCallStructV(void *obj, dycClassV vinf, dycMethod mth, va_list args);
+void *dycCallStruct(void *obj, dycClassV vinf, dycMethod mth, ...);
+
+int dycCallStructUi(void *obj, dycClassV vinf, dycMethod mth, void **args);
+s64 dycCallStructUl(void *obj, dycClassV vinf, dycMethod mth, void **args);
+float dycCallStructUf(void *obj, dycClassV vinf, dycMethod mth, void **args);
+double dycCallStructUd(void *obj, dycClassV vinf, dycMethod mth, void **args);
+dyt dycCallStructUr(void *obj, dycClassV vinf, dycMethod mth, void **args);
+void *dycCallStructUp(void *obj, dycClassV vinf, dycMethod mth, void **args);
+void dycCallStructUv(void *obj, dycClassV vinf, dycMethod mth, void **args);
+
+int dycCallStructVi(void *obj, dycClassV vinf, dycMethod mth, va_list args);
+s64 dycCallStructVl(void *obj, dycClassV vinf, dycMethod mth, va_list args);
+float dycCallStructVf(void *obj, dycClassV vinf, dycMethod mth, va_list args);
+double dycCallStructVd(void *obj, dycClassV vinf, dycMethod mth, va_list args);
+dyt dycCallStructVr(void *obj, dycClassV vinf, dycMethod mth, va_list args);
+void *dycCallStructVp(void *obj, dycClassV vinf, dycMethod mth, va_list args);
+void dycCallStructVv(void *obj, dycClassV vinf, dycMethod mth, va_list args);
+
+int dycCallStructi(void *obj, dycClassV vinf, dycMethod mth, ...);
+s64 dycCallStructl(void *obj, dycClassV vinf, dycMethod mth, ...);
+float dycCallStructf(void *obj, dycClassV vinf, dycMethod mth, ...);
+double dycCallStructd(void *obj, dycClassV vinf, dycMethod mth, ...);
+dyt dycCallStructr(void *obj, dycClassV vinf, dycMethod mth, ...);
+void *dycCallStructp(void *obj, dycClassV vinf, dycMethod mth, ...);
+void dycCallStructv(void *obj, dycClassV vinf, dycMethod mth, ...);
+
+Call a method for a particular struct.
+

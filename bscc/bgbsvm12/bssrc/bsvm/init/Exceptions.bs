@@ -1,0 +1,41 @@
+package bsvm.init;
+
+public class Exception
+{
+public Exception()
+	{  }
+public Exception(str)
+	{ }
+}
+
+public class NullPointerException extends Exception
+{
+public NullPointerException()
+	{  super(); }
+public NullPointerException(str)
+	{ super(str); }
+}
+
+public class CastFailException extends Exception
+{
+public CastFailException()
+	{  super(); }
+public CastFailException(str)
+	{ super(str); }
+}
+
+public class BoundsCheckException extends Exception
+{
+public BoundsCheckException()
+	{  super(); }
+public BoundsCheckException(str)
+	{ super(str); }
+}
+
+public class RightsCheckException extends Exception
+{
+public RightsCheckException()
+	{  super(); }
+public RightsCheckException(str)
+	{ super(str); }
+}

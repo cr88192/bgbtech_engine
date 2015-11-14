@@ -1,0 +1,12 @@
+$flags voxel alpha
+
+$vox_img_top textures/voxel/chest_top
+$vox_img_side textures/voxel/chest_top
+$vox_img_bot textures/voxel/chest_top
+
+$vox_EmitBlock BTGE_Voxel_EmitBlock_PressurePlate
+$vox_BlockUpdate BTGE_VoxelPower_UpdateVoxel_PressurePlate
+$vox_BlockThink BTGE_VoxelPower_UpdateVoxel_PressurePlate
+$vox_TouchEvent BTSV_Voxel_TouchEvent_PressurePlate
+$vox_mins 0 0 0
+$vox_maxs 32 32 8

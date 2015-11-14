@@ -1,0 +1,66 @@
+# BUILD = /usr
+BUILD = .
+TOOLS_BASE = .
+
+PATH := $(TOOLS_BASE):$(PATH)
+
+EXE = .bin
+O = .o
+A = .a
+CC = gcc
+LD = gcc
+MK = .lnx
+
+all: FORCE build
+
+FORCE:
+
+includes: FORCE
+	make -C bgbasm11 -f Makefile$(MK) includes
+	make -C rpnil -f Makefile$(MK) includes
+	make -C bgbgc -f Makefile$(MK) includes
+	make -C bgbccc -f Makefile$(MK) includes
+	make -C zpak2 -f Makefile$(MK) includes
+	cp -rf bgbasm11/include/*.h	$(BUILD)/include
+	cp -rf rpnil/include/*		$(BUILD)/include
+	cp -rf bgbgc/include/*		$(BUILD)/include
+	cp -rf bgbccc/include/*		$(BUILD)/include
+	cp -rf zpak2/*.h		$(BUILD)/include
+
+libs: FORCE
+	make -C bgbasm11 -f Makefile$(MK) libs
+	make -C rpnil -f Makefile$(MK) libs
+	make -C bgbgc -f Makefile$(MK) libs
+	make -C bgbccc -f Makefile$(MK) libs
+	make -C zpak2 -f Makefile$(MK) libs
+	cp bgbasm11/*$(A)	$(BUILD)
+	cp rpnil/*$(A)		$(BUILD)
+	cp bgbgc/*$(A)		$(BUILD)
+	cp bgbccc/*$(A)		$(BUILD)
+	cp zpak2/*$(A)		$(BUILD)
+
+apps: libs FORCE
+	make -C bgbasm11 -f Makefile$(MK) apps
+	make -C rpnil -f Makefile$(MK) apps
+	make -C bgbgc -f Makefile$(MK) apps
+	make -C bgbccc -f Makefile$(MK) apps
+	make -C zpak2 -f Makefile$(MK) apps
+	cp bgbasm11/*$(EXE)	$(BUILD)
+	cp rpnil/*$(EXE)	$(BUILD)
+	cp bgbgc/*$(EXE)	$(BUILD)
+	cp bgbccc/*$(EXE)	$(BUILD)
+	cp zpak2/*$(EXE)	$(BUILD)
+
+build: includes libs apps FORCE
+
+clean: FORCE
+	rm -rf $(shell find -name \*$(O))
+	rm -rf $(shell find -name \*$(A))
+
+clean2: FORCE
+	rm -rf $(shell find -name \*$(O))
+	rm -rf $(shell find -name \*$(A))
+	rm -rf $(shell find -name \*$(EXE))
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(G_CFLAGS) -o $@ $<

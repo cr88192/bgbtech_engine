@@ -1,0 +1,4 @@
+$flags voxel
+$vox_img_top_scale 8
+
+$vox_RandomThink BTGE_Voxel_RandomThink_Grass

@@ -1,0 +1,184 @@
+void dycBeginClass(char *name, char *super);
+void dycEndClass();
+void dycSlot(char *name, char *sig);
+void dycSlotStatic(char *name, char *sig);
+void dycMethod(char *name, char *sig, dyt fcn);
+
+Basic construction functions.
+
+
+dycClass dycLookupClass(char *name);
+
+Lookup a class with a given name.
+
+
+dyt dycAlloc(dycClass inf);
+
+Allocate a new instance of a given class.
+The returned object is neither initialized nor are any constructors called.
+
+
+int dycInstanceP(dycObject obj, dycClass inf);
+
+Return 1 if obj is an instance of inf, either directly, or an instance of a subclass. Returns 0 otherwise.
+
+
+int dycSubclassP(dycClass info, dycClass super);
+
+Returns 1 is info is super, or is a subclass of super.
+
+
+dycSlot dycIdxSlot(dycClass info, char *name);
+
+Returns the slot index for a given class slot, and does not care if the slot is static or per-instance.
+
+
+dycSlot dycIdxObjSlot(dycObject obj, char *name);
+
+Like the above, only that the slot is given for a particular object, and can only be used with this object.
+
+
+void *dycPtrSlotIdx(dycObject obj, dycSlot idx);
+void *dycPtrStaticSlotIdx(dycSlot idx);
+
+Get pointers to slot values.
+Static slots don't need an object.
+
+
+void *dycPtrSlot(dycClass info, char *name);
+void *dycPtrObjSlot(dycObject obj, char *name);
+
+Hmm, change to match above:
+void *dycPtrStaticSlot(dycClass info, char *name);
+void *dycPtrSlot(dycObject obj, char *name);
+
+Get pointers to slot values.
+Static slots don't need an object.
+
+
+dycMethod dycIdxClassMethod(dycClass inf, char *name, char *sig);
+
+Get the method index of a particular method.
+
+
+int dycInstanceOfP(dycObject obj, char *name);
+int dycSubclassOfP(char *name, char *super);
+
+Like dycInstanceP() and dycSubclassP(), except that a classname is given instead of a class index.
+
+
+// dyt dycNew(char *name);
+dycObject dycAllocClass(char *name);
+
+Consider rename.
+Currently, allocates a class but does npt init or call constructor.
+
+
+void *dycPtrClassSlot(char *cname, char *sname);
+
+Gets a pointer to a static slot, like dyxPtrStaticSlot(), but is given a class name.
+
+
+dycSlot dycIdxClassSlot(char *cname, char *sname);
+
+Index a slot, like dycIdxSlot(), but also given a class name.
+
+
+dycMethod dycGetMethodClassIdx(char *cname, char *name, char *sig);
+dycMethod dycGetMethodIdx(dycObject obj, char *name, char *sig);
+
+...
+
+dyt dycLookupMethodSig(dycObject obj, char *name, char *sig);
+...
+
+
+dyt dycGetSlot(dycObject obj, char *name);
+int dycGetSloti(dycObject obj, char *name);
+s64 dycGetSlotl(dycObject obj, char *name);
+double dycGetSlotf(dycObject obj, char *name);
+
+int dycSetSlot(dycObject obj, char *name, dyt val);
+int dycSetSloti(dycObject obj, char *name, int val);
+int dycSetSlotl(dycObject obj, char *name, s64 val);
+int dycSetSlotf(dycObject obj, char *name, double val);
+
+
+Consider:
+int		dycGetIdxsb(dycObject obj, dycSlot idx);
+int		dycGetIdxub(dycObject obj, dycSlot idx);
+int		dycGetIdxss(dycObject obj, dycSlot idx);
+int		dycGetIdxus(dycObject obj, dycSlot idx);
+int		dycGetIdxi(dycObject obj, dycSlot idx);
+s64		dycGetIdxl(dycObject obj, dycSlot idx);
+float		dycGetIdxf(dycObject obj, dycSlot idx);
+douvle	dycGetIdxd(dycObject obj, dycSlot idx);
+dyt		dycGetIdxr(dycObject obj, dycSlot idx);
+void *	dycGetIdxp(dycObject obj, dycSlot idx);
+
+int dycSetIdxsb(dycObject obj, dycSlot idx, int val);
+int dycSetIdxub(dycObject obj, dycSlot idx, int val);
+int dycSetIdxss(dycObject obj, dycSlot idx, int val);
+int dycSetIdxus(dycObject obj, dycSlot idx, int val);
+int dycSetIdxi(dycObject obj, dycSlot idx, int val);
+int dycSetIdxl(dycObject obj, dycSlot idx, s64 val);
+int dycSetIdxf(dycObject obj, dycSlot idx, float val);
+int dycSetIdxd(dycObject obj, dycSlot idx, double val);
+int dycSetIdxr(dycObject obj, dycSlot idx, dyt val);
+int dycSetIdxp(dycObject obj, dycSlot idx, void *val);
+
+These will get and set slots using an index, but will also be exactly-typed.
+
+int		dycGetIdxvi(dycObject obj, dycSlot idx);
+int		dycSetIdxvi(dycObject obj, dycSlot idx, int val);
+Like the above, but flexible enough to be able to handle small integer types.
+
+
+dycObject dycNewInit(char *name, char *sig, ...);
+dycObject dycNewInitV(char *name, char *sig, va_list args);
+dycObject dycNewInitU(char *name, char *sig, void **args);
+
+Create a new instance of a class and initialize.
+
+
+dyt dycCallSigVr(dycObject obj, char *name, char *sig, va_list lst);
+dyt dycCallSigUr(dycObject obj, char *name, char *sig, void **args);
+int dycCallSigVi(dycObject obj, char *name, char *sig, va_list lst);
+s64 dycCallSigVl(dycObject obj, char *name, char *sig, va_list lst);
+double dycCallSigVf(dycObject obj, char *name, char *sig, va_list lst);
+int dycCallSigUi(dycObject obj, char *name, char *sig, void **args);
+s64 dycCallSigUl(dycObject obj, char *name, char *sig, void **args);
+double dycCallSigUf(dycObject obj, char *name, char *sig, void **args);
+
+void *dycCallSigU(dycObject obj, char *name, char *sig, void **args);
+void *dycCallSigV(dycObject obj, char *name, char *sig, va_list args);
+void *dycCallSig(dycObject obj, char *name, char *sig, ...);
+
+void *dycCallIdxU(dycObject obj, dycMethod mth, void **args);
+void *dycCallIdxV(dycObject obj, dycMethod mth, va_list args);
+void *dycCallIdx(dycObject obj, dycMethod mth, ...);
+
+int dycCallIdxUi(dycObject obj, dycMethod mth, void **args);
+s64 dycCallIdxUl(dycObject obj, dycMethod mth, void **args);
+float dycCallIdxUf(dycObject obj, dycMethod mth, void **args);
+double dycCallIdxUd(dycObject obj, dycMethod mth, void **args);
+dyt dycCallIdxUr(dycObject obj, dycMethod mth, void **args);
+void *dycCallIdxUp(dycObject obj, dycMethod mth, void **args);
+void dycCallIdxUv(dycObject obj, dycMethod mth, void **args);
+
+int dycCallIdxVi(dycObject obj, dycMethod mth, va_list args);
+s64 dycCallIdxVl(dycObject obj, dycMethod mth, va_list args);
+float dycCallIdxVf(dycObject obj, dycMethod mth, va_list args);
+double dycCallIdxVd(dycObject obj, dycMethod mth, va_list args);
+dyt dycCallIdxVr(dycObject obj, dycMethod mth, va_list args);
+void *dycCallIdxVp(dycObject obj, dycMethod mth, va_list args);
+void dycCallIdxVv(dycObject obj, dycMethod mth, va_list args);
+
+int dycCallIdxi(dycObject obj, dycMethod mth, ...);
+s64 dycCallIdxl(dycObject obj, dycMethod mth, ...);
+float dycCallIdxf(dycObject obj, dycMethod mth, ...);
+double dycCallIdxd(dycObject obj, dycMethod mth, ...);
+dyt dycCallIdxr(dycObject obj, dycMethod mth, ...);
+void *dycCallIdxp(dycObject obj, dycMethod mth, ...);
+void dycCallIdxv(dycObject obj, dycMethod mth, ...);
+

@@ -1,0 +1,40 @@
+Bit Optimization Pass Idea:
+Idea loosely based on VP8.
+
+Basic idea:
+Apply a basic statistical modeling and arithmetic-coding pass following the main Huffman coding pass. This should be able to improve compression with less performance overhead than using arithmetic coding as the primary encoding.
+
+eg:
+	r=rmax-rmin;
+	v=rmin+((r*w)>>16);
+
+	i=(rval>v);
+	if(i)rmin=v+1;
+	else rmax=v;
+
+	while((rmin&0xFF000000)==(rmax&0xFF000000))
+	{
+		rmin<<=8;
+		rmax<<=8;
+		rmax|=255;
+
+		rval<<=8;
+		rval|=InputByte();
+	}
+
+where w is a weight-factor.
+
+The huffman-coded bits are used as input and as context, with the recent context used to model each bit.
+
+The context is stored as a pair of bytes, which together are treated as an index onto a weight-table.
+
+w=((i+1)<<16)/(i+j+2);
+
+Where i is the count of how many zeroes have been seen, and j is the count of how many ones. Both are kept below 128, and as soon as either crosses 128, both are shifted right by one.
+
+Header:
+0xBA: Magic Byte, ("Bit Arithmetic")
+0x00: Flags Byte
+	Low 3 bits give Context Size:
+		0=12 bits, 7=19 bits.
+VLI usz;	//uncompressed size

@@ -1,0 +1,53 @@
+Possible thoughts for a redesigned SBXE:
+Merge tag and NS space (an NS prefix will resemble an opening tag), but will be handled differently. This is because NS tags are likely to be far rarer than node tags, and so it makes little sense to waste an entire coding space on them.
+
+so:
+0x00: END Marker
+0x01..0x1F: Special Markers
+0x20..0x7E: Tag/Attr/NS MRU
+0x7E: Tag/Attr/NS String
+0x80..0xFE: Text MRU
+0xFF: Text String
+
+Tag/Attr/NS
+
+A prefix will be needed for any escaped tags:
+':', Namespace
+'=', Attribute
+'/': No-body Tag
+' ': Tag
+
+This will be followed by the characters for the tag or attribute name.
+
+
+MRU will use a lower-better scheme.
+
+0x10: Integer, SVLI
+
+0x11: Decoder Control String
+This will encode a string which may give info to the decoder, but is not directly part of the encoded XML.
+
+0x12: CDATA (CDATA section, LZ)
+0x13: reserved
+0x14: BDATA (BDATA section, binary, LZ)
+	0x14 <len:uvli> <byte[len]>
+
+
+LZ Scheme
+
+This will be used when encoding non-tag text or data members.
+
+Will use LZ77 references. LZ may be optional (a decoder optimization may be to not bother keeping track of the dictionary if LZ is not used).
+
+0x00..0xEF: Raw Bytes
+0xF0 <byte>: Escaped byte (0xF0..0xFF, 0x00, Command byte 0x01..0xEF)
+0xF1 <len>: RLE run (preceding byte)
+0xF2 <len:byte> <offs:word>: LZ run
+0xF3 <byte>: 3-byte match, 1 byte offset
+0xF4..0xFB <byte>: 4-11 byte match, 1 byte offset
+0xFC..0xFF: reserved
+...
+
+Command:
+0xF0 0x01: Dictionary Enable
+Tells decoder that LZ77 is used, so it should start keeping track of a dictionary.

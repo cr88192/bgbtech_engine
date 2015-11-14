@@ -1,0 +1,95 @@
+package bsvm.lang;
+import bgb.vm.*;
+
+public final class Float extends Number
+{
+private static final long serialVersionUID = -2671257302660747028L;
+
+public static float MAX_VALUE = 3.40282346638528860e+38f;
+public static float MIN_VALUE = 1.40129846432481707e-45f;
+public static float NaN = 0.0f / 0.0f;
+public static float NEGATIVE_INFINITY = -1.0f / 0.0f;
+public static float POSITIVE_INFINITY = 1.0f / 0.0f;
+public static Class TYPE = float.class;
+
+public final float value;
+
+public Float(double value)
+	{ this.value=(float)value; }
+public Float(float value)
+	{ this.value=value; }
+public Float(String s)
+	{ this(parseFloat(s)); }
+
+public double doubleValue()
+	{ return (double)value; }
+
+public boolean equals(Object obj)
+{
+	return (obj==this) ||
+		((obj instanceof Float) &&
+			(this.value==((Float)obj).value));
+}
+
+public static int floatToIntBits(float value)
+{
+	int t, sg, ex, m;
+
+	if(value<0) { value=-value; sg=1; } else { sg=0; }
+	ex=(int)(Math.floor(Math.log(value)/Math.log(2)));
+	m=(int)((1L<<23)*(value/Math.pow(2, (double)ex)-1));
+	t=m|((ex+127)<<23)|(sg<<31);
+	return t;
+}
+
+public float floatValue()
+	{return value; }
+
+public int hashCode()
+	{ return floatToIntBits(value); }
+
+public static float intBitsToFloat(int bits)
+{
+	double f;
+	int ex;
+
+	f=1.0+((double)(bits&((1L<<23)-1)))/((double)(1L<<23));
+	ex=(int)(((bits>>52)&255)-127);
+	f=f*Math.pow(2.0, (double)ex);
+	if((bits>>>31)!=0)f=(-f);
+	return (float)f;
+}
+
+public int intValue()
+	{return (int)value; }
+public boolean isInfinite()
+	{ return isInfinite(value); }
+public static boolean isInfinite(float v)
+	{ return ((v==POSITIVE_INFINITY) || (v==NEGATIVE_INFINITY)); }
+public boolean isNaN()
+	{ return isNaN(value); }
+public static boolean isNaN(float v)
+	{ return false; }
+//	{ return v!=v; }
+public long longValue()
+	{ return (long)value; }
+
+public String toString()
+	{ return toString(value); }
+
+public static String toString(float f)
+{
+	return(Z_SysUtil.FloatToStr((double)f));
+//	return null;
+}
+
+public static Float valueOf(String s)
+	{ return new Float(s); }
+
+public static float parseFloat(String str)
+{
+	return((float)Z_SysUtil.StrToFloat(str));
+//	return 0;
+}
+
+}

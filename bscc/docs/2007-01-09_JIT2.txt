@@ -1,0 +1,43 @@
+Idea for JIT:
+
+Bytecode is converted directly to machine code.
+May use a "dumb conversion", at least initially...
+
+
+Convention:
+Would need to decide between using the C calling convention (initially passing the context as an argument, but moving contents to registers internally), or a customized calling convention (passing around the context and stack in registers).
+
+At least at the opcode level, the convention will be as follows:
+esi, holds VM context;
+edi, holds VM stack pos.
+
+
+MiniCall:
+Will be a minimized calling convention.
+
+eax, ecx, edx: Free for use as needed;
+esi, edi: used for VM context and stack;
+esp, ebp: used as normal.
+
+The stack will be used only for temporary values, and is assumed clearable without issue. Function arguments will be pushed on the VM stack.
+
+
+Some special functions (called inter or intra VM-opcode) may omit aspects of the calling convention (such as pushing/poping ebp, ...).
+
+
+
+Generalized Sequences
+
+push eax onto vm stack:
+mov [edi], eax
+add edi, 4
+
+pop from VM stack into eax:
+sub edi, 4
+mov eax, [edi]
+
+push mark:
+mov eax, [esi+markstack_pos]
+
+
+

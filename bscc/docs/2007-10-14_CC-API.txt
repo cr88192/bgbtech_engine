@@ -1,0 +1,65 @@
+BSCC API
+
+Attempt to spec a general abstract interface to the compiler core.
+
+void ccAddInclude(char *path);
+void ccAddLibrary(char *path);
+void ccAddSource(char *path);
+Add a path. Include paths are searched for headers, library paths for libraries, and source paths for source modules.
+
+void ccLoadModule(char *file);
+Load a source module or library (depends on file extension).
+
+void ccCompileModule(char *file, char *out);
+Compile a source file, and send the output to 'out'.
+
+void ccLoadLibrary(char *name);
+Loads a library. May go through extra magic in locating the lib, such that name is a generic abstract name (rather than a filename as is the case for ccLoadModule).
+
+void ccPrecompileModule(char *file);
+Precompile a module. File may be either a header or source module, and may be under either the source or header paths.
+
+void ccLoadCompilerScript(char *file);
+Load a compiler script. This will serve a role similar to that of a makefile.
+
+void *ccGetAddr(char *sym);
+Get the address of a given symbol, global, or function.
+
+void ccSetAddr(char *sym, void *ptr);
+Set the address of a given symbol (or define a new symbol). This may forcibly relink parts of the image if modifying a pre-existing symbol (though this is not required, and may not be uniformly carried out).
+
+
+void *ccGetPtr(char *sym)
+void ccSetPtr(char *sym, void *v)
+Get/Set global interpreted as a pointer.
+This may be used to get or set the value of a global pointer.
+
+int ccGetInt(char *sym)
+void ccSetInt(char *sym, int v)
+Get/Set global interpreted as an integer.
+
+s64 ccGetLongLong(char *sym)
+void ccSetLongLong(char *sym, s64 v)
+Get/Set global interpreted as a long long.
+
+float ccGetFloat(char *sym)
+void ccSetFloat(char *sym, float v)
+Get/Set global interpreted as a float.
+
+double ccGetDouble(char *sym)
+void ccSetDouble(char *sym, double v)
+Get/Set global interpreted as a double.
+
+
+Compiler Control Script
+This will be a more or less trivial language for controlling the loading process of scripts, in much the same way as a batch file or makefile. This will not represent an explicit build process (like that of batch files or shell scripts), or a dependency-hadling system (as are makefiles).
+
+File paths will generally be relative to the location of the compiler script.
+
+//comment
+module <file+>
+Load modules.
+
+library <libs+>
+Load libraries.
+

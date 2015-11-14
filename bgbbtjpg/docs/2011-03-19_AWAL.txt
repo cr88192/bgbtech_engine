@@ -1,0 +1,54 @@
+AWAL: Animated WAL
+
+Goals:
+Be a simplistic video format;
+Serve a similar role to RoQ;
+...
+
+Probably AWL extension.
+
+
+Details:
+
+struct AWAL_Head_s {
+char name[32];		//cannonical base name
+int width;		//width (power of 2)
+int height;		//height (power of 2)
+int offset;		//compressed data offset
+int size;		//compressed data size
+int fcc;		//codec fourcc
+int flags;		//flags
+int contents;		//contents
+int value;		//value
+//reserved...
+};
+
+
+Codec:
+'AWZ0'
+
+Will, be a simplistic, PNG-like scheme.
+Image data will be filtered and then deflated, and will consist of an array of individually encoded frames.
+
+Playback will start with an image buffer initialized to all 0s, and each frame will be decoded and added on top of the prior frame (each frame is encoded with the prior frame subtracted out).
+
+So, Encoding process:
+	Prior image is subtracted out, creating a delta image;
+	The image is color-converted and split into 4 planes (G, dR, dB, A);
+	Paeth filtering is applied to each plane;
+	The resultant planes are deflated.
+
+Color Conversion:
+G'=G
+dR=R-G
+dB=B-G
+A'=A
+
+The aim of this filter is to decorrelate colors without adding too much cost. This conversion is trivially and losslessly reversible.
+
+
+struct AWZ0_FrameHead_s {
+byte tag;	//0=EOF, 1=I-Frame, 2=P-Frame
+byte resv[3];
+int size;
+};

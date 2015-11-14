@@ -1,0 +1,4 @@
+printf("BGBScript Server Main Start\n");
+
+
+printf("BGBScript Server Main End\n");

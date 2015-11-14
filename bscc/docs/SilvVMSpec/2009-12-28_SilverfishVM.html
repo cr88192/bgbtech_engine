@@ -1,0 +1,386 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="CONTENT-TYPE"
+ content="text/html; charset=windows-1252">
+  <title></title>
+  <meta name="GENERATOR" content="OpenOffice.org 3.0  (Win32)">
+  <meta name="CREATED" content="20091227;23393800">
+  <meta name="CHANGED" content="20100113;14394600">
+</head>
+<body dir="LTR" lang="en-US">
+<p><img src="silverfish21.png" name="graphics1" alt="Silverfish Logo"
+ height="512" width="512" align="LEFT" border="0"><br clear="LEFT">
+<br>
+<br>
+</p>
+<p><br>
+<br>
+</p>
+<h1>Silverfish</h1>
+<p style="margin-bottom: 0in;">This will attempt to provide an
+overview of my “Silverfish VM” effort (note: Silverfish
+is a re-dub of BSCC). For sake of mention, yes, Silverfish are a type
+of insect, of the most lowly variety which live under ones laundry
+and live on a diet of lint and similar. However, in this case, I will
+use the notion of the silverfish, as said lowly insect, to stand for
+the general design philosophy of the effort. I am not trying to make
+some big flashy project or to make some revolution in how people view
+computers. In fact, as I see it, the VM is not something which should
+really be seen much at all, if possible. Silent and invisible, much
+as the insects hiding under some old socks or a t-shirt placed most
+subtly in the middle of ones' floor.</p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<p style="margin-bottom: 0in;">Well, and also a silverfish is a sort
+of branding which can be both elegant sounding and tacky at the same
+time.</p>
+<h2>Goals</h2>
+<p style="margin-bottom: 0in;"><br>
+The Silverfish VM is a collection
+of libraries and other things intending to facilitate compiling C,
+and several other languages, at run-time.</p>
+<p style="margin-bottom: 0in;">The goal is to avoid being a monolithic
+VM of the sort that is the Java VM or .NET VM, so instead the
+intention is to try to keep the design fairly open and modular (the
+reason being so that components can be added and replaced fairly
+easily, and that hopefully it should be possible to implement clone
+implementations). Similarly, I try to keep the APIs as being fairly
+general purpose and clean, and avoid unnecessary interdependencies
+between components (although some level of interdependency is
+inevitable with a project of this sort...).<br>
+<br>
+Likewise, I see no
+real reason to try to create yet another "the one bytecode to
+rule them all", nor to go and try to re-invent the world in my
+own image...<br>
+<br>
+Instead, I try to incorporate things which
+already exist, namely:<br>
+The huge mass of code and libraries written
+in C and C++;<br>
+...<br>
+<br>
+Similarly, it is not my intent to try to force
+anyone over to an essentially "new" way of developing apps.
+Ideally, the whole framework should not be too much more
+than a pile libraries one can link in (though... sadly... one does
+have to make provisions for things like header-files, library files,
+a directory to cache compiled-code and metadata, ...). An app's
+codebase should be able to stay much as it was before all this.<br>
+<br>
+As
+such, my project primarily focuses on generating native code for x86
+and x86-64, and operating (more or less) at a similar level of
+abstraction to natively compiled and linked code. Granted, my project
+does make use of custom calling-conventions in several places, and a
+good deal of metadata (to a large extent automatically mined from any
+included header files), but effort has been put in trying to keep
+these borders as transparent as is reasonable (having to write wrapper
+code, or jerk off some kind of FFI machinery, is IMO a blight
+of most existing VM technology...). Further granted, some of this
+does come at the cost of there being some level of "voodoo
+magic" in the linker (primarily in the form of invoking
+automatic code generators to resolve symbols, ...).<br>
+<br>
+I don't
+make the "compile once, run everywhere" claim, since as I
+see it, this kind of thing rarely pans out in practice.<br>
+<br>
+<br>
+Why
+dynamic compilation? Because C just really needs eval...<br>
+As I see
+it, one of the major reasons we keep seeing all manner of VMs and
+interpreters, is due to a simple reason:<br>
+The more traditional
+approaches provide severe limitations on ones' ability to dynamically
+generate code or extend the current app;<br>
+Many existing pieces of
+interpreter technology tend to not really address "general
+purpose" issues, most often with a bent of expressing the
+creative ideation of some particular language designer (typically
+wishing to remake the world in his image and/or rid the world from
+the perceived horror and tyranny of the C-family...);<br>
+Conservatively
+addressing issues in a VM is just a whole hell of a lot of effort...<br>
+<br>
+</p>
+<h3>Overview of General Ideas</h3>
+<p><a href="2010-04-10_Meta2.html">Metadata Spec</a></p>
+<p style="margin-bottom: 0in;">The contents of the Metadata Spec are
+fairly central, as much of the VM framework's architecture revolves
+around this.<br>
+<br>
+</p>
+<h4>GAST</h4>
+<p style="margin-bottom: 0in;"></p>
+<p style="margin-bottom: 0in;">GAST is a format for representing
+"Generalized ASTs".<br>
+The format is XML based, and usually stored externally in the SBXE
+format.<br>
+<br>
+</p>
+<p style="margin-bottom: 0in;"><a href="2010-05-23_AST.html">AST / GAST
+Spec</a><br>
+<a href="2011-02-08_SBXE11.html">SBXE 1.1: Simple Binary XML Encoding</a><br>
+</p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<h4>BGBScript2</h4>
+<p style="margin-bottom: 0in;"></p>
+<p style="margin-bottom: 0in;">BGBScript2 (or BS2) is a new language
+and VM currently under development (as of 2011-02-26). Design and
+development began in early December 2010, mostly as an attempt to
+revive an idea of mine from 2005, and partly due to some frustrastions
+with the legacy of the JVM architecture.<br>
+</p>
+<p style="margin-bottom: 0in;">The language was largely influenced by
+Java, C#, and ActionScript3.<br>
+Clean interoperation with C (and, secondarily, C++) is also a design
+goal.<br>
+The core syntax mostly follows C/Java/... tradition, but does vary on a
+few notably points mostly to try to help limit syntactic ambiguity.<br>
+</p>
+<p style="margin-bottom: 0in;">The exact design of this VM and language
+is still partly in flux.<br>
+<br>
+</p>
+<p style="margin-bottom: 0in;"><a href="2010-12-15_BGBScript2.html">BGBScript2
+Core
+Language
+Spec</a> (dropped)<br>
+<a href="2010-12-28_BS2Lib.html">BGBScript2 Library Spec</a> (dropped)
+</p>
+<p style="margin-bottom: 0in;"><a href="2011-01-06_BS2ASM.html">BGBScript2
+VM
+IL
+Assembler Syntax</a> (dropped)<br>
+<a href="2010-12-15_BS2BC.html">BGBScript2 VM ByteCode Spec</a>
+(dropped)
+</p>
+<p style="margin-bottom: 0in;"><br>
+Update: As of 2011-04-28:<br>
+The BGBScript2 language effort has been effectively mothballed, with
+effort shifted to a less ambitious BGBScript 1.5 language, which
+basically merges BGBScript and BGBScript2 into a single language (and
+is built on a modified form of the pre-existing VM).</p>
+<p style="margin-bottom: 0in;"><a href="2011-05-25_BGBScript15.html">BGBScript
+1.5
+Language Spec</a><br>
+</p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<h3>Overview of General Components</h3>
+<h4>BGBASM</h4>
+<p style="margin-bottom: 0in;">This contains the assembler and linker,
+where the assembler is a good old assembler for x86 and x86-64,
+supporting an Intel/NASM style syntax (incomplete GAS support), and a
+C-style preprocessor (I needed one and this is what I happened to
+have on-hand...). It is generally the idea that code be produced in
+the form of textual ASM, and assembled with the assembler (JIT
+compilers hand-crafting machine code is IMO both tacky and fragile,
+as well as introducing many other issues).<br>
+<br>
+The assembler
+supports 2 major styles:<br>
+The creation of top-level modules, which
+are assumed to be linked into the running image, and which share the
+same space as all the other modules (namespaces and similar can be
+achieved through the use of name-mangling);<br>
+The creation of
+standalone thunks, which are typically linked into their own custom
+chucks of garbage-collected executable memory, and which make use of
+a different approach to external linking (scopes may be passed in,
+and symbols are not required to be kept up to date).<br>
+<br>
+The
+linker is partly joined with the assembler, but is done as a separate
+stage. The linker mostly functions similarly to a conventional linker
+(takes object modules, links them together), and may accept COFF,
+ELF, and static libraries (GNU-AR), and also allows exporting code
+from the assembler into object modules, but differs partly in that it
+allows a few novel features (particularly in that it allows other
+subsystems to hook into it for purposes such as fetching or emitting
+custom symbols, or registering handlers such that automatic code
+generation can take place as a means to resolve symbols, as well as
+including machinery for things like gluing together several different
+calling conventions, accessing thread-local-storage, ...).<br>
+<br>
+The
+linker has primary responsibility over managing the running image and
+keeping track of the symbol table.<br>
+<br>
+It is assumed that if
+porting to a new arch, the assembler and/or linker could be modified
+or rewritten to support the arch in question.<br>
+<br>
+</p>
+<p style="margin-bottom: 0in;"><a href="2009-12-29_BASM0.html">BGBASM
+Spec</a></p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<h4>BGBGC</h4>
+<p style="margin-bottom: 0in;">This is the main Garbage Collector.
+Beyond garbage collection, it also manages thread creation, Thread
+Local Storage, and a few other things (mostly so that it knows about
+thread stacks and can keep track of references located in TLS). The
+collector is conservative and uses concurrent mark/sweep, and a
+software write barrier. As an added feature, it keeps track of
+allocation types (in terms of a string-based nmonic), and allows the
+registration of certain behavior modifiers for objects. Support for
+precise collection (with ref-counting) is also in place, but not
+presently used. The collector is specialized for handling large
+numbers of small objects. Most objects are allocated with a 16-byte
+granularity, but 8 bytes are needed for the header, however
+cons-cells are special and are 8 or 16 bytes each (depends on x86 or
+x86-64) and do not use headers.<br>
+<br>
+</p>
+<p style="margin-bottom: 0in;"><a href="2009-12-29_BGBGC0.html">BGBGC
+Spec</a></p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<h4>BGBDY</h4>
+<p style="margin-bottom: 0in;">This library builds on the GC
+(originally, BGBDY and BGBGC were the same library, but they were
+later split), and implements a full-fledged dynamic typesystem
+(fixnum, flonum, symbol, keyword, list, ...), code for
+serialization/deserialization of data (S-Exps), a VFS (Virtual File
+System), XML support, OO (Prototype-based and Single-Inheritance
+Class/Instance + Interfaces and Structs), Namespace and Metadata
+management, ...<br>
+<br>
+This library also contains DYLL, which is a
+subset mostly dedicated to particularly low-level tasks, namely
+managing most of the metadata structures, a good deal of code for
+automatic thunk generation (such as for gluing between abstract
+requests and invoking native C functions, ...). It also contains most
+of the code responsible for the signature system, which is used for
+dynamically managing the static typesystem.<br>
+<br>
+The
+signature-string format is specified, and is actually a fairly
+central structure gluing together nearly all parts of this project.
+The string format combines together elements of the JVM's signature
+string format with elements from the IA-64 name mangling scheme
+(primarily, the general structure is from the JVM, but the specific
+type notation is mostly from the IA-64 convention). The strings often
+operate mostly standalone, but are used in conjunction with the
+metadata system.<br>
+<br>
+</p>
+<p style="margin-bottom: 0in;"><a href="2010-01-02_BGBDY0.html">BGBDY
+Spec</a></p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<h4>BGBSVM</h4>
+<p style="margin-bottom: 0in;">The BGBSVM component is also known as
+the BGBScript VM.<br>
+It currently implements the BGBScript 1.5 language compiler/interpreter.<br>
+</p>
+<p style="margin-bottom: 0in;">As of recently (Feb 2011 through June
+2011) its role has been expanded considerably.<br>
+</p>
+<p style="margin-bottom: 0in;"><a href="2010-01-10_BGBSVM0.html">BGBScript
+VM Reference</a><br>
+</p>
+<p style="margin-bottom: 0in;"><br>
+<br>
+</p>
+<h4>RPNIL/SXIL</h4>
+<p style="margin-bottom: 0in;">This represents the current middle-end
+of the compiler. The input is in a language known as RPNIL, which is
+an RPN-based IL. It is passed in as a textual format with a syntax
+vaguely resembling a hybrid of PostScript and COBOL (the syntax was
+designed to be easy to parse, not pretty to look at). Internally, it
+is parsed into a bunch of in-memory structures and bytecode
+fragments, but these are mostly an implementation detail (it is not
+my belief that the bytecode should be exposed externally, and rather
+a textual IL should remain as the canonical format), which are then
+used to drive the main code generation machinery. The output is in
+the form of textual ASM. This compiler is not (semantically)
+important to the framework (It works in terms of compiling a single
+module at a time, and all used information is either passed in with
+the input, or is grabbed from external sources).<br>
+<br>
+SXIL was a
+name given to the library, as at the time I had intended to rewrite
+the RPNIL compiler to accept a newer (S-Expression based) IL, but
+this idea fizzled out (mostly in concern over garbage production and
+compiler-performance issues).<br>
+<br>
+(At present, RPNIL can't
+directly accept JBC or MSIL derived input mostly as a result of there
+being different conventions for argument passing and because this
+difference is not presently straightforwards to resolve...).<br>
+<br>
+</p>
+<p style="margin-bottom: 0in;"><a href="2010-01-06_BGBSXIL0.html">BGB
+SXIL Spec</a></p>
+<p style="margin-bottom: 0in;"><br>
+Status Update: As of 2011-02-26, depending on success with the BS2VM
+effort, the BS2IL Assembler syntax may begin to phase out the RPNIL
+syntax.<br>
+</p>
+<p style="margin-bottom: 0in;">As of 2011-06-18, most new effort has
+shifted to the BGBScript VM. RPNIL may continue for now, but this
+component may later be partially repurposed as a new BGBScript JIT or
+similar.<br>
+</p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<h4>BGBCCC/BGBMeta</h4>
+<p style="margin-bottom: 0in;">This is the C Compiler core, or as I
+often call it, the "upper compiler". This library contains
+the preprocessor, main parser, and upper-end compiler machinery. The
+current compiler is built around the internal use of XML trees (in a
+DOM-style representation), and like the RPNIL/SXIL compiler, does its
+own internal memory management (this is primarily a garbage-control
+strategy, as the compiler may produce an "absurd" amount of
+garbage in a very short period of time, and it proves preferable
+performance-wise to keep all the garbage contained and simply destroy
+the heap when done). output produced is textual RPNIL.<br>
+<br>
+This
+library also provides the main API for the compiler, and is presently
+responsible for orchestrating the rest of the compiler stages. It is
+also this stage which is the primary producer of metadata, although
+it does not manage the metadata itself (this is presently done by
+BGBDY/DYLL). Beyond C, this library is also responsible for the (thus
+far incomplete) C++, Java, and C# compilers (these share most of the
+compiler machinery between them).</p>
+<p style="margin-bottom: 0in;"><br>
+BGBMeta is the name of this component when it is being used as a
+metadata generation tool.<br>
+</p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<p style="margin-bottom: 0in;"><a href="2010-01-13_BGBCCC0.html">BGBCCC
+Spec</a></p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<h4>BGBSCR12, BGBSVC, and others</h4>
+<p style="margin-bottom: 0in;">These are misc components, and as such
+typically serve non-central roles. BGBSCR12 was actually the original
+form of this project, but the components have largely split off and
+inflated greatly. BGBSVM was part of this original core, intended
+mostly to be modified into an ECMAScript/JavaScript engine, BGBSVC
+was the core GC and typesystem from BGBSCR12, but stripped down and
+re-scoped, ...<br>
+<br>
+Some of this stuff is atrophied as well...</p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<p style="margin-bottom: 0in;"><a href="2010-01-10_BGBSVM0.html">BGBSVM
+Spec</a></p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<p style="margin-bottom: 0in;"><a href="2010-01-13_BGBJVM0.html">BGBJVM
+Spec</a></p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+</body>
+</html>

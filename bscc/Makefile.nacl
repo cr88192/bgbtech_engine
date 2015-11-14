@@ -1,0 +1,48 @@
+# BUILD = /usr
+BUILD = .
+TOOLS_BASE = .
+INSTBASE=/usr
+INST_INC=/usr/include
+INST_BIN=/usr/bin
+INST_DLL=/usr/lib64
+INST_LIB=/usr/lib64
+INST_META=/usr/lib64
+
+SDK_BASE = C:/nacl_sdk/pepper_23
+SDK_TOOL_BASE = $(SDK_BASE)/toolchain/win_x86_glibc
+
+export PATH := $(TOOLS_BASE):$(SDK_TOOL_BASE)/bin:$(PATH)
+
+export BUILD:=.
+export MKSUF:=.nacl
+export LIBSUF:=.na
+export DLLSUF:=.so
+export EXESUF:=.nexe
+export OBJSUF:=.no
+export BINSUF:=.exe
+export DLLPF:=lib
+
+export TARG=i686-nacl
+
+export CC=$(TARG)-gcc
+export CC_OUTEXE=$(CC) -o 
+export CC_OUTDLL=$(CC) -shared -o 
+export CC_OUTOBJ=$(CC) -c -o 
+
+export EXE := .nexe
+export BIN := .exe
+export O := .no
+export A := .na
+
+export BGBMETA := ../bgbmeta$(BINSUF)
+export BGBMETA_EXW := $(BGBMETA) /Fw
+export BMETA_CFLAGS := /Iinclude /I../include
+
+include Makefile.inc
+
+clean: FORCE
+#	rm -rf $(shell find -name \*.no)
+#	rm -rf $(shell find -name \*.na)
+#	rm -rf $(shell find -name \*.nso)
+#	rm -rf $(shell find -name \*.nelf)
+

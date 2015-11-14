@@ -1,0 +1,201 @@
+all: bscc base3d FORCE
+
+base3d: includes libs apps FORCE
+
+FORCE:
+
+BUILD=.
+MKSUF=.msvc
+ARCH=$(shell autohead.exe -idarch)
+
+includes_bscc:
+	$(MAKE) -C bscc -f Makefile$(MKSUF) includes
+	cp -rf bscc/include/*		$(BUILD)/include
+
+libs_bscc:
+	$(MAKE) -C bscc -f Makefile$(MKSUF) libs
+	cp -rf bscc/*.lib		$(BUILD)
+	cp -rf bscc/*.dll		$(BUILD)
+
+apps_bscc:
+	$(MAKE) -C bscc -f Makefile$(MKSUF) apps
+	cp -rf bscc/*.exe		$(BUILD)
+
+meta_bscc: FORCE
+	$(MAKE) -C bscc -f Makefile$(MKSUF) meta
+	cp -rf bscc/*_meta.txt		$(BUILD)
+
+bscc: includes_bscc libs_bscc apps_bscc
+
+
+includes_q2core:
+	$(MAKE) -C q2core -f Makefile$(MKSUF) includes
+	cp -rf q2core/include/*		$(BUILD)/include
+
+libs_q2core:
+	$(MAKE) -C q2core -f Makefile$(MKSUF) libs
+	cp -rf q2core/*.lib		$(BUILD)
+	cp -rf q2core/*.dll		$(BUILD)
+
+apps_q2core:
+	$(MAKE) -C q2core -f Makefile$(MKSUF) apps
+	cp -rf q2core/*.exe		$(BUILD)
+
+meta_q2: FORCE
+	./bgbmeta.exe /Fngamex86_meta.txt	q2core/game/g_local.h /Iinclude
+	./bgbmeta.exe /Fnref_gl_meta.txt	q2core/ref_gl/gl_local.h /Iinclude
+
+q2core: includes_q2core libs_q2core apps_q2core
+
+
+includes: FORCE
+	$(MAKE) -C libbsde21 -f Makefile$(MKSUF) includes
+	$(MAKE) -C libvecmath -f Makefile$(MKSUF) includes
+#	$(MAKE) -C bsgen -f Makefile$(MKSUF) includes
+	$(MAKE) -C bgbmid1 -f Makefile$(MKSUF) includes
+	$(MAKE) -C tremor -f Makefile$(MKSUF) includes
+#	$(MAKE) -C bscc -f Makefile$(MKSUF) includes
+
+	$(MAKE) -C btgecm -f Makefile$(MKSUF) includes
+	$(MAKE) -C btgesv -f Makefile$(MKSUF) includes
+	$(MAKE) -C btgecl -f Makefile$(MKSUF) includes
+	$(MAKE) -C bttile2d -f Makefile$(MKSUF) includes
+
+	$(MAKE) -C bgbbtjpg -f Makefile$(MKSUF) includes
+	$(MAKE) -C libpdgl -f Makefile$(MKSUF) includes
+	$(MAKE) -C lbxgl3 -f Makefile$(MKSUF) includes
+
+#	$(MAKE) -C q2core -f Makefile$(MKSUF) includes
+
+	cp -rf libbsde21/include/*.h	$(BUILD)/include
+	cp -rf libvecmath/*.h			$(BUILD)/include
+#	cp -rf bsgen/include/*.h		$(BUILD)/include
+#	cp -rf bgbmid/*.h				$(BUILD)/include
+	cp -rf bgbmid1/include/*.h		$(BUILD)/include
+	cp -rf tremor/*.h				$(BUILD)/include
+#	cp -rf bscc/include/*			$(BUILD)/include
+
+	cp -rf btgecm/include/*		$(BUILD)/include
+	cp -rf btgesv/include/*		$(BUILD)/include
+	cp -rf btgecl/include/*		$(BUILD)/include
+	cp -rf bttile2d/include/*	$(BUILD)/include
+
+	cp -rf bgbbtjpg/include/*	$(BUILD)/include
+	cp -rf libpdgl/include/*	$(BUILD)/include
+	cp -rf lbxgl3/include/*		$(BUILD)/include
+
+#	cp -rf q2core/include/*		$(BUILD)/include
+
+libs: FORCE
+#	$(MAKE) -C bscc -f Makefile$(MKSUF) libs
+#	cp -rf bscc/*.lib		$(BUILD)
+#	cp -rf bscc/*.dll		$(BUILD)
+
+	$(MAKE) -C libbsde21 -f Makefile$(MKSUF) libs
+	cp -rf libbsde21/*.lib		$(BUILD)
+	cp -rf libbsde21/*.dll		$(BUILD)
+
+	$(MAKE) -C libvecmath -f Makefile$(MKSUF) libs
+	cp -rf libvecmath/*.lib		$(BUILD)
+	cp -rf libvecmath/*.dll		$(BUILD)
+
+#	$(MAKE) -C bsgen -f Makefile$(MKSUF) libs
+#	cp -rf bsgen/*.lib		$(BUILD)
+#	cp -rf bsgen/*.dll		$(BUILD)
+
+	$(MAKE) -C bgbmid1 -f Makefile$(MKSUF) libs
+	cp -rf bgbmid1/*.lib		$(BUILD)
+	cp -rf bgbmid1/*.dll		$(BUILD)
+
+	$(MAKE) -C tremor -f Makefile$(MKSUF) libs
+	cp -rf tremor/*.lib		$(BUILD)
+	cp -rf tremor/*.dll		$(BUILD)
+
+	$(MAKE) -C btgecm -f Makefile$(MKSUF) libs
+	cp -rf btgecm/*.lib		$(BUILD)
+	cp -rf btgecm/*.dll		$(BUILD)
+
+	$(MAKE) -C bgbbtjpg -f Makefile$(MKSUF) libs
+	cp -rf bgbbtjpg/*.lib		$(BUILD)
+	cp -rf bgbbtjpg/*.dll		$(BUILD)
+
+	$(MAKE) -C libpdgl -f Makefile$(MKSUF) libs
+	cp -rf libpdgl/*.lib		$(BUILD)
+	cp -rf libpdgl/*.dll		$(BUILD)
+
+	$(MAKE) -C lbxgl3 -f Makefile$(MKSUF) libs
+	cp -rf lbxgl3/*.lib		$(BUILD)
+	cp -rf lbxgl3/*.dll		$(BUILD)
+
+	$(MAKE) -C btgesv -f Makefile$(MKSUF) libs
+#	cp -rf btgesv/*.lib		$(BUILD)
+	cp -rf btgesv/*.dll		$(BUILD)/resource
+#	./bgbmeta.exe /Fwresource/server$(ARCH).dll	btgesv.h /Iinclude
+
+	$(MAKE) -C btgecl -f Makefile$(MKSUF) libs
+#	cp -rf btgecl/*.lib		$(BUILD)
+	cp -rf btgecl/*.dll		$(BUILD)/resource
+#	./bgbmeta.exe /Fwresource/client$(ARCH).dll	btgecl.h /Iinclude
+
+	$(MAKE) -C bttile2d -f Makefile$(MKSUF) libs
+#	cp -rf bttile2d/*.lib		$(BUILD)
+	cp -rf bttile2d/*.dll		$(BUILD)/resource
+
+#	$(MAKE) -C q2core -f Makefile$(MKSUF) libs
+#	cp -rf q2core/*.lib		$(BUILD)
+#	cp -rf q2core/*.dll		$(BUILD)
+
+
+apps: FORCE
+	$(MAKE) -C libbsde21 -f Makefile$(MKSUF) apps
+	$(MAKE) -C libvecmath -f Makefile$(MKSUF) apps
+#	$(MAKE) -C bsgen -f Makefile$(MKSUF) apps
+	$(MAKE) -C bgbmid1 -f Makefile$(MKSUF) apps
+	$(MAKE) -C tremor -f Makefile$(MKSUF) apps
+#	$(MAKE) -C bscc -f Makefile$(MKSUF) apps
+
+	$(MAKE) -C bgbbtjpg -f Makefile$(MKSUF) apps
+	$(MAKE) -C libpdgl -f Makefile$(MKSUF) apps
+	$(MAKE) -C lbxgl3 -f Makefile$(MKSUF) apps
+
+#	$(MAKE) -C q2core -f Makefile$(MKSUF) apps
+
+	$(MAKE) -C apps -f Makefile$(MKSUF) apps
+
+	cp -rf libbsde21/*.exe		$(BUILD)
+	cp -rf libvecmath/*.exe		$(BUILD)
+#	cp -rf bsgen/*.exe			$(BUILD)
+	cp -rf bgbmid1/*.exe		$(BUILD)
+	cp -rf tremor/*.exe			$(BUILD)
+#	cp -rf bscc/*.exe			$(BUILD)
+
+	cp -rf bgbbtjpg/*.exe		$(BUILD)
+
+	cp -rf libpdgl/*.exe		$(BUILD)
+	cp -rf lbxgl3/*.exe			$(BUILD)
+#	cp -rf q2core/*.exe			$(BUILD)
+
+	cp -rf apps/*.exe			$(BUILD)
+
+
+meta_libs: FORCE
+	./bgbmeta.exe /Fnlibbsde_meta.txt	libbsde.h /Iinclude
+	./bgbmeta.exe /Fnlibvecmath_meta.txt	libvecmath.h /Iinclude
+#	./bgbmeta.exe /Fnlibbsgen_meta.txt	bsgen.h /Iinclude
+	./bgbmeta.exe /Fnlibbgbmid_meta.txt	bgbmid.h /Iinclude
+	./bgbmeta.exe /Fnlibtrem_meta.txt	ivorbisfile.h /Iinclude
+	./bgbmeta.exe /Fnlibpdgl_meta.txt	pdgl.h /Iinclude
+	./bgbmeta.exe /Fnlibpdglui_meta.txt	pdglui.h /Iinclude
+	./bgbmeta.exe /Fnliblbxgl2_meta.txt	lbxgl2.h /Iinclude
+#	./bgbmeta.exe /Fnbtgecm_meta.txt	btgecm.h /Iinclude
+#	./bgbmeta.exe /Fnbtgesv_meta.txt	btgesv.h /Iinclude
+#	./bgbmeta.exe /Fnserver$(ARCH)_meta.txt	btgesv.h /Iinclude
+#	./bgbmeta.exe /Fnclient$(ARCH)_meta.txt	btgecl.h /Iinclude
+
+#	./bgbmeta.exe /Fwresource/server$(ARCH).dll	btgesv.h /Iinclude
+#	./bgbmeta.exe /Fwresource/client$(ARCH).dll	btgecl.h /Iinclude
+
+
+meta: meta_bscc meta_libs FORCE
+
+clean:

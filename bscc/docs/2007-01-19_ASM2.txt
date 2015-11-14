@@ -1,0 +1,99 @@
+BGB Assembler
+
+A customized assembler syntax will exist.
+The syntax will be largley similar to that of nasm, but will contain some differences as well.
+
+All labels end with ':'.
+Comments may be written in the C or C++ styles ("/* ... */" or "//...").
+';' may be used to group multiple opcodes per line, but is optional for prefixes and opcodes that can't accept arguments.
+
+The assembler will be case sensitive.
+
+
+Some cases and some opcodes are handled differently than in other assemblers, in particular:
+jmp, call, jxx, ... have been split up dependent on size (at present this is not handled automatically, and so the default name defaults to the largest size).
+
+jmp_b	label		short/byte jump
+jmp_w label		near 16-bit jump
+jmp label		defaults to near-32 jump
+
+call_w label	calls based on a near 16-bit offset
+call label		defaults to near-32 call
+
+je_b, jb_w, jnz	same as the above
+
+
+In some cases where it is problematic to distinguish the size or type, the opcodes have been given appended names.
+
+inc_r	reg
+dec_r	reg
+
+Part of the motivation in the case of the above would be the added hassle of otherwise rejecting them in 64-bit mode (they are encoded the same as the rex prefix).
+
+inc reg
+dec reg
+
+Are functionally equivalent, but generate slightly longer opcodes, however they are still valid in 64-bit mode.
+
+
+Segment overrides are to be written as prefixes, for example:
+fs mov eax, [esi]
+VS:
+mov eax, [fs:esi]
+
+The reason being primarily one of parser simplicity (this may change in the future).
+
+Opcodes working on mem and an immed will default to 32 bits (in both 32 and 64 bit mode).
+
+mov [edi], 69
+Is the same as:
+mov dword [edi], 69
+
+Likewise:
+mov [rdi], 69
+Is the same as:
+mov dword [rdi], 69
+
+
+
+Register Naming
+
+Intel and AMD formalize the following convention:
+
+x86-32:
+Byte:		al, cl, dl, bl, ah, ch, dh, bh
+Word:		ax, cx, dx, bx, sp, bp, si, di
+DWord:	eax, ecx, edx, ebx, esp, ebp, esi, edi
+
+x86-64:
+
+Base Regs:
+Byte:		al	cl	dl	bl	spl	bpl	sil	dil
+Word:		ax	cx	dx	bx	sp	bp	si	di
+DWord:	eax	ecx	edx	ebx	esp	ebp	esi	edi
+QWord:	rax	rcx	rdx	rbx	rsp	rbp	rsi	rdi
+
+Extended GPRs:
+Byte:		r8b	r9b	r10b	r11b	r12b	r13b	r14b	r15b
+Word:		r8w	r9w	r10w	r11w	r12w	r13w	r14w	r15w
+DWord:	r8d	r9d	r10d	r11d	r12d	r13d	r14d	r15d
+QWord:	r8	r9	r10	r11	r12	r13	r14	r15
+
+
+I, however, will make the following complaint (and extension):
+It does not make sense that we have such an arbitrary break in convention depending on which registers are being accessed, as such, I extend both conventions to cover all the registers.
+
+Base Regs:
+Byte:		r0b	r1b	r2b	r3b	r4b	r5b	r6b	r7b
+Word:		r0w	r1w	r2w	r3w	r4w	r5w	r6w	r7w
+DWord:	r0d	r1d	r2d	r3d	r4d	r5d	r6d	r7d
+QWord:	r0	r1	r2	r3	r4	r5	r6	r7
+
+Extended GPRs:
+Byte:		el	fl	gl	hl	il	jl	kl	ll
+Word:		ex	fx	gx	hx	ix	jx	kx	lx
+DWord:	eex	efx	egx	ehx	eix	ejx	ekx	elx
+QWord:	rex	rfx	rgx	rhx	rix	rjx	rkx	rlx
+
+Albeit, alternative possibilities exist in this latter case (an ijklmnop progression, or mimicking irregularities of the latter 4 base regs).
+

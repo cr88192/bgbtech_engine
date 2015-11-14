@@ -1,0 +1,18 @@
+This will attempt to define and focus the current and future direction of the VM.
+
+So, the general structure thus far is:
+	Blocks filled with bytecode;
+	Tables holding literal values.
+
+Assembly Dumps (bsa):
+;comment
+BLOCK name flags nlit ( args* )
+	litnum litval
+	...
+BODY
+	ops
+	...
+
+For the literal tables, the numbers will be mostly for illustration.
+the rest of the line will be assumed to contain the value (most types will be serialized the same as s-exps).
+

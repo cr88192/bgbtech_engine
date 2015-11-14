@@ -1,0 +1,3 @@
+$flags voxel partialblock
+$vox_mins 0 0 0
+$vox_maxs 32 32 16

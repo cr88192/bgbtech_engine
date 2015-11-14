@@ -1,0 +1,6 @@
+package bsvm.lang;
+
+public final class Void
+{
+public static Class TYPE = void.class;
+}

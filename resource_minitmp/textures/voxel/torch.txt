@@ -1,0 +1,20 @@
+// $flags voxel alpha nonsolid
+$flags voxel alpha nodepthwrite
+$vox_EmitBlock BTGE_Voxel_EmitBlock_Torch
+
+$vox_vlight_val 15
+$vox_vlight_clr white
+
+// $video textures/voxel/torch.avi
+
+$begin_frame textures/voxel/torch1
+$flags_prev
+$end_frame
+
+$begin_frame textures/voxel/torch2
+$flags_prev
+$end_frame
+
+$begin_frame textures/voxel/torch3
+$flags_prev
+$end_frame_loop

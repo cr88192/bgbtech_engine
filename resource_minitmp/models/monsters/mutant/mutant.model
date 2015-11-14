@@ -1,0 +1,12 @@
+//Infantry
+
+bones mutant0.bone
+
+vmesh mutant0.ac
+
+// anim gun0 gun0.anim
+
+
+origin 0 0 32
+scale 2 2 1.25
+xlat 0 0 24

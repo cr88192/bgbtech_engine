@@ -1,0 +1,57 @@
+
+Idea:
+dyt dyllBeginUnwind();
+stuff...
+void dyllEndUnwind(dyt ctx); 
+
+Creates an unwind context, where unwinding will transfer control back to BeginUnwind. EndUnwind will remove the handler and destroy the context. 
+
+void dyllUnwindNext(dyt ctx); 
+Used during an exception to pass the current exception onto the next handler. 
+
+dyt dyllUnwindObj(dyt ctx); 
+Get the object associated with the current unwind state. 
+
+void dyllDoUnwind(dyt obj);
+Initiate an unwind with the given object. 
+
+void dyllThrowObj(dyt obj);
+void dyllThrowName(char *str);
+void dyllThrowClass(char *str);
+void dyllThrow(char *str); 
+
+Throw an exception.
+ThrowObj takes an instance of an exception class.
+ThrowName takes a raw name and throws it (symbolic only).
+ThrowClass assumes str is a classname and tries to create an instance of said class and throws it.
+
+Throw is more generic, and will try to figure out what to do with the string. 
+
+int dyllCatchP(dyt ctx, char *str);
+Returns non-zero if a given exception was thrown.
+If str is NULL, this simply tells if an exception was thrown.
+If a name was thrown, str is matched exactly.
+If an object was thrown and str refers to a superclass of the thrown object, it matches.
+
+
+the API is not so impressive, but the internals are hairy, since all this patches into the Win32 SEH system... 
+(granted... less ugly would be to just use TLS and longjmp internally... but oh well...). 
+an example of how this could look: 
+dyt ex; 
+ex=dyllBeginUnwind(); 
+if(!dyllCatchP(ex, NULL)) 
+{ 
+	//try stuff... 
+}else if(dyllCatchP(ex, "BoundsCheck")) 
+{ 
+	//do stuff related to bounds check 
+}else 
+{ 
+	//unknown, continue on... 
+	//finally... 
+	dyllUnwindNext(ex); 
+} 
+//finally (if this makes sense here) 
+//now exit normally 
+dyllEndUnwind(ex); 
+

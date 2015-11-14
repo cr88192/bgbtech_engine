@@ -1,0 +1,191 @@
+More Thoughts:
+
+Stick to a similar setup as the previous VM.
+
+0x0000..0x00BF: Single Byte Opcodes
+0x00C0..0x3FFF: Dual Byte Opcodes
+
+Or, a longer scheme:
+0x00000000..0x000000BF: 0x00..0xBF
+0x000000C0..0x00002FFF: 0xC0..0xEF	0xXX
+0x00003000..0x000BFFFF: 0xF0..0xFB	0xXX 0xXX
+0x000C0000..0x02FFFFFF: 0xFC..0xFE	0xXX 0xXX 0xXX
+0x03000000..0xFFFFFFFF: 0xFF		0xXX 0xXX 0xXX 0xXX
+
+There will be some overlap, as it will be possible to encode longer codes for shorter values.
+
+another VLI scheme:
+Similar to the matroska scheme (32-bit):
+0x00000000..0x0000007F: 0x00..0x7F
+0x00000080..0x00003FFF: 0x80..0xBF 0xXX
+0x00004000..0x001FFFFF: 0xC0..0xDF 0xXX 0xXX
+0x00200000..0x0FFFFFFF: 0xE0..0xEF 0xXX 0xXX 0xXX
+0x10000000..0xFFFFFFFF: 0xF0..0xF8 0xXX 0xXX 0xXX 0xXX
+...
+
+64-bit (breaks pattern at end):
+0x0000000000000000..0x000000000000007F: 0x00..0x7F
+0x0000000000000080..0x0000000000003FFF: 0x80..0xBF		0xXX
+0x0000000000004000..0x00000000001FFFFF: 0xC0..0xDF		0xXX 0xXX
+0x0000000000200000..0x000000000FFFFFFF: 0xE0..0xEF		0xXX 2x...
+0x0000000010000000..0x00000007FFFFFFFF: 0xF0..0xF7		0xXX 3x...
+0x0000000800000000..0x000003FFFFFFFFFF: 0xF8..0xFB		0xXX 4x...
+0x0000040000000000..0x0001FFFFFFFFFFFF: 0xFC..0xFD		0xXX 5x...
+0x0002000000000000..0x00FFFFFFFFFFFFFF: 0xFE			0xXX 6x...
+0x0100000000000000..0xFFFFFFFFFFFFFFFF: 0xFF			0xXX 7x...
+
+Original:
+0x0100000000000000..0x7FFFFFFFFFFFFFFF: 0xFF 0x00..0x7F	0xXX 6x...
+0x8000000000000000..0xFFFFFFFFFFFFFFFF: 0xFF 0x80..0xBF	0xXX 7x...
+
+...
+
+The pattern may be continued as well for 128 or 256 bit integers.
+Signed values will be coded by folding the sign into the LSB.
+
+(x>=0)?(2*x):(2*(-x))-1;
+
+
+As noted, these schemes imply a high-low ordering.
+
+
+Stack Machine
+
+The exact size of stack elements is not defined.
+Some types may differ in size wrt others (long long or double may or may not be the same size as a pointer, which may or may not be different than an int or float).
+
+
+Variables
+
+Variables, Labels, ... will be identified symbolically.
+During bytecode generation, a label will be created either when referenced in a jump or when declared (whichever comes first), and so opcodes will point to the label, which will point to the target.
+
+Args and Variables will similarly be defined seperate from the bytecode itself, and will be referenced via symbolic indices.
+
+
+
+Type And Operators
+
+Opcodes using types and operators will include a type-op byte ('tyop'). This byte will have an operator in the upper 4 bits, and a type in the lower 4. If either the type or operator overflows, the field will be all 1s, and a VLI will follow (if both overflow, it is 2 VLIs, first the type then the operator).
+
+If only one is present, the operator or type will be represented as a VLI.
+
+If 2 types are given, this will be represented as a type-type byte ('ty2'), the high 4 bits give the dest type, and the low 4 the source type.
+
+
+Types
+
+Basic Types will be treated as a small bitmask:
+if(type<8)
+	bit 2: 0=unsigned, 1=signed
+	bits 0 and 1 gives the size:
+		0=8 bits;
+		1=16 bits;
+		2=32 bits;
+		3=64 bits.
+
+as such:
+0=unsigned byte
+1=unsigned short
+2=unsigned int
+3=unsigned long long
+4=signed byte
+5=signed short
+6=signed int
+7=signed long long
+
+and:
+8=float
+9=double
+10=pointer (generic)
+
+Other types (ie: structs or unions) will be user-defined. types easily representable as integers (derived types, bool, enum, ...) will be treated as such.
+
+
+Operators
+
+Operators will be context-dependent, but will be defined.
+
+Comparrison:
+	0=invalid;
+	1=equal;
+	2=less;
+	3=greater;
+	4=(reserved);
+	5=not-equal;
+	6=greater-equal;
+	7=less-equal.
+
+Arithmetic:
+	0=add;
+	1=subtract;
+	2=multiply;
+	3=divide;
+	4=modulo;
+	5=and;
+	6=or;
+	7=xor;
+	8=shl;
+	9=shr;
+	10=idiv.
+
+
+Opcodes
+push_i <VLI>	-i		Push integer (int, or smaller)
+push_l <VLI>	-l		Push integer (long)
+push_p <sym>	-p		Push a pointer to a given name.
+
+pop_i			i-		Pop integer (int or smaller, also float)
+pop_l			l-		Pop integer (long, double)
+pop_p			p-		Pop pointer
+pop <type>		v-		Pop generic type.
+
+load <var>		-v		Load from variable.
+store <var>		v-		Store to Variable.
+
+loadindex_i <ty>	pi-v		Load from an array (ty gives elem type)
+storeindex_i <ty>	piv-		Store to an array
+loadindex_s <ty> <sym>	p-v	Load from a struct/union
+storeindex_s <ty> <sym>	pv-	Store to a struct/union
+
+conv <ty2>		v-v		Convert between types.
+
+mark			-		Mark the current stack pos
+
+call_p		p->M v	Call function, clear to mark, push retval
+call_s <sym>	->M v		Call a named function
+call_sv <sym>	->M		Call a named function, ignore retval
+
+ret_v			-		Return void
+ret_i			i-		Return integer
+ret_l			l-		Return long
+ret_p			p-		Return pointer
+ret <ty>		v-		Return generic
+
+dup_i			i-ii		Duplicate int
+dup_l			l-ll		Duplicate long
+dup_p			p-pp		Duplicate pointer
+dup <ty>		v-vv		Duplicate generic
+
+exch_i		ij-ji		Exchange int
+exch_l		kl-lk		Exchange long
+exch_p		pq-qp		Exchange pointer
+exch <ty>		xy-yz		Exchange values
+
+unary <tyop>	v-v		Unary operation
+binary <tyop>	xy-v		Binary operation
+cmp <tyop>		xy-b		Compare operation
+
+inc_i			i-i		Increment integer
+dec_i			i-i		Decrement integer
+inc <ty>		v-v		Increment generic
+dec <ty>		v-v		Decrement generic
+inc_s <sym>		v-v		Increment variable
+dec_s <sym>		v-v		Decrement variable
+
+jmp <sym>		-		Jump to a given name
+jmp_t <sym>		-		Jump to a given name if true
+jmp_f <sym>		-		Jump to a given name if false
+jmp_cu <tyop> <sym>	-	Jump to a given name (unary cmp)
+jmp_cb <tyop> <sym>	-	Jump to a given name (binary cmp)
+

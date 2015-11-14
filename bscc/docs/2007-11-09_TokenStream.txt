@@ -1,0 +1,15 @@
+Premise:
+API for token buffer/stream;
+Also manages buffering issues.
+
+Location:
+Uncertain, BGBASM makes sense because it is used by upper layers, but upper layers are not used by BGBASM.
+
+BGBGC is another possibly sane location.
+
+
+Possible API:
+BSCC_BufferStream		//abstract structure (maybe a dynamic type)
+
+BSCC_BufferStream *BSCC_NewBufStrm();
+New empty buffer stream (output).

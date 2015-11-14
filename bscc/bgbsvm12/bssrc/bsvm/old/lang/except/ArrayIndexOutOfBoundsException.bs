@@ -1,0 +1,11 @@
+package bsvm.lang;
+
+public class ArrayIndexOutOfBoundsException extends IndexOutOfBoundsException
+{
+// private static final long serialVersionUID = 2256477558314496007L;
+
+public ArrayIndexOutOfBoundsException()
+	{ super(); }
+public ArrayIndexOutOfBoundsException(String s)
+	{ super(s); }
+}

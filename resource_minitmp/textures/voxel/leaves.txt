@@ -1,0 +1,3 @@
+$flags voxel alpha
+// $flags voxel alpha lightmat
+$vox_img_top_scale 2

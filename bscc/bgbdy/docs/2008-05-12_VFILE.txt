@@ -1,0 +1,99 @@
+VFILE is a VFS API more or less implementing a mix of stdio and POSIX features.
+
+VFILE *vffopen(char *name, char *mode);
+
+Opens a file.
+Name gives the path VFS path.
+Mode is more or less the same as for fopen.
+
+
+int vfread(void *buf, int s1, int s2, VFILE *fd);
+int vfwrite(void *buf, int s1, int s2, VFILE *fd);
+int vfgetc(VFILE *fd);
+int vfputc(int c, VFILE *fd);
+int vfflush(VFILE *fd);
+vfoffs_t vfseek(VFILE *fd, vfoffs_t pos, int rel);
+vfoffs_t vftell(VFILE *fd);
+int vfeof(VFILE *fd);
+int vfclose(VFILE *fd);
+char *vfgets(char *s, int n, VFILE *fd);
+
+Perform operations analogous to the stdlib equivalents.
+
+
+int vfioctl(VFILE *fd, int req, void *arg);
+int vfioctl2(VFILE *fd, int req, void *arg0, void *arg1);
+int vfioctl3(VFILE *fd, int req, void *arg0, void *arg1, void *arg2);
+
+Perform IOCTL's on the particular FD's.
+The meaning of the values passed to 'req' depends on the specifics of the open file.
+
+
+VFDIR *vfopendir(char *name);
+void vfclosedir(VFDIR *dir);
+char *vfreaddir(VFDIR *dir);
+
+These calls allow opening directories and listing their contents.
+
+
+Misc Utility
+
+char *vfgenabs(char *base, char *name);
+
+If name is an absolute path, return this, otherwise join together the base and the name and return this.
+
+char *vfgetext(char *name);
+
+Take a filename and locate the file extension.
+Returns NULL if the file lacks an extension.
+
+int vfcmpext(char *str, char *ext);
+
+The str argument is a file extension, and ext is a semicolon-separated list of possible file extensions. Returns 1 is str is in the list, otherwise it returns 0.
+
+byte *vf_bufferin(VFILE *fd);
+byte *vf_bufferin_sz(VFILE *fd, int *rsz);
+
+Read a file into a buffer and return this buffer.
+In the latter case, rsz is used to return the size of the file.
+
+
+int vfDeflateBuffer(byte *obuf, byte *ibuf, int osz, int isz);
+int vfDeflateBuffer64(byte *obuf, byte *ibuf, int osz, int isz);
+int vfDeflateBufferLvl(byte *obuf, byte *ibuf, int osz, int isz, int lvl);
+int vfInflateBuffer(byte *obuf, byte *ibuf, int osz, int isz);
+
+Compress or decompress a buffer using the deflate algorithm.
+These represent raw deflate streams.
+For these, obuf and ibuf are the output and input buffers, and osz and isz are the output and input sizes (the output sizes being an indicator of the buffer length).
+
+The return value is either the output length, or a negative value in case of error.
+
+vfDeflateBuffer() compresses using default settings.
+vfDeflateBuffer64() compresses using a non-standard version of deflate (Deflate64) which uses a larger window but is not compatible with all decoders.
+vfDeflateBufferLvl() compresses using an adjustable ratio (between 0 and 9, with 0 being fastest and 9 being best).
+
+
+void vf_mount(char *src, char *dst, char *fs, char **ops);
+void vf_umount(char *name);
+
+Mount or unmount a volume.
+
+
+Internal
+
+See relevant headers...
+
+void vf_register(VFILE_Interface *iface);
+void vf_register_fs(VFILE_Mount_Interface *iface);
+
+These are internal.
+VFILE_Interface gives a set of methods for manipulating an open file.
+VFILE_Mount_Interface gives a set of methods for managing a mounted volume.
+
+VFILE *vf_new();
+void vf_destroy(VFILE *fd);
+VFILE_Mount *vf_new_mount();
+
+Create or destroy contexts.
+

@@ -1,0 +1,496 @@
+int dycObjectP(dyt obj);
+int dycClassP(dyt obj);
+int dycSlotP(dyt obj);
+int dycMethodP(dyt obj);
+
+Return nonzero value if obj is the correct type of object.
+
+
+void dycBeginClass(char *name, char *super);
+dycClass dycEndClass();
+
+Begin and end a class declaration.
+Super identifies the superclass, or may be NULL (indicating no superclass).
+If name is NULL, then the class will be anonymous.
+
+The return value from 'dycEndClass()' will be the handle of the created class.
+
+
+void dycBeginClassAnon(dycClass super);
+dycClass dycEndClassAnon();
+
+Also creates an anonymous class, but gives the superclass as a class handle (allowing the use of other anonymous classes as superclasses).
+
+
+void dycSlotBasic(char *name, char *sig);
+void dycSlotStatic(char *name, char *sig);
+
+Declare a new slot.
+Basic slots reserve space in the class-instance, and have a value which is independent for each class instance.
+Static slots share the value between all instances of the class, and also with any subclasses.
+
+void dycSlotStatici(char *name, char *sig, int val);
+void dycSlotStaticl(char *name, char *sig, s64 val);
+void dycSlotStaticf(char *name, char *sig, double val);
+void dycSlotStaticd(char *name, char *sig, double val);
+void dycSlotStaticU(char *name, char *sig, void *val);
+
+Declare a static slot and set the initial value.
+
+
+void dycSlotInit(char *name, char *sig);
+void dycSlotIniti(char *name, char *sig, int val);
+void dycSlotInitl(char *name, char *sig, s64 val);
+void dycSlotInitf(char *name, char *sig, double val);
+void dycSlotInitd(char *name, char *sig, double val);
+void dycSlotInitU(char *name, char *sig, void *val);
+
+Declare an initialized slot.
+Initialized slots hold their values in the class, and are unique to each class. When an object is created from the class, the values stored in the init slot are copied into the object.
+
+
+void dycMethodBasic(char *name, char *sig);
+void dycMethodStatic(char *name, char *sig);
+
+Declare a method in an abstract sense (creates the method, but does not provide a body). When called, a basic method recieves
+
+
+void dycMethodFunc(char *name, char *sig, dyt fcn);
+void dycMethodStaticFunc(char *name, char *sig, dyt fcn);
+
+Declare a method and give the method body to use. The fcn argument needs to be an object of an appropriate type.
+
+
+void dycMethodCFunc(char *name, char *sig, void *fcn);
+void dycMethodCFuncData(char *name, char *sig, void *fcn, void *data);
+void dycMethodCSelf(char *name, char *sig, void *fcn);
+void dycMethodCSelfData(char *name, char *sig, void *fcn, void *data);
+void dycMethodStaticCFunc(char *name, char *sig, void *fcn);
+void dycMethodStaticCFuncData(char *name, char *sig, void *fcn, void *data);
+void dycMethodStaticCSelf(char *name, char *sig, void *fcn);
+void dycMethodStaticCSelfData(char *name, char *sig, void *fcn, void *data);
+
+Declare a method and provide a C function (as a void pointer).
+
+'Func' recieves its arguments as-is.
+'FuncData' has data passed as the first argument.
+'Self' has the object passed as the first argument.
+'SelfData' has the object as the first argument and data as the second.
+
+'StaticCSelf' and 'StaticCSelfData' are as above, except that the class is passed rather than the object.
+
+
+void dycSlotMethod(char *name, char *sig);
+void dycStaticSlotMethod(char *name, char *sig);
+
+Declare a slot method.
+A slot method behaves between that of a method and a slot.
+
+Namely:
+It may be called like a method, and may only hold method objects;
+It is unique to each instance, and so may be used for modifiable per-instance methods (the method is stored in a slot, rather than in a vtable).
+
+
+void dycSlotDelegate(char *name, char *cname);
+
+Add a delegate to an object. A delegate is a special kind of slot which holds object references. When some kinds of operations are performed, an access may be directed through a delegate.
+
+
+void dycClassInterface(char *name);
+
+Declares that the class being declared implements a given interface.
+
+
+void dycBeginIface(char *name, char *super);
+dycClass dycEndIface();
+
+Begin and end an interface declaration.
+Super gives the super-interface, and may give multiple super-interfaces separated by spaces.
+
+
+void dycClassSuper(char *name);
+void dycIfaceSuper(char *name);
+
+Provides an alternate way to give super-interfaces. If these is used, the super argument to BeginClass/BeginIface is to be NULL. These will differ from passing a string in that these will always create a Multiple-Inheritence case, even if only used once.
+
+
+void dycIfaceMethod(char *name, char *sig);
+void dycIfaceSlot(char *name, char *sig);
+
+Declares an interface method or slot.
+A method or slot declared in an interface may be used in place of a class-specific method or slot when accessing an object which is an instance of a class implementing the interface.
+
+
+dycClass dycGetClass(char *name);
+
+Lookup the class for a given classname.
+
+dycObject dycAlloc(dycClass inf);
+dycObject dycAllocClass(char *name);
+
+Allocate a new instance of the class.
+This sets up initial storage and may initialize slots, but does not call the constructor.
+
+
+dycObject dycNewClass(char *name);
+dycObject dycNewInitClass(char *name, char *sig, ...);
+dycObject dycNewInitClassV(char *name, char *sig, va_list args);
+dycObject dycNewInitClassU(char *name, char *sig, void **args);
+
+Creates a new instance of a class and calls the constructor.
+Sig is to be an exact match to one of the appropriate constructors for the class.
+
+All constructors are to have a return type of 'v' (void).
+In the case of 'dycNewClass()', the sig is '()v'.
+
+
+dycObject dycNew(dycClass inf);
+dycObject dycNewInit(dycClass inf, char *sig, ...);
+dycObject dycNewInitV(dycClass inf, char *sig, va_list args);
+dycObject dycNewInitU(dycClass inf, char *sig, void **args);
+
+As above, a new instance of the class is created and the constructor is called.
+
+
+
+int dycSubclassP(dycClass info, dycClass super);
+int dycSubclassOfP(char *name, char *super);
+
+Check if info is or is a subclass of super.
+
+
+int dycInstanceP(dycObject obj, dycClass inf);
+int dycInstanceOfP(dycObject obj, char *name);
+
+Check if obj is an instance of inf or an instance of a subclass of inf.
+
+
+dycClass dycGetObjClass(dycObject obj);
+dycClass dycGetClassSuper(dycClass inf);
+char *dycGetClassName(dycClass inf);
+char *dycGetObjClassName(dycObject obj);
+char *dycGetSlotName(dycSlot idx);
+char *dycGetSlotSig(dycSlot idx);
+char *dycGetMethodName(dycMethod idx);
+char *dycGetMethodSig(dycMethod idx);
+
+Not hard to figure out...
+
+
+dycSlot dycIdxSlot(dycClass info, char *name);
+dycSlot dycIdxObjSlot(dycObject obj, char *name);
+dycSlot dycIdxClassSlot(char *cname, char *sname);
+dycMethod dycIdxMethod(dycClass inf, char *name, char *sig);
+dycMethod dycIdxObjMethod(dycObject obj, char *name, char *sig);
+dycMethod dycIdxClassMethod(char *cname, char *name, char *sig);
+
+Look up slots or methods.
+
+
+void *dycGetSlotPtr(dycObject obj, dycSlot idx);
+void *dycGetInitPtr(dycClass inf, dycSlot idx);
+void *dycGetStaticPtr(dycClass inf, dycSlot idx);
+void *dycPtrSlot(dycObject obj, char *name);
+void *dycPtrStaticSlot(dycClass info, char *name);
+void *dycPtrInitSlot(dycClass info, char *name);
+void *dycPtrClassSlot(char *cname, char *sname);
+
+Get pointers to slots. This will be a pointer to the memory holding the value of the slot in question.
+
+note that GetSlotPtr/PtrSlot will also work with static slots and interface slots and such.
+GetInitPtr/PtrInitSlot will work with both init slots and static slot. Note that an init slot has the same identity as the normal instance slot with the same name, and so it is the use of this function that indicates one is accessing the init slot.
+
+GetStaticPtr/PtrStaticSlot are useful for when one knows the slot is static.
+
+
+
+dyt dycLookupMethodSig(dycObject obj, char *name, char *sig);
+dyt dycGetMethodFunc(dycClass inf, dycMethod idx);
+dyt dycGetObjMethodFunc(dycObject obj, dycMethod idx);
+
+Retrieve the function value from a given class or object method.
+
+
+void dycSetMethodFunc(dycClass inf, dycMethod idx, dyt fcn);
+void dycSetObjMethodFunc(dycObject obj, dycMethod idx, dyt fcn);
+
+Assign the method for a given class or object.
+Note that for normal static or virtual methods, these will modify the vtable of the respective object (and thus apply to all instances of this class, but does not effect superclasses, and it is undefined if/when this change will be reflected in sub-classes).
+
+For slot methods, the method is located in the object itself, and so the change will only apply to the object in question.
+
+
+dycSlot dycAddObjSlot(dycObject obj, char *name, char *sig);
+dycMethod dycAddObjMethod(dycObject obj, char *name, char *sig);
+
+Dynamically add a slot to an object. This slot will be a "prototype" slot/method, and will be unique to the object in question. Methods will be, by definition, stored in slots, and as such will be unique to this object.
+
+
+dycObject dycCloneObject(dycObject obj);
+
+Create a clone of an existing object. A clone is basically a new object which has the same class, a copy of all of the slots/methods/... from the old object.
+
+
+dyt dycGetSlot(dycObject obj, char *name);
+dyt dycGetSlotr(dycObject obj, char *name);
+void *dycGetSlotp(dycObject obj, char *name);
+int dycGetSlotsb(dycObject obj, char *name);
+int dycGetSlotub(dycObject obj, char *name);
+int dycGetSlotss(dycObject obj, char *name);
+int dycGetSlotus(dycObject obj, char *name);
+int dycGetSloti(dycObject obj, char *name);
+s64 dycGetSlotl(dycObject obj, char *name);
+float dycGetSlotf(dycObject obj, char *name);
+double dycGetSlotd(dycObject obj, char *name);
+
+Get the value of a slot which is looked up by name.
+
+The suffix gives the type, and is to be compatible with the slot in question (it is undefined what happens if there is a mismatch).
+
+Suffix:
+	(none), tries to access the slot using dynamic types;
+	r, reference (generic);
+	p, pointer (generic);
+	sb, signed byte;
+	ub, unsigned byte;
+	ss, signed short;
+	us, unsigned short;
+	i, integer (32-bit);
+	l, long (64-bit);
+	f, float;
+	d, double.
+
+Note that this is not the convention used in the signature strings.
+
+
+int dycSetSlot(dycObject obj, char *name, dyt val);
+int dycSetSlotr(dycObject obj, char *name, dyt val);
+int dycSetSlotp(dycObject obj, char *name, void *val);
+int dycSetSlotsb(dycObject obj, char *name, int val);
+int dycSetSlotub(dycObject obj, char *name, int val);
+int dycSetSlotss(dycObject obj, char *name, int val);
+int dycSetSlotus(dycObject obj, char *name, int val);
+int dycSetSloti(dycObject obj, char *name, int val);
+int dycSetSlotl(dycObject obj, char *name, s64 val);
+int dycSetSlotf(dycObject obj, char *name, float val);
+int dycSetSlotd(dycObject obj, char *name, double val);
+
+Assign the value in the slot, referencing by name.
+
+
+int dycGetsb(dycObject obj, dycSlot idx);
+int dycGetub(dycObject obj, dycSlot idx);
+int dycGetss(dycObject obj, dycSlot idx);
+int dycGetus(dycObject obj, dycSlot idx);
+int dycGeti(dycObject obj, dycSlot idx);
+s64 dycGetl(dycObject obj, dycSlot idx);
+float dycGetf(dycObject obj, dycSlot idx);
+double dycGetd(dycObject obj, dycSlot idx);
+dyt dycGetr(dycObject obj, dycSlot idx);
+void *dycGetp(dycObject obj, dycSlot idx);
+
+Get the value in the slot, accessed via the slot index.
+
+
+void dycSetsb(dycObject obj, dycSlot idx, int val);
+void dycSetub(dycObject obj, dycSlot idx, int val);
+void dycSetss(dycObject obj, dycSlot idx, int val);
+void dycSetus(dycObject obj, dycSlot idx, int val);
+void dycSeti(dycObject obj, dycSlot idx, int val);
+void dycSetl(dycObject obj, dycSlot idx, s64 val);
+void dycSetf(dycObject obj, dycSlot idx, float val);
+void dycSetd(dycObject obj, dycSlot idx, double val);
+void dycSetr(dycObject obj, dycSlot idx, dyt val);
+void dycSetp(dycObject obj, dycSlot idx, void *val);
+
+Set the value in the slot, accessed via the slot index.
+
+
+int dycGetStaticsb(dycClass inf, dycSlot idx);
+int dycGetStaticub(dycClass inf, dycSlot idx);
+int dycGetStaticss(dycClass inf, dycSlot idx);
+int dycGetStaticus(dycClass inf, dycSlot idx);
+int dycGetStatici(dycClass inf, dycSlot idx);
+s64 dycGetStaticl(dycClass inf, dycSlot idx);
+float dycGetStaticf(dycClass inf, dycSlot idx);
+double dycGetStaticd(dycClass inf, dycSlot idx);
+dyt dycGetStaticr(dycClass inf, dycSlot idx);
+void *dycGetStaticp(dycClass inf, dycSlot idx);
+
+Get the value in the static slot, accessed via the slot index.
+
+
+void dycSetStaticsb(dycClass inf, dycSlot idx, int val);
+void dycSetStaticub(dycClass inf, dycSlot idx, int val);
+void dycSetStaticss(dycClass inf, dycSlot idx, int val);
+void dycSetStaticus(dycClass inf, dycSlot idx, int val);
+void dycSetStatici(dycClass inf, dycSlot idx, int val);
+void dycSetStaticl(dycClass inf, dycSlot idx, s64 val);
+void dycSetStaticf(dycClass inf, dycSlot idx, float val);
+void dycSetStaticd(dycClass inf, dycSlot idx, double val);
+void dycSetStaticr(dycClass inf, dycSlot idx, dyt val);
+void dycSetStaticp(dycClass inf, dycSlot idx, void *val);
+
+Set the value in the static slot, accessed via the slot index.
+
+
+int dycGetInitsb(dycClass inf, dycSlot idx);
+int dycGetInitub(dycClass inf, dycSlot idx);
+int dycGetInitss(dycClass inf, dycSlot idx);
+int dycGetInitus(dycClass inf, dycSlot idx);
+int dycGetIniti(dycClass inf, dycSlot idx);
+s64 dycGetInitl(dycClass inf, dycSlot idx);
+float dycGetInitf(dycClass inf, dycSlot idx);
+double dycGetInitd(dycClass inf, dycSlot idx);
+dyt dycGetInitr(dycClass inf, dycSlot idx);
+void *dycGetInitp(dycClass inf, dycSlot idx);
+
+Get the value in the init slot, accessed via the slot index.
+
+
+void dycSetInitsb(dycClass inf, dycSlot idx, int val);
+void dycSetInitub(dycClass inf, dycSlot idx, int val);
+void dycSetInitss(dycClass inf, dycSlot idx, int val);
+void dycSetInitus(dycClass inf, dycSlot idx, int val);
+void dycSetIniti(dycClass inf, dycSlot idx, int val);
+void dycSetInitl(dycClass inf, dycSlot idx, s64 val);
+void dycSetInitf(dycClass inf, dycSlot idx, float val);
+void dycSetInitd(dycClass inf, dycSlot idx, double val);
+void dycSetInitr(dycClass inf, dycSlot idx, dyt val);
+void dycSetInitp(dycClass inf, dycSlot idx, void *val);
+
+Set the value in the init slot, accessed via the slot index.
+
+
+void *dycCallSigU(dycObject obj, char *name, char *sig, void **args);
+void *dycCallSigV(dycObject obj, char *name, char *sig, va_list args);
+void *dycCallSig(dycObject obj, char *name, char *sig, ...);
+
+Calls a method dynamically looking up the method.
+The return value is a pointer to a temporary buffer holding the return value for the method.
+
+
+dyt dycCallSigVr(dycObject obj, char *name, char *sig, va_list lst);
+int dycCallSigVi(dycObject obj, char *name, char *sig, va_list lst);
+s64 dycCallSigVl(dycObject obj, char *name, char *sig, va_list lst);
+float dycCallSigVf(dycObject obj, char *name, char *sig, va_list lst);
+double dycCallSigVd(dycObject obj, char *name, char *sig, va_list lst);
+
+dyt dycCallSigUr(dycObject obj, char *name, char *sig, void **args);
+int dycCallSigUi(dycObject obj, char *name, char *sig, void **args);
+s64 dycCallSigUl(dycObject obj, char *name, char *sig, void **args);
+float dycCallSigUf(dycObject obj, char *name, char *sig, void **args);
+double dycCallSigUd(dycObject obj, char *name, char *sig, void **args);
+
+int dycCallSigi(dycObject obj, char *name, char *sig, ...);
+s64 dycCallSigl(dycObject obj, char *name, char *sig, ...);
+float dycCallSigf(dycObject obj, char *name, char *sig, ...);
+double dycCallSigd(dycObject obj, char *name, char *sig, ...);
+
+Calls a method dynamically looking up the method.
+
+
+void *dycCallU(dycObject obj, dycMethod mth, void **args);
+void *dycCallV(dycObject obj, dycMethod mth, va_list args);
+void *dycCall(dycObject obj, dycMethod mth, ...);
+
+Calls a method given a method handle.
+The return value is a pointer to a temporary buffer holding the return value for the method.
+
+
+int dycCallUi(dycObject obj, dycMethod mth, void **args);
+s64 dycCallUl(dycObject obj, dycMethod mth, void **args);
+float dycCallUf(dycObject obj, dycMethod mth, void **args);
+double dycCallUd(dycObject obj, dycMethod mth, void **args);
+dyt dycCallUr(dycObject obj, dycMethod mth, void **args);
+void *dycCallUp(dycObject obj, dycMethod mth, void **args);
+void dycCallUv(dycObject obj, dycMethod mth, void **args);
+
+int dycCallVi(dycObject obj, dycMethod mth, va_list args);
+s64 dycCallVl(dycObject obj, dycMethod mth, va_list args);
+float dycCallVf(dycObject obj, dycMethod mth, va_list args);
+double dycCallVd(dycObject obj, dycMethod mth, va_list args);
+dyt dycCallVr(dycObject obj, dycMethod mth, va_list args);
+void *dycCallVp(dycObject obj, dycMethod mth, va_list args);
+void dycCallVv(dycObject obj, dycMethod mth, va_list args);
+
+int dycCalli(dycObject obj, dycMethod mth, ...);
+s64 dycCalll(dycObject obj, dycMethod mth, ...);
+float dycCallf(dycObject obj, dycMethod mth, ...);
+double dycCalld(dycObject obj, dycMethod mth, ...);
+dyt dycCallr(dycObject obj, dycMethod mth, ...);
+void *dycCallp(dycObject obj, dycMethod mth, ...);
+void dycCallv(dycObject obj, dycMethod mth, ...);
+
+Calls a method given a method handle.
+
+
+void *dycCallStaticU(dycClass inf, dycMethod mth, void **args);
+void *dycCallStaticV(dycClass inf, dycMethod mth, va_list args);
+void *dycCallStatic(dycClass inf, dycMethod mth, ...);
+
+Calls a static method given a method handle.
+The return value is a pointer to a temporary buffer holding the return value for the method.
+
+
+int dycCallStaticUi(dycClass inf, dycMethod mth, void **args);
+s64 dycCallStaticUl(dycClass inf, dycMethod mth, void **args);
+float dycCallStaticUf(dycClass inf, dycMethod mth, void **args);
+double dycCallStaticUd(dycClass inf, dycMethod mth, void **args);
+dyt dycCallStaticUr(dycClass inf, dycMethod mth, void **args);
+void *dycCallStaticUp(dycClass inf, dycMethod mth, void **args);
+void dycCallStaticUv(dycClass inf, dycMethod mth, void **args);
+
+int dycCallStaticVi(dycClass inf, dycMethod mth, va_list args);
+s64 dycCallStaticVl(dycClass inf, dycMethod mth, va_list args);
+float dycCallStaticVf(dycClass inf, dycMethod mth, va_list args);
+double dycCallStaticVd(dycClass inf, dycMethod mth, va_list args);
+dyt dycCallStaticVr(dycClass inf, dycMethod mth, va_list args);
+void *dycCallStaticVp(dycClass inf, dycMethod mth, va_list args);
+void dycCallStaticVv(dycClass inf, dycMethod mth, va_list args);
+
+int dycCallStatici(dycClass inf, dycMethod mth, ...);
+s64 dycCallStaticl(dycClass inf, dycMethod mth, ...);
+float dycCallStaticf(dycClass inf, dycMethod mth, ...);
+double dycCallStaticd(dycClass inf, dycMethod mth, ...);
+dyt dycCallStaticr(dycClass inf, dycMethod mth, ...);
+void *dycCallStaticp(dycClass inf, dycMethod mth, ...);
+void dycCallStaticv(dycClass inf, dycMethod mth, ...);
+
+Calls a static method given a method handle.
+
+
+void *dycCallAsU(dycObject obj, dycClass inf, dycMethod mth, void **args);
+void *dycCallAsV(dycObject obj, dycClass inf, dycMethod mth, va_list args);
+void *dycCallAs(dycObject obj, dycClass inf, dycMethod mth, ...);
+
+Calls a method given a method handle as-if obj were an instance of inf.
+The return value is a pointer to a temporary buffer holding the return value for the method.
+
+
+int dycCallAsUi(dycObject obj, dycClass inf, dycMethod mth, void **args);
+s64 dycCallAsUl(dycObject obj, dycClass inf, dycMethod mth, void **args);
+float dycCallAsUf(dycObject obj, dycClass inf, dycMethod mth, void **args);
+double dycCallAsUd(dycObject obj, dycClass inf, dycMethod mth, void **args);
+dyt dycCallAsUr(dycObject obj, dycClass inf, dycMethod mth, void **args);
+void *dycCallAsUp(dycObject obj, dycClass inf, dycMethod mth, void **args);
+void dycCallAsUv(dycObject obj, dycClass inf, dycMethod mth, void **args);
+
+int dycCallAsVi(dycObject obj, dycClass inf, dycMethod mth, va_list args);
+s64 dycCallAsVl(dycObject obj, dycClass inf, dycMethod mth, va_list args);
+float dycCallAsVf(dycObject obj, dycClass inf, dycMethod mth, va_list args);
+double dycCallAsVd(dycObject obj, dycClass inf, dycMethod mth, va_list args);
+dyt dycCallAsVr(dycObject obj, dycClass inf, dycMethod mth, va_list args);
+void *dycCallAsVp(dycObject obj, dycClass inf, dycMethod mth, va_list args);
+void dycCallAsVv(dycObject obj, dycClass inf, dycMethod mth, va_list args);
+
+int dycCallAsi(dycObject obj, dycClass inf, dycMethod mth, ...);
+s64 dycCallAsl(dycObject obj, dycClass inf, dycMethod mth, ...);
+float dycCallAsf(dycObject obj, dycClass inf, dycMethod mth, ...);
+double dycCallAsd(dycObject obj, dycClass inf, dycMethod mth, ...);
+dyt dycCallAsr(dycObject obj, dycClass inf, dycMethod mth, ...);
+void *dycCallAsp(dycObject obj, dycClass inf, dycMethod mth, ...);
+void dycCallAsv(dycObject obj, dycClass inf, dycMethod mth, ...);
+
+Calls a method given a method handle as-if obj were an instance of inf.
+

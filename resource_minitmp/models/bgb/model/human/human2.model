@@ -1,0 +1,6 @@
+//Basic Human Definition
+
+bones bones1.bone
+
+vmesh body231.ac
+anim walk walk4.anim

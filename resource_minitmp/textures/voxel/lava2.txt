@@ -1,0 +1,8 @@
+$flags alpha voxel lava warpst nowateroverlay
+
+$vox_vlight_val 15
+$vox_vlight_clr red
+
+$vox_img_top_scale 4
+
+$video textures/voxel/lava.avi

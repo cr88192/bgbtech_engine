@@ -1,0 +1,85 @@
+BGB Tech Game Engine Server
+
+BTGE_API	marks a function as part of the public API
+
+BtSp_		used as a prefix for spawn functions.
+
+
+btSEntity
+will be a collection of key/value pairs defining an entity or similar.
+
+btEntity
+will be a live entity.
+
+
+BTGE_API btEntity BtSp_monster_army(btSEntity args);
+will be the form of a spawn function.
+
+
+World Orientation:
+	X=right
+	Y=forward
+	Z=up
+
+Angles:
+	X=pitch, turns upward, 0=forward, 90=up, -90=down
+	Y=roll (CCW along forward axis)
+	Z=yaw, turns left/CCW(from top), 0 is forward along Y axis
+
+Angles will be used for many ground-based entities (players, NPCs, ...).
+Angles will be clamped to the ranges:
+	X=-90 .. 90, or 0 .. 90, 270..359
+	Y=0 .. 360
+	Z=0 .. 360
+
+Also available will be rot, which will encode a unit quaternion instead (XYZW).
+Rot may be used for entities which allow an arbitrary rotation.
+
+If both are present, rot will take precedence. Otherwise, the most recent value sent will be used.
+
+
+Deltas will encode changes to an entity.
+Deltas will only be generated for entities with a status change.
+Which sub-expressions are present in a delta will depend on what has changed.
+
+(delta entnum
+	(org x y z)	;current origin for entity
+	(vel x y z)	;current velocity
+	(ang x y z)	;current angles
+	(rot x y z w)	;current rotation
+	(mdl name)	;current model
+	(wmdl name)	;current weapon model
+	(frm num)	;current frame
+	(wfrm num)	;current weapon frame
+	(eff flags)	;current effect flags
+)
+
+The camera will also be handled by a delta (the camera will be attached to a particular entity, and updates to this entity will move the camera).
+
+Possibly, a message such as "(camera num)" will set the camera entity.
+Naturally, any model set for a camera entity will not be drawn when the camera is set to this entity, however, the weaponmodel will be drawn (but will not be drawn otherwise).
+
+A weaponmodel will be a model specifically intended to be drawn in the same space as the camera, such as a hand holding a gun, or the front of a vehicle, or similar...
+
+Vector attributes may be sent with some of the values set to NULL/EOL, in which case the prior value should be retained.
+
+
+World Delta
+
+
+A World Delta is a collection of delta messages keyed to a particular moment in time, and representing a specific update frame.
+
+(wdelta
+	(time sv_time cl_time)
+	delta*
+)
+
+
+Client-Side Updates
+
+(impulse camnum
+	(mpos x y b)	;mouse status (x, y, buttons)
+	(lmpos x y b)	;last mouse status (x, y, buttons)
+	(ivel x y z)	;impulse velocity
+	(iang x y z)	;impulse angles
+)

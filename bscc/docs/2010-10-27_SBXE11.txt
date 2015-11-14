@@ -1,0 +1,168 @@
+Simplistic Binary XML Encoding
+
+Goals:
+Does not require a complicated encoder or decoder;
+Does not involve a seperate compression/decompression pass.
+
+Does Not Attempt:
+Large data sets or random access;
+Decent compression;
+Complete representation of XML features.
+
+
+The encoding is viewed as a stream of bytes.
+Strings are encoded as ASCII or UTF-8, and with '\0' as a terminator.
+
+Files will begin with the string "SBXE".
+Later versions may alter the string to reflect the version, or include extra data after this string. This will not be required for inline SBXE chunks.
+
+
+0x00: general purpose ending marker
+0x01..0x1F: Special Features
+0x20..0x3E: Namespace Prefix MRU
+0x3F: Namespace String
+
+0x40..0x7E: Opening Tag/Attr MRU
+0x7F: Opening Tag/Attr String
+0x80..0xFE: Text MRU
+0xFF: Text String
+
+Node (Default)
+[<NS>] <TAG> <ATTR*> 0 <BODY*> 0
+
+Node
+[<NS>] <TAG t>
+	{*t!=':'&&*t!='='}?(<ATTR*> 0)
+	{*t!='/'&&*t!='='}?(<BODY*> 0)
+	{*t!='/'||*t!=':'||*t!='='}?{t++}
+
+
+Attr
+[<NS>] <TAG> <TEXT*>
+
+Body
+<NODE>|<TEXT>
+
+Text is represented potentially as globs of raw strings and MRU references. A single text string should be limited to 255 bytes or less.
+
+By default, Nodes will include both a body and attributes along with the appropiate end markers.
+As an exception to this, a prefix may be used with the tag name which will modify the interpretation:
+	'/', omits contents and end marker;
+	':', omits attributes and end marker;
+	'=', omit both attributes and contents.
+
+For Example, "<foo/>" could be encoded as:
+0x7F '=' 'f' 'o' 'o' 0x00
+
+
+MRU Scheme
+The MRU lists will be linear within the file, assuming both linear reading and writing.
+
+Whenever a given string is being encoded, it can be checked if it were encoded recently, and, if so, a reference to the correct spot in the MRU list can be encoded and that value is moved to the front.
+Otherwise, the new string is encoded directly, and added to the front of the list.
+
+Higher numbers mean more recent matches, so things shift in the direction of lower numbers. Upon shifting off the end a string is essentially forgotten.
+
+Tags and Attributes will have the same space in the encoding, but will refer to different MRU lists.
+
+
+Feature Ideas
+
+0x1F, will escape another byte whose values may be used for encoding more features.
+
+0x10, Integer Text String ('[-](0..9)+'), text looked like an integer, and was encoded as such.
+The MSB will indicate the presence of more bytes (high-low order), the LSB of the final byte will give the sign. Range is limited to that of a 32 bit signed integer.
+
+0x11, Markov Text String
+A variation of lz+markov modeling is used for encoding a string (as before, the result is added to the MRU).
+
+0x12, CDATA
+0x12 <TEXT*> 0
+
+0x13, Binary Data (BDATA)
+0x13 [<NS>] <TAG> <ATTR*> 0 <UVLI len> <BYTES[len]>
+
+Raw !BDATA
+0x13 0 <UVLI len> <BYTES[len]>
+
+
+0x14, External Tag String
+0x14 <UVLI idx>
+
+0x15, External Text String
+0x15 <UVLI idx>
+
+These will escape tags or strings incoded in some external string table, where idx is the index into the string table. Reason: This will be used for encoding smaller XML blobs within a common container, or for encoding multiple disjoint messages. The exact nature of the index will not be defined here (this is a matter for the enclosing container).
+
+For external tags, a prefix will be used as before, except that '%' will escape a namespace prefix.
+
+
+
+Markov+LZ Coding
+
+This algo will be specialized to encoding UTF-8 to try to avoid inflation (except for naturally long characters...).
+
+0xF0..0xFF: Reference.
+The low 4 bits will give the index.
+The next byte will give the match length.
+As a special case, if the length is 0, this will serve as an escape for the previous byte (1 is reserved).
+
+At present I will specify that the window is 16kB.
+A 12 bit hash will be used: (((s[-3]<<8)^(s[-2]<<4)^s[-1])&0xFFF).
+Updating a hash will consist of:
+hash=(hash<<4)^c;
+Each string will start with an initial hash key of 0x000.
+
+
+
+XML Binary-Types Extension
+
+Change: BDATA is now preferable, with any more advanced tag properties going into a parent tag.
+
+This is not strictly a requirement, but things "should" be handled this way if there are no good alternatives (eg: alternative handling for binary nodes within an implementation).
+
+Binary nodes will be represented textually as well.
+This will be done via a special namespace:
+	"uuid:78422bcf-661a-470d-bcd0-cb592cb0f783".
+This will be required to be registered as some visible prefix if used, and will allow binary representation of said types.
+
+The namespace prefix 'dtx' will be special in that it will be a 'default' prefix, and should be assumed in the case the above doesn't hold. This will related to decoding binary content, whereby the implementation may synthesize a namespace binding.
+An implementation should not generate content that does not conform to this rule.
+
+<foo xmlns:dtx="uuid:78422bcf-661a-470d-bcd0-cb592cb0f783">
+	<bar>
+		<baz dtx:type="binary.base64">
+			Afg5G8a5Kw...
+		</baz>
+	</bar>
+</foo>
+
+Likewise, as other namespaces, it may be registered within the node in question:
+<baz xmlns:dtx="uuid:78422bcf-661a-470d-bcd0-cb592cb0f783"
+	dtx:type="binary.base64">
+	Afg5G8a5Kw...
+</baz>
+
+Also present may be a "size" attribute (may be automatically generated on parsing), which will reflect the size of the binary payload.
+
+I will define the types:
+	binary.base85		A base85 encoding as described below;
+	binary.base64		Base64 encoded data;
+	binary.base16		Data encoded in base16 (aka: hex).
+
+Base-64 is to be viewed as the "default" encoding for binary nodes.
+
+Base-85
+
+This will be a simplified subset of that used in the RFC draft.
+
+The characters will be as follows:
+	0123456789ABCDEF
+	GHIJKLMNOPQRSTUV
+	WXYZabcdefghijkl
+	mnopqrstuvwxy!#$
+	()*+,-./:;=?@^`{
+	|}~z_ 
+
+Likewise, the encoded characters will be represented in big-endian order. Padded quanta and zero-compression will not be allowed.
+Likewise, whitespace will only be allowed between quanta. Whitespace within a quanta is to be viewed as invalid.

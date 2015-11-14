@@ -1,0 +1,22 @@
+package bsvm.io;
+
+public abstract class Writer extends Object
+{
+protected Object lock;
+protected Writer()
+	{ super(); }
+protected Writer(Object lock)
+	{ }
+
+public abstract void close();
+public abstract void flush();
+public void write(char[] cbuf)
+	{ }
+public abstract void write(char[] cbuf, int off, int len);
+public void write(int c)
+	{ }
+public void write(String str)
+	{ }
+public void write(String str, int off, int len)
+	{ }
+}

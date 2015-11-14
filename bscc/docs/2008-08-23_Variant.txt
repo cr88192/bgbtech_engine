@@ -1,0 +1,74 @@
+Idea:
+C Extension for the handling of dynamic types.
+
+This extension will involve a special type with the type keyword "__variant".
+
+Behaviors:
+	Variant may be manually cast to 'void *', which will expose the raw pointer to the values' data (this will be called a variant pointer). Variant may also be explicitly cast to other pointer types (an implicit conversion will be a warning or error), which will be equivalent to casting the raw pointer to the specified type.
+	Explicitly casting a pointer to variant will also be allowed, but this will only be valid in the case where the pointer is either NULL or is a variant pointer. The behavior in other cases is undefined.
+
+	Other types may be cast to variant (such as integer and floating-point types), at which point the result is a dynamically typed value of the speficied type.
+	It will also be possible to cast variants to these same types, which will retrieve the values in these types. Casting a variant to a different numerical type than that from which it was created will implicitly convert the type.
+	The result of casting a variant to a value of an incompatible type will be undefined.
+
+	Variants are allowed to emulate the behaviors of any of the arithmetic types, may have structure members (virtual, not physical), may be indexed like an array, or called like a function.
+	However, as a restriction, it will currently not be possible for variants to fully emulate the behavior of pointer types.
+	Likewise it will not be allowed (nor necessarily possible) to get the address of a variant expression. It will only be allowed to get the address of a variant variable located in "physically reachable" memory (local or toplevel variables, or structures for which can be referenced via a pointer).
+
+	Further more, any values used in conjunction with a variant, will also be implicitly converted to variant, and the natural return type of any operations on a variant will also be variant (an exception here will be the comparrison operators, which will continue to return boolean values).
+
+	The compile-time type of a variant will as such always remain as variant, however there will be a "virtual" type associated with variants which will exist at runtime, and will change depending on what it is that the variant is referring to.
+
+	As a result, variants do not change the essential statically-typed nature of the compiler, but instead introduce a type that is allowed to behave like that of other types at runtime.
+
+
+Examples:
+
+__variant top_x;
+
+int foo()
+{
+	__variant x, y;	//generic variant variable
+	__variant *px;	//pointer to a variant (variable, not object)
+	void *p;
+
+	px=&top_x;		//OK, variable exists at top-level
+	px=&x;		//OK, variable exists in local scope
+
+	x=dyObject();	//new empty object
+	x.y=3;		//OK, binds slot y
+	x.z=4;		//OK, binds slot z
+
+	p=(void *)x;	//OK, gets variant pointer (target undefined)
+	//p exists, but actual contents or addressability are undefined
+	y=(__variant)p;	//OK, makes variant from pointer
+	//x==y will be required to be true
+
+
+	y=x.y;		//OK, gets slot y
+	px=&x.y;		//BAD, contents of x are not addressable
+
+	x.a=dyArray(8);
+	x.a[0]=4;
+	y=*(x.a);		//OK, interpreted as x.a[0]
+	px=&(x.a[0]);	//BAD, contents are non-addressable
+
+	p=(void *)(x.a);	//OK, x.a->variant && variant->'void *'
+
+	y=x.y+x.z;		//OK
+
+	return(x.y);	//OK, converts x.y to int
+}
+
+
+Variant Objects:
+	Each variant is either one of several possible special values (NULL or UNDEFINED), or refers to some or another Variant Object, whose specific behaviors depend almost entirely on the object in question.
+	A variant object may support being treated like a structure, in which case attempting to reference or assign its slots may have a useful effect. A variant may also allow itself to be treated like an array (or maybe both like a structure and an array at the same time).
+	A variant object may also implement behaviors for any of the basic operators applicable to value types, although with some restrictions placed on this. Unlike in C++, it is not possible to change the essential functioning or classification of an operator, but only the semantic behavior of the operator.
+	It may also be allowed for a variant object to be called as if it were a function.
+
+
+	The type of a variant may be determined though the use of special predicate functions, however the actual operation of these predicate functions is undefined here.
+
+Needed: Write spec for GC and Dynamic Typesystem.
+

@@ -1,0 +1,59 @@
+Idea:
+This will specify how runtime code could register itself with the linker, such that attempts to resolve certain undefined symbols may be routed back into the runtime, which is expected to produce code for the requested function (as in, special handler thunks), or may also be used in supplying data.
+
+If the handler builds a code fragment which exports the given symbol name, all further attempts to resolve this symbol will use the symbol exported in the generated code fragment. The other option will be simply to return a pointer to an anonymous thunk, allowing each request to be resolved potentially to a different address.
+
+The request may also be passed arguments, which will describe the specifics of the requested thunk or data (such as specific types, class names, register names, numerical args, ...).
+
+The calling convention of any generated thunks is purely a matter of agreement between the caller and callee. The assumed use here is to generate specialized code fragments, as opposed to more general purpose functions, so typically any combination of stack, registers, shared variables/memory, ... may be used.
+
+It will be assumed (as a mater of practice) that the same runtime code be responsible both for generating the request names, as well as for generating the thunks.
+
+An example use case would be for some of the runtime code to register itself with the compiler, and when generating code for particular cases may insert calls to meta-handlers, which may be capable of tasks which would not be reasonable to do inline.
+
+
+Symbol Structure:
+_XM_<handler> ['__' <arg>]*
+
+Where handler and each arg are strings mangled according to similar rules as in XCall.
+
+Each string will be mangled by replacing certain characters with escape sequences:
+'_' with '_1';
+';' with '_2';
+'[' with '_3';
+'(' with '_4';
+')' with '_5';
+'/' with '_6'.
+
+Alphanumeric characters are embedded unchanged.
+'_9xx' encodes a character in the range of 1 to 255;
+'_0xxxx' encodes a character in the 16-bit unicode space (BMP).
+
+
+Callback:
+typedef void *(*basm_meta_ft)(char *sym, char *name, char **args);
+int BASM_RegisterLinkMeta(char *name, basm_meta_ft fcn);
+
+Register a meta-handler.
+The 'sym' argument is the raw symbol, whereas 'name' and 'args' are the parsed and unmangled names and arguments (passed as a NULL-terminated list, where args[0] is the first argument, ...).
+
+
+Meta Triggers
+
+A meta trigger is similar to, but different from, a meta handler.
+A meta trigger will be called after a piece of code is linked, and will identify the address of any trigger symbols.
+
+This could be used for passing info from newly linked code into the runtime.
+
+Similarly, each meta-triggered symbol is to have a unique name, even if this means that an extra argument is provided simply to serve as a gensym.
+
+Additionally, trigger requests may be queued until an appropriate handler is registered, but each symbol will only be handled once (unless it is later re-linked).
+
+
+The symbol structure for triggers is:
+_XN_<handler> ['__' <arg>]*
+
+And uses the callback:
+typedef void (*basm_mtrg_ft)(char *sym, char *name, char **args, void *ptr);
+int BASM_RegisterLinkMetaTrigger(char *name, basm_mtrg_ft fcn);
+

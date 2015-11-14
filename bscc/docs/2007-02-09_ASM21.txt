@@ -1,0 +1,144 @@
+Slightly updated assembler syntax.
+
+General
+
+Apart from labels, most tokens are not case sensitive.
+
+
+Comments
+
+/* C-style comment */
+// line comment
+; also a line comment
+mov eax, 6	;terminal comment (needs preceding whitespace)
+
+
+Numbers
+
+'0x'[('0'..'9')|('A'..'F')|('a'..'f')]+				Hexadecimal
+'0'['0'..'7']+								Octal
+('1'..'9')['0'..'9']*							Decimal Int
+
+('0'..'9')[('0'..'9')|('A'..'F')|('a'..'f')]+('h'|'H')	Hexadecimal
+('0'..'1')+('b'|'B')							Binary
+
+
+Strings
+
+Strings are represented in the C style.
+
+
+Labels
+
+<name>':'
+Normal Label.
+
+<name> when followed by an operation in which a label is implied, such as db, dw, dd, or dq.
+
+'.'<name>':'
+Creates a label relative to the last normal label. This will be handled by forming a composite label such that in "foo: .bar:", the later label is treated as "foo.bar:".
+
+Labels will be treated as case sensitive.
+
+
+Definitions
+
+db, dw, dd, dq: emit 1 or more values seperated by commas, where db emits bytes, dw words, dd doublewords, and dq quadwords.
+db and dw may also accept strings, where each character in the string is encoded as a value.
+
+<name> equ <value>
+Defines an assembler constant, where at present value may only be an integer.
+
+
+Directives
+
+.a16		Specify 16-bit assembler.
+.a32		Specify 32-bit assembler.
+.a64		Specify 64-bit assembler.
+
+.text		Direct output to text segment.
+.data		Direct output to data segment.
+
+
+Register Naming
+
+Intel and AMD formalize the following convention:
+
+x86-32:
+Byte:		al, cl, dl, bl, ah, ch, dh, bh
+Word:		ax, cx, dx, bx, sp, bp, si, di
+DWord:	eax, ecx, edx, ebx, esp, ebp, esi, edi
+
+x86-64:
+
+Base Regs:
+Byte:		al	cl	dl	bl	spl	bpl	sil	dil
+Word:		ax	cx	dx	bx	sp	bp	si	di
+DWord:	eax	ecx	edx	ebx	esp	ebp	esi	edi
+QWord:	rax	rcx	rdx	rbx	rsp	rbp	rsi	rdi
+
+Extended GPRs:
+Byte:		r8b	r9b	r10b	r11b	r12b	r13b	r14b	r15b
+Word:		r8w	r9w	r10w	r11w	r12w	r13w	r14w	r15w
+DWord:	r8d	r9d	r10d	r11d	r12d	r13d	r14d	r15d
+QWord:	r8	r9	r10	r11	r12	r13	r14	r15
+
+As for: ah/spl, ch/bpl, dh/sil, bh/dil.
+Which is used is based on the absence or presence of a REX prefix, as otherwise the registers are encoded the same.
+
+As such, accessing spl/bpl/sil/dil will make an opcode that looks the same as the ah/ch/dh/bh form, apart from the addition of a dummy rex prefix.
+
+
+I, however, will make the following complaint (and extension):
+It does not make sense that we have such an arbitrary break in convention depending on which registers are being accessed, as such, I extend both conventions to cover all the registers.
+
+Base Regs:
+Byte:		r0b	r1b	r2b	r3b	r4b	r5b	r6b	r7b
+Word:		r0w	r1w	r2w	r3w	r4w	r5w	r6w	r7w
+DWord:	r0d	r1d	r2d	r3d	r4d	r5d	r6d	r7d
+QWord:	r0	r1	r2	r3	r4	r5	r6	r7
+
+Extended GPRs:
+Byte:		el	fl	gl	hl	il	jl	kl	ll
+Word:		ex	fx	gx	hx	ix	jx	kx	lx
+DWord:	eex	efx	egx	ehx	eix	ejx	ekx	elx
+QWord:	rex	rfx	rgx	rhx	rix	rjx	rkx	rlx
+
+Albeit, alternative possibilities exist in this latter case (an ijklmnop progression, or mimicking irregularities of the latter 4 base regs).
+
+
+Opcodes
+
+Opcodes will be similar to as in many other assemblers (NASM and friends in particular).
+
+reg
+imm
+label
+mem
+	'[' [<sreg>':'] <reg|label|addr|const>
+		['+'<reg>['*'<scale>]] ['+'<disp|const>] ']'
+
+A size override may be provided between an opcode and the first argument, which may be used when choosing which particular version of the opcode to encode.
+
+short		Jumps, 8-bit offset
+near16	Jumps, 16-bit offset
+near32	Jumps, 32-bit offset
+
+byte		8-bit value.
+word		16-bit value.
+dword		32-bit value.
+qword		64-bit value.
+
+In the case of jumps/calls/... to a label, the default encoding chosen is based on the current arch.
+
+
+Special Forms
+
+inc_r reg
+dec_r reg
+
+Increment or decrement a register.
+In other assemblers, these would simply be part of inc/dec, however, in x86-64, these forms have been overloaded as the REX prefixes (and thus these forms are invalid in x86-64).
+
+'inc reg16/32' and 'dec reg16/32' will be renamed on x86-32, and will produce a less efficient form of the instruction on x86-64.
+

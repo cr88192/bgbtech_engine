@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+  <title></title>
+</head>
+<body>
+<h1><span style="font-weight: bold;">ZEML: Z-Expression Markup Language</span></h1>
+<h1><span style="font-weight: bold;"></span></h1>
+ZEML is a sort of hybid of XML and S-Expressions.<br>
+It operates within a similar model as XML, but has a tag structure
+vaguely more like that of S-Expressions.<br>
+<br>
+Like in XML, pointy brackets are used.<br>
+<br>
+<br>
+Numbers<br>
+<br>
+Numbers and Strings will be partially distinct in ZEML.<br>
+It is not required that implementations be able to distinguish them,
+however the representation of a value as a number may serve as a hint
+to use more efficient storage. Similarly, a number need not preserve
+its exact representation, but need only preserved by value. If a number
+can't be represented within an available numeric type, it should be
+instead handled as a string.<br>
+<br>
+<br>
+Arrays<br>
+<br>
+Arrays will be another extension. An array will exist either as a
+standalone type, or as a string containing its items (including
+braces). An implementation is not required to be able to distinguish an
+array from a string. Like with numbers, arrays will exist as an
+optimization hint.<br>
+<br>
+<h2 style="font-weight: normal;">Syntax</h2>
+<br>
+<br>
+Node<br>
+&nbsp;&nbsp;&nbsp; <span style="font-style: italic;">Tag </span>| <span
+ style="font-style: italic;">QuotedText </span>| <span
+ style="font-style: italic;">BlockText</span> | <span
+ style="font-style: italic;">Value </span><br>
+<br>
+Tag<br>
+&nbsp;&nbsp;&nbsp; <span style="font-weight: bold;">&lt;</span><span
+ style="font-style: italic;">nsname Attribute* Node</span>*<span
+ style="font-weight: bold;">&gt;<br>
+</span><br>
+Attribute<br>
+&nbsp;&nbsp;&nbsp; <span style="font-style: italic;">nsname</span><span
+ style="font-weight: bold;"> </span>'<span style="font-weight: bold;">=</span>'<span
+ style="font-style: italic;"> value</span><br>
+<br>
+Value<br>
+&nbsp;&nbsp;&nbsp; <span style="font-style: italic;">name</span> | <span
+ style="font-style: italic;">number</span> | <span
+ style="font-style: italic;">QuotedText</span> | <span
+ style="font-style: italic;">Array</span> <br>
+<br>
+Array<br>
+&nbsp;&nbsp;&nbsp; <span style="font-weight: bold;">[</span> <span
+ style="font-style: italic;">Value</span>+ <span
+ style="font-weight: bold;">]</span><br>
+<br>
+QuotedText<br>
+&nbsp;&nbsp;&nbsp; "..."<br>
+<br>
+Quoted Text will consist of text in quotes.<br>
+This will support a number of C-like escapes:<br>
+&nbsp;&nbsp;&nbsp; \n&nbsp;&nbsp;&nbsp; Newline<br>
+&nbsp;&nbsp;&nbsp; \t&nbsp;&nbsp;&nbsp; Tab<br>
+&nbsp;&nbsp;&nbsp; \r&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; Carriage Return<br>
+&nbsp;&nbsp;&nbsp; ...<br>
+&nbsp;&nbsp;&nbsp; \xHH&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; 2-digit
+character.<br>
+&nbsp;&nbsp;&nbsp; \uHHHH&nbsp;&nbsp;&nbsp; 4-digit character<br>
+&nbsp;&nbsp;&nbsp; \UHHHHHHHH&nbsp;&nbsp;&nbsp; 8-digit character.<br>
+<br>
+In addition, text may contain newlines, which will be embedded into the
+parsed text.<br>
+If there is a '\' followed by a newline, then the newline will be
+ignored.<br>
+<br>
+BlockText<br>
+&nbsp;&nbsp;&nbsp; &lt;[[ ... ]]&gt;<br>
+<br>
+<br>
+name = <span style="font-style: italic;">NameInitChar NameChar</span>*<br>
+NameChar = <span style="font-style: italic;">NameInitChar </span>| <span
+ style="font-style: italic;">Digit</span><br>
+NameInitChar = <span style="font-weight: bold;">a</span>-<span
+ style="font-weight: bold;">z</span> | <span style="font-weight: bold;">A</span>-<span
+ style="font-weight: bold;">Z</span> | <span style="font-weight: bold;">_</span><br>
+<br>
+nsname = ( <span style="font-style: italic;">name </span><span
+ style="font-weight: bold;">:</span> )* <span
+ style="font-style: italic;">name</span><br>
+<br>
+digits = <span style="font-style: italic;">digit </span>(<span
+ style="font-style: italic;"> digit </span>| <span
+ style="font-weight: bold;">_</span> )*<br>
+digit = <span style="font-weight: bold;">0</span>-<span
+ style="font-weight: bold;">9</span><br>
+hexdigit = <span style="font-style: italic;">digit </span>| <span
+ style="font-weight: bold;">A</span>-<span style="font-weight: bold;">F</span>
+| <span style="font-weight: bold;">a</span>-<span
+ style="font-weight: bold;">f</span><br>
+hexdigits = <span style="font-style: italic;">hexdigit </span>( <span
+ style="font-style: italic;">hexdigit </span>| <span
+ style="font-weight: bold;">_</span> )*<br>
+<br>
+number = <span style="font-weight: bold;">0x</span> <span
+ style="font-style: italic;">hexdigits </span>| [ <span
+ style="font-weight: bold;">.</span> <span style="font-style: italic;">digits</span>
+] [ (<span style="font-weight: bold;">E</span>|<span
+ style="font-weight: bold;">e</span>) (<span style="font-weight: bold;">+</span>|<span
+ style="font-weight: bold;">-</span>) <span style="font-style: italic;">digits</span>
+]<br>
+<br>
+<br>
+<br>
+</body>
+</html>

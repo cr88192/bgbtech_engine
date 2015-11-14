@@ -1,0 +1,1743 @@
+/***
+*stdio.h - definitions/declarations for standard I/O routines
+*
+*       Copyright (c) Microsoft Corporation. All rights reserved.
+*
+*Purpose:
+*       This file defines the structures, values, macros, and functions
+*       used by the level 2 I/O ("standard I/O") routines.
+*       [ANSI/System V]
+*
+*       [Public]
+*
+****/
+/***
+*crtdefs.h - definitions/declarations common to all CRT
+*
+*       Copyright (c) Microsoft Corporation. All rights reserved.
+*
+*Purpose:
+*       This file has mostly defines used by the entire CRT.
+*
+*       [Public]
+*
+****/
+/***
+*sal.h - markers for documenting the semantics of APIs
+*
+*       Copyright (c) Microsoft Corporation. All rights reserved.
+*
+*Purpose:
+*       sal.h provides a set of annotations to describe how a function uses its
+*       parameters - the assumptions it makes about them, and the guarantees it makes
+*       upon finishing.
+*
+*       [Public]
+*
+****/
+// [
+// choose attribute or __declspec implementation
+// [
+// ]
+// [
+// ][
+// [
+// ][
+// ]
+// ]
+// [
+// [
+// [
+// ][
+// ]
+// ]
+// ]
+// Disable expansion of SAL macros in non-Prefast mode to 
+// improve compiler throughput.
+// [
+// ]
+// [
+// ]
+// ]
+// safeguard for MIDL and RC builds
+// [
+// ]
+// [
+// ]
+// Special enum type for Y/N/M
+// Some annotations aren't officially SAL2 yet.
+// Some annotations aren't officially SAL2 yet.
+//============================================================================
+//   Structural SAL:
+//     These annotations modify the use of other annotations.  They may
+//     express the annotation target (i.e. what parameter/field the annotation
+//     applies to) or the condition under which the annotation is applicable.
+//============================================================================
+// _At_(target, annos) specifies that the annotations listed in 'annos' is to
+// be applied to 'target' rather than to the identifier which is the current
+// lexical target.
+// _At_buffer_(target, iter, bound, annos) is similar to _At_, except that
+// target names a buffer, and each annotation in annos is applied to each
+// element of target up to bound, with the variable named in iter usable
+// by the annotations to refer to relevant offsets within target.
+// _When_(expr, annos) specifies that the annotations listed in 'annos' only
+// apply when 'expr' evaluates to non-zero.
+// <expr> indicates whether normal post conditions apply to a function
+// <expr> indicates whether post conditions apply to a function returning
+// the type that this annotation is applied to
+// Establish postconditions that apply only if the function does not succeed
+// Establish postconditions that apply in both success and failure cases.
+// Only applicable with functions that have  _Success_ or _Return_type_succss_.
+// Usable on a function defintion. Asserts that a function declaration is
+// in scope, and its annotations are to be used. There are no other annotations
+// allowed on the function definition.
+// _Notref_ may precede a _Deref_ or "real" annotation, and removes one
+// level of dereference if the parameter is a C++ reference (&).  If the
+// net deref on a "real" annotation is negative, it is simply discarded.
+// Annotations for defensive programming styles.
+//============================================================================
+//   _In_\_Out_ Layer:
+//============================================================================
+// Reserved pointer parameters, must always be NULL.
+// _Const_ allows specification that any namable memory location is considered
+// readonly for a given call.
+// Input parameters --------------------------
+//   _In_ - Annotations for parameters where data is passed into the function, but not modified.
+//          _In_ by itself can be used with non-pointer types (although it is redundant).
+// e.g. void SetPoint( _In_ const POINT* pPT );
+// nullterminated 'in' parameters.
+// e.g. void CopyStr( _In_z_ const char* szFrom, _Out_z_cap_(cchTo) char* szTo, size_t cchTo );
+// 'input' buffers with given size
+// 'input' buffers valid to the given end pointer
+// Output parameters --------------------------
+//   _Out_ - Annotations for pointer or reference parameters where data passed back to the caller.
+//           These are mostly used where the pointer/reference is to a non-pointer type.
+//           _Outptr_/_Outref) (see below) are typically used to return pointers via parameters.
+// e.g. void GetPoint( _Out_ POINT* pPT );
+// Inout parameters ----------------------------
+//   _Inout_ - Annotations for pointer or reference parameters where data is passed in and
+//        potentially modified.
+//          void ModifyPoint( _Inout_ POINT* pPT );
+//          void ModifyPointByRef( _Inout_ POINT& pPT );
+// For modifying string buffers
+//   void toupper( _Inout_z_ char* sz );
+// For modifying buffers with explicit element size
+// For modifying buffers with explicit byte size
+// Pointer to pointer parameters -------------------------
+//   _Outptr_ - Annotations for output params returning pointers
+//      These describe parameters where the called function provides the buffer:
+//        HRESULT SHStrDupW(_In_ LPCWSTR psz, _Outptr_ LPWSTR *ppwsz);
+//      The caller passes the address of an LPWSTR variable as ppwsz, and SHStrDupW allocates
+//      and initializes memory and returns the pointer to the new LPWSTR in *ppwsz.
+//
+//    _Outptr_opt_ - describes parameters that are allowed to be NULL.
+//    _Outptr_*_result_maybenull_ - describes parameters where the called function might return NULL to the caller.
+//
+//    Example:
+//       void MyFunc(_Outptr_opt_ int **ppData1, _Outptr_result_maybenull_ int **ppData2);
+//    Callers:
+//       MyFunc(NULL, NULL);           // error: parameter 2, ppData2, should not be NULL
+//       MyFunc(&pData1, &pData2);     // ok: both non-NULL
+//       if (*pData1 == *pData2) ...   // error: pData2 might be NULL after call
+// Annotations for _Outptr_ parameters returning pointers to null terminated strings.
+// Annotations for _Outptr_ parameters where the output pointer is set to NULL if the function fails. 
+// Annotations for _Outptr_ parameters which return a pointer to a ref-counted COM object,
+// following the COM convention of setting the output to NULL on failure.
+// The current implementation is identical to _Outptr_result_nullonfailure_.
+// For pointers to types that are not COM objects, _Outptr_result_nullonfailure_ is preferred.
+// Annotations for _Outptr_ parameters returning a pointer to buffer with a specified number of elements/bytes
+// Annotations for output reference to pointer parameters.
+// Annotations for output reference to pointer parameters that guarantee
+// that the pointer is set to NULL on failure.
+// Generic annotations to set output value of a by-pointer or by-reference parameter to null/zero on failure.
+// return values -------------------------------
+//
+// _Ret_ annotations
+//
+// describing conditions that hold for return values after the call
+// e.g. _Ret_z_ CString::operator const wchar_t*() const throw();
+// used with allocated but not yet initialized objects
+// used with allocated and initialized objects
+//    returns single valid object
+//    returns pointer to initialized buffer of specified size
+//    returns pointer to partially initialized buffer, with total size 'size' and initialized size 'count'
+// Annotations for strict type checking
+// Check the return value of a function e.g. _Check_return_ ErrorCode Foo();
+// e.g. MyPrintF( _Printf_format_string_ const wchar_t* wzFormat, ... );
+// annotations to express value of integral or pointer parameter
+// annotation to express that a value (usually a field of a mutable class)
+// is not changed by a function call
+// Annotations to allow expressing generalized pre and post conditions.
+// 'cond' may be any valid SAL expression that is considered to be true as a precondition
+// or postcondition (respsectively).
+// Annotations to express struct, class and field invariants
+//============================================================================
+//   _Pre_\_Post_ Layer:
+//============================================================================
+//
+// Raw Pre/Post for declaring custom pre/post conditions
+//
+//
+// Validity property
+//
+//
+// Buffer size properties
+//
+// Expressing buffer sizes without specifying pre or post condition
+// Expressing buffer size as pre or post condition
+//
+// Pointer null-ness properties
+//
+//
+// _Pre_ annotations ---
+//
+// describing conditions that must be met before the call of the function
+// e.g. int strlen( _Pre_z_ const char* sz );
+// buffer is a zero terminated string
+// valid size unknown or indicated by type (e.g.:LPSTR)
+// Overrides recursive valid when some field is not yet initialized when using _Inout_
+// used with allocated but not yet initialized objects
+//
+// _Post_ annotations ---
+//
+// describing conditions that hold after the function call
+// void CopyStr( _In_z_ const char* szFrom, _Pre_cap_(cch) _Post_z_ char* szFrom, size_t cchFrom );
+// buffer will be a zero-terminated string after the call
+// e.g. HRESULT InitStruct( _Post_valid_ Struct* pobj );
+// e.g. void free( _Post_ptr_invalid_ void* pv );
+// e.g. void ThrowExceptionIfNull( _Post_notnull_ const void* pv );
+// e.g. HRESULT GetObject(_Outptr_ _On_failure_(_At_(*p, _Post_null_)) T **p);
+// e.g. void SetCharRange( _In_count_(cch) const char* rgch, size_t cch )
+// valid buffer extent described by another parameter
+// valid buffer extent described by a constant extression
+// nullterminated  'input' buffers with given size
+// e.g. void SetCharRange( _In_count_(cch) const char* rgch, size_t cch )
+// nullterminated valid buffer extent described by another parameter
+// nullterminated valid buffer extent described by a constant extression
+// buffer capacity is described by another pointer
+// e.g. void Foo( _In_ptrdiff_count_(pchMax) const char* pch, const char* pchMax ) { while pch < pchMax ) pch++; }
+// 'x' version for complex expressions that are not supported by the current compiler version
+// e.g. void Set3ColMatrix( _In_count_x_(3*cRows) const Elem* matrix, int cRows );
+// 'out' with buffer size
+// e.g. void GetIndeces( _Out_cap_(cIndeces) int* rgIndeces, size_t cIndices );
+// buffer capacity is described by another parameter
+// buffer capacity is described by a constant expression
+// buffer capacity is described by another parameter multiplied by a constant expression
+// buffer capacity is described by another pointer
+// e.g. void Foo( _Out_ptrdiff_cap_(pchMax) char* pch, const char* pchMax ) { while pch < pchMax ) pch++; }
+// buffer capacity is described by a complex expression
+// a zero terminated string is filled into a buffer of given capacity
+// e.g. void CopyStr( _In_z_ const char* szFrom, _Out_z_cap_(cchTo) char* szTo, size_t cchTo );
+// buffer capacity is described by another parameter
+// buffer capacity is described by a constant expression
+// buffer capacity is described by a complex expression
+// a zero terminated string is filled into a buffer of given capacity
+// e.g. size_t CopyCharRange( _In_count_(cchFrom) const char* rgchFrom, size_t cchFrom, _Out_cap_post_count_(cchTo,return)) char* rgchTo, size_t cchTo );
+// a zero terminated string is filled into a buffer of given capacity
+// e.g. size_t CopyStr( _In_z_ const char* szFrom, _Out_z_cap_post_count_(cchTo,return+1) char* szTo, size_t cchTo );
+// only use with dereferenced arguments e.g. '*pcch' 
+// e.g. GetString( _Out_z_capcount_(*pLen+1) char* sz, size_t* pLen );
+// 'inout' buffers with initialized elements before and after the call
+// e.g. void ModifyIndices( _Inout_count_(cIndices) int* rgIndeces, size_t cIndices );
+// nullterminated 'inout' buffers with initialized elements before and after the call
+// e.g. void ModifyIndices( _Inout_count_(cIndices) int* rgIndeces, size_t cIndices );
+// e.g. void AppendToLPSTR( _In_ LPCSTR szFrom, _Inout_cap_(cchTo) LPSTR* szTo, size_t cchTo );
+// inout string buffers with writable size
+// e.g. void AppendStr( _In_z_ const char* szFrom, _Inout_z_cap_(cchTo) char* szTo, size_t cchTo );
+// returning pointers to valid objects
+// annotations to express 'boundedness' of integral value parameter
+// e.g.  HRESULT HrCreatePoint( _Deref_out_opt_ POINT** ppPT );
+// e.g.  void CloneString( _In_z_ const wchar_t* wzFrom, _Deref_out_z_ wchar_t** pWzTo );
+//
+// _Deref_pre_ ---
+//
+// describing conditions for array elements of dereferenced pointer parameters that must be met before the call
+// e.g. void SaveStringArray( _In_count_(cStrings) _Deref_pre_z_ const wchar_t* const rgpwch[] );
+// e.g. void FillInArrayOfStr32( _In_count_(cStrings) _Deref_pre_cap_c_(32) _Deref_post_z_ wchar_t* const rgpwch[] );
+// buffer capacity is described by another parameter
+// buffer capacity is described by a constant expression
+// buffer capacity is described by a complex condition
+// convenience macros for nullterminated buffers with given capacity
+// known capacity and valid but unknown readable extent
+// e.g. void SaveMatrix( _In_count_(n) _Deref_pre_count_(n) const Elem** matrix, size_t n ); 
+// valid buffer extent is described by another parameter
+// valid buffer extent is described by a constant expression
+// valid buffer extent is described by a complex expression
+// e.g. void PrintStringArray( _In_count_(cElems) _Deref_pre_valid_ LPCSTR rgStr[], size_t cElems );
+// restrict access rights
+//
+// _Deref_post_ ---
+//
+// describing conditions for array elements or dereferenced pointer parameters that hold after the call
+// e.g. void CloneString( _In_z_ const Wchar_t* wzIn _Out_ _Deref_post_z_ wchar_t** pWzOut );
+// e.g. HRESULT HrAllocateMemory( size_t cb, _Out_ _Deref_post_bytecap_(cb) void** ppv );
+// buffer capacity is described by another parameter
+// buffer capacity is described by a constant expression
+// buffer capacity is described by a complex expression
+// convenience macros for nullterminated buffers with given capacity
+// known capacity and valid but unknown readable extent
+// e.g. HRESULT HrAllocateZeroInitializedMemory( size_t cb, _Out_ _Deref_post_bytecount_(cb) void** ppv );
+// valid buffer extent is described by another parameter
+// buffer capacity is described by a constant expression
+// buffer capacity is described by a complex expression
+// e.g. void GetStrings( _Out_count_(cElems) _Deref_post_valid_ LPSTR const rgStr[], size_t cElems );
+//
+// _Deref_ret_ ---
+//
+//
+// special _Deref_ ---
+//
+//
+// _Ret_ ---
+//
+// e.g. _Ret_opt_valid_ LPSTR void* CloneSTR( _Pre_valid_ LPSTR src );
+// e.g. _Ret_opt_bytecap_(cb) void* AllocateMemory( size_t cb );
+// Buffer capacity is described by another parameter
+// Buffer capacity is described by a constant expression
+// Buffer capacity is described by a complex condition
+// return value is nullterminated and capacity is given by another parameter
+// e.g. _Ret_opt_bytecount_(cb) void* AllocateZeroInitializedMemory( size_t cb );
+// Valid Buffer extent is described by another parameter
+// Valid Buffer extent is described by a constant expression
+// Valid Buffer extent is described by a complex expression
+// return value is nullterminated and length is given by another parameter
+// _Pre_ annotations ---
+// restrict access rights
+// e.g. void FreeMemory( _Pre_bytecap_(cb) _Post_ptr_invalid_ void* pv, size_t cb );
+// buffer capacity described by another parameter
+// buffer capacity described by a constant expression
+// buffer capacity is described by another parameter multiplied by a constant expression
+// buffer capacity described by size of other buffer, only used by dangerous legacy APIs
+// e.g. int strcpy(_Pre_cap_for_(src) char* dst, const char* src);
+// buffer capacity described by a complex condition
+// buffer capacity described by the difference to another pointer parameter
+// e.g. void AppendStr( _Pre_z_ const char* szFrom, _Pre_z_cap_(cchTo) _Post_z_ char* szTo, size_t cchTo );
+// known capacity and valid but unknown readable extent
+// e.g. void AppendCharRange( _Pre_count_(cchFrom) const char* rgFrom, size_t cchFrom, _Out_z_cap_(cchTo) char* szTo, size_t cchTo );
+// Valid buffer extent described by another parameter
+// Valid buffer extent described by a constant expression
+// Valid buffer extent described by a complex expression
+// Valid buffer extent described by the difference to another pointer parameter
+// char * strncpy(_Out_cap_(_Count) _Post_maybez_ char * _Dest, _In_z_ const char * _Source, _In_ size_t _Count)
+// buffer maybe zero-terminated after the call
+// e.g. SIZE_T HeapSize( _In_ HANDLE hHeap, DWORD dwFlags, _Pre_notnull_ _Post_bytecap_(return) LPCVOID lpMem );
+// e.g. int strlen( _In_z_ _Post_count_(return+1) const char* sz );
+// e.g. size_t CopyStr( _In_z_ const char* szFrom, _Pre_cap_(cch) _Post_z_count_(return+1) char* szFrom, size_t cchFrom );
+//
+// _Prepost_ ---
+//
+// describing conditions that hold before and after the function call
+//
+// _Deref_<both> ---
+//
+// short version for _Deref_pre_<ann> _Deref_post_<ann>
+// describing conditions for array elements or dereferenced pointer parameters that hold before and after the call
+//
+// _Deref_<miscellaneous>
+//
+// used with references to arrays
+//============================================================================
+//   Implementation Layer:
+//============================================================================
+// Naming conventions:
+// A symbol the begins with _SA_ is for the machinery of creating any
+// annotations; many of those come from sourceannotations.h in the case
+// of attributes.
+// A symbol that ends with _impl is the very lowest level macro.  It is
+// not required to be a legal standalone annotation, and in the case
+// of attribute annotations, usually is not.  (In the case of some declspec
+// annotations, it might be, but it should not be assumed so.)  Those
+// symols will be used in the _PreN..., _PostN... and _RetN... annotations 
+// to build up more complete annotations.
+// A symbol ending in _impl_ is reserved to the implementation as well,
+// but it does form a complete annotation; usually they are used to build
+// up even higher level annotations.
+// [
+// Sharable "_impl" macros: these can be shared between the various annotation
+// forms but are part of the implementation of the macros.  These are collected
+// here to assure that only necessary differences in the annotations
+// exist.
+// The following are for the implementation machinery, and are not
+// suitable for annotating general code.
+// We're tying to phase this out, someday.  The parser quotes the param.
+// Normally the parser does some simple type checking of annotation params,
+// defer that check to the plugin.
+// [
+// Using attributes for sal
+// Declare a function to be an annotation or primop (respectively).
+// Done this way so that they don't appear in the regular compiler's
+// namespace.
+// Benign declspec needed here for WindowsPREfast
+// ][
+// Using declspecs for sal
+// Declare a function to be an annotation or primop (respectively).
+// Done this way so that they don't appear in the regular compiler's
+// namespace.
+// ][
+// Using "nothing" for sal
+// ]
+// [
+// Declare annotations that need to be declared.
+//??? resolve with PFD
+// Only appears in model files, but needs to be declared.
+// To be declared well-known soon.
+// ]
+// [
+// [
+// For SAL2, we need to expect general expressions.
+// ][
+// ]
+// this is a special case!
+// Obsolete -- may be needed for transition to attributes.
+// ][
+// _SA_annotes1(SAL_null, __yes)
+// _SA_annotes1(SAL_null, __no)
+// _SA_annotes1(SAL_null, __maybe)
+// _SA_annotes1(SAL_valid, __yes)
+// _SA_annotes1(SAL_valid, __no)
+// _SA_annotes1(SAL_valid, __maybe)
+// this is a special case!
+// ][
+// minimum attribute expansion for foreground build
+// [
+// !__cplusplus // ][
+// !__cplusplus // ]
+// [
+// ]
+// [
+// ]
+// [
+// ]
+// [
+// ]
+// [
+// ]
+//[__P_impl(__d_=0)]
+//[__P_impl(__d_=0)]
+//[__P_impl(__d_=0)]
+// ][
+// Obsolete -- may be needed for transition to attributes.
+// ]
+// This section contains the deprecated annotations
+// [
+// [
+// ]
+// ][
+// [
+// ]
+// ]
+// [
+// ][
+// ]
+// [
+// [
+// ][
+// ]
+// ][
+// ]
+// [
+// [
+// ][
+// ]
+// ][
+// ]
+// [
+/*"sal.h"2900*/ 
+// ]
+// [
+// [
+// ][
+// ]
+// ]
+// [
+// [
+// ][
+// ]
+// ]
+// [
+// ][
+// ]
+//
+// Set the analysis mode (global flags to analysis).
+// They take effect at the point of declaration; use at global scope
+// as a declaration.
+//
+// Synthesize a unique symbol.
+/*2943*/ 
+//
+// Floating point warnings are only meaningful in kernel-mode on x86
+// so avoid reporting them on other platforms.
+//
+// [
+// ][
+// ]
+// The following are predefined:
+//  _Analysis_operator_new_throw_   (operator new throws)
+//  _Analysis_operator_new_null_        (operator new returns null)
+//  _Analysis_operator_new_never_fails_ (operator new never fails)
+//
+// Function class annotations.
+/*2973*/ 
+/*2974*/ 
+// [
+// ]
+/***
+*concurrencysal.h - markers for documenting the concurrent semantics of APIs
+*
+*       Copyright (c) Microsoft Corporation. All rights reserved.
+*
+*Purpose:
+*       This file contains macros for Concurrency SAL annotations. Definitions
+*       starting with _Internal are low level macros that are subject to change. 
+*       Users should not use those low level macros directly.
+*       [ANSI]
+*
+*       [Public]
+*
+****/
+// [
+// ]
+// CONCURRENCYSAL_H
+/***
+*vadefs.h - defines helper macros for stdarg.h
+*
+*       Copyright (c) Microsoft Corporation. All rights reserved.
+*
+*Purpose:
+*       This is a helper file for stdarg.h
+*
+*       [Public]
+*
+****/
+/*"vadefs.h"50*/ typedef __w64 unsigned int uintptr_t;
+/*59*/ typedef char*va_list;
+/*"crtdefs.h"496*/ typedef __w64 unsigned int size_t;
+/*503*/ typedef size_t rsize_t;
+/*512*/ typedef __w64 int intptr_t;
+/*530*/ typedef __w64 int ptrdiff_t;
+/*536*/ typedef unsigned short wchar_t;
+/*541*/ typedef unsigned short wint_t;
+/*542*/ typedef unsigned short wctype_t;
+/*563*/ typedef int errno_t;
+/*567*/ typedef __w64 long __time32_t;
+/*572*/ typedef __int64 __time64_t;
+/*580*/ typedef __time64_t time_t;
+/*637*/ void __cdecl _invalid_parameter_noinfo(void);
+/*638*/ __declspec(noreturn)void __cdecl _invalid_parameter_noinfo_noreturn(void);
+/*641*/ __declspec(noreturn)
+/*642*/ void __cdecl _invoke_watson(const wchar_t*,const wchar_t*,const wchar_t*,unsigned int,uintptr_t);
+/*2072*/ struct threadlocaleinfostruct;
+/*2073*/ struct threadmbcinfostruct;
+/*2074*/ typedef struct threadlocaleinfostruct*pthreadlocinfo;
+/*2075*/ typedef struct threadmbcinfostruct*pthreadmbcinfo;
+/*2076*/ struct __lc_time_data;
+/*2078*/ typedef struct localeinfo_struct
+/*2079*/ {
+/*2080*/ pthreadlocinfo locinfo;
+/*2081*/ pthreadmbcinfo mbcinfo;
+/*2082*/ }_locale_tstruct,*_locale_t;
+/*2085*/ typedef struct localerefcount{
+/*2086*/ char*locale;
+/*2087*/ wchar_t*wlocale;
+/*2088*/ int*refcount;
+/*2089*/ int*wrefcount;
+/*2090*/ }locrefcount;
+/*2092*/ typedef struct threadlocaleinfostruct{
+/*2093*/ int refcount;
+/*2094*/ unsigned int lc_codepage;
+/*2095*/ unsigned int lc_collate_cp;
+/*2096*/ unsigned int lc_time_cp;
+/*2097*/ locrefcount lc_category[6];
+/*2098*/ int lc_clike;
+/*2099*/ int mb_cur_max;
+/*2100*/ int*lconv_intl_refcount;
+/*2101*/ int*lconv_num_refcount;
+/*2102*/ int*lconv_mon_refcount;
+/*2103*/ struct lconv*lconv;
+/*2104*/ int*ctype1_refcount;
+/*2105*/ unsigned short*ctype1;
+/*2106*/ const unsigned short*pctype;
+/*2107*/ const unsigned char*pclmap;
+/*2108*/ const unsigned char*pcumap;
+/*2109*/ struct __lc_time_data*lc_time_curr;
+/*2110*/ wchar_t*locale_name[6];
+/*2111*/ }threadlocinfo;
+/*"stdio.h"63*/ struct _iobuf{
+/*64*/ char*_ptr;
+/*65*/ int _cnt;
+/*66*/ char*_base;
+/*67*/ int _flag;
+/*68*/ int _file;
+/*69*/ int _charbuf;
+/*70*/ int _bufsiz;
+/*71*/ char*_tmpfname;
+/*72*/ };
+/*73*/ typedef struct _iobuf FILE;
+/*137*/ FILE*__cdecl __iob_func(void);
+/*144*/ typedef __int64 fpos_t;
+/*175*/ int __cdecl _filbuf(FILE*_File);
+/*176*/ int __cdecl _flsbuf(int _Ch,FILE*_File);
+/*178*/ FILE*__cdecl _fsopen(const char*_Filename,const char*_Mode,int _ShFlag);
+/*180*/ void __cdecl clearerr(FILE*_File);
+/*182*/ errno_t __cdecl clearerr_s(FILE*_File);
+/*184*/ int __cdecl fclose(FILE*_File);
+/*185*/ int __cdecl _fcloseall(void);
+/*187*/ FILE*__cdecl _fdopen(int _FileHandle,const char*_Mode);
+/*189*/ int __cdecl feof(FILE*_File);
+/*190*/ int __cdecl ferror(FILE*_File);
+/*191*/ int __cdecl fflush(FILE*_File);
+/*192*/ int __cdecl fgetc(FILE*_File);
+/*193*/ int __cdecl _fgetchar(void);
+/*194*/ int __cdecl fgetpos(FILE*_File,fpos_t*_Pos);
+/*195*/ char*__cdecl fgets(char*_Buf,int _MaxCount,FILE*_File);
+/*197*/ int __cdecl _fileno(FILE*_File);
+/*204*/ char*__cdecl _tempnam(const char*_DirName,const char*_FilePrefix);
+/*210*/ int __cdecl _flushall(void);
+/*211*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "fopen_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))FILE*__cdecl fopen(const char*_Filename,const char*_Mode);
+/*213*/ errno_t __cdecl fopen_s(FILE* *_File,const char*_Filename,const char*_Mode);
+/*215*/ int __cdecl fprintf(FILE*_File,const char*_Format,...);
+/*217*/ int __cdecl fprintf_s(FILE*_File,const char*_Format,...);
+/*219*/ int __cdecl fputc(int _Ch,FILE*_File);
+/*220*/ int __cdecl _fputchar(int _Ch);
+/*221*/ int __cdecl fputs(const char*_Str,FILE*_File);
+/*222*/ size_t __cdecl fread(void*_DstBuf,size_t _ElementSize,size_t _Count,FILE*_File);
+/*224*/ size_t __cdecl fread_s(void*_DstBuf,size_t _DstSize,size_t _ElementSize,size_t _Count,FILE*_File);
+/*226*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "freopen_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))FILE*__cdecl freopen(const char*_Filename,const char*_Mode,FILE*_File);
+/*228*/ errno_t __cdecl freopen_s(FILE* *_File,const char*_Filename,const char*_Mode,FILE*_OldFile);
+/*230*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "fscanf_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl fscanf(FILE*_File,const char*_Format,...);
+/*231*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_fscanf_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _fscanf_l(FILE*_File,const char*_Format,_locale_t _Locale,...);
+/*235*/ int __cdecl fscanf_s(FILE*_File,const char*_Format,...);
+/*237*/ int __cdecl _fscanf_s_l(FILE*_File,const char*_Format,_locale_t _Locale,...);
+/*239*/ int __cdecl fsetpos(FILE*_File,const fpos_t*_Pos);
+/*240*/ int __cdecl fseek(FILE*_File,long _Offset,int _Origin);
+/*241*/ long __cdecl ftell(FILE*_File);
+/*243*/ int __cdecl _fseeki64(FILE*_File,__int64 _Offset,int _Origin);
+/*244*/ __int64 __cdecl _ftelli64(FILE*_File);
+/*246*/ size_t __cdecl fwrite(const void*_Str,size_t _Size,size_t _Count,FILE*_File);
+/*247*/ int __cdecl getc(FILE*_File);
+/*248*/ int __cdecl getchar(void);
+/*249*/ int __cdecl _getmaxstdio(void);
+/*251*/ char*__cdecl gets_s(char*_Buf,rsize_t _Size);
+/*253*/ 
+/*254*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "gets_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl gets(char*_Buffer);
+/*255*/ int __cdecl _getw(FILE*_File);
+/*258*/ void __cdecl perror(const char*_ErrMsg);
+/*261*/ int __cdecl _pclose(FILE*_File);
+/*262*/ FILE*__cdecl _popen(const char*_Command,const char*_Mode);
+/*264*/ int __cdecl printf(const char*_Format,...);
+/*266*/ int __cdecl printf_s(const char*_Format,...);
+/*268*/ int __cdecl putc(int _Ch,FILE*_File);
+/*269*/ int __cdecl putchar(int _Ch);
+/*270*/ int __cdecl puts(const char*_Str);
+/*271*/ int __cdecl _putw(int _Word,FILE*_File);
+/*274*/ int __cdecl remove(const char*_Filename);
+/*275*/ int __cdecl rename(const char*_OldFilename,const char*_NewFilename);
+/*276*/ int __cdecl _unlink(const char*_Filename);
+/*281*/ void __cdecl rewind(FILE*_File);
+/*282*/ int __cdecl _rmtmp(void);
+/*283*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "scanf_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl scanf(const char*_Format,...);
+/*284*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_scanf_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _scanf_l(const char*_Format,_locale_t _Locale,...);
+/*288*/ int __cdecl scanf_s(const char*_Format,...);
+/*290*/ int __cdecl _scanf_s_l(const char*_Format,_locale_t _Locale,...);
+/*292*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "setvbuf" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))void __cdecl setbuf(FILE*_File,char*_Buffer);
+/*293*/ int __cdecl _setmaxstdio(int _Max);
+/*294*/ unsigned int __cdecl _set_output_format(unsigned int _Format);
+/*295*/ unsigned int __cdecl _get_output_format(void);
+/*296*/ int __cdecl setvbuf(FILE*_File,char*_Buf,int _Mode,size_t _Size);
+/*297*/ int __cdecl _snprintf_s(char*_DstBuf,size_t _SizeInBytes,size_t _MaxCount,const char*_Format,...);
+/*298*/ 
+/*300*/ int __cdecl sprintf_s(char*_DstBuf,size_t _SizeInBytes,const char*_Format,...);
+/*302*/ 
+/*303*/ int __cdecl _scprintf(const char*_Format,...);
+/*304*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "sscanf_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl sscanf(const char*_Src,const char*_Format,...);
+/*305*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_sscanf_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _sscanf_l(const char*_Src,const char*_Format,_locale_t _Locale,...);
+/*309*/ int __cdecl sscanf_s(const char*_Src,const char*_Format,...);
+/*311*/ int __cdecl _sscanf_s_l(const char*_Src,const char*_Format,_locale_t _Locale,...);
+/*312*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_snscanf_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _snscanf(const char*_Src,size_t _MaxCount,const char*_Format,...);
+/*313*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_snscanf_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _snscanf_l(const char*_Src,size_t _MaxCount,const char*_Format,_locale_t _Locale,...);
+/*314*/ int __cdecl _snscanf_s(const char*_Src,size_t _MaxCount,const char*_Format,...);
+/*315*/ int __cdecl _snscanf_s_l(const char*_Src,size_t _MaxCount,const char*_Format,_locale_t _Locale,...);
+/*317*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "tmpfile_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))FILE*__cdecl tmpfile(void);
+/*319*/ errno_t __cdecl tmpfile_s(FILE* *_File);
+/*320*/ errno_t __cdecl tmpnam_s(char*_Buf,rsize_t _Size);
+/*322*/ 
+/*323*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "tmpnam_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl tmpnam(char*_Buffer);
+/*324*/ int __cdecl ungetc(int _Ch,FILE*_File);
+/*325*/ int __cdecl vfprintf(FILE*_File,const char*_Format,va_list _ArgList);
+/*326*/ int __cdecl vfscanf(FILE*_File,const char*_Format,va_list _ArgList);
+/*328*/ int __cdecl vfprintf_s(FILE*_File,const char*_Format,va_list _ArgList);
+/*329*/ int __cdecl vfscanf_s(FILE*_File,const char*_Format,va_list _ArgList);
+/*331*/ int __cdecl vprintf(const char*_Format,va_list _ArgList);
+/*332*/ int __cdecl vscanf(const char*_Format,va_list _ArgList);
+/*334*/ int __cdecl vprintf_s(const char*_Format,va_list _ArgList);
+/*335*/ int __cdecl vscanf_s(const char*_Format,va_list _ArgList);
+/*337*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "vsnprintf_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl vsnprintf(char*_DstBuf,size_t _MaxCount,const char*_Format,va_list _ArgList);
+/*339*/ int __cdecl vsnprintf_s(char*_DstBuf,size_t _DstSize,size_t _MaxCount,const char*_Format,va_list _ArgList);
+/*340*/ 
+/*342*/ int __cdecl _vsnprintf_s(char*_DstBuf,size_t _SizeInBytes,size_t _MaxCount,const char*_Format,va_list _ArgList);
+/*343*/ 
+/*346*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_snprintf_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _snprintf(char*_Dest,size_t _Count,const char*_Format,...);__declspec(deprecated("This function or variable may be unsafe. Consider using " "_vsnprintf_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _vsnprintf(char*_Dest,size_t _Count,const char*_Format,va_list _Args);
+/*349*/ int __cdecl vsprintf_s(char*_DstBuf,size_t _SizeInBytes,const char*_Format,va_list _ArgList);
+/*350*/ 
+/*351*/ int __cdecl vsscanf_s(const char*_Src,const char*_Format,va_list _ArgList);
+/*352*/ 
+/*356*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "sprintf_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl sprintf(char*_Dest,const char*_Format,...);__declspec(deprecated("This function or variable may be unsafe. Consider using " "vsprintf_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl vsprintf(char*_Dest,const char*_Format,va_list _Args);
+/*357*/ int __cdecl vsscanf(const char*_srcBuf,const char*_Format,va_list _ArgList);
+/*359*/ int __cdecl _vscprintf(const char*_Format,va_list _ArgList);
+/*360*/ int __cdecl _snprintf_c(char*_DstBuf,size_t _MaxCount,const char*_Format,...);
+/*361*/ int __cdecl _vsnprintf_c(char*_DstBuf,size_t _MaxCount,const char*_Format,va_list _ArgList);
+/*363*/ int __cdecl _fprintf_p(FILE*_File,const char*_Format,...);
+/*364*/ int __cdecl _printf_p(const char*_Format,...);
+/*365*/ int __cdecl _sprintf_p(char*_Dst,size_t _MaxCount,const char*_Format,...);
+/*366*/ int __cdecl _vfprintf_p(FILE*_File,const char*_Format,va_list _ArgList);
+/*367*/ int __cdecl _vprintf_p(const char*_Format,va_list _ArgList);
+/*368*/ int __cdecl _vsprintf_p(char*_Dst,size_t _MaxCount,const char*_Format,va_list _ArgList);
+/*369*/ int __cdecl _scprintf_p(const char*_Format,...);
+/*370*/ int __cdecl _vscprintf_p(const char*_Format,va_list _ArgList);
+/*371*/ int __cdecl _set_printf_count_output(int _Value);
+/*372*/ int __cdecl _get_printf_count_output(void);
+/*374*/ int __cdecl _printf_l(const char*_Format,_locale_t _Locale,...);
+/*375*/ int __cdecl _printf_p_l(const char*_Format,_locale_t _Locale,...);
+/*376*/ int __cdecl _printf_s_l(const char*_Format,_locale_t _Locale,...);
+/*377*/ int __cdecl _vprintf_l(const char*_Format,_locale_t _Locale,va_list _ArgList);
+/*378*/ int __cdecl _vprintf_p_l(const char*_Format,_locale_t _Locale,va_list _ArgList);
+/*379*/ int __cdecl _vprintf_s_l(const char*_Format,_locale_t _Locale,va_list _ArgList);
+/*381*/ int __cdecl _fprintf_l(FILE*_File,const char*_Format,_locale_t _Locale,...);
+/*382*/ int __cdecl _fprintf_p_l(FILE*_File,const char*_Format,_locale_t _Locale,...);
+/*383*/ int __cdecl _fprintf_s_l(FILE*_File,const char*_Format,_locale_t _Locale,...);
+/*384*/ int __cdecl _vfprintf_l(FILE*_File,const char*_Format,_locale_t _Locale,va_list _ArgList);
+/*385*/ int __cdecl _vfprintf_p_l(FILE*_File,const char*_Format,_locale_t _Locale,va_list _ArgList);
+/*386*/ int __cdecl _vfprintf_s_l(FILE*_File,const char*_Format,_locale_t _Locale,va_list _ArgList);
+/*388*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_sprintf_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _sprintf_l(char*_DstBuf,const char*_Format,_locale_t _Locale,...);
+/*389*/ int __cdecl _sprintf_p_l(char*_DstBuf,size_t _MaxCount,const char*_Format,_locale_t _Locale,...);
+/*390*/ int __cdecl _sprintf_s_l(char*_DstBuf,size_t _DstSize,const char*_Format,_locale_t _Locale,...);
+/*391*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_vsprintf_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _vsprintf_l(char*_DstBuf,const char*_Format,_locale_t,va_list _ArgList);
+/*392*/ int __cdecl _vsprintf_p_l(char*_DstBuf,size_t _MaxCount,const char*_Format,_locale_t _Locale,va_list _ArgList);
+/*393*/ int __cdecl _vsprintf_s_l(char*_DstBuf,size_t _DstSize,const char*_Format,_locale_t _Locale,va_list _ArgList);
+/*395*/ int __cdecl _scprintf_l(const char*_Format,_locale_t _Locale,...);
+/*396*/ int __cdecl _scprintf_p_l(const char*_Format,_locale_t _Locale,...);
+/*397*/ int __cdecl _vscprintf_l(const char*_Format,_locale_t _Locale,va_list _ArgList);
+/*398*/ int __cdecl _vscprintf_p_l(const char*_Format,_locale_t _Locale,va_list _ArgList);
+/*400*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_snprintf_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _snprintf_l(char*_DstBuf,size_t _MaxCount,const char*_Format,_locale_t _Locale,...);
+/*401*/ int __cdecl _snprintf_c_l(char*_DstBuf,size_t _MaxCount,const char*_Format,_locale_t _Locale,...);
+/*402*/ int __cdecl _snprintf_s_l(char*_DstBuf,size_t _DstSize,size_t _MaxCount,const char*_Format,_locale_t _Locale,...);
+/*403*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_vsnprintf_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _vsnprintf_l(char*_DstBuf,size_t _MaxCount,const char*_Format,_locale_t _Locale,va_list _ArgList);
+/*404*/ int __cdecl _vsnprintf_c_l(char*_DstBuf,size_t _MaxCount,const char*,_locale_t _Locale,va_list _ArgList);
+/*405*/ int __cdecl _vsnprintf_s_l(char*_DstBuf,size_t _DstSize,size_t _MaxCount,const char*_Format,_locale_t _Locale,va_list _ArgList);
+/*415*/ FILE*__cdecl _wfsopen(const wchar_t*_Filename,const wchar_t*_Mode,int _ShFlag);
+/*417*/ wint_t __cdecl fgetwc(FILE*_File);
+/*418*/ wint_t __cdecl _fgetwchar(void);
+/*419*/ wint_t __cdecl fputwc(wchar_t _Ch,FILE*_File);
+/*420*/ wint_t __cdecl _fputwchar(wchar_t _Ch);
+/*421*/ wint_t __cdecl getwc(FILE*_File);
+/*422*/ wint_t __cdecl getwchar(void);
+/*423*/ wint_t __cdecl putwc(wchar_t _Ch,FILE*_File);
+/*424*/ wint_t __cdecl putwchar(wchar_t _Ch);
+/*425*/ wint_t __cdecl ungetwc(wint_t _Ch,FILE*_File);
+/*427*/ wchar_t*__cdecl fgetws(wchar_t*_Dst,int _SizeInWords,FILE*_File);
+/*428*/ int __cdecl fputws(const wchar_t*_Str,FILE*_File);
+/*429*/ wchar_t*__cdecl _getws_s(wchar_t*_Str,size_t _SizeInWords);
+/*430*/ 
+/*431*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_getws_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl _getws(wchar_t*_String);
+/*432*/ int __cdecl _putws(const wchar_t*_Str);
+/*434*/ int __cdecl fwprintf(FILE*_File,const wchar_t*_Format,...);
+/*436*/ int __cdecl fwprintf_s(FILE*_File,const wchar_t*_Format,...);
+/*438*/ int __cdecl wprintf(const wchar_t*_Format,...);
+/*440*/ int __cdecl wprintf_s(const wchar_t*_Format,...);
+/*442*/ int __cdecl _scwprintf(const wchar_t*_Format,...);
+/*443*/ int __cdecl vfwprintf(FILE*_File,const wchar_t*_Format,va_list _ArgList);
+/*444*/ int __cdecl vfwscanf(FILE*_File,const wchar_t*_Format,va_list _ArgList);
+/*446*/ int __cdecl vfwprintf_s(FILE*_File,const wchar_t*_Format,va_list _ArgList);
+/*447*/ int __cdecl vfwscanf_s(FILE*_File,const wchar_t*_Format,va_list _ArgList);
+/*449*/ int __cdecl vwprintf(const wchar_t*_Format,va_list _ArgList);
+/*450*/ int __cdecl vwscanf(const wchar_t*_Format,va_list _ArgList);
+/*452*/ int __cdecl vwprintf_s(const wchar_t*_Format,va_list _ArgList);
+/*453*/ int __cdecl vwscanf_s(const wchar_t*_Format,va_list _ArgList);
+/*457*/ int __cdecl swprintf_s(wchar_t*_Dst,size_t _SizeInWords,const wchar_t*_Format,...);
+/*459*/ 
+/*461*/ int __cdecl vswprintf_s(wchar_t*_Dst,size_t _SizeInWords,const wchar_t*_Format,va_list _ArgList);
+/*462*/ int __cdecl vswscanf_s(const wchar_t*_Src,const wchar_t*_Format,va_list _ArgList);
+/*464*/ 
+/*465*/ 
+/*466*/ int __cdecl vswscanf(const wchar_t*_srcBuf,const wchar_t*_Format,va_list _ArgList);
+/*468*/ int __cdecl _swprintf_c(wchar_t*_DstBuf,size_t _SizeInWords,const wchar_t*_Format,...);
+/*469*/ int __cdecl _vswprintf_c(wchar_t*_DstBuf,size_t _SizeInWords,const wchar_t*_Format,va_list _ArgList);
+/*471*/ int __cdecl _snwprintf_s(wchar_t*_DstBuf,size_t _SizeInWords,size_t _MaxCount,const wchar_t*_Format,...);
+/*472*/ 
+/*473*/ int __cdecl _vsnwprintf_s(wchar_t*_DstBuf,size_t _SizeInWords,size_t _MaxCount,const wchar_t*_Format,va_list _ArgList);
+/*474*/ 
+/*477*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_snwprintf_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _snwprintf(wchar_t*_Dest,size_t _Count,const wchar_t*_Format,...);__declspec(deprecated("This function or variable may be unsafe. Consider using " "_vsnwprintf_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _vsnwprintf(wchar_t*_Dest,size_t _Count,const wchar_t*_Format,va_list _Args);
+/*480*/ int __cdecl _fwprintf_p(FILE*_File,const wchar_t*_Format,...);
+/*481*/ int __cdecl _wprintf_p(const wchar_t*_Format,...);
+/*482*/ int __cdecl _vfwprintf_p(FILE*_File,const wchar_t*_Format,va_list _ArgList);
+/*483*/ int __cdecl _vwprintf_p(const wchar_t*_Format,va_list _ArgList);
+/*484*/ int __cdecl _swprintf_p(wchar_t*_DstBuf,size_t _MaxCount,const wchar_t*_Format,...);
+/*485*/ int __cdecl _vswprintf_p(wchar_t*_DstBuf,size_t _MaxCount,const wchar_t*_Format,va_list _ArgList);
+/*486*/ int __cdecl _scwprintf_p(const wchar_t*_Format,...);
+/*487*/ int __cdecl _vscwprintf_p(const wchar_t*_Format,va_list _ArgList);
+/*489*/ int __cdecl _wprintf_l(const wchar_t*_Format,_locale_t _Locale,...);
+/*490*/ int __cdecl _wprintf_p_l(const wchar_t*_Format,_locale_t _Locale,...);
+/*491*/ int __cdecl _wprintf_s_l(const wchar_t*_Format,_locale_t _Locale,...);
+/*492*/ int __cdecl _vwprintf_l(const wchar_t*_Format,_locale_t _Locale,va_list _ArgList);
+/*493*/ int __cdecl _vwprintf_p_l(const wchar_t*_Format,_locale_t _Locale,va_list _ArgList);
+/*494*/ int __cdecl _vwprintf_s_l(const wchar_t*_Format,_locale_t _Locale,va_list _ArgList);
+/*496*/ int __cdecl _fwprintf_l(FILE*_File,const wchar_t*_Format,_locale_t _Locale,...);
+/*497*/ int __cdecl _fwprintf_p_l(FILE*_File,const wchar_t*_Format,_locale_t _Locale,...);
+/*498*/ int __cdecl _fwprintf_s_l(FILE*_File,const wchar_t*_Format,_locale_t _Locale,...);
+/*499*/ int __cdecl _vfwprintf_l(FILE*_File,const wchar_t*_Format,_locale_t _Locale,va_list _ArgList);
+/*500*/ int __cdecl _vfwprintf_p_l(FILE*_File,const wchar_t*_Format,_locale_t _Locale,va_list _ArgList);
+/*501*/ int __cdecl _vfwprintf_s_l(FILE*_File,const wchar_t*_Format,_locale_t _Locale,va_list _ArgList);
+/*503*/ int __cdecl _swprintf_c_l(wchar_t*_DstBuf,size_t _MaxCount,const wchar_t*_Format,_locale_t _Locale,...);
+/*504*/ int __cdecl _swprintf_p_l(wchar_t*_DstBuf,size_t _MaxCount,const wchar_t*_Format,_locale_t _Locale,...);
+/*505*/ int __cdecl _swprintf_s_l(wchar_t*_DstBuf,size_t _DstSize,const wchar_t*_Format,_locale_t _Locale,...);
+/*506*/ int __cdecl _vswprintf_c_l(wchar_t*_DstBuf,size_t _MaxCount,const wchar_t*_Format,_locale_t _Locale,va_list _ArgList);
+/*507*/ int __cdecl _vswprintf_p_l(wchar_t*_DstBuf,size_t _MaxCount,const wchar_t*_Format,_locale_t _Locale,va_list _ArgList);
+/*508*/ int __cdecl _vswprintf_s_l(wchar_t*_DstBuf,size_t _DstSize,const wchar_t*_Format,_locale_t _Locale,va_list _ArgList);
+/*510*/ int __cdecl _scwprintf_l(const wchar_t*_Format,_locale_t _Locale,...);
+/*511*/ int __cdecl _scwprintf_p_l(const wchar_t*_Format,_locale_t _Locale,...);
+/*512*/ int __cdecl _vscwprintf_p_l(const wchar_t*_Format,_locale_t _Locale,va_list _ArgList);
+/*514*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_snwprintf_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _snwprintf_l(wchar_t*_DstBuf,size_t _MaxCount,const wchar_t*_Format,_locale_t _Locale,...);
+/*515*/ int __cdecl _snwprintf_s_l(wchar_t*_DstBuf,size_t _DstSize,size_t _MaxCount,const wchar_t*_Format,_locale_t _Locale,...);
+/*516*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_vsnwprintf_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _vsnwprintf_l(wchar_t*_DstBuf,size_t _MaxCount,const wchar_t*_Format,_locale_t _Locale,va_list _ArgList);
+/*517*/ int __cdecl _vsnwprintf_s_l(wchar_t*_DstBuf,size_t _DstSize,size_t _MaxCount,const wchar_t*_Format,_locale_t _Locale,va_list _ArgList);
+/*533*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_swprintf_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))__declspec(deprecated("swprintf has been changed to conform with the ISO C standard, adding an extra character count parameter. To use traditional Microsoft swprintf, set _CRT_NON_CONFORMING_SWPRINTFS."))int __cdecl _swprintf(wchar_t*_Dest,const wchar_t*_Format,...);__declspec(deprecated("This function or variable may be unsafe. Consider using " "vswprintf_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))__declspec(deprecated("swprintf has been changed to conform with the ISO C standard, adding an extra character count parameter. To use traditional Microsoft swprintf, set _CRT_NON_CONFORMING_SWPRINTFS."))int __cdecl _vswprintf(wchar_t*_Dest,const wchar_t*_Format,va_list _Args);
+/*534*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "__swprintf_l_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))__declspec(deprecated("swprintf has been changed to conform with the ISO C standard, adding an extra character count parameter. To use traditional Microsoft swprintf, set _CRT_NON_CONFORMING_SWPRINTFS."))int __cdecl __swprintf_l(wchar_t*_Dest,const wchar_t*_Format,_locale_t _Plocinfo,...);__declspec(deprecated("This function or variable may be unsafe. Consider using " "_vswprintf_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))__declspec(deprecated("swprintf has been changed to conform with the ISO C standard, adding an extra character count parameter. To use traditional Microsoft swprintf, set _CRT_NON_CONFORMING_SWPRINTFS."))int __cdecl __vswprintf_l(wchar_t*_Dest,const wchar_t*_Format,_locale_t _Plocinfo,va_list _Args);
+/***
+*swprintf.inl - inline definitions for (v)swprintf
+*
+*       Copyright (c) Microsoft Corporation. All rights reserved.
+*
+*Purpose:
+*       This file contains the function definitions for (v)swprintf
+*
+*       [Public]
+*
+****/
+/***
+*vadefs.h - defines helper macros for stdarg.h
+*
+*       Copyright (c) Microsoft Corporation. All rights reserved.
+*
+*Purpose:
+*       This is a helper file for stdarg.h
+*
+*       [Public]
+*
+****/
+/*"swprintf.inl"36*/ static __inline int swprintf(wchar_t*_String,size_t _Count,const wchar_t*_Format,...)
+/*37*/ {
+/*38*/ va_list _Arglist;
+/*39*/ int _Ret;
+/*40*/ (_Arglist=(va_list)(&(_Format))+((sizeof(_Format)+sizeof(int)-1)& ~(sizeof(int)-1)));
+/*41*/ _Ret=_vswprintf_c_l(_String,_Count,_Format,((void*)0),_Arglist);
+/*42*/ (_Arglist=(va_list)0);
+/*43*/ return _Ret;
+/*44*/ }
+/*49*/ static __inline int __cdecl vswprintf(wchar_t*_String,size_t _Count,const wchar_t*_Format,va_list _Ap)
+/*50*/ {
+/*51*/ return _vswprintf_c_l(_String,_Count,_Format,((void*)0),_Ap);
+/*52*/ }
+/*60*/ static __inline int _swprintf_l(wchar_t*_String,size_t _Count,const wchar_t*_Format,_locale_t _Plocinfo,...)
+/*61*/ {
+/*62*/ va_list _Arglist;
+/*63*/ int _Ret;
+/*64*/ (_Arglist=(va_list)(&(_Plocinfo))+((sizeof(_Plocinfo)+sizeof(int)-1)& ~(sizeof(int)-1)));
+/*65*/ _Ret=_vswprintf_c_l(_String,_Count,_Format,_Plocinfo,_Arglist);
+/*66*/ (_Arglist=(va_list)0);
+/*67*/ return _Ret;
+/*68*/ }
+/*73*/ static __inline int __cdecl _vswprintf_l(wchar_t*_String,size_t _Count,const wchar_t*_Format,_locale_t _Plocinfo,va_list _Ap)
+/*74*/ {
+/*75*/ return _vswprintf_c_l(_String,_Count,_Format,_Plocinfo,_Ap);
+/*76*/ }
+/*"stdio.h"555*/ wchar_t*__cdecl _wtempnam(const wchar_t*_Directory,const wchar_t*_FilePrefix);
+/*561*/ int __cdecl _vscwprintf(const wchar_t*_Format,va_list _ArgList);
+/*562*/ int __cdecl _vscwprintf_l(const wchar_t*_Format,_locale_t _Locale,va_list _ArgList);
+/*563*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "fwscanf_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl fwscanf(FILE*_File,const wchar_t*_Format,...);
+/*564*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_fwscanf_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _fwscanf_l(FILE*_File,const wchar_t*_Format,_locale_t _Locale,...);
+/*568*/ int __cdecl fwscanf_s(FILE*_File,const wchar_t*_Format,...);
+/*570*/ int __cdecl _fwscanf_s_l(FILE*_File,const wchar_t*_Format,_locale_t _Locale,...);
+/*571*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "swscanf_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl swscanf(const wchar_t*_Src,const wchar_t*_Format,...);
+/*572*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_swscanf_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _swscanf_l(const wchar_t*_Src,const wchar_t*_Format,_locale_t _Locale,...);
+/*574*/ int __cdecl swscanf_s(const wchar_t*_Src,const wchar_t*_Format,...);
+/*576*/ int __cdecl _swscanf_s_l(const wchar_t*_Src,const wchar_t*_Format,_locale_t _Locale,...);
+/*577*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_snwscanf_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _snwscanf(const wchar_t*_Src,size_t _MaxCount,const wchar_t*_Format,...);
+/*578*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_snwscanf_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _snwscanf_l(const wchar_t*_Src,size_t _MaxCount,const wchar_t*_Format,_locale_t _Locale,...);
+/*579*/ int __cdecl _snwscanf_s(const wchar_t*_Src,size_t _MaxCount,const wchar_t*_Format,...);
+/*580*/ int __cdecl _snwscanf_s_l(const wchar_t*_Src,size_t _MaxCount,const wchar_t*_Format,_locale_t _Locale,...);
+/*581*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "wscanf_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl wscanf(const wchar_t*_Format,...);
+/*582*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_wscanf_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _wscanf_l(const wchar_t*_Format,_locale_t _Locale,...);
+/*584*/ int __cdecl wscanf_s(const wchar_t*_Format,...);
+/*586*/ int __cdecl _wscanf_s_l(const wchar_t*_Format,_locale_t _Locale,...);
+/*589*/ FILE*__cdecl _wfdopen(int _FileHandle,const wchar_t*_Mode);
+/*590*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_wfopen_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))FILE*__cdecl _wfopen(const wchar_t*_Filename,const wchar_t*_Mode);
+/*591*/ errno_t __cdecl _wfopen_s(FILE* *_File,const wchar_t*_Filename,const wchar_t*_Mode);
+/*592*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_wfreopen_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))FILE*__cdecl _wfreopen(const wchar_t*_Filename,const wchar_t*_Mode,FILE*_OldFile);
+/*593*/ errno_t __cdecl _wfreopen_s(FILE* *_File,const wchar_t*_Filename,const wchar_t*_Mode,FILE*_OldFile);
+/*597*/ void __cdecl _wperror(const wchar_t*_ErrMsg);
+/*600*/ FILE*__cdecl _wpopen(const wchar_t*_Command,const wchar_t*_Mode);
+/*602*/ int __cdecl _wremove(const wchar_t*_Filename);
+/*603*/ errno_t __cdecl _wtmpnam_s(wchar_t*_DstBuf,size_t _SizeInWords);
+/*604*/ 
+/*605*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_wtmpnam_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl _wtmpnam(wchar_t*_Buffer);
+/*607*/ wint_t __cdecl _fgetwc_nolock(FILE*_File);
+/*608*/ wint_t __cdecl _fputwc_nolock(wchar_t _Ch,FILE*_File);
+/*609*/ wint_t __cdecl _ungetwc_nolock(wint_t _Ch,FILE*_File);
+/*670*/ void __cdecl _lock_file(FILE*_File);
+/*671*/ void __cdecl _unlock_file(FILE*_File);
+/*673*/ int __cdecl _fclose_nolock(FILE*_File);
+/*674*/ int __cdecl _fflush_nolock(FILE*_File);
+/*675*/ size_t __cdecl _fread_nolock(void*_DstBuf,size_t _ElementSize,size_t _Count,FILE*_File);
+/*676*/ size_t __cdecl _fread_nolock_s(void*_DstBuf,size_t _DstSize,size_t _ElementSize,size_t _Count,FILE*_File);
+/*677*/ int __cdecl _fseek_nolock(FILE*_File,long _Offset,int _Origin);
+/*678*/ long __cdecl _ftell_nolock(FILE*_File);
+/*679*/ int __cdecl _fseeki64_nolock(FILE*_File,__int64 _Offset,int _Origin);
+/*680*/ __int64 __cdecl _ftelli64_nolock(FILE*_File);
+/*681*/ size_t __cdecl _fwrite_nolock(const void*_DstBuf,size_t _Size,size_t _Count,FILE*_File);
+/*682*/ int __cdecl _ungetc_nolock(int _Ch,FILE*_File);
+/***
+*stdlib.h - declarations/definitions for commonly used library functions
+*
+*       Copyright (c) Microsoft Corporation. All rights reserved.
+*
+*Purpose:
+*       This include file contains the function declarations for commonly
+*       used library functions which either don't fit somewhere else, or,
+*       cannot be declared in the normal place for other reasons.
+*       [ANSI]
+*
+*       [Public]
+*
+****/
+/***
+*crtdefs.h - definitions/declarations common to all CRT
+*
+*       Copyright (c) Microsoft Corporation. All rights reserved.
+*
+*Purpose:
+*       This file has mostly defines used by the entire CRT.
+*
+*       [Public]
+*
+****/
+/***
+*limits.h - implementation dependent values
+*
+*       Copyright (c) Microsoft Corporation.  All rights reserved.
+*
+*Purpose:
+*       Contains defines for a number of implementation dependent values
+*       which are commonly used in C programs.
+*       [ANSI]
+*
+*       [Public]
+*
+****/
+/***
+*crtdefs.h - definitions/declarations common to all CRT
+*
+*       Copyright (c) Microsoft Corporation. All rights reserved.
+*
+*Purpose:
+*       This file has mostly defines used by the entire CRT.
+*
+*       [Public]
+*
+****/
+/*"stdlib.h"52*/ typedef int(__cdecl*_onexit_t)(void);
+/*75*/ typedef struct _div_t{
+/*76*/ int quot;
+/*77*/ int rem;
+/*78*/ }div_t;
+/*80*/ typedef struct _ldiv_t{
+/*81*/ long quot;
+/*82*/ long rem;
+/*83*/ }ldiv_t;
+/*85*/ typedef struct _lldiv_t{
+/*86*/ long long quot;
+/*87*/ long long rem;
+/*88*/ }lldiv_t;
+/*103*/ typedef struct{
+/*104*/ unsigned char ld[10];
+/*105*/ }_LDOUBLE;
+/*122*/ typedef struct{
+/*123*/ double x;
+/*124*/ }_CRT_DOUBLE;
+/*126*/ typedef struct{
+/*127*/ float f;
+/*128*/ }_CRT_FLOAT;
+/*134*/ typedef struct{
+/*138*/ long double x;
+/*139*/ }_LONGDOUBLE;
+/*144*/ typedef struct{
+/*145*/ unsigned char ld12[12];
+/*146*/ }_LDBL12;
+/*170*/ extern int __mb_cur_max;
+/*175*/ int __cdecl ___mb_cur_max_func(void);
+/*176*/ int __cdecl ___mb_cur_max_l_func(_locale_t);
+/*215*/ typedef void(__cdecl*_purecall_handler)(void);
+/*218*/ _purecall_handler __cdecl _set_purecall_handler(_purecall_handler _Handler);
+/*219*/ _purecall_handler __cdecl _get_purecall_handler(void);
+/*235*/ typedef void(__cdecl*_invalid_parameter_handler)(const wchar_t*,const wchar_t*,const wchar_t*,unsigned int,uintptr_t);
+/*238*/ _invalid_parameter_handler __cdecl _set_invalid_parameter_handler(_invalid_parameter_handler _Handler);
+/*239*/ _invalid_parameter_handler __cdecl _get_invalid_parameter_handler(void);
+/*245*/ extern int*__cdecl _errno(void);
+/*248*/ errno_t __cdecl _set_errno(int _Value);
+/*249*/ errno_t __cdecl _get_errno(int*_Value);
+/*252*/ unsigned long*__cdecl __doserrno(void);
+/*255*/ errno_t __cdecl _set_doserrno(unsigned long _Value);
+/*256*/ errno_t __cdecl _get_doserrno(unsigned long*_Value);
+/*259*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "strerror" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char* *__cdecl __sys_errlist(void);
+/*262*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "strerror" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int*__cdecl __sys_nerr(void);
+/*288*/ extern int __argc;
+/*289*/ extern char* *__argv;
+/*290*/ extern wchar_t* *__wargv;
+/*306*/ extern char* *_environ;
+/*307*/ extern wchar_t* *_wenviron;
+/*311*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_get_pgmptr" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))extern char*_pgmptr;
+/*312*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_get_wpgmptr" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))extern wchar_t*_wpgmptr;
+/*339*/ errno_t __cdecl _get_pgmptr(char* *_Value);
+/*340*/ errno_t __cdecl _get_wpgmptr(wchar_t* *_Value);
+/*346*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_get_fmode" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))extern int _fmode;
+/*353*/ errno_t __cdecl _set_fmode(int _Mode);
+/*354*/ errno_t __cdecl _get_fmode(int*_PMode);
+/*376*/ __declspec(noreturn)void __cdecl exit(int _Code);
+/*378*/ __declspec(noreturn)void __cdecl _exit(int _Code);
+/*379*/ __declspec(noreturn)void __cdecl abort(void);
+/*382*/ unsigned int __cdecl _set_abort_behavior(unsigned int _Flags,unsigned int _Mask);
+/*384*/ int __cdecl abs(int _X);
+/*385*/ long __cdecl labs(long _X);
+/*386*/ long long __cdecl llabs(long long _X);
+/*388*/ __int64 __cdecl _abs64(__int64);
+/*426*/ int __cdecl atexit(void(__cdecl*)(void));
+/*428*/ double __cdecl atof(const char*_String);
+/*429*/ double __cdecl _atof_l(const char*_String,_locale_t _Locale);
+/*430*/ int __cdecl atoi(const char*_Str);
+/*431*/ int __cdecl _atoi_l(const char*_Str,_locale_t _Locale);
+/*432*/ long __cdecl atol(const char*_Str);
+/*433*/ long __cdecl _atol_l(const char*_Str,_locale_t _Locale);
+/*434*/ long long __cdecl atoll(const char*_Str);
+/*435*/ long long __cdecl _atoll_l(const char*_Str,_locale_t _Locale);
+/*439*/ void*__cdecl bsearch_s(const void*_Key,const void*_Base,
+/*440*/ rsize_t _NumOfElements,rsize_t _SizeOfElements,
+/*441*/ int(__cdecl*_PtFuncCompare)(void*,const void*,const void*),void*_Context);
+/*443*/ void*__cdecl bsearch(const void*_Key,const void*_Base,
+/*444*/ size_t _NumOfElements,size_t _SizeOfElements,
+/*445*/ int(__cdecl*_PtFuncCompare)(const void*,const void*));
+/*448*/ void __cdecl qsort_s(void*_Base,
+/*449*/ rsize_t _NumOfElements,rsize_t _SizeOfElements,
+/*450*/ int(__cdecl*_PtFuncCompare)(void*,const void*,const void*),void*_Context);
+/*452*/ void __cdecl qsort(void*_Base,
+/*453*/ size_t _NumOfElements,size_t _SizeOfElements,
+/*454*/ int(__cdecl*_PtFuncCompare)(const void*,const void*));
+/*456*/ unsigned short __cdecl _byteswap_ushort(unsigned short _Short);
+/*457*/ unsigned long __cdecl _byteswap_ulong(unsigned long _Long);
+/*458*/ unsigned __int64 __cdecl _byteswap_uint64(unsigned __int64 _Int64);
+/*459*/ div_t __cdecl div(int _Numerator,int _Denominator);
+/*462*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_dupenv_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl getenv(const char*_VarName);
+/*464*/ errno_t __cdecl getenv_s(size_t*_ReturnSize,char*_DstBuf,rsize_t _DstSize,const char*_VarName);
+/*466*/ 
+/*472*/ errno_t __cdecl _dupenv_s(char* *_PBuffer,size_t*_PBufferSizeInBytes,const char*_VarName);
+/*479*/ errno_t __cdecl _itoa_s(int _Value,char*_DstBuf,size_t _Size,int _Radix);
+/*480*/ 
+/*481*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_itoa_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl _itoa(int _Value,char*_Dest,int _Radix);
+/*482*/ errno_t __cdecl _i64toa_s(__int64 _Val,char*_DstBuf,size_t _Size,int _Radix);
+/*483*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_i64toa_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl _i64toa(__int64 _Val,char*_DstBuf,int _Radix);
+/*484*/ errno_t __cdecl _ui64toa_s(unsigned __int64 _Val,char*_DstBuf,size_t _Size,int _Radix);
+/*485*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_ui64toa_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl _ui64toa(unsigned __int64 _Val,char*_DstBuf,int _Radix);
+/*486*/ __int64 __cdecl _atoi64(const char*_String);
+/*487*/ __int64 __cdecl _atoi64_l(const char*_String,_locale_t _Locale);
+/*488*/ __int64 __cdecl _strtoi64(const char*_String,char* *_EndPtr,int _Radix);
+/*489*/ __int64 __cdecl _strtoi64_l(const char*_String,char* *_EndPtr,int _Radix,_locale_t _Locale);
+/*490*/ unsigned __int64 __cdecl _strtoui64(const char*_String,char* *_EndPtr,int _Radix);
+/*491*/ unsigned __int64 __cdecl _strtoui64_l(const char*_String,char* *_EndPtr,int _Radix,_locale_t _Locale);
+/*492*/ ldiv_t __cdecl ldiv(long _Numerator,long _Denominator);
+/*493*/ lldiv_t __cdecl lldiv(long long _Numerator,long long _Denominator);
+/*515*/ errno_t __cdecl _ltoa_s(long _Val,char*_DstBuf,size_t _Size,int _Radix);
+/*516*/ 
+/*517*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_ltoa_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl _ltoa(long _Value,char*_Dest,int _Radix);
+/*518*/ int __cdecl mblen(const char*_Ch,size_t _MaxCount);
+/*519*/ int __cdecl _mblen_l(const char*_Ch,size_t _MaxCount,_locale_t _Locale);
+/*520*/ size_t __cdecl _mbstrlen(const char*_Str);
+/*521*/ size_t __cdecl _mbstrlen_l(const char*_Str,_locale_t _Locale);
+/*522*/ size_t __cdecl _mbstrnlen(const char*_Str,size_t _MaxCount);
+/*523*/ size_t __cdecl _mbstrnlen_l(const char*_Str,size_t _MaxCount,_locale_t _Locale);
+/*524*/ int __cdecl mbtowc(wchar_t*_DstCh,const char*_SrcCh,size_t _SrcSizeInBytes);
+/*525*/ int __cdecl _mbtowc_l(wchar_t*_DstCh,const char*_SrcCh,size_t _SrcSizeInBytes,_locale_t _Locale);
+/*526*/ errno_t __cdecl mbstowcs_s(size_t*_PtNumOfCharConverted,wchar_t*_DstBuf,size_t _SizeInWords,const char*_SrcBuf,size_t _MaxCount);
+/*527*/ 
+/*528*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "mbstowcs_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))size_t __cdecl mbstowcs(wchar_t*_Dest,const char*_Source,size_t _MaxCount);
+/*530*/ errno_t __cdecl _mbstowcs_s_l(size_t*_PtNumOfCharConverted,wchar_t*_DstBuf,size_t _SizeInWords,const char*_SrcBuf,size_t _MaxCount,_locale_t _Locale);
+/*531*/ 
+/*532*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_mbstowcs_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))size_t __cdecl _mbstowcs_l(wchar_t*_Dest,const char*_Source,size_t _MaxCount,_locale_t _Locale);
+/*534*/ int __cdecl rand(void);
+/*539*/ int __cdecl _set_error_mode(int _Mode);
+/*541*/ void __cdecl srand(unsigned int _Seed);
+/*542*/ double __cdecl strtod(const char*_Str,char* *_EndPtr);
+/*543*/ double __cdecl _strtod_l(const char*_Str,char* *_EndPtr,_locale_t _Locale);
+/*544*/ long __cdecl strtol(const char*_Str,char* *_EndPtr,int _Radix);
+/*545*/ long __cdecl _strtol_l(const char*_Str,char* *_EndPtr,int _Radix,_locale_t _Locale);
+/*546*/ long long __cdecl strtoll(const char*_Str,char* *_EndPtr,int _Radix);
+/*547*/ long long __cdecl _strtoll_l(const char*_Str,char* *_EndPtr,int _Radix,_locale_t _Locale);
+/*548*/ unsigned long __cdecl strtoul(const char*_Str,char* *_EndPtr,int _Radix);
+/*549*/ unsigned long __cdecl _strtoul_l(const char*_Str,char* *_EndPtr,int _Radix,_locale_t _Locale);
+/*550*/ unsigned long long __cdecl strtoull(const char*_Str,char* *_EndPtr,int _Radix);
+/*551*/ unsigned long long __cdecl _strtoull_l(const char*_Str,char* *_EndPtr,int _Radix,_locale_t _Locale);
+/*552*/ long double __cdecl strtold(const char*_Str,char* *_EndPtr);
+/*553*/ long double __cdecl _strtold_l(const char*_Str,char* *_EndPtr,_locale_t _Locale);
+/*554*/ float __cdecl strtof(const char*_Str,char* *_EndPtr);
+/*555*/ float __cdecl _strtof_l(const char*_Str,char* *_EndPtr,_locale_t _Locale);
+/*560*/ int __cdecl system(const char*_Command);
+/*564*/ errno_t __cdecl _ultoa_s(unsigned long _Val,char*_DstBuf,size_t _Size,int _Radix);
+/*565*/ 
+/*566*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_ultoa_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl _ultoa(unsigned long _Value,char*_Dest,int _Radix);
+/*567*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "wctomb_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl wctomb(char*_MbCh,wchar_t _WCh);
+/*568*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_wctomb_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))int __cdecl _wctomb_l(char*_MbCh,wchar_t _WCh,_locale_t _Locale);
+/*570*/ errno_t __cdecl wctomb_s(int*_SizeConverted,char*_MbCh,rsize_t _SizeInBytes,wchar_t _WCh);
+/*572*/ errno_t __cdecl _wctomb_s_l(int*_SizeConverted,char*_MbCh,size_t _SizeInBytes,wchar_t _WCh,_locale_t _Locale);
+/*573*/ errno_t __cdecl wcstombs_s(size_t*_PtNumOfCharConverted,char*_Dst,size_t _DstSizeInBytes,const wchar_t*_Src,size_t _MaxCountInBytes);
+/*574*/ 
+/*575*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "wcstombs_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))size_t __cdecl wcstombs(char*_Dest,const wchar_t*_Source,size_t _MaxCount);
+/*576*/ errno_t __cdecl _wcstombs_s_l(size_t*_PtNumOfCharConverted,char*_Dst,size_t _DstSizeInBytes,const wchar_t*_Src,size_t _MaxCountInBytes,_locale_t _Locale);
+/*577*/ 
+/*578*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_wcstombs_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))size_t __cdecl _wcstombs_l(char*_Dest,const wchar_t*_Source,size_t _MaxCount,_locale_t _Locale);
+/*640*/ __declspec(noalias)__declspec(restrict)void*__cdecl calloc(size_t _Count,size_t _Size);
+/*641*/ __declspec(noalias)void __cdecl free(void*_Memory);
+/*642*/ __declspec(noalias)__declspec(restrict)void*__cdecl malloc(size_t _Size);
+/*643*/ 
+/*644*/ __declspec(noalias)__declspec(restrict)void*__cdecl realloc(void*_Memory,size_t _NewSize);
+/*645*/ 
+/*646*/ __declspec(noalias)__declspec(restrict)void*__cdecl _recalloc(void*_Memory,size_t _Count,size_t _Size);
+/*647*/ __declspec(noalias)void __cdecl _aligned_free(void*_Memory);
+/*648*/ __declspec(noalias)__declspec(restrict)void*__cdecl _aligned_malloc(size_t _Size,size_t _Alignment);
+/*649*/ __declspec(noalias)__declspec(restrict)void*__cdecl _aligned_offset_malloc(size_t _Size,size_t _Alignment,size_t _Offset);
+/*650*/ 
+/*651*/ __declspec(noalias)__declspec(restrict)void*__cdecl _aligned_realloc(void*_Memory,size_t _NewSize,size_t _Alignment);
+/*652*/ 
+/*653*/ __declspec(noalias)__declspec(restrict)void*__cdecl _aligned_recalloc(void*_Memory,size_t _Count,size_t _Size,size_t _Alignment);
+/*654*/ 
+/*655*/ __declspec(noalias)__declspec(restrict)void*__cdecl _aligned_offset_realloc(void*_Memory,size_t _NewSize,size_t _Alignment,size_t _Offset);
+/*656*/ 
+/*657*/ __declspec(noalias)__declspec(restrict)void*__cdecl _aligned_offset_recalloc(void*_Memory,size_t _Count,size_t _Size,size_t _Alignment,size_t _Offset);
+/*658*/ size_t __cdecl _aligned_msize(void*_Memory,size_t _Alignment,size_t _Offset);
+/*685*/ errno_t __cdecl _itow_s(int _Val,wchar_t*_DstBuf,size_t _SizeInWords,int _Radix);
+/*686*/ 
+/*687*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_itow_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl _itow(int _Value,wchar_t*_Dest,int _Radix);
+/*688*/ errno_t __cdecl _ltow_s(long _Val,wchar_t*_DstBuf,size_t _SizeInWords,int _Radix);
+/*689*/ 
+/*690*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_ltow_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl _ltow(long _Value,wchar_t*_Dest,int _Radix);
+/*691*/ errno_t __cdecl _ultow_s(unsigned long _Val,wchar_t*_DstBuf,size_t _SizeInWords,int _Radix);
+/*692*/ 
+/*693*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_ultow_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl _ultow(unsigned long _Value,wchar_t*_Dest,int _Radix);
+/*694*/ double __cdecl wcstod(const wchar_t*_Str,wchar_t* *_EndPtr);
+/*695*/ double __cdecl _wcstod_l(const wchar_t*_Str,wchar_t* *_EndPtr,_locale_t _Locale);
+/*696*/ long __cdecl wcstol(const wchar_t*_Str,wchar_t* *_EndPtr,int _Radix);
+/*697*/ long __cdecl _wcstol_l(const wchar_t*_Str,wchar_t* *_EndPtr,int _Radix,_locale_t _Locale);
+/*698*/ long long __cdecl wcstoll(const wchar_t*_Str,wchar_t* *_EndPtr,int _Radix);
+/*699*/ long long __cdecl _wcstoll_l(const wchar_t*_Str,wchar_t* *_EndPtr,int _Radix,_locale_t _Locale);
+/*700*/ unsigned long __cdecl wcstoul(const wchar_t*_Str,wchar_t* *_EndPtr,int _Radix);
+/*701*/ unsigned long __cdecl _wcstoul_l(const wchar_t*_Str,wchar_t* *_EndPtr,int _Radix,_locale_t _Locale);
+/*702*/ unsigned long long __cdecl wcstoull(const wchar_t*_Str,wchar_t* *_EndPtr,int _Radix);
+/*703*/ unsigned long long __cdecl _wcstoull_l(const wchar_t*_Str,wchar_t* *_EndPtr,int _Radix,_locale_t _Locale);
+/*704*/ long double __cdecl wcstold(const wchar_t*_Str,wchar_t* *_EndPtr);
+/*705*/ long double __cdecl _wcstold_l(const wchar_t*_Str,wchar_t* *_EndPtr,_locale_t _Locale);
+/*706*/ float __cdecl wcstof(const wchar_t*_Str,wchar_t* *_EndPtr);
+/*707*/ float __cdecl _wcstof_l(const wchar_t*_Str,wchar_t* *_EndPtr,_locale_t _Locale);
+/*711*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_wdupenv_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl _wgetenv(const wchar_t*_VarName);
+/*712*/ errno_t __cdecl _wgetenv_s(size_t*_ReturnSize,wchar_t*_DstBuf,size_t _DstSizeInWords,const wchar_t*_VarName);
+/*713*/ 
+/*720*/ errno_t __cdecl _wdupenv_s(wchar_t* *_Buffer,size_t*_BufferSizeInWords,const wchar_t*_VarName);
+/*728*/ int __cdecl _wsystem(const wchar_t*_Command);
+/*733*/ double __cdecl _wtof(const wchar_t*_Str);
+/*734*/ double __cdecl _wtof_l(const wchar_t*_Str,_locale_t _Locale);
+/*735*/ int __cdecl _wtoi(const wchar_t*_Str);
+/*736*/ int __cdecl _wtoi_l(const wchar_t*_Str,_locale_t _Locale);
+/*737*/ long __cdecl _wtol(const wchar_t*_Str);
+/*738*/ long __cdecl _wtol_l(const wchar_t*_Str,_locale_t _Locale);
+/*739*/ long long __cdecl _wtoll(const wchar_t*_Str);
+/*740*/ long long __cdecl _wtoll_l(const wchar_t*_Str,_locale_t _Locale);
+/*742*/ errno_t __cdecl _i64tow_s(__int64 _Val,wchar_t*_DstBuf,size_t _SizeInWords,int _Radix);
+/*743*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_i64tow_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl _i64tow(__int64 _Val,wchar_t*_DstBuf,int _Radix);
+/*744*/ errno_t __cdecl _ui64tow_s(unsigned __int64 _Val,wchar_t*_DstBuf,size_t _SizeInWords,int _Radix);
+/*745*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_ui64tow_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl _ui64tow(unsigned __int64 _Val,wchar_t*_DstBuf,int _Radix);
+/*746*/ __int64 __cdecl _wtoi64(const wchar_t*_Str);
+/*747*/ __int64 __cdecl _wtoi64_l(const wchar_t*_Str,_locale_t _Locale);
+/*748*/ __int64 __cdecl _wcstoi64(const wchar_t*_Str,wchar_t* *_EndPtr,int _Radix);
+/*749*/ __int64 __cdecl _wcstoi64_l(const wchar_t*_Str,wchar_t* *_EndPtr,int _Radix,_locale_t _Locale);
+/*750*/ unsigned __int64 __cdecl _wcstoui64(const wchar_t*_Str,wchar_t* *_EndPtr,int _Radix);
+/*751*/ unsigned __int64 __cdecl _wcstoui64_l(const wchar_t*_Str,wchar_t* *_EndPtr,int _Radix,_locale_t _Locale);
+/*770*/ char*__cdecl _fullpath(char*_FullPath,const char*_Path,size_t _SizeInBytes);
+/*778*/ errno_t __cdecl _ecvt_s(char*_DstBuf,size_t _Size,double _Val,int _NumOfDights,int*_PtDec,int*_PtSign);
+/*779*/ 
+/*780*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_ecvt_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl _ecvt(double _Val,int _NumOfDigits,int*_PtDec,int*_PtSign);
+/*781*/ errno_t __cdecl _fcvt_s(char*_DstBuf,size_t _Size,double _Val,int _NumOfDec,int*_PtDec,int*_PtSign);
+/*782*/ 
+/*783*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_fcvt_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl _fcvt(double _Val,int _NumOfDec,int*_PtDec,int*_PtSign);
+/*784*/ errno_t __cdecl _gcvt_s(char*_DstBuf,size_t _Size,double _Val,int _NumOfDigits);
+/*785*/ 
+/*786*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_gcvt_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl _gcvt(double _Val,int _NumOfDigits,char*_DstBuf);
+/*788*/ int __cdecl _atodbl(_CRT_DOUBLE*_Result,char*_Str);
+/*789*/ int __cdecl _atoldbl(_LDOUBLE*_Result,char*_Str);
+/*790*/ int __cdecl _atoflt(_CRT_FLOAT*_Result,const char*_Str);
+/*791*/ int __cdecl _atodbl_l(_CRT_DOUBLE*_Result,char*_Str,_locale_t _Locale);
+/*792*/ int __cdecl _atoldbl_l(_LDOUBLE*_Result,char*_Str,_locale_t _Locale);
+/*793*/ int __cdecl _atoflt_l(_CRT_FLOAT*_Result,const char*_Str,_locale_t _Locale);
+/*794*/ unsigned long __cdecl _lrotl(unsigned long _Val,int _Shift);
+/*795*/ unsigned long __cdecl _lrotr(unsigned long _Val,int _Shift);
+/*796*/ errno_t __cdecl _makepath_s(char*_PathResult,size_t _SizeInWords,const char*_Drive,const char*_Dir,const char*_Filename,
+/*797*/ const char*_Ext);
+/*798*/ 
+/*799*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_makepath_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))void __cdecl _makepath(char*_Path,const char*_Drive,const char*_Dir,const char*_Filename,const char*_Ext);
+/*826*/ _onexit_t __cdecl _onexit(_onexit_t _Func);
+// the functions below have declspecs in their declarations in the windows headers, causing PREfast to fire 6540 here
+/*838*/ int __cdecl _putenv(const char*_EnvString);
+/*839*/ errno_t __cdecl _putenv_s(const char*_Name,const char*_Value);
+/*842*/ unsigned int __cdecl _rotl(unsigned int _Val,int _Shift);
+/*843*/ unsigned __int64 __cdecl _rotl64(unsigned __int64 _Val,int _Shift);
+/*844*/ unsigned int __cdecl _rotr(unsigned int _Val,int _Shift);
+/*845*/ unsigned __int64 __cdecl _rotr64(unsigned __int64 _Val,int _Shift);
+/*849*/ errno_t __cdecl _searchenv_s(const char*_Filename,const char*_EnvVar,char*_ResultPath,size_t _SizeInBytes);
+/*850*/ 
+/*851*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_searchenv_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))void __cdecl _searchenv(const char*_Filename,const char*_EnvVar,char*_ResultPath);
+/*854*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_splitpath_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))void __cdecl _splitpath(const char*_FullPath,char*_Drive,char*_Dir,char*_Filename,char*_Ext);
+/*855*/ errno_t __cdecl _splitpath_s(const char*_FullPath,
+/*856*/ char*_Drive,size_t _DriveSize,
+/*857*/ char*_Dir,size_t _DirSize,
+/*858*/ char*_Filename,size_t _FilenameSize,
+/*859*/ char*_Ext,size_t _ExtSize);
+/*860*/ 
+/*862*/ void __cdecl _swab(char*_Buf1,char*_Buf2,int _SizeInBytes);
+/*873*/ wchar_t*__cdecl _wfullpath(wchar_t*_FullPath,const wchar_t*_Path,size_t _SizeInWords);
+/*879*/ errno_t __cdecl _wmakepath_s(wchar_t*_PathResult,size_t _SIZE,const wchar_t*_Drive,const wchar_t*_Dir,const wchar_t*_Filename,
+/*880*/ const wchar_t*_Ext);
+/*881*/ 
+/*882*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_wmakepath_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))void __cdecl _wmakepath(wchar_t*_ResultPath,const wchar_t*_Drive,const wchar_t*_Dir,const wchar_t*_Filename,const wchar_t*_Ext);
+/*889*/ int __cdecl _wputenv(const wchar_t*_EnvString);
+/*890*/ errno_t __cdecl _wputenv_s(const wchar_t*_Name,const wchar_t*_Value);
+/*891*/ errno_t __cdecl _wsearchenv_s(const wchar_t*_Filename,const wchar_t*_EnvVar,wchar_t*_ResultPath,size_t _SizeInWords);
+/*892*/ 
+/*893*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_wsearchenv_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))void __cdecl _wsearchenv(const wchar_t*_Filename,const wchar_t*_EnvVar,wchar_t*_ResultPath);
+/*896*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_wsplitpath_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))void __cdecl _wsplitpath(const wchar_t*_FullPath,wchar_t*_Drive,wchar_t*_Dir,wchar_t*_Filename,wchar_t*_Ext);
+/*897*/ errno_t __cdecl _wsplitpath_s(const wchar_t*_FullPath,
+/*898*/ wchar_t*_Drive,size_t _DriveSize,
+/*899*/ wchar_t*_Dir,size_t _DirSize,
+/*900*/ wchar_t*_Filename,size_t _FilenameSize,
+/*901*/ wchar_t*_Ext,size_t _ExtSize);
+/*902*/ 
+/*909*/ __declspec(deprecated("This function or variable has been superceded by newer library or operating system functionality. Consider using " "SetErrorMode" " instead. See online help for details."))void __cdecl _seterrormode(int _Mode);
+/*910*/ __declspec(deprecated("This function or variable has been superceded by newer library or operating system functionality. Consider using " "Beep" " instead. See online help for details."))void __cdecl _beep(unsigned _Frequency,unsigned _Duration);
+/*911*/ __declspec(deprecated("This function or variable has been superceded by newer library or operating system functionality. Consider using " "Sleep" " instead. See online help for details."))void __cdecl _sleep(unsigned long _Duration);
+/***
+*string.h - declarations for string manipulation functions
+*
+*       Copyright (c) Microsoft Corporation. All rights reserved.
+*
+*Purpose:
+*       This file contains the function declarations for the string
+*       manipulation functions.
+*       [ANSI/System V]
+*
+*       [Public]
+*
+****/
+/***
+*crtdefs.h - definitions/declarations common to all CRT
+*
+*       Copyright (c) Microsoft Corporation. All rights reserved.
+*
+*Purpose:
+*       This file has mostly defines used by the entire CRT.
+*
+*       [Public]
+*
+****/
+/*"string.h"47*/ void*__cdecl _memccpy(void*_Dst,const void*_Src,int _Val,size_t _MaxCount);
+/*48*/ void*__cdecl memchr(const void*_Buf,int _Val,size_t _MaxCount);
+/*49*/ int __cdecl _memicmp(const void*_Buf1,const void*_Buf2,size_t _Size);
+/*50*/ int __cdecl _memicmp_l(const void*_Buf1,const void*_Buf2,size_t _Size,_locale_t _Locale);
+/*51*/ int __cdecl memcmp(const void*_Buf1,const void*_Buf2,size_t _Size);
+/*52*/ 
+/*53*/ 
+/*54*/ 
+/*55*/ void*__cdecl memcpy(void*_Dst,const void*_Src,size_t _Size);
+/*57*/ errno_t __cdecl memcpy_s(void*_Dst,rsize_t _DstSize,const void*_Src,rsize_t _MaxCount);
+/*92*/ 
+/*93*/ 
+/*94*/ void*__cdecl memset(void*_Dst,int _Val,size_t _Size);
+/*105*/ errno_t __cdecl _strset_s(char*_Dst,size_t _DstSize,int _Value);
+/*106*/ 
+/*107*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_strset_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl _strset(char*_Dest,int _Value);
+/*109*/ errno_t __cdecl strcpy_s(char*_Dst,rsize_t _SizeInBytes,const char*_Src);
+/*111*/ 
+/*112*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "strcpy_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl strcpy(char*_Dest,const char*_Source);
+/*114*/ errno_t __cdecl strcat_s(char*_Dst,rsize_t _SizeInBytes,const char*_Src);
+/*116*/ 
+/*118*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "strcat_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl strcat(char*_Dest,const char*_Source);
+/*120*/ int __cdecl strcmp(const char*_Str1,const char*_Str2);
+/*121*/ size_t __cdecl strlen(const char*_Str);
+/*122*/ 
+/*123*/ 
+/*124*/ 
+/*125*/ size_t __cdecl strnlen(const char*_Str,size_t _MaxCount);
+/*127*/ static __inline
+/*128*/ 
+/*129*/ 
+/*130*/ size_t __cdecl strnlen_s(const char*_Str,size_t _MaxCount)
+/*131*/ {
+/*132*/ return(_Str==0)?0:strnlen(_Str,_MaxCount);
+/*133*/ }
+/*136*/ errno_t __cdecl memmove_s(void*_Dst,rsize_t _DstSize,const void*_Src,rsize_t _MaxCount);
+/*139*/ void*__cdecl memmove(void*_Dst,const void*_Src,size_t _Size);
+/*146*/ char*__cdecl _strdup(const char*_Src);
+/*152*/ char*__cdecl strchr(const char*_Str,int _Val);
+/*153*/ int __cdecl _stricmp(const char*_Str1,const char*_Str2);
+/*154*/ int __cdecl _strcmpi(const char*_Str1,const char*_Str2);
+/*155*/ int __cdecl _stricmp_l(const char*_Str1,const char*_Str2,_locale_t _Locale);
+/*156*/ int __cdecl strcoll(const char*_Str1,const char*_Str2);
+/*157*/ int __cdecl _strcoll_l(const char*_Str1,const char*_Str2,_locale_t _Locale);
+/*158*/ int __cdecl _stricoll(const char*_Str1,const char*_Str2);
+/*159*/ int __cdecl _stricoll_l(const char*_Str1,const char*_Str2,_locale_t _Locale);
+/*160*/ int __cdecl _strncoll(const char*_Str1,const char*_Str2,size_t _MaxCount);
+/*161*/ int __cdecl _strncoll_l(const char*_Str1,const char*_Str2,size_t _MaxCount,_locale_t _Locale);
+/*162*/ int __cdecl _strnicoll(const char*_Str1,const char*_Str2,size_t _MaxCount);
+/*163*/ int __cdecl _strnicoll_l(const char*_Str1,const char*_Str2,size_t _MaxCount,_locale_t _Locale);
+/*164*/ size_t __cdecl strcspn(const char*_Str,const char*_Control);
+/*165*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_strerror_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl _strerror(const char*_ErrMsg);
+/*166*/ errno_t __cdecl _strerror_s(char*_Buf,size_t _SizeInBytes,const char*_ErrMsg);
+/*167*/ 
+/*168*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "strerror_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl strerror(int);
+/*170*/ errno_t __cdecl strerror_s(char*_Buf,size_t _SizeInBytes,int _ErrNum);
+/*172*/ 
+/*173*/ errno_t __cdecl _strlwr_s(char*_Str,size_t _Size);
+/*174*/ 
+/*175*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_strlwr_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl _strlwr(char*_String);
+/*176*/ errno_t __cdecl _strlwr_s_l(char*_Str,size_t _Size,_locale_t _Locale);
+/*177*/ 
+/*178*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_strlwr_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl _strlwr_l(char*_String,_locale_t _Locale);
+/*180*/ errno_t __cdecl strncat_s(char*_Dst,rsize_t _SizeInBytes,const char*_Src,rsize_t _MaxCount);
+/*182*/ 
+/*186*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "strncat_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl strncat(char*_Dest,const char*_Source,size_t _Count);
+/*188*/ int __cdecl strncmp(const char*_Str1,const char*_Str2,size_t _MaxCount);
+/*189*/ int __cdecl _strnicmp(const char*_Str1,const char*_Str2,size_t _MaxCount);
+/*190*/ int __cdecl _strnicmp_l(const char*_Str1,const char*_Str2,size_t _MaxCount,_locale_t _Locale);
+/*192*/ errno_t __cdecl strncpy_s(char*_Dst,rsize_t _SizeInBytes,const char*_Src,rsize_t _MaxCount);
+/*194*/ 
+/*195*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "strncpy_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl strncpy(char*_Dest,const char*_Source,size_t _Count);
+/*196*/ errno_t __cdecl _strnset_s(char*_Str,size_t _SizeInBytes,int _Val,size_t _MaxCount);
+/*197*/ 
+/*198*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_strnset_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl _strnset(char*_Dest,int _Val,size_t _Count);
+/*199*/ char*__cdecl strpbrk(const char*_Str,const char*_Control);
+/*200*/ char*__cdecl strrchr(const char*_Str,int _Ch);
+/*201*/ char*__cdecl _strrev(char*_Str);
+/*202*/ size_t __cdecl strspn(const char*_Str,const char*_Control);
+/*203*/ char*__cdecl strstr(const char*_Str,const char*_SubStr);
+/*204*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "strtok_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl strtok(char*_Str,const char*_Delim);
+/*206*/ char*__cdecl strtok_s(char*_Str,const char*_Delim,char* *_Context);
+/*208*/ errno_t __cdecl _strupr_s(char*_Str,size_t _Size);
+/*209*/ 
+/*210*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_strupr_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl _strupr(char*_String);
+/*211*/ errno_t __cdecl _strupr_s_l(char*_Str,size_t _Size,_locale_t _Locale);
+/*212*/ 
+/*213*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_strupr_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))char*__cdecl _strupr_l(char*_String,_locale_t _Locale);
+/*214*/ size_t __cdecl strxfrm(char*_Dst,const char*_Src,size_t _MaxCount);
+/*215*/ size_t __cdecl _strxfrm_l(char*_Dst,const char*_Src,size_t _MaxCount,_locale_t _Locale);
+/*273*/ wchar_t*__cdecl _wcsdup(const wchar_t*_Str);
+/*280*/ errno_t __cdecl wcscat_s(wchar_t*_Dst,rsize_t _SizeInWords,const wchar_t*_Src);
+/*282*/ 
+/*284*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "wcscat_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl wcscat(wchar_t*_Dest,const wchar_t*_Source);
+/*286*/ 
+/*287*/ 
+/*288*/ wchar_t*__cdecl wcschr(const wchar_t*_Str,wchar_t _Ch);
+/*289*/ int __cdecl wcscmp(const wchar_t*_Str1,const wchar_t*_Str2);
+/*291*/ errno_t __cdecl wcscpy_s(wchar_t*_Dst,rsize_t _SizeInWords,const wchar_t*_Src);
+/*293*/ 
+/*294*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "wcscpy_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl wcscpy(wchar_t*_Dest,const wchar_t*_Source);
+/*295*/ size_t __cdecl wcscspn(const wchar_t*_Str,const wchar_t*_Control);
+/*296*/ size_t __cdecl wcslen(const wchar_t*_Str);
+/*297*/ 
+/*298*/ 
+/*299*/ 
+/*300*/ size_t __cdecl wcsnlen(const wchar_t*_Src,size_t _MaxCount);
+/*302*/ static __inline
+/*303*/ 
+/*304*/ 
+/*305*/ size_t __cdecl wcsnlen_s(const wchar_t*_Src,size_t _MaxCount)
+/*306*/ {
+/*307*/ return(_Src==((void*)0))?0:wcsnlen(_Src,_MaxCount);
+/*308*/ }
+/*311*/ errno_t __cdecl wcsncat_s(wchar_t*_Dst,rsize_t _SizeInWords,const wchar_t*_Src,rsize_t _MaxCount);
+/*313*/ 
+/*316*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "wcsncat_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl wcsncat(wchar_t*_Dest,const wchar_t*_Source,size_t _Count);
+/*318*/ int __cdecl wcsncmp(const wchar_t*_Str1,const wchar_t*_Str2,size_t _MaxCount);
+/*320*/ errno_t __cdecl wcsncpy_s(wchar_t*_Dst,rsize_t _SizeInWords,const wchar_t*_Src,rsize_t _MaxCount);
+/*322*/ 
+/*323*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "wcsncpy_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl wcsncpy(wchar_t*_Dest,const wchar_t*_Source,size_t _Count);
+/*324*/ wchar_t*__cdecl wcspbrk(const wchar_t*_Str,const wchar_t*_Control);
+/*325*/ wchar_t*__cdecl wcsrchr(const wchar_t*_Str,wchar_t _Ch);
+/*326*/ size_t __cdecl wcsspn(const wchar_t*_Str,const wchar_t*_Control);
+/*327*/ 
+/*328*/ 
+/*329*/ wchar_t*__cdecl wcsstr(const wchar_t*_Str,const wchar_t*_SubStr);
+/*330*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "wcstok_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl wcstok(wchar_t*_Str,const wchar_t*_Delim);
+/*332*/ wchar_t*__cdecl wcstok_s(wchar_t*_Str,const wchar_t*_Delim,wchar_t* *_Context);
+/*334*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_wcserror_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl _wcserror(int _ErrNum);
+/*335*/ errno_t __cdecl _wcserror_s(wchar_t*_Buf,size_t _SizeInWords,int _ErrNum);
+/*336*/ 
+/*337*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "__wcserror_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl __wcserror(const wchar_t*_Str);
+/*338*/ errno_t __cdecl __wcserror_s(wchar_t*_Buffer,size_t _SizeInWords,const wchar_t*_ErrMsg);
+/*339*/ 
+/*341*/ int __cdecl _wcsicmp(const wchar_t*_Str1,const wchar_t*_Str2);
+/*342*/ int __cdecl _wcsicmp_l(const wchar_t*_Str1,const wchar_t*_Str2,_locale_t _Locale);
+/*343*/ int __cdecl _wcsnicmp(const wchar_t*_Str1,const wchar_t*_Str2,size_t _MaxCount);
+/*344*/ int __cdecl _wcsnicmp_l(const wchar_t*_Str1,const wchar_t*_Str2,size_t _MaxCount,_locale_t _Locale);
+/*345*/ errno_t __cdecl _wcsnset_s(wchar_t*_Dst,size_t _SizeInWords,wchar_t _Val,size_t _MaxCount);
+/*346*/ 
+/*347*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_wcsnset_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl _wcsnset(wchar_t*_Str,wchar_t _Val,size_t _MaxCount);
+/*348*/ wchar_t*__cdecl _wcsrev(wchar_t*_Str);
+/*349*/ errno_t __cdecl _wcsset_s(wchar_t*_Dst,size_t _SizeInWords,wchar_t _Value);
+/*350*/ 
+/*351*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_wcsset_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl _wcsset(wchar_t*_Str,wchar_t _Val);
+/*353*/ errno_t __cdecl _wcslwr_s(wchar_t*_Str,size_t _SizeInWords);
+/*354*/ 
+/*355*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_wcslwr_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl _wcslwr(wchar_t*_String);
+/*356*/ errno_t __cdecl _wcslwr_s_l(wchar_t*_Str,size_t _SizeInWords,_locale_t _Locale);
+/*357*/ 
+/*358*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_wcslwr_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl _wcslwr_l(wchar_t*_String,_locale_t _Locale);
+/*359*/ errno_t __cdecl _wcsupr_s(wchar_t*_Str,size_t _Size);
+/*360*/ 
+/*361*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_wcsupr_s" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl _wcsupr(wchar_t*_String);
+/*362*/ errno_t __cdecl _wcsupr_s_l(wchar_t*_Str,size_t _Size,_locale_t _Locale);
+/*363*/ 
+/*364*/ __declspec(deprecated("This function or variable may be unsafe. Consider using " "_wcsupr_s_l" " instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details."))wchar_t*__cdecl _wcsupr_l(wchar_t*_String,_locale_t _Locale);
+/*365*/ size_t __cdecl wcsxfrm(wchar_t*_Dst,const wchar_t*_Src,size_t _MaxCount);
+/*366*/ size_t __cdecl _wcsxfrm_l(wchar_t*_Dst,const wchar_t*_Src,size_t _MaxCount,_locale_t _Locale);
+/*367*/ int __cdecl wcscoll(const wchar_t*_Str1,const wchar_t*_Str2);
+/*368*/ int __cdecl _wcscoll_l(const wchar_t*_Str1,const wchar_t*_Str2,_locale_t _Locale);
+/*369*/ int __cdecl _wcsicoll(const wchar_t*_Str1,const wchar_t*_Str2);
+/*370*/ int __cdecl _wcsicoll_l(const wchar_t*_Str1,const wchar_t*_Str2,_locale_t _Locale);
+/*371*/ int __cdecl _wcsncoll(const wchar_t*_Str1,const wchar_t*_Str2,size_t _MaxCount);
+/*372*/ int __cdecl _wcsncoll_l(const wchar_t*_Str1,const wchar_t*_Str2,size_t _MaxCount,_locale_t _Locale);
+/*373*/ int __cdecl _wcsnicoll(const wchar_t*_Str1,const wchar_t*_Str2,size_t _MaxCount);
+/*374*/ int __cdecl _wcsnicoll_l(const wchar_t*_Str1,const wchar_t*_Str2,size_t _MaxCount,_locale_t _Locale);
+/*"autohead.c"10*/ int doc,pds,amod,prx;
+/*12*/ int symchar(int c)
+//AH:proxy
+/*13*/ {
+/*14*/ if((c>='a')&&(c<='z'))return(1);
+/*15*/ if((c>='A')&&(c<='Z'))return(1);
+/*16*/ if((c>='0')&&(c<='9'))return(1);
+/*17*/ if(c=='_')return(1);
+/*18*/ return(0);
+/*19*/ }
+/*21*/ char*id_arch()
+/*22*/ {
+/*24*/ return("x86");
+/*30*/ return("x86");
+/*38*/ return("unk");
+/*39*/ }
+/*41*/ char*id_wsuf()
+/*42*/ {
+/*44*/ return("32");
+/*50*/ return("32");
+/*61*/ return("");
+/*62*/ }
+/*64*/ void prx_def(char*buf)
+/*65*/ {
+/*66*/ char tb[256],tbn[256],tty[256];
+/*67*/ char*s,*t,*t1,*sa;
+/*68*/ int ind;
+/*70*/ s=buf;t=tb;
+/*73*/ sprintf(t,"__declspec(dllexport) ");t+=strlen(t);
+/*76*/ t1=tty;
+/*77*/ while(symchar(*s))*t1++ = *s++;
+/*78*/ *t1++ =0;
+/*79*/ sprintf(t,"%s",tty);t+=strlen(t);
+/*81*/ while(*s&&(*s<=' '))*t++ = *s++;
+/*83*/ ind=0;
+/*84*/ while(*s=='*'){*t++ = *s++;ind++;}
+/*86*/ t1=tbn;
+/*87*/ while(*s&&symchar(*s))*t1++ = *s++;
+/*88*/ *t1++ =0;
+/*90*/ sprintf(t,"(*_iproxy_%s)",tbn);t+=strlen(t);
+/*92*/ sa=s;
+/*93*/ while(*s)*t++ = *s++;
+/*94*/ *t++ =0;
+/*96*/ printf("%s;\n",tb);
+/*98*/ t=tb;
+/*99*/ sprintf(tb,"%s\n\t{ ",buf);t+=strlen(t);
+/*100*/ if(strcmp(tty,"void")||ind)
+/*101*/ {sprintf(t,"return ");t+=strlen(t);}
+/*102*/ sprintf(t,"_iproxy_%s(",tbn);t+=strlen(t);
+/*104*/ s=sa;
+/*105*/ while(s&& *s!=')')
+/*106*/ {
+/*107*/ while(*s&&(*s!=')')&&(*s!=','))s++;
+/*108*/ while(!symchar(*(s-1)))s--;
+/*109*/ while(symchar(*(s-1)))s--;
+/*110*/ if(!strncmp(s,"void)",5))break;
+/*111*/ while(symchar(*s))*t++ = *s++;
+/*112*/ while(*s&&(*s!=')')&&(*s!=','))s++;
+/*113*/ if(*s==','){s++;*t++ =',';*t++ =' ';}
+/*114*/ }
+/*116*/ sprintf(t,"); }\n");t+=strlen(t);
+/*117*/ printf("%s\n",tb);
+/*118*/ }
+/*120*/ int main(int argc,char*argv[])
+/*121*/ {
+/*122*/ int i,j,l,isapi;
+/*123*/ FILE*fd;
+/*124*/ char*buf,*buf2,*buf3,*buf4;
+/*125*/ char*s,*s2,*t;
+/*126*/ char*cat,*api;
+/*128*/ buf=malloc(16384);
+/*129*/ buf2=malloc(16384);
+/*130*/ buf3=malloc(256);
+/*131*/ buf4=malloc(256);
+/*133*/ doc=0;pds=0;amod=0;prx=0;
+/*134*/ api=((void*)0);
+/*136*/ for(i=1;i<argc;i++)
+/*137*/ {
+/*138*/ if(argv[i][0]=='-')
+/*139*/ {
+/*140*/ if(!strcmp(argv[i],"-doc"))
+/*141*/ {
+/*142*/ doc=1;
+/*143*/ cat=argv[i+1];
+/*144*/ i++;
+/*145*/ continue;
+/*146*/ }
+/*147*/ if(!strcmp(argv[i],"-pds"))
+/*148*/ {
+/*149*/ pds=1;
+/*150*/ cat=argv[i+1];
+/*151*/ i++;
+/*152*/ continue;
+/*153*/ }
+/*155*/ if(!strcmp(argv[i],"-api"))
+/*156*/ {
+/*157*/ api=argv[i+1];
+/*158*/ i++;
+/*159*/ continue;
+/*160*/ }
+/*162*/ if(!strcmp(argv[i],"-apionly"))
+/*163*/ {
+/*164*/ api=argv[i+1];amod=1;
+/*165*/ i++;
+/*166*/ continue;
+/*167*/ }
+/*169*/ if(!strcmp(argv[i],"-noapi"))
+/*170*/ {
+/*171*/ api=argv[i+1];amod=2;
+/*172*/ i++;
+/*173*/ continue;
+/*174*/ }
+/*176*/ if(!strcmp(argv[i],"-proxy"))
+/*177*/ {
+/*178*/ prx=1;
+/*179*/ continue;
+/*180*/ }
+/*182*/ if(!strcmp(argv[i],"-idarch"))
+/*183*/ {
+/*184*/ printf("%s",id_arch());
+/*185*/ exit(0);
+/*186*/ }
+/*187*/ if(!strcmp(argv[i],"-idwsuf"))
+/*188*/ {
+/*189*/ printf("%s",id_wsuf());
+/*190*/ exit(0);
+/*191*/ }
+/*193*/ fprintf((&__iob_func()[2]),"Unknown option \'%s\'\n",argv[i]);
+/*194*/ exit(-1);
+/*195*/ }
+/*197*/ fd=fopen(argv[i],"rt");
+/*198*/ if(!fd)continue;
+/*200*/ printf("//AHSRC:%s\n",argv[i]);
+/*201*/ l=0;
+/*202*/ while(!feof(fd))
+/*203*/ {
+/*204*/ memset(buf,0,256);
+/*205*/ fgets(buf,255,fd);
+/*206*/ l++;
+/*208*/ s=buf;
+/*209*/ while(*s&&(*s!='\r')&&(*s!='\n'))s++;
+/*210*/ if(*s=='\r')*s=0;
+/*211*/ if(*s=='\n')*s=0;
+/*213*/ s=buf;
+/*214*/ while(*s&&(*s<=' '))s++;
+/*215*/ if(!strncmp(s,"//AH:",5))
+/*216*/ {
+//				fprintf(stderr, "//AH tag %s %d\n",
+//					argv[i], l);
+/*219*/ s+=5;
+/*220*/ while(*s&&(*s<=' '))s++;
+/*221*/ if(!strcmp(s,"skip"))break;
+/*222*/ }
+/*224*/ if(pds)if(!strncmp(s,"//PDSCAT:",9))
+/*225*/ {
+/*226*/ s+=9;
+/*227*/ t=buf3;
+/*228*/ while(*s)*t++ = *s++;
+/*229*/ *t++ =0;
+/*231*/ cat=strdup(buf3);
+/*232*/ }
+/*234*/ if(pds)if(!strncmp(s,"//PDS:",6))
+/*235*/ {
+/*236*/ s+=6;
+/*237*/ while(*s&&(*s<=' '))s++;
+/*239*/ t=buf3;
+/*240*/ while(*s&&strncmp(s,"::",2))
+/*241*/ {
+/*242*/ if((s[0]=='\\')&&(s[1]<=' '))
+/*243*/ {
+/*244*/ fgets(buf,255,fd);
+/*245*/ s=buf;
+/*246*/ while(*s&&(*s<=' '))s++;
+/*247*/ if(!strncmp(s,"//",2))s+=2;
+/*248*/ continue;
+/*249*/ }
+/*250*/ if(*s=='\r')break;
+/*251*/ if(*s=='\n')break;
+/*252*/ *t++ = *s++;
+/*253*/ }
+/*254*/ *t++ =0;
+/*256*/ if(!strncmp(s,"::",2))s+=2;
+/*258*/ t=buf4;
+/*259*/ while(*s)
+/*260*/ {
+/*261*/ if((s[0]=='\\')&&(s[1]<=' '))
+/*262*/ {
+/*263*/ fgets(buf,255,fd);
+/*264*/ s=buf;
+/*265*/ while(*s&&(*s<=' '))s++;
+/*266*/ if(!strncmp(s,"//",2))s+=2;
+/*267*/ continue;
+/*268*/ }
+/*269*/ if(*s=='\r')break;
+/*270*/ if(*s=='\n')break;
+/*271*/ *t++ = *s++;
+/*272*/ }
+/*273*/ *t++ =0;
+/*275*/ printf(
+/*276*/ "/*--\n"
+/*277*/ "Cat %s\n"
+/*278*/ "Text\n"
+/*279*/ "\t%s\n"
+/*280*/ "\t%s\n"
+/*281*/ "--*/\n",
+/*282*/ cat,buf3,buf4);
+/*283*/ }
+/*285*/ if(pds)continue;
+/*287*/ s=buf;
+/*288*/ isapi=0;
+/*290*/ if(api)
+/*291*/ {
+/*292*/ if(!strncmp(s,api,strlen(api)))
+/*293*/ {
+/*294*/ if(amod==2)continue;
+/*296*/ s+=strlen(api);
+/*297*/ while(*s&&(*s<=' '))s++;
+/*298*/ isapi=1;
+/*299*/ }else
+/*300*/ {
+/*301*/ if(amod==1)continue;
+/*302*/ }
+/*303*/ }
+/*305*/ if(!strncmp(s,"static",strlen("static")))
+/*306*/ continue;
+/*308*/ if(*s<=' ')continue;
+/*309*/ while(symchar(*s))s++;
+/*310*/ while(*s&&(*s<=' '))s++;
+/*312*/ while(*s=='*')s++;
+/*313*/ if(! *s||(*s=='('))continue;
+/*314*/ while(*s&&symchar(*s))s++;
+/*316*/ if(((*s=='=')||(*s==';'))&&isapi)
+/*317*/ {
+//special case: API variables are exported
+/*319*/ t=s;
+/*320*/ while(*s&&(*s!='/'))s++;
+/*321*/ if(!strncmp(s,"//AH:",5))
+/*322*/ {
+/*323*/ s+=5;
+/*324*/ while(*s&&(*s<=' '))s++;
+/*325*/ if(!strcmp(s,"ignore"))continue;
+/*326*/ }
+/*327*/ s=t;
+/*329*/ *s=0;
+/*330*/ if(!doc)printf("%s;\n",buf);
+/*332*/ continue;
+/*333*/ }
+/*335*/ if(*s==' ')s++;
+/*336*/ if(*s!='(')continue;
+/*338*/ t=s;
+/*339*/ while(*s&&(*s!='/'))s++;
+/*340*/ if(!strncmp(s,"//AH:",5))
+/*341*/ {
+//				fprintf(stderr, "//AH tag %s %d\n",
+//					argv[i], l);
+/*344*/ s+=5;
+/*345*/ while(*s&&(*s<=' '))s++;
+/*346*/ if(!strcmp(s,"ignore"))continue;
+/*347*/ }
+/*348*/ s=t;
+/*350*/ if(*s=='(')s++;
+/*351*/ j=1;
+/*352*/ while(j)
+/*353*/ {
+/*354*/ if(! *s)
+/*355*/ {
+/*356*/ memset(buf2,0,256);
+/*357*/ fgets(buf2,255,fd);
+/*358*/ l++;
+/*360*/ t=buf2;
+/*361*/ while(*t&&(*t<=' '))t++;
+/*363*/ s2=t;
+/*364*/ t=s;
+/*365*/ while(*s2&&(*s2!='\n'))*t++ = *s2++;
+/*366*/ *t++ =' ';
+/*367*/ *t++ =0;
+/*368*/ }else
+/*369*/ {
+/*370*/ if(*s=='(')j++;
+/*371*/ if(*s==')')j--;
+/*372*/ s++;
+/*373*/ }
+/*374*/ }
+/*375*/ t=s;
+/*376*/ while(*s&&(*s!='/'))s++;
+/*377*/ if(!strncmp(s,"//AH:",5))
+/*378*/ {
+/*379*/ fprintf((&__iob_func()[2]),"//AH tag %s %d\n",
+/*380*/ argv[i],l);
+/*381*/ s+=5;
+/*382*/ while(*s&&(*s<=' '))s++;
+/*383*/ if(!strncmp(s,"ignore",6))continue;
+/*385*/ if(prx&&strncmp(s,"proxy",5))continue;
+/*386*/ if(!strncmp(s,"proxy",5))isapi=2;
+/*387*/ }else
+/*388*/ {
+/*389*/ if(prx)continue;
+/*390*/ }
+/*391*/ s=t;
+/*393*/ if(*s==')')s++;
+/*394*/ *s=0;
+/*396*/ if(doc)
+/*397*/ {
+/*398*/ printf(
+/*399*/ "/*--\n"
+/*400*/ "Cat %s\n"
+/*401*/ "Text\n"
+/*402*/ "\t%s;\n"
+/*403*/ "\t%s:%d\n"
+/*404*/ "--*/\n",
+/*405*/ cat,buf,argv[i],l);
+/*406*/ }else
+/*407*/ {
+/*408*/ if(prx){prx_def(buf);continue;}
+/*409*/ if(isapi==2)printf("/*AHPRX:*/ ",buf);
+/*410*/ printf("%s;\n",buf);
+/*411*/ }
+/*412*/ }
+/*413*/ fclose(fd);
+/*414*/ }
+/*415*/ return(0);
+/*416*/ }

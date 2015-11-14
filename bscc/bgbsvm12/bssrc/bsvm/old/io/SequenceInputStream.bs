@@ -1,0 +1,18 @@
+package bsvm.io;
+import bsvm.util.*;
+
+public class SequenceInputStream extends InputStream
+{
+public SequenceInputStream(Enumeration e)
+	{}
+public SequenceInputStream(InputStream s1, InputStream s2)
+	{}
+
+public void close()
+	{}
+public int read()
+	{ return 0; }
+public int read(byte[] buf, int pos, int len)
+	{ return 0; }
+
+}

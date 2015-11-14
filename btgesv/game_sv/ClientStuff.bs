@@ -1,0 +1,25 @@
+/*
+Stuff to be shoved over to the client...
+ */
+
+printf("Client Stuff Eval: Begin\n");
+
+var btcl_clientstuff_vol;
+btcl_clientstuff_vol=LBXGL_BrushDraw2D_CreateDisplayImage2(
+	"images/faces/anim/robotface0_aa",
+	-200, -150, 400, 400);
+LBXGL_BrushDraw2D_SetObjectOrdinal(btcl_clientstuff_vol, -1);
+
+function BTCL_ClientStuff_Draw()
+{
+	if(PDGL_KeyDown(K_SHIFT))
+	{
+//		LBXGL_BrushDraw2D_SetObjectOrdinal(btcl_clientstuff_vol, 250);
+	}else
+	{
+//		LBXGL_BrushDraw2D_SetObjectOrdinal(btcl_clientstuff_vol, -1);
+	}
+}
+
+
+printf("Client Stuff Eval: End\n");

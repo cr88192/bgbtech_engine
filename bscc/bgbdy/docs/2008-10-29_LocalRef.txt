@@ -1,0 +1,32 @@
+'Local References'
+Idea borrowed from JVM.
+
+Idea:
+Some objects/references are "local", and will be automatically freed when leaving their enclosing frame, and later they can be made "global" and will be subject to the same rules as other GC'ed data.
+
+Local frames will be per-thread, and references can neither be passed to other threads, nor stored in global structures (need to first be made global). I will also require that any references stored in local objects be marked "local" (this will make them safe to store in local objects, but will not make them local objects).
+
+
+gcBeginLocal();
+
+Begin local frame.
+
+
+gcEndLocal();
+
+End local frame and free any contained objects.
+
+dyt gcGlobalRef(dyt ref);
+Mark a reference as global (may produce a new reference).
+The returned reference/object is not subject to being destroyed with the local frame.
+
+dyt gcLocalRef(dyt ref);
+Produce a local ref from a global ref (no-op for locals).
+
+
+dyt gclocal(char *type, int sz);
+dyt gctlocal(char *type, int sz);
+Allocate a new local object.
+
+dyt dycNewLocal(char *cname);
+

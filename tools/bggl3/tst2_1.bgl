@@ -1,0 +1,45 @@
+{tooth: x y z o  w l h  d}=
+[
+	[y*(d+l)+z*h+o	 x*w+y*d+z*h+o	-x*w+y*d+z*h+o]
+	[y*(d+l)-z*h+o	-x*w+y*d-z*h+o	 x*w+y*d-z*h+o]
+	[y*(d+l)-z*h+o	 y*(d+l)+z*h+o	-x*w+y*d+z*h+o]
+	[y*(d+l)-z*h+o	-x*w+y*d+z*h+o	-x*w+y*d-z*h+o]
+	[y*(d+l)+z*h+o	 y*(d+l)-z*h+o	 x*w+y*d-z*h+o]
+	[y*(d+l)+z*h+o	 x*w+y*d-z*h+o	 x*w+y*d+z*h+o]
+]
+
+{gearseg: x y z o  w w2 h  d d2}=
+[
+	[-x*w+y*d-z*h+o		-x*w2+y*d2-z*h+o	 x*w2+y*d2-z*h+o]
+	[-x*w+y*d-z*h+o		 x*w2+y*d2-z*h+o	 x*w+y*d-z*h+o]
+	[ x*w+y*d+z*h+o		 x*w2+y*d2+z*h+o	-x*w2+y*d2+z*h+o]
+	[ x*w+y*d+z*h+o		-x*w2+y*d2+z*h+o	-x*w+y*d+z*h+o]
+	[-x*w2+y*d2+z*h+o	 x*w2+y*d2-z*h+o	-x*w2+y*d2-z*h+o]
+	[-x*w2+y*d2+z*h+o	 x*w2+y*d2+z*h+o	 x*w2+y*d2-z*h+o]
+]
+
+{gear: r r2 h t o}=
+(
+	st=\{n}
+	[
+	,(
+		a=2*PI/t*n
+		w=2*PI/t*r
+		w2=2*PI/t*r2
+
+		y={{sin a} {cos a} 0}
+		z={0 0 1}
+		x=z^y
+
+		[
+			,{tooth x y z o  w*0.5 w h  r}
+			,{gearseg x y z o  w*0.5 w2*0.5 h  r r2}
+		]
+	)
+	,{if ((n+1)<t) {st n+1} ()}
+	]
+	{st 0}
+)
+
+m={ragear 1 0.1 0.1 25 {0 0 0}}
+{dumpmesh "tst0.tri" m}

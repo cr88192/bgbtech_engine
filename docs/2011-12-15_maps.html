@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;
+      charset=ISO-8859-1">
+  </head>
+  <body>
+    A map is a collection of entities, which in turn may contain brushes
+    (and patches and meshes).<br>
+    <br>
+    <h2>Entity Syntax<br>
+    </h2>
+    <br>
+    <span style="font-weight: bold;">{</span><br>
+    "<span style="font-style: italic;">keyname</span>" "<span
+      style="font-style: italic;">keyvalue</span>"<br>
+    ...<br>
+    <span style="font-style: italic;">brushes</span><br>
+    ...<br>
+    <span style="font-weight: bold;">}</span><br>
+    <br>
+    <br>
+    <h3>Basic Brush</h3>
+    <span style="font-weight: bold;">{</span><br>
+    <span style="font-style: italic;">faces</span><br>
+    ...<br>
+    <span style="font-weight: bold;">}</span><br>
+    <br>
+    Face:<br>
+    <span style="font-weight: bold;">( </span><span style="font-style:
+      italic;">x0 y0 z0 </span><span style="font-weight: bold;">) ( </span><span
+      style="font-style: italic;">x1 y1 z1 </span><span
+      style="font-weight: bold;">) ( </span><span style="font-style:
+      italic;">x2 y2 z2 </span><span style="font-weight: bold;">) </span><span
+      style="font-style: italic;">texture </span><span
+      style="font-weight: bold;">[ </span><span style="font-style:
+      italic;">ux uy uz uo</span> <span style="font-weight: bold;">] [
+    </span><span style="font-style: italic;">vx vy vz vo</span> <span
+      style="font-weight: bold;">] </span>...<br>
+    <br>
+    The first 3 points define the face plane.<br>
+    The texture identifies the texture in use.<br>
+    The numbers in square brackets define the U and V vectors (and the
+    offsets along these vectors).<br>
+    <br>
+    <h4>Alternative Basic Brush</h4>
+    This is another syntax used by the BGBTech engine in basic brushes.<br>
+    <br>
+    <span style="font-weight: bold;">[ </span><span style="font-style:
+      italic;">nx ny nz nd </span><span style="font-weight: bold;">] </span><span
+      style="font-style: italic;">texture </span><span
+      style="font-weight: bold;">[ </span><span style="font-style:
+      italic;">ux uy uz uo</span> <span style="font-weight: bold;">] [
+    </span><span style="font-style: italic;">vx vy vz vo</span> <span
+      style="font-weight: bold;">]</span><br>
+    <br>
+    <h3>Other Brush Syntax</h3>
+    <span style="font-weight: bold;">{</span><br style="font-weight:
+      bold;">
+    <span style="font-weight: bold;">brushDef</span><br
+      style="font-weight: bold;">
+    <span style="font-weight: bold;">{</span><br>
+    <span style="font-weight: bold;">( </span><span style="font-style:
+      italic;">x0 y0 z0 </span><span style="font-weight: bold;">) ( </span><span
+      style="font-style: italic;">x1 y1 z1 </span><span
+      style="font-weight: bold;">) ( </span><span style="font-style:
+      italic;">x2 y2 z2 </span><span style="font-weight: bold;">)&nbsp;</span><span
+      style="font-style: italic;"></span><span style="font-weight:
+      bold;">( ( </span><span style="font-style: italic;">xx xy xo</span>
+    <span style="font-weight: bold;">) ( </span><span
+      style="font-style: italic;">yx yy yo</span> <span
+      style="font-weight: bold;">) ) </span><span style="font-weight:
+      bold;"></span><span style="font-style: italic;">texture </span><br>
+    ...<br>
+    <span style="font-weight: bold;">}</span><br style="font-weight:
+      bold;">
+    <span style="font-weight: bold;">}</span><br>
+    <br>
+    <h3>Other Brush Syntax</h3>
+    <span style="font-weight: bold;">{</span><br style="font-weight:
+      bold;">
+    <span style="font-weight: bold;">brushDef3</span><br
+      style="font-weight: bold;">
+    <span style="font-weight: bold;">{</span><br>
+    <span style="font-weight: bold;">( </span><span style="font-style:
+      italic;">nx ny nz nw </span><span style="font-weight: bold;">) </span><span
+      style="font-weight: bold;"></span><span style="font-style:
+      italic;"></span><span style="font-weight: bold;">( ( </span><span
+      style="font-style: italic;">xx xy xo</span> <span
+      style="font-weight: bold;">) ( </span><span style="font-style:
+      italic;">yx yy yo</span> <span style="font-weight: bold;">) ) </span><span
+      style="font-weight: bold;"></span><span style="font-style:
+      italic;">texture </span><br>
+    ...<br>
+    <span style="font-weight: bold;">}</span><br style="font-weight:
+      bold;">
+    <span style="font-weight: bold;">}</span><br>
+    <br>
+    <h3>Patch Syntax</h3>
+    <span style="font-weight: bold;">{</span><br style="font-weight:
+      bold;">
+    [ <span style="font-weight: bold;">patchDef2 </span>|<span
+      style="font-weight: bold;"> </span><span style="font-weight:
+      bold;">patchDef3</span> ]<br style="font-weight: bold;">
+    <span style="font-weight: bold;">{</span><br>
+    <span style="font-weight: bold;"></span><span style="font-weight:
+      bold;"></span><span style="font-style: italic;">texture </span><br>
+    <span style="font-weight: bold;">(</span> ... <span
+      style="font-weight: bold;">) </span><br>
+    <span style="font-weight: bold;">(</span><br>
+    <span style="font-weight: bold;">( (</span> <span
+      style="font-style: italic;">x y z u v</span> <span
+      style="font-weight: bold;">)</span> ... <span style="font-weight:
+      bold;">)</span><br style="font-weight: bold;">
+    <span style="font-weight: bold;">)</span><br style="font-weight:
+      bold;">
+    <span style="font-weight: bold;"> </span>...<br>
+    <span style="font-weight: bold;">}</span><br style="font-weight:
+      bold;">
+    <span style="font-weight: bold;">}</span><br>
+    <br>
+    A patch (or Bezier patch) is a grid of points representing a curved
+    surface. The actual surface is derived by interpolating between the
+    points.<br>
+    <br>
+    <br>
+    <h3>Mesh Syntax</h3>
+    <span style="font-weight: bold;">{</span><br style="font-weight:
+      bold;">
+    <span style="font-weight: bold;">meshDef1</span><br
+      style="font-weight: bold;">
+    <span style="font-weight: bold;">{</span><br>
+    <span style="font-weight: bold;"></span><span style="font-weight:
+      bold;"></span><span style="font-style: italic;">texture </span><span
+      style="font-weight: bold;">(</span> <span style="font-style:
+      italic;">x y z</span> <span style="font-weight: bold;">) </span><span
+      style="font-style: italic;"> </span><span style="font-weight:
+      bold;">[ </span><span style="font-style: italic;">ux uy uz&nbsp;</span><span
+      style="font-weight: bold;">] [ </span><span style="font-style:
+      italic;">vx vy vz&nbsp;</span><span style="font-weight: bold;">]</span>
+    <span style="font-style: italic;">mode</span><br>
+    <span style="font-weight: bold;">(</span><br>
+    <span style="font-weight: bold;">( (</span><span style="font-style:
+      italic;"> x y z u v </span><span style="font-weight: bold;">)</span>
+    ... <span style="font-weight: bold;">)</span><br
+      style="font-weight: bold;">
+    <span style="font-weight: bold;">)</span><br style="font-weight:
+      bold;">
+    <span style="font-weight: bold;"> </span>...<br>
+    <span style="font-weight: bold;">}</span><br style="font-weight:
+      bold;">
+    <span style="font-weight: bold;">}</span><br>
+    <br>
+    Despite the cosmetic similarity to a patch, a mesh-def defines a
+    polygonal mesh, with each row representing a single polygon.<br>
+    Some information is provided to define the projection of the texture
+    onto the mesh.<br>
+    <br>
+    <h3> Misc Syntax</h3>
+    Cube Definitions:<br>
+    <br>
+    <span style="font-weight: bold;"></span><span style="font-weight:
+      bold;">cubeDef1 ( </span><span style="font-style: italic;">mx my
+      mz </span><span style="font-weight: bold;">) ( </span><span
+      style="font-style: italic;">nx ny nz </span><span
+      style="font-weight: bold;">) </span><span style="font-style:
+      italic;">texture </span><span style="font-weight: bold;">( </span><span
+      style="font-style: italic;">tx ty tz </span><span
+      style="font-weight: bold;">) </span><span style="font-style:
+      italic;">tproj</span><br>
+    <br>
+    These provide a more concise syntax to define basic cube-like
+    brushes. These are used in place of a brush definition.<br>
+    They give a bounding box and a texture origin.<br>
+    The tproj value gives the texture projection type.<br>
+    <br>
+    <br>
+    <span style="font-weight: bold;">entityDef {</span><br>
+    "<span style="font-style: italic;">keyname</span>" "<span
+      style="font-style: italic;">keyvalue</span>"<br>
+    ...<br>
+    <span style="font-style: italic;">brushes</span><br>
+    ...<br>
+    <span style="font-weight: bold;">}</span><br>
+    <br>
+    This is an alternate entity syntax which may be used for nested
+    entities.<br>
+    Currently, nested entities are intended for use as "construction
+    entities" for things like duplicators and similar.<br>
+    They don't imply any structural, mechanical, or behavioral
+    relationship between entities or brushes beyond being able to work
+    with them as a unit for some purpose (such as in a duplicator).<br>
+    <br>
+  </body>
+</html>

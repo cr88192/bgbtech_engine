@@ -1,0 +1,28 @@
+C Compiler Extensions
+
+Base Types
+__int128		128-bit integer support
+__float128		128-bit float support
+__float16		16-bit float support
+
+Modifiers
+__proxy		Function uses a proxy (is assignable)
+__packed		Will indicate that struct/union members are packed
+
+Vector Math and Quats
+
+
+Unnamed Struct/Union Members
+
+struct Foo {
+	struct {
+	float x, y;
+	};
+	struct {
+	float z;
+	};
+};
+
+struct Foo v;
+	v.x, v.y, v.z
+

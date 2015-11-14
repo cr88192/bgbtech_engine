@@ -1,0 +1,197 @@
+RLE
+0x00-0xFC: Unencoded
+0xFE: RLE Run
+	<count:byte> (count=3-256, 1=escaped value, 0=16-bit count)
+	<value:byte>
+	if(count==0)
+	{
+		<count2:word>
+	}
+0xFF: Unencoded
+
+VLI: Variable Length Integer
+	00-7F		00000000-0000007F
+	80-BF XX	00000080-00003FFF
+	C0-DF XX(2)	00004000-001FFFFF
+	E0-EF XX(3)	00200000-0FFFFFFF
+	F0-F7 XX(4)	10000000-FFFFFFFF
+
+	F0-F7 XX(4)	00000000_10000000-00000007_FFFFFFFF
+	F8-FB XX(5)	00000008_00000000-000003FF_FFFFFFFF
+	FC-FD XX(6)	00000400_00000000-0001FFFF_FFFFFFFF
+	FF    XX(7)	00020000_00000000-00FFFFFF_FFFFFFFF
+	FF 00 XX(8)	01000000_00000000-FFFFFFFF_FFFFFFFF
+
+	FF 00-7F XX(8)	00000000_00000000_01000000_00000000-
+						00000000_0000007F_FFFFFFFF_FFFFFFFF
+	...
+
+SVLI: Sign-Folded VLI
+	0, -1, 1, -2, 2, ...
+
+VLF: Variable Length Float
+	<base:SVLI> <exponent:SVLI>
+
+where:
+value=base*(2^exponent);
+
+Vec2: <x:VLF> <y:VLF>
+Vec3: <x:VLF> <y:VLF> <z:VLF>
+Vec4: <x:VLF> <y:VLF> <z:VLF> <w:VLF>
+
+Plane4=Vec4 (for now)
+
+
+FF will be a magic byte used to encode escape markers.
+FF,00: Escapes an FF value in the data.
+
+
+FF,01: Chunk
+	<ox:SVLI> <oy:SVLI> <oz:SVLI>		//chunk origin (voxels)
+	<xs:SVLI> <ys:SVLI> <zs:SVLI>		//chunk size (voxels)
+	<flags:VLI>							//delta flags
+	( <marker-byte> <RLE-coded-data> )*	//RLE-compressed planes.
+	0
+
+Marker Byte
+	0: End Of Chunk
+	1: Type plane (low 8 bits)
+	2: Aux plane
+	3: Type plane (high 8 bits)
+	4: Aux2 plane (low 8 bits)
+	5: Aux2 plane (high 8 bits)
+	6: VLight plane
+	7: SLight plane
+
+Type Plane: 4.12: Mode, Voxel-Type
+Mode: 0=Normal, 1=Unbreakable, 2=Flexform,
+	8/9=Powered 1/2, 10/11=Unbreakable-Powered 1/2
+
+Voxel-Type: Values 0-upwards are statically-assigned, values 4093 and downwards are dynamically-assigned.
+
+Aux Plane: 4.4: Reserved (Meta2-Bits), Meta-Bits
+Aux2 Plane: 2.14: Tag, Data-Bits
+	Tag=0, Data-Bits=integer value from 0-16383
+	Tag=1, Data-Bits=index into region values table.
+
+VLight Plane: 4.4: Voxel-Light Intensity, Voxel Light Color
+SLight Plane: 4.4: Sun-Light Intensity, Sun Light Color
+
+
+
+Typically, but not always, a chunk delta will encode the full chunk.
+If the origin or size don't match those of a normal chunk, then the delta will apply to an arbitrary cube of voxels.
+
+Voxel ordering will by X, Y, Z.
+
+
+FF,02: Start Of Region Delta
+	<ox:SVLI> <oy:SVLI> <oz:SVLI>		//region origin (voxels)
+	<xs:SVLI> <ys:SVLI> <zs:SVLI>		//region size (chunks)
+	<xst:SVLI> <yst:SVLI> <zst:SVLI>	//chunk size (voxels)
+	<voxsz:VLI>							//voxel size (units)
+	<flags:VLI>							//region flags
+	<coded-chunks*>
+	<region-values>
+	<region-SEntity-list>
+
+FF,03: End Of Region Delta
+
+FF,04: Start Of Voxel Delta
+FF,05: End Of Voxel Delta
+
+FF,06: Start Of Region Values
+FF,07: End Of Region Values
+
+Region Values will be encoded as:
+	<index:VLI> <value:ASCIZ>
+An index of 0 will terminate the list.
+The value will be in textual S-Exp format.
+
+FF,08: Start Of Region Voxel Types
+FF,09: End Of Region Voxel Types
+
+These will use the same basic format as region values, but will give block-type names.
+
+FF,10: Start Of SEntity List
+FF,11: End Of SEntity List
+
+FF,12: Start Of SEntity
+FF,13: End Of SEntity
+
+SEntity is a collection of key/value pairs followed by any brush definitions.
+
+SEntity Member:
+	<key:ASCIZ>, <value:ASCIZ>
+
+This list is terminated by a 0 byte (or a key-string value of "").
+
+
+FF,14: Start Of Brush
+FF,15: End Of Brush
+
+Brushes will directly follow the keys for the SEntity they apply to.
+They will consist of items given by tag bytes.
+00: End Of Brush
+01: Brush Face
+	<normal:plane4> <sdir:plane4> <tdir:plane4> <tex:asciz>
+
+02: Patch Definition ...
+
+08: Mesh XYZ
+	<n_xyz:VLI> <xyz:vec3[n_xyz]>
+09: Mesh ST
+	<n_st:VLI> <st:vec2[n_st]>
+0A: Mesh Normal
+	<n_norm:VLI> <st:vec3[n_norm]>
+0B: Mesh RGBA
+	<n_rgba:VLI> <st:vec4[n_rgba]>
+0C: Mesh PTS
+	<n_pts:VLI> ( <xyz:VLI> <st:VLI> <norm:VLI> <rgba:VLI> )[n_pts]
+0D: Mesh Face
+	<n_face> ( <pts:VLI> <npts:VLI> <prim:VLI> <tex:VLI> )[n_face]
+0E: Mesh Tex
+	<n_tex> ( <face:VLI> <nface:VLI> <tex:ASCIZ> )[n_tex]
+
+Prim:
+	0=Points,			1=Lines,
+	2=Line_loop,		3=Line_strip,
+	4=Triangles,		5=Triangle_Strip,
+	6=Triangle_fan,		7=Quads,
+	8=Quad_strip,		9=Polygon.
+
+
+
+Region File
+
+Header:
+byte magic[8]="BTGERGN0";
+VLI idx_ofs, idx_sz;		//Chunk Index Offsets
+VLI cont_ofs, cont_sz;		//Contents offset/size
+VLI vals_ofs, vals_sz;		//Values-Table offset/size
+VLI ents_ofs, ents_sz;		//S-Entities Table
+
+Image is organized as 16-byte cells.
+Offsets are in terms of cells.
+
+Chunk Offsets are basically represented as VLI-encoded offset/size pairs, with the data being encoded using the tagged-message format from before.
+
+Note:
+    cn=(tx*rgn->ys+ty)*rgn->zs+tz;
+
+
+Region Names
+
+region/<mapname>_<X>x<Y>x<Z>.rgn
+
+Gives a region name.
+
+region/<mapname>_lock_<X>x<Y>x<Z>.rgn
+
+Gives a locked region name.
+A locked region will differ from a normal region in that changes to its contents will not be saved, and every time it is loaded will revert to its initial state.
+
+region/<mapname>_base_<X>x<Y>x<Z>.rgn
+
+Gives a base region name.
+A base region will give the initial state of a region, but the changed contents will be saved in a separate file.

@@ -1,0 +1,10 @@
+//BFG
+
+bones v_bones.bone
+
+vmesh v_handgr0.ac
+
+anim throw throw0.anim
+anim idle idle0.anim
+
+origin 0 0 0

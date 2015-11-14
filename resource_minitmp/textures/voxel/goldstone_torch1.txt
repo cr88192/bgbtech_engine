@@ -1,0 +1,22 @@
+// $flags voxel alpha nonsolid
+$flags voxel alpha nodepthwrite
+
+$vox_EmitBlock BTGE_Voxel_EmitBlock_RedstoneTorch
+$vox_BlockUpdate BTGE_VoxelPower_UpdateVoxel
+$vox_mins 12 12 0
+$vox_maxs 20 20 32
+
+$vox_vlight_val 7
+$vox_vlight_clr yellow
+
+$begin_frame textures/voxel/goldstone_torch1b
+$flags_prev
+$end_frame
+
+$begin_frame textures/voxel/goldstone_torch1c
+$flags_prev
+$end_frame
+
+$begin_frame textures/voxel/goldstone_torch1d
+$flags_prev
+$end_frame_loop

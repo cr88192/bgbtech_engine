@@ -1,0 +1,27 @@
+package bsvm.util;
+import bsvm.io.*;
+
+public class Properties extends Hashtable
+{
+private static final long serialVersionUID = 4112578634029874840L;
+
+protected  Properties 	defaults;
+
+public Properties()
+	{}
+public Properties(Properties defaults)
+	{}
+
+public String getProperty(String key)
+	{ return null; }
+public String getProperty(String key, String defaultValue)
+	{ return null; }
+public void list(PrintStream out)
+	{}
+public void load(InputStream in)
+	{}
+public Enumeration propertyNames()
+	{ return null; }
+public void save(OutputStream out, String header)
+	{}
+}

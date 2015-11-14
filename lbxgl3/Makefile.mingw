@@ -1,0 +1,140 @@
+CFLAGS=-Werror-implicit-function-declaration -I. -Iinclude \
+	-I../include
+
+LDFLAGS=-lpdgl
+EXE=.exe
+
+all: liblbxgl2.a
+
+FORCE:
+
+%.o: %.c
+	gcc $(CFLAGS) -g -pg -c -o $@ $<
+
+LBXGL_OBJS = \
+	geom/prim3d1.o \
+	geom/prim3d2.o \
+	geom/draw2.o \
+	geom/texture.o \
+	geom/camera.o \
+	geom/skyplane.o \
+	geom/skycube.o \
+	geom/mesh.o \
+	geom/shader.o \
+	geom/particle.o \
+	geom/method.o \
+	geom/model.o \
+	\
+	brush/brush.o \
+	brush/brush_draw.o \
+	brush/brush_bsp.o \
+	brush/brush_csg.o \
+	brush/brush_vis2.o \
+	brush/brush_portal.o \
+	brush/brush_light.o \
+	brush/brush_drawnode.o \
+	brush/brush_bmodel.o \
+	brush/brush_world.o \
+	brush/brush_solidmap.o \
+	geom/shadow.o \
+	\
+	format/sprite.o \
+	format/asm.o \
+	\
+	format/fmt_qmdl.o \
+	format/fmt_qmd3.o \
+	format/fmt_smd.o \
+	format/fmt_ac3d.o \
+	\
+	skel/skel_mesh.o \
+	skel/skel_base.o \
+	skel/skel_util.o \
+	skel/skel_smd.o \
+	\
+	entity23/entity.o \
+	entity23/ent_misc.o \
+	entity23/ent_scr.o \
+	entity23/ent_trace.o \
+	\
+	entity21/sentity.o
+
+#	entity23/query.o \
+#	entity23/physics.o \
+
+
+DEL_OBJS2 = \
+	entity2/entity.o \
+	entity2/physics.o \
+	entity2/ent_scr.o \
+	entity2/ent_trace.o \
+	entity21/sentity.o \
+	\
+	entity2/ent_misc.o \
+	\
+	bsp/bsp_entity.o \
+	bsp/bsp_draw.o \
+	bsp/bsp_dlight.o \
+	bsp/bsp_tree.o \
+	bsp/bsp_util.o \
+	bsp/bsp_fileio.o \
+	bsp/itcf_bsp.o \
+	\
+	bsp/bsp_build.o \
+	bsp/bsp_clip.o \
+	bsp/bsp_brush.o \
+	\
+	bsp/bsp_bsde.o
+
+#	format/fmt_acxml.o \
+
+DEL_OBJS = \
+	math/mathlib_f.o \
+	math/mathlib_d.o \
+	math/math_quat.o \
+	math/math_mf.o \
+	math/math_plane.o \
+	math/math_v3f.o \
+	math/math_vnf.o \
+	\
+	entity/event.o \
+	entity/entity.o \
+	entity/sequence.o \
+	entity/query.o \
+	entity/ent_class.o \
+	\
+	bsp/bsp_entity.o \
+	bsp/bsp_draw.o \
+	bsp/bsp_tree.o \
+	bsp/bsp_util.o \
+	bsp/bsp_fileio.o \
+	bsp/itcf_bsp.o \
+
+LBXGL_SRCS = \
+	$(LBXGL_OBJS:.o=.c)
+
+LBXGL_HDRS = $(shell find include -name \*.h)
+
+autohead$(EXE): autohead.c
+	gcc -o autohead$(EXE) autohead.c
+
+adler32$(EXE): adler32.c
+	gcc -o adler32$(EXE) adler32.c
+
+include/lbxgl2/auto.h: autohead$(EXE) $(LBXGL_SRCS)
+	./autohead$(EXE) $(LBXGL_SRCS) > include/lbxgl2/auto.h
+include/lbxgl2/ty_auto.h: adler32$(EXE) include/lbxgl2/types.txt
+	./adler32$(EXE) -header include/lbxgl2/types.txt include/lbxgl2/ty_auto.h
+
+liblbxgl2.a: include/lbxgl2/auto.h include/lbxgl2/ty_auto.h $(LBXGL_OBJS)
+	ar -cr liblbxgl2.a $(LBXGL_OBJS)
+
+liblbxgl2.html: $(LBXGL_SRCS)
+	bgbdoc liblbxgl2.html $(LBXGL_SRCS) $(LBXGL_HDRS)
+
+includes: include/lbxgl2/auto.h include/lbxgl2/ty_auto.h
+libs: liblbxgl2.a
+apps:
+
+clean:
+	rm -rf $(shell find -name \*.o)
+	rm -rf $(shell find -name \*.a)

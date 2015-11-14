@@ -1,0 +1,79 @@
+G_CFLAGS=/Z7 /I../include /c 
+G_LDFLAGS=/Z7
+
+LBX_LDFLAGS= \
+	../liblbxgl2.lib	../libpdglui.lib	../libpdgl.lib \
+	../libbsde.lib		../libvecmath.lib	../bgbcc.lib \
+	../sxil.lib		../bgbdy.lib		../bgbgc.lib \
+	../bgbasm.lib		../zpack.lib		../libbsgen.lib \
+	opengl32.lib		glu32.lib		gdi32.lib \
+	ole32.lib		winmm.lib 		user32.lib \
+	wsock32.lib
+
+# ../libwinmm
+
+TOOL_LDFLAGS= \
+	../libvecmath.lib	../bgbasm.lib		../bgbgc.lib \
+	../libbsgen.lib		../zpack.lib		wsock32.lib \
+	ole32.lib
+
+BINS = \
+	autohead.exe \
+	bgbdoc.exe \
+	adler32.exe \
+	grandhash.exe \
+	itcfdump.exe \
+	bsodump.exe
+
+# lbx_app0.exe mapper1.exe rt_tst0.exe
+
+APPS = \
+	gui_app0.exe bonetool2.exe lbx_app1.exe \
+	csgtool.exe meshtool.exe mapper2.exe \
+	lbx_runc.exe lbx_texconv.exe engine0.exe \
+	lbx_map2d.exe
+
+all: FORCE apps
+
+FORCE:
+
+basedeps: \
+	../liblbxgl2.lib	../libpdglui.lib	../libpdgl.lib \
+	../libbsde.lib		../libvecmath.lib	../bgbcc.lib \
+	../sxil.lib		../bgbdy.lib		../bgbgc.lib \
+	../bgbasm.lib		../zpack.lib		../libbsgen.lib \
+
+autohead.exe: tools/autohead.c
+	cl $(CFLAGS) /Feautohead.exe tools/autohead.c
+
+adler32.exe: tools/adler32.c
+	cl $(CFLAGS) /Feadler32.exe tools/adler32.c
+
+grandhash.exe: tools/grandhash.c
+	cl $(CFLAGS) /Fegrandhash.exe tools/grandhash.c
+
+itcfdump.exe: tools/itcfdump.c
+	cl $(CFLAGS) /Feitcfdump.exe tools/itcfdump.c
+
+bsodump.exe: tools/bsodump.c
+	cl $(CFLAGS) /Febsodump.exe tools/bsodump.c
+
+bgbdoc.exe: FORCE
+	make -C tools/bgbdoc -f Makefile.msvc
+	cp tools/bgbdoc/bgbdoc.exe .
+
+includes:
+libs:
+
+# apps: $(APPS) FORCE
+apps:
+
+
+%.obj: %.c basedeps
+	cl $(CFLAGS) $(G_CFLAGS) /Fo$@ $<
+
+
+%.exe: %.obj
+	cl /Fe$@ $< $(G_LDFLAGS) $(LBX_LDFLAGS)
+
+clean:

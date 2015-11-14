@@ -1,0 +1,3617 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;
+      charset=ISO-8859-1">
+    <title></title>
+  </head>
+  <body>
+    <h1>BGBScript 1.5 Language Spec<br>
+    </h1>
+    <br>
+    <h2>Purpose</h2>
+    <br>
+    Because I figured I needed some sort of documentation for this
+    language...<br>
+    BGBScript 1.5 will essentially try to merge (at least WRT syntax)
+    the BGBScript and BGBScript-2 languages.<br>
+    <br>
+    <h2>Overview</h2>
+    <br>
+    BGBScript is a language I originally implemented in 2004. It has
+    gone through several partial rewrites over the years.<br>
+    It syntax is largely based on JavaScript and ActionScript.<br>
+    <br>
+    This language will use manifest static types, but will allow dynamic
+    type-checking via a special <span style="font-weight: bold;">var</span>
+    type (short for variant). The var type will serve a similar role to
+    Object in some other languages, but will differ in that it may
+    handle objects that are not a proper subtype of Object. The VM may
+    coerce var to a static type if it can determine that this may be
+    done safely.<br>
+    <br>
+    The object system used will be a variation on Class/Instance OO,
+    where basic C/I OO facilities will be in place.<br>
+    Some extensions may exist, namely in that it will be possible to
+    declare classes which may have a dynamic object layout.<br>
+    Another extension will be that it will be possible for objects to
+    delegate to other objects, in which case the object in question will
+    be able to implicitly access whatever public fields and methods
+    exist within the object in question.<br>
+    <br>
+    In BGBScript, executable statements and expressions may exist at the
+    toplevel, in which case a top-to-bottom rule may be in place. In the
+    top-to-bottom rule, it is invalid to refer to variables or functions
+    declared after the present location. This rule will secondarily
+    apply to any functions or methods called directly from the
+    top-level. The relative execution ordering for toplevels in
+    different modules is undefined.<br>
+    <br>
+    <br>
+    <h3>Variable and Method Scope Levels</h3>
+    <table style="text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Name<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Toplevel<br>
+          </td>
+          <td style="vertical-align: top;">Anything declared outside of
+            any package.<br>
+            Technically, the toplevel itself exists as a package with a
+            default null name.<br>
+            Anything declared at the toplevel will be visible by
+            default.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Package<br>
+          </td>
+          <td style="vertical-align: top;">Anything directly declared
+            within a package block.<br>
+            Note: BS will allow variables and methods at the package
+            level, however these methods will be called functions and
+            will behave as if they were declared a static methods.
+            Package-level variables will behave similarly to C or C++
+            global variables.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Object<br>
+          </td>
+          <td style="vertical-align: top;">Anything declared within the
+            current class (for a method) or within a directly delegated
+            class or object (delegation via a field).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Delegate<br>
+          </td>
+          <td style="vertical-align: top;">Includes anything directly
+            reachable via delegation which is not a part of the Object
+            scope.<br>
+            Examples would include delegation via lexical variables, and
+            also the use of import statements.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Lexical<br>
+          </td>
+          <td style="vertical-align: top;">Any ordinary variable or
+            function declared within a function or method body.<br>
+            Methods may be nested within other methods, and will retain
+            visibility of the varaibles declared within the parent
+            method. It is possible that a reference to such a method may
+            continue to exist following the termination of the parent
+            method, in which case the parent method's referenced local
+            variables and/or arguments will be preserved. This situation
+            will be known as a 'lexical closure'.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Dynamic<br>
+          </td>
+          <td style="vertical-align: top;">A set of bindings visible
+            whose values depends upon the control flow path and is also
+            local to each thread.<br>
+            Dynamic bindings may need to be visible somewhere within the
+            lexical scope of their point of use.<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <h3>Scope Resolution</h3>
+    <br>
+    In general, scoping rules will follow a precedence based on lexical
+    ordering, where a binding declared in a nearer scope will take
+    precedence over one declared in a more distant scope.<br>
+    <br>
+    However, there will be a few exceptions to this rule:<br>
+    Any dynamic fields or variables may be searched for after any
+    statically-visible bindings are confirmed not to exist.<br>
+    <br>
+    This may mean that variables in any dynamic scopes may be shadowed
+    by variables visible at the toplevel and in imported packages, and
+    that a field located in a dynamic object may be similarly shadowed
+    by a statically-visible class or package variable.<br>
+    <br>
+    <br>
+    The exact variable resolution ordering within dynamic scopes is
+    undefined, and an implementation may also choose to resolve dynamic
+    bindings in lexical ordering WRT static bindings as well.<br>
+    <br>
+    Similarly, delegate scopes may be searched following lexical scopes,
+    even if lexically closer to the point of reference.<br>
+    <br>
+    If a binding is visible via multiple delegation paths, it is
+    undefined which path will be followed.<br>
+    <br>
+    <br>
+    If an unknown field or method within a dynamic object is accessed
+    via dot notation, then this access will be itself handled
+    dynamically (no explicit declarations are needed).<br>
+    <br>
+    If a reference to an unknown field or method is made within a static
+    scope (where no members of the enclosing lexical scope are marked as
+    dynamic) and without using a dotted reference, then any dynamic
+    bindings may need to be declared to be visible.<br>
+    <br>
+    However, if any part of the lexical scope is itself marked as
+    dynamic, than any unknown fields or methods may be accessed
+    dynamically absent any explicit declaration. This also applies in
+    the case of delegation via a variable with a variant type.<br>
+    <br>
+    <br>
+    Example:<br>
+    var a;&nbsp;&nbsp;&nbsp; //toplevel scope<br>
+    dynamic var b;&nbsp;&nbsp;&nbsp; //dynamic scope<br>
+    package foo {<br>
+    &nbsp;&nbsp;&nbsp; var c;&nbsp;&nbsp;&nbsp; //package scope<br>
+    &nbsp;&nbsp;&nbsp; class Bar<br>
+    &nbsp;&nbsp;&nbsp; {<br>
+    &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; var d;&nbsp;&nbsp;&nbsp;
+    //object scope<br>
+    &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; delegate var
+    dx;&nbsp;&nbsp;&nbsp; //object scope (uses delegation)<br>
+    &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; function bar(e)<br>
+    &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; {<br>
+    &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; var
+    f;&nbsp;&nbsp;&nbsp; //e and f are lexical<br>
+    &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; f=fun(g)<br>
+    &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp;
+    &nbsp;&nbsp;&nbsp; { /* e, f, and g are lexical */ }<br>
+    &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; delegate
+    var dy;&nbsp;&nbsp;&nbsp; //delegate scope<br>
+    &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; }<br>
+    &nbsp;&nbsp;&nbsp; }<br>
+    }<br>
+    <br>
+    <br>
+    <h3>Functions, Methods, and Closures</h3>
+    Functions and Methods will normally be declared using the <span
+      style="font-weight: bold;">function</span> keyword. Alternatively,
+    the <span style="font-weight: bold;">fun</span> keyword may be used
+    when declaring closures as a shorthand for the <span
+      style="font-weight: bold;">function</span> keyword.<br>
+    <br>
+    <span style="font-weight: bold;">function </span><span
+      style="font-style: italic;">name</span><span style="font-weight:
+      bold;">(</span><span style="font-style: italic;">argslist</span><span
+      style="font-weight: bold;">)</span> [<span style="font-weight:
+      bold;">:</span><span style="font-style: italic;">returntype</span>]
+    <span style="font-style: italic;">body</span><br>
+    <br>
+    With arguments having the following format.<br>
+    <br>
+    [<span style="font-weight: bold;">&amp;</span> | <span
+      style="font-weight: bold;">...</span>]&nbsp; <span
+      style="font-style: italic;">name </span>[<span
+      style="font-weight: bold;">:</span><span style="font-style:
+      italic;">type</span>] [<span style="font-weight: bold;">=</span> <span
+      style="font-style: italic;">expr</span>]<br>
+    <br>
+    Where <span style="font-weight: bold;">&amp;</span> will indicate
+    that the argument is pass-by-reference, and <span
+      style="font-weight: bold;">...</span> will indicate that this
+    argument is a variable argument list (any remaining arguments will
+    be folded into a list or array and given as this argument).<br>
+    <br>
+    Giving a value for an argument will indicate a default value.
+    Default-valued arguments may be omitted from the argument list, and
+    will be initialized with the value indicated.<br>
+    <br>
+    <h4>Captured Variable Lists</h4>
+    A captured variable list is an optional feature for closures. If
+    present, it may specify alternate semantics for a variable captured
+    as part of a closure.<br>
+    <br>
+    If absent, any bindings referenced in the child scope will by
+    implicitly captured by-identity and used in the child scope.<br>
+    If present, all captured bindings are to be listed, and a binding
+    which is not listed will not be captured.<br>
+    <br>
+    <br>
+    <table style=" text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Syntax<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">var</span><br>
+          </td>
+          <td style="vertical-align: top;">Variable is captured in its
+            default format (by-identity).<br>
+            The binding will continue to exist so long as any scope
+            which references it continues to exist (including past the
+            termination of the original parent scope which created it).
+            Being assigned within the child closure will alter the
+            original binding, and value alterations will be visible to
+            all closures which hold a copy of this binding.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">&amp;</span><span style="font-style: italic;">var</span><br>
+          </td>
+          <td style="vertical-align: top;">Variable is captured
+            by-reference.<br>
+            This binding may exist only as long as the original creation
+            scope has not yet terminated, otherwise the behavior is
+            undefined (if possible, the compiler should raise an error
+            if a closure capturing a binding in this way escapes the
+            scope in which the variable is declared).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">=</span><span style="font-style: italic;">var</span><br>
+          </td>
+          <td style="vertical-align: top;">The variable is captured
+            by-value. The value held in the variable at the time the
+            closure is created will be captured, and the value of the
+            binding will be local to the closure.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">var </span>[<span style="font-weight: bold;">:</span><span
+              style="font-style: italic;">type</span>] <span
+              style="font-weight: bold;">=</span> <span
+              style="font-style: italic;">expr</span><br>
+          </td>
+          <td style="vertical-align: top;">This variable is bound at the
+            time the closure is created (within the body of the
+            closure), and is initialized using the value of expr.<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <br>
+    <h3>Tail Position and Tail-Calls</h3>
+    BGBScript will give a special significance to what will be called <span
+      style="font-style: italic; font-weight: bold;">tail position</span>.
+    In particular, an expression may be in tail position if it is in
+    statement position and is the last statement within a given block
+    (if this block is either itself in tail position, or is the main
+    body for a closure or method). Semicolons will not be used for
+    expressions in tail position.<br>
+    <br>
+    Note that a declaration or ordinary statement may not appear in tail
+    position, and their presence will indicate that no tail expression
+    exists. Ordinary statements will still require the use of a
+    semicolon even if the final statement in a block.<br>
+    <br>
+    function foo(x) { x*x }<br>
+    The expression x*x is in tail position.<br>
+    <br>
+    function foo(x) { println(x*x); }<br>
+    Nothing is in tail position.<br>
+    <br>
+    <br>
+    Several special rules will apply to tail position:<br>
+    An expression in tail position will serve as the main return value
+    for the block (as if it were part of an implicit return statement);<br>
+    Function or method calls within tail position may be subject to an
+    operation known as "tail call optimization", whereby the caller will
+    return prior to invoking this new function or method.<br>
+    <br>
+    Tail call optimization may also be applied in the case of calls
+    within a return statement.<br>
+    <br>
+    Secondarily, function and method declarations will use a body
+    statement rather than a block, meaning that braces will be optional
+    for these declarations. This is subject to the restrictions that
+    only a single statement is allowed in this case, and that
+    declarations are not allowed in this context.<br>
+    <br>
+    For example:<br>
+    function hyp(x, y)<br>
+    &nbsp;&nbsp;&nbsp; sqrt(x*x+y*y);<br>
+    <br>
+    Would declare a function where the call to sqrt is both in tail
+    position (and thus a tail call), and where the body braces are
+    omitted.<br>
+    <br>
+    However:<br>
+    function hyp(x, y)<br>
+    &nbsp;&nbsp;&nbsp; var z;<br>
+    Is invalid given the statement is a declaration.<br>
+    And:<br>
+    function hyp(x, y)<br>
+    &nbsp;&nbsp;&nbsp; x=x*x; y=y*y;<br>
+    &nbsp;&nbsp;&nbsp; sqrt(x+y);<br>
+    Is invalid due to containing multiple statements.<br>
+    <br>
+    A secondary limitation is related to the use of semicolons, where
+    the semicolon does not apply to multiple expression levels. As a
+    result, braces are required in any cases where one would otherwise
+    require multiple semicolons.<br>
+    <br>
+    Possible: Allow as a special case, where a standalone statement in
+    tail position within an expression context will not eat the
+    semicolon, avoiding the above issue.<br>
+    <br>
+    <br>
+    <h3>Type Semantics</h3>
+    <br>
+    BGBScript will use a hybrid type model. In this model, both static
+    and dynamic type semantics may be used as-needed.<br>
+    <br>
+    If a type is declared with a variable, this will be the assumed
+    static type of the variable. If no type is given for a particular
+    variable, its type will be assumed to be variant.<br>
+    <br>
+    However, at present, the language may not necessarily enforce
+    type-safety with the use of statically-typed variables (the behavior
+    of expressions which are not type-safe is undefined). Ideally, the
+    compiler should catch and report these situations, however,
+    implementation may infact do little more than to treat the types of
+    declarations as an optimization hint (Update: this is partially
+    addressed, namely in many cases the VM will attempt to coerce the
+    value to the correct type).<br>
+    <br>
+    In other cases, the compiler may be allowed to use type-inference,
+    whereby a variable declared as variant, or with a type which is not
+    directly (lexically) visible from the point of reference may still
+    be inferred to be of a particular type. If and when this is done is
+    a matter left up to the implementation.<br>
+    <br>
+    Similarly, if and when implicit type-conversions are performed is
+    presently also a matter left to the implementation, and the behavior
+    of implicit conversions should not be relied upon (thus, and
+    necessary type conversions should be declared explicitly).<br>
+    <br>
+    Similarly, the exact physical representation of value types at any
+    given moment is additionally up to the implementation, and as such
+    the overhead or exact "native" range or accuracy some types will not
+    be gueranteed (Rationale: This is mostly to simplify the case of
+    using "fixnum" and "flonum" types, which may more cheaply store
+    values, but may in some cases shave off several bits from the type,
+    or may involve transparently "boxing" out-of-range values).<br>
+    <br>
+    <br>
+    <br>
+    Many of the above details may be subject to change.<br>
+    <br>
+    <h3>Strings</h3>
+    Strings will be a built-in type in BGBScript. Strings may be
+    interned, and are immutable.<br>
+    <br>
+    Likewise, the internal representation of strings (such as the width
+    or representation of character values) is left as an implementation
+    detail. however the string type will need to be able to reliably
+    store UTF-16 code-points. Thus, likely physical representations
+    include UTF-16 and Modified-UTF-8 representations, the latter mostly
+    for sake of cases where UTF-8 takes notably less space (and/or when
+    the entire string is ASCII-range anyways...).<br>
+    <br>
+    Note that character index and step operations will behave as-if the
+    string were a collection of UTF-16 code-points, regardless of the
+    underlying representation.<br>
+    <br>
+    Note that the string will behave as if it had a NUL (U+0000)
+    terminating character, and as a result indexing past the last
+    character of a string, or the first character of an empty string,
+    will return this value. Trying to access past the terminating nul of
+    a string is undefined behavior.<br>
+    <br>
+    Similarly, the results of moving an offset before the first
+    character of a string, or beyond the terminating nul is undefined.<br>
+    Whether string offsetting is done via pointer operations or via an
+    index object is undefined.<br>
+    <br>
+    Block Strings will be semantically equivalent to normal strings.<br>
+    <br>
+    <br>
+    Several operations will have special treatment with strings:<br>
+    <table style="text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Syntax<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">*</span><span style="font-style: italic;">string</span><br>
+          </td>
+          <td style="vertical-align: top;">Will return the first
+            character of a given string.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">string</span><span style="font-weight: bold;">[</span><span
+              style="font-style: italic;">index</span><span
+              style="font-weight: bold;">]</span><br>
+          </td>
+          <td style="vertical-align: top;">Will return the character at
+            the given index.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">string</span><span style="font-weight: bold;">+</span><span
+              style="font-style: italic;">int</span><br>
+          </td>
+          <td style="vertical-align: top;">Will return a new reference
+            into the string stepped forwards a certain number of
+            characters.<br>
+          </td>
+        </tr>
+      </tbody><tbody>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">string</span><span style="font-weight: bold;">-</span><span
+              style="font-style: italic;">int</span></td>
+          <td style="vertical-align: top;">Step the string backwards a
+            certain number of characters.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">stringVar</span><span style="font-weight: bold;">++</span><br>
+          </td>
+          <td style="vertical-align: top;">Will step a string variable
+            to the next character.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">stringVar</span><span style="font-weight: bold;">--</span></td>
+          <td style="vertical-align: top;">Will step a string variable
+            to the prior character.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">stringVar</span><span style="font-weight: bold;">+=</span><span
+              style="font-style: italic;">int</span><br>
+          </td>
+          <td style="vertical-align: top;">Will step a string variable
+            forwards a given number of characters.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">stringVar</span><span style="font-weight: bold;">-=</span><span
+              style="font-style: italic;">int</span><span
+              style="font-style: italic;"></span></td>
+          <td style="vertical-align: top;">Will step a string variable
+            backwards a given number of characters.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">string</span><span style="font-weight: bold;">+</span><span
+              style="font-style: italic;">string</span><br>
+          </td>
+          <td style="vertical-align: top;">Will return a new string
+            containing the appended contents of the two strings.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">string</span><span style="font-weight: bold;">&amp;</span><span
+              style="font-style: italic;">string</span><br>
+          </td>
+          <td style="vertical-align: top;">Will be equivalent to the
+            behavior of string addition.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">string</span><span style="font-weight: bold;">&amp;</span><span
+              style="font-style: italic;">number</span><br>
+          </td>
+          <td style="vertical-align: top;">Will return a string with the
+            string representation of the number appended onto the end.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">string</span><span style="font-weight: bold;">&amp;</span><span
+              style="font-style: italic;">object</span><br>
+          </td>
+          <td style="vertical-align: top;">Will convert <span
+              style="font-style: italic;">object </span>to a string
+            (via the "toString()" operation) and return the result of
+            appending this new string onto the prior string.<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <h3>Arrays</h3>
+    Arrays will be collections of a given type of value.<br>
+    Much like strings, a similar system for stepping between array
+    indices will exist.<br>
+    Note that this may involve the use of internal array-index objects
+    (indexer objects).<br>
+    Indexer objects are to obey pass-by-value semantics.<br>
+    Also, any indexer offsets will be invalid following an array resize
+    operation.<br>
+    <br>
+    An array of char will not be equivalent to a string, but an array of
+    char may be used as a way of implementing a mutable character
+    buffer, such as to allow composing new strings. Note that, unlike
+    strings, a character buffer will not be able to gloss over
+    differences between UTF-8 and UTF-16 with respect to calling C
+    functions, meaning that an array with the correct character width is
+    needed (char8 or char16).<br>
+    <br>
+    Several operations will have special treatment with arrays:<br>
+    <table style="text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Syntax<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">*</span><span style="font-style: italic;">array</span><br>
+          </td>
+          <td style="vertical-align: top;">Will return the first entry
+            of a given array.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">array</span><span style="font-weight: bold;">[</span><span
+              style="font-style: italic;">index</span><span
+              style="font-weight: bold;">]</span><br>
+          </td>
+          <td style="vertical-align: top;">Will return the entry at the
+            given index.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">array</span><span style="font-weight: bold;">+</span><span
+              style="font-style: italic;">int</span><br>
+          </td>
+          <td style="vertical-align: top;">Will return a new indexer
+            into the array starting at a given position.<br>
+          </td>
+        </tr>
+      </tbody><tbody>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">*</span><span style="font-style: italic;">arrayIdx</span></td>
+          <td style="vertical-align: top;">Will return the entry
+            referenced by an indexer.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">arrayIdx</span><span style="font-weight: bold;">[</span><span
+              style="font-style: italic;">index</span><span
+              style="font-weight: bold;">]</span></td>
+          <td style="vertical-align: top;">Will return the array index
+            offset from the indexer.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">arrayIdx</span><span style="font-weight: bold;">+</span><span
+              style="font-style: italic;">int</span></td>
+          <td style="vertical-align: top;">Step the indexer forwards a
+            certain number of entires.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">arrayIdx</span><span style="font-weight: bold;">-</span><span
+              style="font-style: italic;">int</span></td>
+          <td style="vertical-align: top;">Step the indexer backwards a
+            certain number of entires.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">arrayIdxVar</span><span style="font-weight:
+              bold;">++</span><br>
+          </td>
+          <td style="vertical-align: top;">Will step an indexer variable
+            to the next entry.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">arrayIdxVar</span><span style="font-weight:
+              bold;">--</span></td>
+          <td style="vertical-align: top;">Will step an indexer variable
+            to the prior entry.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">arrayIdxVar</span><span style="font-weight:
+              bold;">+=</span><span style="font-style: italic;">int</span><br>
+          </td>
+          <td style="vertical-align: top;">Will step an indexer variable
+            forwards a given number of entires.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">arrayIdxVar</span><span style="font-weight:
+              bold;">-=</span><span style="font-style: italic;">int</span><span
+              style="font-style: italic;"></span></td>
+          <td style="vertical-align: top;">Will step an indexer variable
+            backwards a given number of entires.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">arrayIdx</span><span style="font-weight: bold;">-</span><span
+              style="font-style: italic;">array</span><br>
+          </td>
+          <td style="vertical-align: top;">Get the relative offset of an
+            indexer from the base array.<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <br>
+    <h3>Native C Interface</h3>
+    The native C FFI will be defined here as an official part of the
+    language.<br>
+    <br>
+    The FFI will be handled via the use of native imports and packages.<br>
+    A native import will import any bindings from the given language and
+    header.<br>
+    <br>
+    A native package will define that any contents should be visible
+    from C.<br>
+    <br>
+    All native C packages will follow the form "<span
+      style="font-weight: bold;">C.</span><span style="font-style:
+      italic;">pkgname</span>" (where pkgname will define the name and
+    partial path of the header or library, but will omit the '.h' suffix
+    for headers), with the expectation that if a native import is used,
+    there will be some means by which the compiler or VM will be able to
+    load the contents of C headers or libraries (it will be allowed
+    though that a tool be used to facilitate this process, but such a
+    tool should not itself require the developer to write any additional
+    code or boilerplate in order to operate). The "C" in a native
+    package name will be regarded as a language prefix, and will not be
+    part of the package-name proper.<br>
+    <br>
+    examples:<br>
+    "native import C.stdio;", to import the C stdio interface.<br>
+    "native import C.OpenGL;", to import OpenGL.<br>
+    <br>
+    Note that internal include paths should not be part of the package
+    name, but should instead be made known to the compiler or import
+    tool as a part of the C include path.<br>
+    <br>
+    <br>
+    A native package will be similar, except that it will define an
+    interface to be exported to C. The package name will serve as a
+    package name, and may operate with semantics similar to "extern
+    import" (meaning that the VM may attempt to demand-load the module
+    on calling the function). If the native package is simply named "C",
+    then the bindings will go to the toplevel, and no demand loading
+    will be used. Also note that the language prefix will not be a part
+    of the actual package name.<br>
+    <br>
+    All contents declared within a native C package will also be
+    required to adhere to the conventions of C, in particular:<br>
+    To not declare any objects or types which can't be exported to C
+    code (such as class or interface types, or the use of any datatypes
+    which are not C visible);<br>
+    To use overloading or other similar features which are not allowed
+    in C.<br>
+    <br>
+    The exact contents and dependencies of these produced C files are
+    subject to the VM (very likely, the header will contain prototypes
+    and any struct declarations, and the C source file will contain VM
+    wrapper stubs). If possible, the VM should be self-initializing or
+    provide a lightweight means to manually initialize the VM.<br>
+    <br>
+    At the time of this writing, all of C land will be visible at the
+    same time, and there is no real way to control which parts of C-land
+    are visible.<br>
+    <br>
+    <h3>Untrusted Code</h3>
+    <br>
+    Untrusted code will be that from an unknown source which may
+    potentially contain malicious code.<br>
+    An implementation may restrict the use of language features as
+    appropriate in this case in order to maintain security.<br>
+    <br>
+    An implementation should disallow certain features from being usable
+    in untrusted code:<br>
+    <div style="margin-left: 40px;">Pointers<br>
+      Native C FFI<br>
+      Ability to modify the global toplevel or packages.<br>
+      (Potentially) Ifdef/Ifndef<br>
+    </div>
+    <br>
+    <br>
+    <h2>Syntax</h2>
+    <br>
+    <span style="font-style: italic;">reference</span> <span
+      style="font-weight: bold;">keyword</span> ...<br>
+    <br>
+    Any text in <span style="font-weight: bold;">bold</span> will be a
+    literal depiction of the characters which are to appear in the
+    source code.<br>
+    any text in <span style="font-style: italic;">italics</span> will
+    indicate references to various types of items.<br>
+    A reference may include a special suffix, where + will indicate an
+    item which appears 1 or more times, and * an item which appears 0 or
+    more times. Square braces will indicate optional text and
+    parenthesis will declare a repeatable pattern or unit.<br>
+    <br>
+    Most syntax will be given as informal syntax-structure examples,
+    rather than a proper BNF or similar.<br>
+    It is assumed here that people are smart enough to figure out the
+    structure of tokens/... which probably most programmers have seen
+    most of their lives.<br>
+    Also it is my opinion here that syntax templates better illustrate
+    the form and function of a piece of syntax than does a BNF, since a
+    BNF mostly leaves one trying to figure out what exactly is being
+    represented and how these parts fit together.<br>
+    <br>
+    <br>
+    nameinitialchar = '$' | '_' | 'A'..'Z' | 'a'..'z'<br>
+    namechar = nameinitialchar | '0'..'9'<br>
+    name = nameinitialchar namechar*<br>
+    qname = name [ ('.' | '::') name]*<br>
+    <br>
+    ...<br>
+    <br>
+    Note that '\' will be a special case character, with several uses.<br>
+    '\' followed by a newline will indicate a line-continuation, where
+    the contents of the following line (absent preceding whitespace)
+    will be appended onto the current line.<br>
+    <br>
+    '\\' will encode a literal '\' character.<br>
+    '\u####' will encode a unicode escape ('#'=hex digit).<br>
+    '\U########' will encode a longer unicode escape ('#'=hex digit).<br>
+    <br>
+    It will be undefined at which stage in the parsing process these
+    escapes are handled, and they will only be allowed in certain
+    circumstances.<br>
+    Unicode escapes may be allowed in both identifiers and in quoted
+    literals (single or double quotes).<br>
+    <br>
+    The behavior of these escapes in other contexts, and whether or not
+    escapes can be used to compose new literals or operators, is
+    presently undefined.<br>
+    <br>
+    <br>
+    <h3>Basic Items</h3>
+    <br>
+    Names will begin with either $, _, or a letter, and may contain
+    letters, numbers, _, and $, in any combination.<br>
+    Note that although $ is allowed at any point, its usage may carry
+    additional semantics, and as a result such a symbol may recieve
+    special treatment by the compiler.<br>
+    <br>
+    Names beginning with '_' or '$' are generally reserved for use by an
+    implementation. User-defined variables or functions should not start
+    with one of these characters.<br>
+    <br>
+    <br>
+    A qname will be a sequence of names separated by periods. It may
+    only be interpreted as such in cases where a qname is identified
+    (qnames are not a fundamental token type).<br>
+    <br>
+    <br>
+    Integer literals may be either decimal, octal (when the first
+    character is '0'), or hexadecimal (when prefixed by '0x').<br>
+    <br>
+    As a special case, integer literals may contain '_' as a digit
+    separator. This character will be ignored. For example,
+    "0x0123_4567_89AB_CDEF" or "0x01234567_89ABCDEF"<br>
+    <br>
+    Real-valued literals follow the form: <span style="font-style:
+      italic;">digit<sup>+</sup></span><span style="font-weight: bold;">.</span><span
+      style="font-style: italic;">digit</span><span style="font-style:
+      italic;"><sup>+</sup></span><span style="font-weight: bold;"></span><span
+      style="font-style: italic;"></span> [ <span style="font-weight:
+      bold;">e</span>|<span style="font-weight: bold;">E</span> <span
+      style="font-style: italic;">integer</span> ]<br>
+    Hence, at least one digit will be required both prior to and
+    following the decimal point to be parsed as a real-valued literal.<br>
+    <br>
+    Rationale: It makes sense in some cases to allow '.' as a possible
+    operator symbol when applied to numbers, or to be used in
+    compound-operators when used adjacent to numerical constants.
+    Requiring a digit on both sides of the decimal point will thus avoid
+    syntactic ambiguity in these cases.<br>
+    <br>
+    <br>
+    String Literals will be enclosed in quotes (single and double), and
+    will use the usual set of '\' prefixed escapes:<br>
+    <table style="text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Escape<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">\a<br>
+          </td>
+          <td style="vertical-align: top;">Alert (Bell).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">\b<br>
+          </td>
+          <td style="vertical-align: top;">Backspace.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">\e<br>
+          </td>
+          <td style="vertical-align: top;">Escape.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">\f<br>
+          </td>
+          <td style="vertical-align: top;">Form Feed.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">\n<br>
+          </td>
+          <td style="vertical-align: top;">Newline.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">\t<br>
+          </td>
+          <td style="vertical-align: top;">Tab.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">\r<br>
+          </td>
+          <td style="vertical-align: top;">Carriage Return.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">\v<br>
+          </td>
+          <td style="vertical-align: top;">Vertical Tab.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">\\<br>
+          </td>
+          <td style="vertical-align: top;">Escapes a '\' character.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">\"<br>
+          </td>
+          <td style="vertical-align: top;">Escapes a double-quote
+            (optional with single-quote literals).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">\'<br>
+          </td>
+          <td style="vertical-align: top;">Escapes a single-quote
+            (optional with double-quote literals).</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">\?<br>
+          </td>
+          <td style="vertical-align: top;">Escapes a '?' character
+            (optional).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">\x##<br>
+          </td>
+          <td style="vertical-align: top;">Character escape (2 hex
+            digits). Variable-length character escapes are not allowed.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">\u####<br>
+          </td>
+          <td style="vertical-align: top;">Hex escape (4 hex digits).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">\U########<br>
+          </td>
+          <td style="vertical-align: top;">Hex escape (8 hex digits).<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <br>
+    <span style="font-style: italic;"></span><span style="font-style:
+      italic;"></span><span style="font-style: italic;">argdefa</span>
+    := [ <span style="font-weight: bold;">... | </span><span
+      style="font-weight: bold;">&amp;</span>] <span style="font-style:
+      italic;">name</span> [ <span style="font-weight: bold;">:</span>
+    <span style="font-style: italic;">modifier*</span> <span
+      style="font-style: italic;">type</span> ] [ = <span
+      style="font-style: italic;">expr</span> ]<br>
+    <span style="font-style: italic;">argdefb</span> := <span
+      style="font-style: italic;">modifier*</span> <span
+      style="font-style: italic;">type </span><span style="font-style:
+      italic;">name</span> [ = <span style="font-style: italic;">expr</span>
+    ]<br>
+    <span style="font-style: italic;">argdef</span> := <span
+      style="font-style: italic;">argdefa </span>| <span
+      style="font-style: italic;">argdefb</span><br>
+    <span style="font-style: italic;"></span><span style="font-style:
+      italic;">argslisti</span> := <span style="font-style: italic;">argdef</span>
+    [ <span style="font-weight: bold;">,</span> <span
+      style="font-style: italic;">arglist</span>i ]<br>
+    <span style="font-style: italic;"></span><span style="font-style:
+      italic;">argslist</span> := [<span style="font-style: italic;">
+      argslisti </span>]<br>
+    <span style="font-style: italic;"></span><span style="font-style:
+      italic;"></span><br>
+    <span style="font-style: italic;"></span><span style="font-style:
+      italic;"></span><span style="font-style: italic;">vardef</span> :=
+    <span style="font-style: italic;">name</span> [ <span
+      style="font-weight: bold;">:</span> <span style="font-style:
+      italic;">modifier*</span> <span style="font-style: italic;">type</span>
+    ] [ = <span style="font-style: italic;">expr</span> ]<br>
+    <span style="font-style: italic;">varlist</span> := <span
+      style="font-style: italic;">vardef</span> [ <span
+      style="font-weight: bold;">,</span> <span style="font-style:
+      italic;">varlist</span> ]<br>
+    <br>
+    <h3>Declaration Syntax</h3>
+    <br>
+    <table style="text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Syntax<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier*</span> <span style="font-weight:
+              bold;"></span><span style="font-weight: bold;">package</span>
+            <span style="font-style: italic;">qname</span><br>
+            <span style="font-weight: bold;">{</span><br>
+            &nbsp;&nbsp; &nbsp;...<br>
+            <span style="font-weight: bold;">}</span><br>
+          </td>
+          <td style="vertical-align: top;">Declare the enclosed contents
+            as being a part of the given package.<br>
+            Package declarations may be nested, with each sub-package
+            being contained within the parent package.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier*</span> <span style="font-weight:
+              bold;"></span><span style="font-weight: bold;">package</span>
+            <span style="font-style: italic;">qname</span><span
+              style="font-weight: bold;">;</span><br>
+          </td>
+          <td style="vertical-align: top;">May only be used once and at
+            the toplevel.<br>
+            Declare all of the contents of a given source module as
+            being a part of the identified package (this will set the
+            name of the toplevel package).<br>
+            Any nestable package will then be a part of this toplevel
+            package.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier*</span> <span style="font-weight:
+              bold;"></span><span style="font-weight: bold;">import</span>
+            <span style="font-style: italic;">qname</span><span
+              style="font-weight: bold;">;</span><br>
+          </td>
+          <td style="vertical-align: top;">Import a given class or
+            package. The contents of a package will be directly visible
+            from the scope which has imported it.<br>
+            The 'native' modifier will indicate that the qname refers to
+            a native package (a library name).<br>
+            The 'delegate' modifier will mean that code which imports
+            this package will also see into the imported package (by
+            default, code will only see the directly visible contents of
+            an imported package).<br>
+            The 'extern' modifier will indicate that an external module
+            should be loaded.<br>
+            The 'abstract' modifier will indicate that the package's
+            contents should not be imported.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier*</span> <span style="font-weight:
+              bold;">class</span> <span style="font-style: italic;">name</span><br>
+            &nbsp;&nbsp;&nbsp; [ <span style="font-weight: bold;">extends</span>
+            <span style="font-style: italic;">qname</span> ]<br>
+            &nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">
+              implements</span> <span style="font-style: italic;">typelist</span>
+            ]<br>
+            <span style="font-weight: bold;">{</span><br>
+            &nbsp;&nbsp; &nbsp;...<br>
+            <span style="font-weight: bold;">}</span><br>
+          </td>
+          <td style="vertical-align: top;">Declare a class type.<br>
+            All members will default to protected access.<br>
+            A class will be handled as a reference type.<br>
+            Using 'dynamic' on a class will allow declaring per-instance
+            fields and methods (either by assignment or via the "with()"
+            statement).<br>
+            <br>
+            (support inner and anonymous classes?)<br>
+            <br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier*</span> <span style="font-weight:
+              bold;">interface</span> <span style="font-style: italic;">name</span><br>
+            <span style="font-weight: bold;">{</span><br>
+            &nbsp;&nbsp;&nbsp; ...<br>
+            <span style="font-weight: bold;">}</span><br>
+          </td>
+          <td style="vertical-align: top;">Declares an interface.<br>
+            All members will default to public abstract.<br>
+            Interfaces may also contain fields and properties.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier*</span> <span style="font-weight:
+              bold;">struct</span> <span style="font-style: italic;">name</span><br>
+            <span style="font-weight: bold;">{</span><br>
+            &nbsp;&nbsp; &nbsp;...<br>
+            <span style="font-weight: bold;">}</span></td>
+          <td style="vertical-align: top;">Struct will be a value type,
+            and so values of type struct will be copied on assignment.<br>
+            Structs may not be inherited or contain virtual methods.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier*</span> <span style="font-weight:
+              bold;">value_class</span> <span style="font-style:
+              italic;">name</span><br>
+            &nbsp;&nbsp;&nbsp; [ <span style="font-weight: bold;">extends</span>
+            <span style="font-style: italic;">qname</span> ]<br>
+            &nbsp;&nbsp;&nbsp; [<span style="font-weight: bold;">
+              implements</span> <span style="font-style: italic;">typelist</span>
+            ]<br>
+            <span style="font-weight: bold;"></span><span
+              style="font-weight: bold;">{</span><br>
+            &nbsp;&nbsp; &nbsp;...<br>
+            <span style="font-weight: bold;">}</span></td>
+          <td style="vertical-align: top;">Declare a value-class type.<br>
+            All members will default to protected access.<br>
+            A value-class will be handled as a value type.<br>
+            Will support dynamic.<br>
+            <br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier* </span><span style="font-weight:
+              bold;">var</span><span style="font-style: italic;"> name</span>
+            [ <span style="font-weight: bold;">:</span><span
+              style="font-style: italic;">type </span>]<br>
+            &nbsp;&nbsp;&nbsp; [ = <span style="font-style: italic;">expr</span>
+            ] <span style="font-weight: bold;">;</span><br>
+            <span style="font-style: italic;">modifier* </span><span
+              style="font-weight: bold;">var</span><span
+              style="font-style: italic;"> varlist</span><span
+              style="font-weight: bold;">;</span><br>
+          </td>
+          <td style="vertical-align: top;">Variable or field
+            declaration.<br>
+            Depending on the type, the name may be called as a method
+            (allowing for assignable instance methods).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier*&nbsp; </span><span style="font-weight:
+              bold;">function</span><span style="font-style: italic;">
+              name</span><span style="font-weight: bold;">(</span><span
+              style="font-style: italic;">argslist</span><span
+              style="font-weight: bold;">)</span> [ <span
+              style="font-weight: bold;">:</span><span
+              style="font-style: italic;">type </span>]<br>
+            &nbsp;&nbsp;&nbsp; <span style="font-style: italic;">methodbody</span><br>
+          </td>
+          <td style="vertical-align: top;">Method declaration.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier*</span><span style="font-weight: bold;"></span><span
+              style="font-style: italic;"> type varlist</span><span
+              style="font-weight: bold;">;</span></td>
+          <td style="vertical-align: top;">Variable or field declaration
+            (alternate syntax<sup>1</sup>).<br>
+            Note that applying multiple types to a variable is invalid,
+            even though constructions like "int x:int;" are allowed by
+            the basic syntax.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier* </span><span style="font-weight:
+              bold;"></span><span style="font-style: italic;">type name</span><span
+              style="font-weight: bold;">(</span><span
+              style="font-style: italic;">argslist</span><span
+              style="font-weight: bold;">)</span><br>
+            &nbsp;&nbsp;&nbsp; <span style="font-style: italic;">methodbody</span></td>
+          <td style="vertical-align: top;">Method declaration (alternate
+            syntax<sup>1</sup>).<br>
+            Note that because <span style="font-weight: bold;">var</span>
+            is a declaration keyword, it is syntactically invalid to use
+            var as the return type (however, an alias, such as
+            'variant', is still allowed). Alternatively, the <span
+              style="font-weight: bold;">function</span> declaration
+            form may be used instead.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;"></span><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier* </span><span style="font-weight:
+              bold;">function get </span><span style="font-style:
+              italic;">name</span><span style="font-weight: bold;">()</span>
+            [ <span style="font-weight: bold;">:</span><span
+              style="font-style: italic;">type </span>]<br>
+            &nbsp;&nbsp;&nbsp; <span style="font-style: italic;">methodbody</span><span
+              style="font-weight: bold;"></span></td>
+          <td style="vertical-align: top;">Syntax for getter property.<br>
+            <br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier* </span><span style="font-weight:
+              bold;">function set </span><span style="font-style:
+              italic;">name</span><span style="font-weight: bold;">(</span><span
+              style="font-style: italic;">argdefa</span><span
+              style="font-weight: bold;">)</span> [ <span
+              style="font-weight: bold;">:void </span>]<br>
+            &nbsp;&nbsp;&nbsp; <span style="font-style: italic;">methodbody</span><span
+              style="font-weight: bold;"></span></td>
+          <td style="vertical-align: top;">Syntax for setter property.<br>
+            <br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier* type </span><span style="font-weight:
+              bold;">get </span><span style="font-style: italic;">name</span><span
+              style="font-weight: bold;">()</span><br>
+            &nbsp;&nbsp;&nbsp; <span style="font-style: italic;">methodbody</span></td>
+          <td style="vertical-align: top;">Syntax for getter property
+            (alternate<sup>1</sup>).<br>
+            <br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier* type </span><span style="font-weight:
+              bold;">set </span><span style="font-style: italic;">name</span><span
+              style="font-weight: bold;">(</span><span
+              style="font-style: italic;">argdef</span><span
+              style="font-weight: bold;">)</span><br>
+            &nbsp;&nbsp;&nbsp; <span style="font-style: italic;">methodbody</span><span
+              style="font-weight: bold;"></span></td>
+          <td style="vertical-align: top;">Syntax for setter property
+            (alternate<sup>1</sup>).<br>
+            <br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier* </span><span style="font-weight:
+              bold;">function get*</span><span style="font-style:
+              italic;"></span><span style="font-weight: bold;">(</span><span
+              style="font-style: italic;">var</span><span
+              style="font-weight: bold;">)</span> [ <span
+              style="font-weight: bold;">:</span><span
+              style="font-style: italic;">type </span>]<br>
+            &nbsp;&nbsp;&nbsp; <span style="font-style: italic;">methodbody</span></td>
+          <td style="vertical-align: top;">Getter matching any unhandled
+            field or property access.<br>
+            Returning <span style="font-weight: bold;">undefined </span>will
+
+
+
+
+
+
+            indicate that the request was not handled.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier* </span><span style="font-weight:
+              bold;">function set*</span><span style="font-style:
+              italic;"></span><span style="font-weight: bold;">(</span><span
+              style="font-style: italic;">var</span><span
+              style="font-weight: bold;">, </span><span
+              style="font-style: italic;">argdefa</span><span
+              style="font-weight: bold;">)</span> [ <span
+              style="font-weight: bold;">:void </span>]<br>
+            &nbsp;&nbsp;&nbsp; <span style="font-style: italic;">methodbody</span></td>
+          <td style="vertical-align: top;">Setter matching any unhandled
+            field or property access.<br>
+            Returning <span style="font-weight: bold;">undefined </span>will
+
+
+
+
+
+
+            indicate that the request was not handled.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier* </span><span style="font-weight:
+              bold;">function call*</span><span style="font-style:
+              italic;"></span><span style="font-weight: bold;">(</span><span
+              style="font-style: italic;">name</span><span
+              style="font-weight: bold;">, </span><span
+              style="font-style: italic;">args...</span><span
+              style="font-weight: bold;">)</span> [ <span
+              style="font-weight: bold;">:</span><span
+              style="font-style: italic;">type </span>]<br>
+            &nbsp;&nbsp;&nbsp; <span style="font-style: italic;">methodbody</span></td>
+          <td style="vertical-align: top;">Handles calls to an unknown
+            method. If defined for an object, this will capture attempts
+            to call the method if it is not resolved otherwise.<br>
+            Returning <span style="font-weight: bold;">undefined </span>will
+
+
+
+
+
+
+            indicate that the request was not handled.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier* </span><span style="font-weight:
+              bold;">function operator </span><span style="font-style:
+              italic;">operator</span><span style="font-weight: bold;">(</span><span
+              style="font-style: italic;">argslist</span><span
+              style="font-weight: bold;">)</span> [ <span
+              style="font-weight: bold;">:</span><span
+              style="font-style: italic;">type </span>]<br>
+            &nbsp;&nbsp;&nbsp; <span style="font-style: italic;">methodbody</span></td>
+          <td style="vertical-align: top;">Declares an overloaded
+            operator.<br>
+            If named operators are supported, then this form may be used
+            to declare them.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier*&nbsp; </span><span style="font-weight:
+              bold;">function</span><span style="font-style: italic;">
+              classname</span><span style="font-weight: bold;">(</span><span
+              style="font-style: italic;">argslist</span><span
+              style="font-weight: bold;">)</span> [ <span
+              style="font-weight: bold;">:void</span> ]<br>
+            &nbsp;&nbsp;&nbsp; <span style="font-style: italic;">methodbody</span></td>
+          <td style="vertical-align: top;">Declares a constructor. A
+            constructor looks like a method, except that its methodname
+            is the same as the class name.<br>
+            A constructor which accepts an instance of the same class as
+            its sole argument will be a copy-constructor, which will
+            then be invoked when creating a copy of an object.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier*&nbsp; </span><span style="font-weight:
+              bold;">function</span><span style="font-style: italic;"> </span><span
+              style="font-weight: bold;">~</span><span
+              style="font-style: italic;">classname</span><span
+              style="font-weight: bold;">(</span><span
+              style="font-style: italic;">argslist</span><span
+              style="font-weight: bold;">)</span> [ <span
+              style="font-weight: bold;">:void</span> ]<br>
+            &nbsp;&nbsp;&nbsp; <span style="font-style: italic;">methodbody</span></td>
+          <td style="vertical-align: top;">Declares a destructor. A
+            destructor is called when an object is deleted or a
+            value-class goes out of scope. A destructor may be called
+            when an object is garbage-collected (not gueranteed).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier* </span><span style="font-weight:
+              bold;">operator </span><span style="font-style: italic;">operator</span><span
+              style="font-weight: bold;">(</span><span
+              style="font-style: italic;">argslist</span><span
+              style="font-weight: bold;">)</span> [ <span
+              style="font-weight: bold;">:</span><span
+              style="font-style: italic;">type </span>]<br>
+            &nbsp;&nbsp;&nbsp; <span style="font-style: italic;">methodbody</span></td>
+          <td style="vertical-align: top;">Declares an overloaded
+            operator (alternate<sup>1</sup>).<br>
+            If named operators are supported, then this form may be used
+            to declare them.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">modifier*</span><br>
+            <span style="font-weight: bold;">{</span><br>
+            &nbsp;&nbsp;&nbsp; ...<br>
+            <span style="font-weight: bold;">}</span><br>
+          </td>
+          <td style="vertical-align: top;">This will apply modifers to a
+            block.<br>
+            The meaning of this block will depend upon both the
+            modifiers used and the context in which it appears.<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <sup>1</sup>: Alternate syntax forms, which may or may not be
+    retained in the future.<br>
+    <br>
+    <br>
+    <h3> Statement Syntax</h3>
+    <br>
+    <table style="text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Syntax<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">;</span><br>
+          </td>
+          <td style="vertical-align: top;">Empty or Null statement.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">expr</span><span style="font-weight: bold;">;</span><br>
+          </td>
+          <td style="vertical-align: top;">Expression statement.<br>
+            Expressions without side-effects may generate a warning and
+            be ignored.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">{</span><br>
+            &nbsp;&nbsp;&nbsp; <span style="font-style: italic;">statement*</span><br>
+            <span style="font-weight: bold;">}</span><br>
+          </td>
+          <td style="vertical-align: top;">Block of statements.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">labelname</span><span style="font-weight: bold;">:</span><br>
+          </td>
+          <td style="vertical-align: top;">Label statement. A label may
+            be jumped to by a goto statement, or referenced by name in
+            order to facilitate computed goto.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">if(</span><span style="font-style: italic;">condition</span><span
+              style="font-weight: bold;">)</span> <span
+              style="font-style: italic;">then</span><br>
+            <span style="font-weight: bold;">if(</span><span
+              style="font-style: italic;">condition</span><span
+              style="font-weight: bold;">)</span> <span
+              style="font-style: italic;">then</span> <span
+              style="font-weight: bold;">else</span> <span
+              style="font-style: italic;">else</span><br>
+          </td>
+          <td style="vertical-align: top;">If statement.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">switch(</span><span style="font-style: italic;">expr</span><span
+              style="font-weight: bold;">)</span><br>
+            <span style="font-weight: bold;">{</span><br>
+            &nbsp;&nbsp;&nbsp; ...<br>
+            <span style="font-weight: bold;">}</span><br>
+          </td>
+          <td style="vertical-align: top;">Switch statement.<br>
+            Will dispatch using the result of expr to the matching case,
+            or default if none matches.<br>
+            Any type may be used for expr provided it supports
+            comparison and can be created as a compile-time constant.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">case</span> <span style="font-style: italic;">expr</span><span
+              style="font-weight: bold;">:</span><br>
+          </td>
+          <td style="vertical-align: top;">Case statement (only valid
+            directly within the body of a switch).<br>
+            Although any type may be used, the expression must evaluate
+            to a compile-time constant. The type of each case expression
+            must also match that used in the switch statement.<br>
+            Case fallthrough will be supported.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">default:</span><br>
+          </td>
+          <td style="vertical-align: top;">Default case (only valid
+            directly within a switch).<br>
+            If no default case a switch will simply exit on failing to
+            match.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">do</span> <span style="font-style: italic;">body</span>
+            <span style="font-weight: bold;">while(</span><span
+              style="font-style: italic;">cond</span><span
+              style="font-weight: bold;">);</span><br>
+          </td>
+          <td style="vertical-align: top;">Iterate over body and repeate
+            so long as cond is true.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">while(</span><span style="font-style: italic;">cond</span><span
+              style="font-weight: bold;">)</span> <span
+              style="font-style: italic;">body</span><br>
+          </td>
+          <td style="vertical-align: top;">Repeatedly execute body so
+            long as cond is true.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">for(</span><span style="font-style: italic;">init</span><span
+              style="font-weight: bold;">;</span> <span
+              style="font-style: italic;">cond</span><span
+              style="font-weight: bold;">;</span> <span
+              style="font-style: italic;">step</span><span
+              style="font-weight: bold;">)</span> <span
+              style="font-style: italic;">body</span><br>
+          </td>
+          <td style="vertical-align: top;">For loop<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">for(</span><span style="font-style: italic;">name</span>
+            <span style="font-weight: bold;">in</span> <span
+              style="font-style: italic;">expr</span><span
+              style="font-weight: bold;">)</span> <span
+              style="font-style: italic;">body</span><br>
+          </td>
+          <td style="vertical-align: top;">Execute body with name bound
+            to each item in a collection<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">break;</span><br>
+            <span style="font-weight: bold;">break</span> <span
+              style="font-style: italic;">level</span><span
+              style="font-weight: bold;">;</span><br>
+          </td>
+          <td style="vertical-align: top;">Break out of a loop or
+            switch.<br>
+            The second form may be used for breaking out of nested
+            loops.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">continue;<br>
+              continue </span><span style="font-style: italic;">level</span><span
+              style="font-weight: bold;">;<br>
+            </span> </td>
+          <td style="vertical-align: top;">Continue within a loop.<br>
+            The second form may be used for continuing within nested
+            loops.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">goto</span> <span style="font-style: italic;">labelname</span><span
+              style="font-weight: bold;">;</span><br>
+            <span style="font-weight: bold;">goto</span> <span
+              style="font-weight: bold;">*</span><span
+              style="font-style: italic;">expr</span><span
+              style="font-weight: bold;">;</span><br>
+            <span style="font-weight: bold;">goto </span><span
+              style="font-style: italic;">expr</span>;<br>
+          </td>
+          <td style="vertical-align: top;">Jump to a given label.<br>
+            The second form is a computed goto, where expr is to
+            evaluate to a label within the current function or method.
+            The '*' is mostly needed so as to help show the difference
+            between a label-name and a variable.<br>
+            The third form is a computed goto, where expr is any
+            expression excluding either a plain identifier or a unary
+            '*'.<br>
+            <br>
+            Note that "goto foo[i];" and "goto *(foo[i]);" will be
+            equivalent, whereas "goto foo;" and "goto *foo;" will not.<br>
+            <br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">with(</span><span style="font-style: italic;">object</span><span
+              style="font-weight: bold;">)</span> <span
+              style="font-style: italic;">body</span><br>
+          </td>
+          <td style="vertical-align: top;">Execute body with <span
+              style="font-weight: bold;">this</span> temporatily
+            redirected to the object in question.<br>
+            <br>
+            When object is a dynamic or a prototype object, the body may
+            also contain variable and method declarations, which will be
+            added to the object instance. This is invalid with
+            non-dynamic objects.<br>
+            Note that in the above case, the inferred type of the object
+            variable either needs to be a variant type, or an object
+            type with the dynamic modifier already present.<br>
+            <br>
+            When inside body, any lexical bindings from the enclosing
+            function or method will remain visible, however any class
+            members from the outer 'this' will not be accessible within
+            body. Note that with will not give access to any private
+            variables for a given class (and any private declarations
+            within the body of a with statement will be in fact local to
+            the with block in question).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">withtop(</span><span style="font-style: italic;">object</span><span
+              style="font-weight: bold;">)</span> <span
+              style="font-style: italic;">body</span></td>
+          <td style="vertical-align: top;">Execute body with <span
+              style="font-weight: bold;">top</span> temporarily
+            redirected to the object in question.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">return;<br>
+              return</span> <span style="font-style: italic;">expr</span><span
+              style="font-weight: bold;">;</span><br>
+          </td>
+          <td style="vertical-align: top;">Return a value from the
+            current value or method.<br>
+            Return void if expr is not present.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">throw</span> <span style="font-style: italic;">expr</span><span
+              style="font-weight: bold;">;</span><br>
+          </td>
+          <td style="vertical-align: top;">Throw an exception using the
+            object identified by expr.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">try</span> <span style="font-style: italic;">body</span><br>
+            [ <span style="font-weight: bold;">catch(</span><span
+              style="font-style: italic;"> type | </span>(<span
+              style="font-style: italic;">type name</span>)<span
+              style="font-style: italic;"> | </span>(<span
+              style="font-style: italic;">name</span><span
+              style="font-weight: bold;">:</span><span
+              style="font-style: italic;">type</span>)<span
+              style="font-style: italic;"> </span><span
+              style="font-weight: bold;">)</span> <br>
+            <span style="font-style: italic;">catchbody</span> ]*<br>
+            [ <span style="font-weight: bold;">finally</span> <span
+              style="font-style: italic;">finalbody</span> ]<br>
+          </td>
+          <td style="vertical-align: top;">Execute body and capture any
+            resulting exceptions.<br>
+            Catch will handle any exceptions where the exception is a
+            proper subtype of type.<br>
+            If finally is used, it will be executed following the try
+            block regardless of whether or not an exception takes place
+            or was caught.<br>
+            a throw within a catch will transfer control to the finally
+            block and then continue unwinding following the finally
+            block finishing.<br>
+            (issue: what if finally itself throws an exception?...).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">ifdef(</span><span style="font-style: italic;">ppdefine</span><span
+              style="font-weight: bold;">)</span> <span
+              style="font-style: italic;">body</span><br>
+            <span style="font-weight: bold;">ifndef(</span><span
+              style="font-style: italic;">ppdefine</span><span
+              style="font-weight: bold;">)</span> <span
+              style="font-style: italic;">body</span></td>
+          <td style="vertical-align: top;">Execute the body depending on
+            whether or not a given preprocessor variable is defined.<br>
+            Note that these are semantic ifdef's, not syntactical ones,
+            and so will effect whether or not code is run through the
+            JIT or executed, but not whether or not it is compiled to
+            bytecode.<br>
+            <br>
+            The body is required to be syntactically valid, but need not
+            be semantically valid unless the body may be executed. This
+            feature is intended to allow for platform specific code.<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <h3>Expression Syntax</h3>
+    <br>
+    <table style="text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Syntax<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">#</span><span style="font-style: italic;">name</span></td>
+          <td style="vertical-align: top;">Symbol<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">#:</span><span style="font-style: italic;">name</span><br>
+          </td>
+          <td style="vertical-align: top;">Keyword<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">$</span><span style="font-style: italic;">name<br>
+            </span><span style="font-style: italic;"></span></td>
+          <td style="vertical-align: top;">Unqouted Name (Used with
+            Quote)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">#"</span><span style="font-style: italic;">name</span><span
+              style="font-weight: bold;">"</span><span
+              style="font-style: italic;"><br>
+            </span><span style="font-weight: bold;"></span></td>
+          <td style="vertical-align: top;">Symbol with invalid
+            characters<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">#'</span><span style="font-style: italic;">name</span><span
+              style="font-weight: bold;">'</span><br>
+          </td>
+          <td style="vertical-align: top;">Identifier with invalid
+            characters.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">#:"</span><span style="font-style: italic;">name</span><span
+              style="font-weight: bold;">"</span><br>
+          </td>
+          <td style="vertical-align: top;">Keyword with invalid
+            characters.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">"</span><span style="font-style: italic;">chars</span><span
+              style="font-weight: bold;">"</span><br>
+          </td>
+          <td style="vertical-align: top;">String Literal<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;"></span><span style="font-weight: bold;">'</span><span
+              style="font-style: italic;">character</span><span
+              style="font-weight: bold;">'</span><br>
+          </td>
+          <td style="vertical-align: top;">Character literal. Alternate
+            String Syntax.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">integer</span>[<span style="font-style: italic;">typesuffix</span>]<br>
+          </td>
+          <td style="vertical-align: top;">Integer value<br>
+            Type Suffix: U(uint), L(long), UL(ulong), LX(int128),
+            ULX(uint128)<br>
+            If a floating-point suffix is used, this will indicate that
+            the value is a real-valued type instead.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">realvalue</span>[<span style="font-style:
+              italic;">typesuffix</span>]</td>
+          <td style="vertical-align: top;">Floating point value<br>
+            Type suffix: F (float), D(double), G (float128)<br>
+            Imaginary: I, IF, ID<br>
+            Quaternion: J, K<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">name</span><br>
+          </td>
+          <td style="vertical-align: top;">Identifier. Refer to
+            something by name. Variables, fields, methods, types, and
+            labels may be referenced by name.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">name </span>( <span style="font-weight: bold;">::
+
+
+
+
+
+
+            </span>[ <span style="font-style: italic;">name </span>] )<sup>+</sup><br>
+          </td>
+          <td style="vertical-align: top;">Gives an explicit qualified
+            name (or qname).<br>
+            Note that a dotted name will be an implicit qname.<br>
+            The difference will depend on context.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">/</span><span style="font-style: italic;">regexchars</span><span
+              style="font-weight: bold;">/</span><br>
+          </td>
+          <td style="vertical-align: top;">Reserved syntax for regular
+            expressions.<br>
+            Drop/Deprecate, Reason: a regex can also be done just as
+            well using a string.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">xml </span>&lt;<span style="font-style: italic;">xmltag</span>/&gt;<br>
+            <span style="font-weight: bold;">xml </span>&lt;<span
+              style="font-style: italic;">xmltag</span>&gt;...&lt;/<span
+              style="font-style: italic;">xmltag</span>&gt;<br>
+          </td>
+          <td style="vertical-align: top;">Inline XML literal.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">&lt;[[</span> ... <span style="font-weight: bold;">]]&gt;</span><br>
+          </td>
+          <td style="vertical-align: top;">Block-String syntax. A block
+            string is a string which preserves all whitespace and may
+            span across multiple lines. Block Strings may nest provided
+            the markers are evenly matched.<br>
+          </td>
+        </tr>
+        <tr style="vertical-align: top;">
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">\&lt;[[</span><span style="font-weight: normal;">
+              and </span><span style="font-weight: bold;">\]]&gt;</span><br>
+          </td>
+          <td style="vertical-align: top;">Within block-strings, these
+            serve as escape codes for the markers (unecessary except in
+            the case of uneven matching).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">"""</span> ... <span style="font-weight: bold;">"""</span><br>
+            <span style="font-weight: bold;">'''</span> ... <span
+              style="font-weight: bold;">'''</span><br>
+          </td>
+          <td style="vertical-align: top;">Triple-Quote Block String.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top; font-weight: bold;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">{</span> (<span style="font-style: italic;">name</span><span
+              style="font-weight: bold;">:</span> <span
+              style="font-style: italic;">value</span>)<span
+              style="font-style: italic;">*</span> <span
+              style="font-weight: bold;">}</span><br>
+          </td>
+          <td style="vertical-align: top;">Create an object with the
+            given fields.<br>
+            <span style="font-style: italic;">name</span><span
+              style="font-weight: bold;">: </span><span
+              style="font-style: italic;">value</span>, <span
+              style="font-weight: bold;">'</span><span
+              style="font-style: italic;">name</span><span
+              style="font-weight: bold;">': </span><span
+              style="font-style: italic;">value</span>, and <span
+              style="font-weight: bold;">"</span><span
+              style="font-style: italic;">name</span><span
+              style="font-weight: bold;">": </span><span
+              style="font-style: italic;">value </span>create ordinary
+            fields.<br>
+            <span style="font-weight: bold;">#</span><span
+              style="font-style: italic;">name</span><span
+              style="font-weight: bold;">: </span><span
+              style="font-style: italic;">value </span>and <span
+              style="font-weight: bold;">#:</span><span
+              style="font-style: italic;">name</span><span
+              style="font-weight: bold;">: </span><span
+              style="font-style: italic;">value </span>will create
+            delegate fields.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">[</span> <span style="font-style: italic;">exprlist</span>
+            <span style="font-weight: bold;">]</span><br>
+          </td>
+          <td style="vertical-align: top;">Create an array with the
+            given values (default type is <span style="font-weight:
+              bold;">var[]</span> ).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">[</span> <span style="font-style: italic;">exprlist</span>
+            <span style="font-weight: bold;">]</span><span
+              style="font-style: italic;">typesuffix<br>
+            </span><span style="font-weight: bold;">[</span> <span
+              style="font-style: italic;">exprlist</span> <span
+              style="font-weight: bold;">]:</span><span
+              style="font-style: italic;">type</span></td>
+          <td style="vertical-align: top;">Create an array with the
+            given values, with a certain element type.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">#{</span> <span style="font-style: italic;">exprlist</span>
+            <span style="font-weight: bold;">}</span><br>
+          </td>
+          <td style="vertical-align: top;">Create a list with the given
+            values.<br>
+            Note: normal list items are separated by ',', however ';'
+            will indicate an item in tail position.<br>
+            Lists are created from chained cons cells.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">#[</span> <span style="font-style: italic;">floatlist</span>
+            <span style="font-weight: bold;">]</span><br>
+          </td>
+          <td style="vertical-align: top;">Create a vector with the
+            given number of items (only between 2 and 4 are allowed).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">#[</span> <span style="font-style: italic;">w, x,
+              y, z</span> <span style="font-weight: bold;">]Q</span></td>
+          <td style="vertical-align: top;">Create a quaternion (w+x<span
+              style="font-style: italic;">i</span>+y<span
+              style="font-style: italic;">j</span>+z<span
+              style="font-style: italic;">k</span>).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">(</span> <span style="font-style: italic;">exprlist</span>
+            <span style="font-weight: bold;">)</span><br>
+          </td>
+          <td style="vertical-align: top;">Evaluate expression list and
+            return the result of the rightmost expression.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">obj</span><span style="font-weight: bold;">.</span><span
+              style="font-style: italic;">name</span></td>
+          <td style="vertical-align: top;">Direct field or method
+            reference<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">obj</span><span style="font-weight: bold;">.(</span><span
+              style="font-style: italic;">expr</span><span
+              style="font-weight: bold;">)</span><br>
+          </td>
+          <td style="vertical-align: top;">Computed reference (expr).
+            Reserved [semantic alias to <span style="font-style:
+              italic;">obj</span><span style="font-weight: bold;">[</span><span
+              style="font-style: italic;">expr</span><span
+              style="font-weight: bold;">]</span>...].<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">obj</span><span style="font-weight: bold;">[</span><span
+              style="font-style: italic;">symbol</span><span
+              style="font-weight: bold;">]</span></td>
+          <td style="vertical-align: top;">Indirect field or method
+            reference (symbol may be either a symbol or a string).<br>
+            If symbol is a keyword, it refers to a delegate field
+            instead.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">array</span><span style="font-weight: bold;">[</span><span
+              style="font-style: italic;">indexlist</span><span
+              style="font-weight: bold;">]</span></td>
+          <td style="vertical-align: top;">Array Indexing</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">obj</span><span style="font-weight: bold;">.</span><span
+              style="font-style: italic;">method</span><span
+              style="font-weight: bold;">(</span><span
+              style="font-style: italic;">args</span><span
+              style="font-weight: bold;">)</span></td>
+          <td style="vertical-align: top;">Call a method.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">function</span><span style="font-weight: bold;">(</span><span
+              style="font-style: italic;">args</span><span
+              style="font-weight: bold;">)</span><br>
+          </td>
+          <td style="vertical-align: top;">Call a function or method.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">quote</span> <span style="font-style: italic;">body</span><br>
+          </td>
+          <td style="vertical-align: top;">Get body as a syntax object.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">unquote </span><span style="font-style: italic;">expr</span><br>
+          </td>
+          <td style="vertical-align: top;">Execute expr, and then
+            evaluate the resultant syntax object.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;"></span><span style="font-weight: bold;">fun </span>[<span
+              style="font-weight: bold;">[</span><span
+              style="font-style: italic;">capvarlist</span><span
+              style="font-weight: bold;">]</span>] [<span
+              style="font-style: italic;">name</span>] [<span
+              style="font-weight: bold;">(</span><span
+              style="font-style: italic;">argslist</span><span
+              style="font-weight: bold;">)</span>] [<span
+              style="font-weight: bold;">:</span><span
+              style="font-style: italic;">type</span>]<span
+              style="font-style: italic;"> body<br>
+              <br>
+            </span><span style="font-weight: bold;"></span><span
+              style="font-weight: bold;">function </span>[<span
+              style="font-weight: bold;">[</span><span
+              style="font-style: italic;">capvarlist</span><span
+              style="font-weight: bold;">]</span>] [<span
+              style="font-style: italic;">name</span>] [<span
+              style="font-weight: bold;">(</span><span
+              style="font-style: italic;">argslist</span><span
+              style="font-weight: bold;">)</span>] [<span
+              style="font-weight: bold;">:</span><span
+              style="font-style: italic;">type</span>]<span
+              style="font-style: italic;"> body<br>
+            </span><br>
+            <br>
+            <span style="font-style: italic;"> </span> </td>
+          <td style="vertical-align: top;">Create a anonymous function
+            or closure.<br>
+            A function which does not capture any variables from the
+            parent will be referred to simply as an anonymous function.
+            A closure, OTOH, may capture variables from the parent.<br>
+            If the name is provided, the function will be visible to
+            itself within body, thus allowing self-reference or
+            recursion.<br>
+            <br>
+            Technical note: A closure will, by definition, capture the
+            bindings of the creating function, and as well the closure
+            may survive past the end of the creating scope. Likewise,
+            multiple closures capturing the same variables will share
+            the same variable state (variables are captured by
+            reference).<br>
+            An implementation may be allowed to vary from this (such as
+            by creating a closure with an limited scope-lifetime, or
+            capture variables by reference), if it can be determined
+            that it is safe to do so.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">with(</span><span style="font-style: italic;">object</span><span
+              style="font-weight: bold;">)</span> <span
+              style="font-style: italic;">body</span></td>
+          <td style="vertical-align: top;">Execute body with <span
+              style="font-weight: bold;">this</span> temporatily
+            redirected to the object in question.<br>
+            Using "with()" in expression context will allow using the
+            tail-expression rule.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">expr</span> <span style="font-weight: bold;">is</span>
+            <span style="font-style: italic;">typeexpr<br>
+            </span> </td>
+          <td style="vertical-align: top;">Returns a boolean indicating
+            whether expr is a given type.<br>
+            If expr is an instance of a class or subclass of a class
+            named in typeexpr, the result is true.<br>
+            If expr is an instance of a class which implements an
+            interface named by typeexpr, the result is true.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">expr</span> <span style="font-weight: bold;">as</span>
+            <span style="font-style: italic;">typeexpr</span><span
+              style="font-style: italic;"><br>
+            </span><span style="font-style: italic;">expr</span> <span
+              style="font-weight: bold;">as!</span> <span
+              style="font-style: italic;">typeexpr</span><span
+              style="font-style: italic;"></span><br>
+          </td>
+          <td style="vertical-align: top;">Cast the given expression to
+            a given type.<br>
+            Note that <span style="font-weight: bold;">as </span>may
+            return <span style="font-weight: bold;">null </span>if the
+            cast fails, however <span style="font-weight: bold;">as!</span><span
+              style="font-weight: bold;"> </span>will throw
+            InvalidCastException should the cast fail.<br>
+            Both will be equivalent regarding conversions involving only
+            pointers or value types. Pointer conversions will always
+            succeed and thus not involve a check, and value-type
+            conversions will either always pass or always fail.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">expr </span><span style="font-weight: bold;">in
+            </span><span style="font-style: italic;">objexpr</span><br>
+          </td>
+          <td style="vertical-align: top;">If <span style="font-style:
+              italic;">objexpr</span> is an object, return <span
+              style="font-weight: bold;">true </span>or <span
+              style="font-weight: bold;">false </span>depending on
+            whether <span style="font-style: italic;">expr </span>refers
+
+
+
+
+
+
+
+
+
+            to a property in the object.<br>
+            If objexpr is a container, return true or false depending on
+            if the value is contained within the container.<br>
+            If objexpr is a type-object, return true if expr is a
+            compatible type with the type-object or is a type-object
+            identifying a compatible type.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">null</span><br style="font-weight: bold;">
+            <span style="font-weight: bold;">true</span><br
+              style="font-weight: bold;">
+            <span style="font-weight: bold;">false</span><br
+              style="font-weight: bold;">
+            <span style="font-weight: bold;">undefined</span><br>
+          </td>
+          <td style="vertical-align: top;">Special constants.<br>
+            These will always be visible.<br>
+            The null and undefined values may be assigned to reference
+            and pointer variables.<br>
+            The true and false values will be of type bool.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">this</span></td>
+          <td style="vertical-align: top;">Refers to the current <span
+              style="font-weight: bold;">this</span> object.<br>
+            May be called in constructors to invoke a different
+            constructor.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">super</span><br>
+          </td>
+          <td style="vertical-align: top;">May be used to refer to <span
+              style="font-weight: bold;">this</span> via the superclass,
+            such as to call superclass methods.<br>
+            May be used in constructors to call a superclass
+            constructor.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">new</span> <span style="font-style: italic;">typeexpr</span>
+            [<span style="font-weight: bold;">(</span><span
+              style="font-style: italic;">args</span><span
+              style="font-weight: bold;">)</span>]<br>
+          </td>
+          <td style="vertical-align: top;">Create a new object of a
+            given type.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">new</span> <span style="font-style: italic;">typeexpr</span><span
+              style="font-weight: bold;">[</span><span
+              style="font-style: italic;">size</span><span
+              style="font-weight: bold;">]</span></td>
+          <td style="vertical-align: top;">Create a new array of a given
+            type.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">delete</span> <span style="font-style: italic;">expr</span><br>
+          </td>
+          <td style="vertical-align: top;">Delete the referenced object,
+            and return a bool giving status.<br>
+            Following a delete expression, it will be invalid to
+            reference the object in question.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">clone(</span><span style="font-style: italic;">expr</span><span
+              style="font-weight: bold;">)</span><br>
+          </td>
+          <td style="vertical-align: top;">Create a clone of an object.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">cons(</span><span style="font-style: italic;">car</span><span
+              style="font-weight: bold;">, </span><span
+              style="font-style: italic;">cdr</span><span
+              style="font-weight: bold;">)</span><br>
+          </td>
+          <td style="vertical-align: top;">Create a cons cell for 2
+            items.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">car(</span><span style="font-style: italic;">cons</span><span
+              style="font-weight: bold;">)<br>
+              cdr(</span><span style="font-style: italic;">cons</span><span
+              style="font-weight: bold;">)<br>
+              cadr(</span><span style="font-style: italic;">cons</span><span
+              style="font-weight: bold;">)<br>
+              cddr(</span><span style="font-style: italic;">cons</span><span
+              style="font-weight: bold;">)<br>
+            </span>...<span style="font-weight: bold;"><br>
+            </span></td>
+          <td style="vertical-align: top;">Access the car and cdr fields
+            of cons-cells.<br>
+            The multi-character forms involve chained accesses, hence
+            "cadr(cons)" is semantically equivalent to "car(cdr(cons))".<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">&amp;</span><span style="font-style: italic;">lvalue</span><br>
+            <span style="font-weight: bold;">*</span><span
+              style="font-style: italic;">varref</span><br>
+            <span style="font-style: italic;">valuepointer</span><span
+              style="font-weight: bold;">[</span><span
+              style="font-style: italic;">index</span><span
+              style="font-weight: bold;">]</span><br>
+            <span style="font-style: italic;">structpointer</span><span
+              style="font-weight: bold;">.</span><span
+              style="font-style: italic;">name</span><br>
+            <span style="font-style: italic;">structpointer</span><span
+              style="font-weight: bold;">-&gt;</span><span
+              style="font-style: italic;">name</span><br>
+          </td>
+          <td style="vertical-align: top;">These are related to working
+            with reference. &amp; will return a reference to the address
+            of the value.<br>
+            References into arrays will behave similarly to C-style
+            pointers, and will allow arithmetic on the referenced
+            location.<br>
+            References to variables will not allow arithmetic.<br>
+            Using * will allow access to the pointed-to value, either to
+            fetch or assign it.<br>
+            <br>
+            The <span style="font-weight: bold;">-&gt; </span>operator
+            is only defined over pointer types. In the simple case, its
+            semantics will be equivalent to those of the <span
+              style="font-weight: bold;">.</span> operator.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">&amp;&amp;</span><span style="font-style: italic;">labelname</span><br>
+          </td>
+          <td style="vertical-align: top;">Get a reference to a label.
+            This may be used with computed goto.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">typeof </span><span style="font-style: italic;">typeexpr</span><span
+              style="font-weight: bold;"><br>
+              typeof</span> <span style="font-style: italic;">expr</span><br>
+          </td>
+          <td style="vertical-align: top;">Return the type of an
+            expression (type object). A type object basically represents
+            an opaque handle for the datatype in question, and can be
+            tested for equality to determine if they are the same type.<br>
+            Allows <span style="font-style: italic;">typeobject</span>==<span
+              style="font-style: italic;">string</span> which will be
+            true if the string "can describe the type".<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">sizeof</span> <span style="font-style: italic;">typeexpr</span><br>
+            <span style="font-weight: bold;">sizeof </span><span
+              style="font-style: italic;">expr</span><br>
+          </td>
+          <td style="vertical-align: top;">Returns the size of a type.
+            Only valid for value types.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">offsetof(</span><span style="font-style: italic;">struct</span><span
+              style="font-weight: bold;">,</span> <span
+              style="font-style: italic;">field</span><span
+              style="font-weight: bold;">)</span><br>
+          </td>
+          <td style="vertical-align: top;">Returns the offset of a given
+            struct field.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;"></span><span style="font-weight: bold;">if(</span><span
+              style="font-style: italic;">condition</span><span
+              style="font-weight: bold;">)</span> <span
+              style="font-style: italic;">then</span> <span
+              style="font-weight: bold;">else</span> <span
+              style="font-style: italic;">else</span></td>
+          <td style="vertical-align: top;">If used in expression
+            context. This will be semantically equivalent to the use of
+            a ternary operator.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">unaryop expr</span><br>
+          </td>
+          <td style="vertical-align: top;">Unary prefix expression<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">expr postfixop</span><br>
+          </td>
+          <td style="vertical-align: top;">Unary postfix expression<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">expr binaryop expr</span><br>
+          </td>
+          <td style="vertical-align: top;">Binary Expression<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">cond</span><span style="font-weight: bold;">?</span><span
+              style="font-style: italic;">true</span><span
+              style="font-weight: bold;">:</span><span
+              style="font-style: italic;">false</span><br>
+          </td>
+          <td style="vertical-align: top;">Ternary operator<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">lexpr method</span><span style="font-weight:
+              bold;">: </span><span style="font-style: italic;">rexpr</span><br>
+          </td>
+          <td style="vertical-align: top;">Possible: Named binary
+            operator.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">:</span><span style="font-style: italic;">method</span><span
+              style="font-weight: bold;"> </span><span
+              style="font-style: italic;">expr</span><br>
+          </td>
+          <td style="vertical-align: top;">Possible: Named unary
+            operator.<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    Note:<br>
+    Methods may be directly referenced by name, however multiple methods
+    may exist by a given name if overloading is used. The natural result
+    of this is that a reference to a method may not actually identify
+    which exact method it refers to.<br>
+    <br>
+    At present, a restriction will be placed on the usage of functions
+    and methods in expressions:<br>
+    Only functions and methods which are not overloaded may be
+    referenced in expressions.<br>
+    The results of referencing an overloaded method in an expression is
+    undefined.<br>
+    <br>
+    At some later point, a cast (or similar) may be used to indicate the
+    desired method to access.<br>
+    <br>
+    <br>
+    <h3>Operator Precedence</h3>
+    <br>
+    <table style="text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Name<br>
+          </td>
+          <td style="vertical-align: top;">Operators<br>
+          </td>
+          <td style="vertical-align: top;">Comments<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">primary<br>
+          </td>
+          <td style="vertical-align: top;">N/A<br>
+          </td>
+          <td style="vertical-align: top;">primary expressions<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">postfix<br>
+          </td>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">postfix</span>++, <span style="font-style:
+              italic;">postfix</span>--, <span style="font-style:
+              italic;">postfix</span>[<span style="font-style: italic;">indexlist</span>],
+
+
+
+
+
+
+
+
+
+            <span style="font-style: italic;">postfix</span>(<span
+              style="font-style: italic;">args</span>), ...<br>
+            <span style="font-style: italic;">postfix</span><span
+              style="font-weight: bold;">.</span><span
+              style="font-style: italic;">primary</span>, <span
+              style="font-style: italic;">postfix</span><span
+              style="font-weight: bold;">-&gt;</span><span
+              style="font-style: italic;">primary</span>, ...<br>
+          </td>
+          <td style="vertical-align: top;">left-assoc<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">unary<br>
+          </td>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;"></span>++<span style="font-style: italic;">unary</span>,
+            --<span style="font-style: italic;">unary</span>,<br>
+            +<span style="font-style: italic;">unary</span>, -<span
+              style="font-style: italic;">unary</span>, ~<span
+              style="font-style: italic;">unary</span>, !<span
+              style="font-style: italic;">unary,<br>
+            </span>*<span style="font-style: italic;">unary, </span>&amp;<span
+              style="font-style: italic;">unary<br>
+            </span>|<span style="font-style: italic;">unary, </span>^<span
+              style="font-style: italic;">unary, </span>%<span
+              style="font-style: italic;">unary, </span>&amp;&amp;<span
+              style="font-style: italic;">unary, </span>||<span
+              style="font-style: italic;">unary<br>
+            </span></td>
+          <td style="vertical-align: top;">right-assoc<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">muldiv<br>
+          </td>
+          <td style="vertical-align: top;">*, /, %<br>
+            *., /., %.<br>
+          </td>
+          <td style="vertical-align: top;">left-assoc<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">addsub<br>
+          </td>
+          <td style="vertical-align: top;">+, -<br>
+            +., -.<br>
+          </td>
+          <td style="vertical-align: top;">left-assoc</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">shlr<br>
+          </td>
+          <td style="vertical-align: top;">&lt;&lt;, &gt;&gt;,
+            &gt;&gt;&gt;<br>
+          </td>
+          <td style="vertical-align: top;">left-assoc</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">rel<br>
+          </td>
+          <td style="vertical-align: top;">&lt;, &gt;, &lt;=, &gt;=,
+            &lt;=&gt;, /=&gt;, in, instanceof, is, as, as!<br>
+          </td>
+          <td style="vertical-align: top;">left-assoc</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">equality<br>
+          </td>
+          <td style="vertical-align: top;">==, !=, ===, !==<br>
+          </td>
+          <td style="vertical-align: top;">left-assoc</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">&amp;<br>
+          </td>
+          <td style="vertical-align: top;">left-assoc</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">|<br>
+          </td>
+          <td style="vertical-align: top;">left-assoc</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">^<br>
+          </td>
+          <td style="vertical-align: top;">left-assoc</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">&amp;&amp;<br>
+          </td>
+          <td style="vertical-align: top;">left-assoc</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">||<br>
+          </td>
+          <td style="vertical-align: top;">left-assoc<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">?:<br>
+          </td>
+          <td style="vertical-align: top;">right-assoc<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">assignment<br>
+          </td>
+          <td style="vertical-align: top;">=, +=, -=, *=, /=, &lt;&lt;=,
+            &gt;&gt;=, &gt;&gt;&gt;=, &amp;=, |=, ^=, &amp;&amp;=, ||=,
+            ^^=, .=<br>
+          </td>
+          <td style="vertical-align: top;">right-assoc<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">comma<br>
+          </td>
+          <td style="vertical-align: top;">,<br>
+          </td>
+          <td style="vertical-align: top;">left-assoc<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    Special Operators<br>
+    <br>
+    <table style="text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Operator<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">lexpr </span><span style="font-weight: bold;">&lt;=&gt;
+
+
+
+
+
+
+
+
+
+            </span><span style="font-style: italic;">rexpr</span><br>
+          </td>
+          <td style="vertical-align: top;">Reserved: Compares two
+            values, returning -1, 0, or 1, depending on how they
+            compare.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">lexpr </span>/=&gt; <span style="font-style:
+              italic;">rexpr</span><br>
+          </td>
+          <td style="vertical-align: top;">Reserved: Determine if lexpr
+            matches the pattern given by rexpr.<br>
+            Will match lists and XML nodes.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">@</span><span style="font-style: italic;">name</span><br>
+          </td>
+          <td style="vertical-align: top;">Reserved: Used with XML nodes
+            to access attributes.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">lexpr </span><span style="font-weight: bold;">.=
+            </span><span style="font-style: italic;">rexpr</span><br>
+          </td>
+          <td style="vertical-align: top;">Reserved: Shorthand for <span
+              style="font-style: italic;">lexpr</span><span
+              style="font-weight: bold;">=</span><span
+              style="font-style: italic;">lexpr</span><span
+              style="font-weight: bold;">.</span><span
+              style="font-style: italic;">rexpr</span><span
+              style="font-weight: bold;">; </span><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <h3>Type Suffix</h3>
+    Some expressions may accept a certain range of type suffixes. A type
+    suffix is a short name indicating one of a certain number of types.
+    Unlike most other parts of the syntax, a type suffix may appear in
+    either upper of lower case, however mixed case is not allowed.<br>
+    <br>
+    <table style="text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Suffix<br>
+          </td>
+          <td style="vertical-align: top;">Type Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">SB<br>
+          </td>
+          <td style="vertical-align: top;">Signed Byte<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">B<br>
+          </td>
+          <td style="vertical-align: top;">Bool<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">SC<br>
+          </td>
+          <td style="vertical-align: top;">Short Char (char8)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">D<br>
+          </td>
+          <td style="vertical-align: top;">Double<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">LD<br>
+          </td>
+          <td style="vertical-align: top;">Long Double<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">F<br>
+          </td>
+          <td style="vertical-align: top;">Float<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">G<br>
+          </td>
+          <td style="vertical-align: top;">Float128<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">UB<br>
+          </td>
+          <td style="vertical-align: top;">Unsigned Byte<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">SI<br>
+          </td>
+          <td style="vertical-align: top;">Signed Int<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">UI<br>
+          </td>
+          <td style="vertical-align: top;">Unsigned Int<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">SF<br>
+          </td>
+          <td style="vertical-align: top;">Short Float (float16)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">L<br>
+          </td>
+          <td style="vertical-align: top;">Long<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">UL<br>
+          </td>
+          <td style="vertical-align: top;">Unsigned Long<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">LX<br>
+          </td>
+          <td style="vertical-align: top;">Int128<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ULX<br>
+          </td>
+          <td style="vertical-align: top;">Unsigned Int128<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">Variant<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">SS<br>
+          </td>
+          <td style="vertical-align: top;">Signed Short<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">US<br>
+          </td>
+          <td style="vertical-align: top;">Unsigned Short<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">W<br>
+          </td>
+          <td style="vertical-align: top;">Wide Char (char16)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">I<br>
+          </td>
+          <td style="vertical-align: top;">Imaginary i<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">J<br>
+          </td>
+          <td style="vertical-align: top;">Imaginary j<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">K<br>
+          </td>
+          <td style="vertical-align: top;">Imaginary k<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <br>
+    <h3>Type Expressions</h3>
+    <br>
+    <table style="text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Syntax<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">typename</span><br>
+          </td>
+          <td style="vertical-align: top;">Identifies a type by name
+            (given as a qname).<br>
+            This may include a base type, as well as complex and
+            user-defined types.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">type</span><span style="font-weight: bold;">[]</span><br>
+          </td>
+          <td style="vertical-align: top;">Identifies an array type.<br>
+            <br>
+            Arrays will take priority over pointers, so for example
+            "*int[]" will be an array of int pointers, not a pointer to
+            "int[]". References will take priority over arrays, so one
+            will have a reference to an array, rather than an array of
+            references.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">type</span><span style="font-weight: bold;">[</span><span
+              style="font-style: italic;">size</span><span
+              style="font-weight: bold;">]</span></td>
+          <td style="vertical-align: top;">Declares an array with a
+            size.<br>
+            A size will identify the size of an array, and is required
+            when creating an array with new.<br>
+            A size is not included with the array declaration as the
+            array size is not a part of the type.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">type</span><span style="font-weight: bold;">...</span><br>
+          </td>
+          <td style="vertical-align: top;">Variable argument list of a
+            given type (only valid in the last argument of a method
+            declaration).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">*</span><span style="font-style: italic;">type</span><br>
+          </td>
+          <td style="vertical-align: top;">Declares a pointer type. Note
+            that type is required to be either a value type, a struct,
+            or another pointer.<br>
+            It will be invalid to declare a pointer to a reference type.<br>
+            <br>
+            Note: Pointers are declared with a prefix syntax as to help
+            limit ambiguity with multiplications.<br>
+            Possible: Could allow traditional pointer syntax on the
+            basis that a declaration is not allowed in tail position,
+            which is the only place where this would likely matter.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">type</span><span style="font-weight: bold;">!</span><br>
+          </td>
+          <td style="vertical-align: top;">Reserved for non-null types.
+            A type with this suffix may not be set to null, and trying
+            to do so will raise an exception.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">type</span><span style="font-weight: bold;">?</span><br>
+          </td>
+          <td style="vertical-align: top;">Reserved for nullable types.
+            A nullable type will be a value-type which may optionally be
+            assigned null in addition to its usual values.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">type</span><span style="font-weight: bold;">&lt;</span><span
+              style="font-style: italic;">sharplist</span><span
+              style="font-weight: bold;">&gt;</span><br>
+          </td>
+          <td style="vertical-align: top;">Used for generics.<br>
+            Currently reserved, as BGBScript does not (yet) include
+            generics.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <br>
+    Type Precedence Levels<br>
+    <br>
+    <table style="text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Level<br>
+          </td>
+          <td style="vertical-align: top;">Syntax<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">name<br>
+          </td>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">typename</span></td>
+          <td style="vertical-align: top;">Type Name<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">qtype<br>
+          </td>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">qtype</span><span style="font-weight: bold;">.</span><span
+              style="font-style: italic;">name</span><br>
+          </td>
+          <td style="vertical-align: top;">Type qname<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">gtype<br>
+          </td>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">qtype</span><span style="font-weight: bold;">&lt;&gt;</span><br>
+          </td>
+          <td style="vertical-align: top;">Generic over type<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ptype<br>
+          </td>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">*</span><span style="font-style: italic;">ptype</span><br>
+          </td>
+          <td style="vertical-align: top;">Pointer to type<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">atype<br>
+          </td>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">atype</span><span style="font-weight: bold;">[]</span><br>
+            <span style="font-style: italic;">atype</span><span
+              style="font-weight: bold;">!</span><br>
+            <span style="font-style: italic;">atype</span><span
+              style="font-weight: bold;">?</span><br>
+          </td>
+          <td style="vertical-align: top;">Array of type<br>
+            ! and ? are reserved for non-null and nullable types.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">vatype<br>
+          </td>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">atype</span><span style="font-weight: bold;">...</span><br>
+          </td>
+          <td style="vertical-align: top;">Vararg list of type<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <br>
+    <h3>Base Types</h3>
+    <br>
+    <table style="text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Name<br>
+          </td>
+          <td style="vertical-align: top;">C<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">void<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">No value.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">object<br>
+          </td>
+          <td style="vertical-align: top;">R<br>
+          </td>
+          <td style="vertical-align: top;">Basic object type (Currently
+            an alias for variant).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">string</td>
+          <td style="vertical-align: top;">R<br>
+          </td>
+          <td style="vertical-align: top;">String type<br>
+            The string type is a built-in type, and hence its internal
+            nature will depend on the implementation.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">var<br>
+            variant<br>
+          </td>
+          <td style="vertical-align: top;">R<br>
+          </td>
+          <td style="vertical-align: top;">Dynamic type (may hold any
+            type)<br>
+            Most object types may be converted directly, whereas
+            conversion of base types may imply boxing/unboxing in some
+            cases. Converting var to another type may involve runtime
+            type-checks. Type-Inference may be used to identify a static
+            type for var.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">bool<br>
+            boolean<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">May be either true or false,
+            and is the natural result of comparrison (bool and boolean
+            will be equivalent).<br>
+            Other types may be implicitly coerced into being bool, with
+            null or 0 being interpreted as false, and all other values
+            interpreted as true.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">char<br>
+            char16<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">Character Type, 16 bits
+            unsigned</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">char8<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">Character Type, 8 bits
+            unsigned<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">sbyte<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">signed 8bit integer<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">byte<br>
+            ubyte<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">unsigned 8bit integer<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">short<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">signed 16bit integer</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ushort<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">unsigned 16bit integer</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">int<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">signed 32bit integer</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">uint<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">unsigned 32bit integer</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">long<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">signed 64bit integer</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ulong<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">unsigned 64bit integer</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">int128</td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">signed 128bit integer</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">uint128</td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">unsigned 128bit integer</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">float<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">float 32bit</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">double<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">float 64bit</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">float128<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">float 128bit (IEEE 754r
+            binary128)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">number<br>
+          </td>
+          <td style="vertical-align: top;">A<br>
+          </td>
+          <td style="vertical-align: top;">Any numeric type<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">fixnum<br>
+          </td>
+          <td style="vertical-align: top;">A<br>
+          </td>
+          <td style="vertical-align: top;">An integer value stuffed into
+            a reference<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">flonum<br>
+          </td>
+          <td style="vertical-align: top;">A<br>
+          </td>
+          <td style="vertical-align: top;">A floating point value
+            stuffed into a reference<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">symbol<br>
+          </td>
+          <td style="vertical-align: top;">A<br>
+          </td>
+          <td style="vertical-align: top;">A symbolic reference.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">cons<br>
+          </td>
+          <td style="vertical-align: top;">A<br>
+          </td>
+          <td style="vertical-align: top;">A cons cell (cons cells are
+            used in the construction of lists).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">cstring<br>
+          </td>
+          <td style="vertical-align: top;">D<br>
+          </td>
+          <td style="vertical-align: top;">C style string<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    C column:<br>
+    &nbsp;&nbsp;&nbsp; R=reference type<br>
+    &nbsp;&nbsp;&nbsp; V=value type<br>
+    &nbsp;&nbsp;&nbsp; A=abstract type<br>
+    &nbsp;&nbsp;&nbsp; D=declared type (library class or typedef)<br>
+    <br>
+    Note that abstract types may not be used in declarations. Unlike
+    other types, abstract types will not have any particular or defined
+    representation, but may exist in a transient state between other
+    types (for example, fixnum will exist as a transient state between
+    integer types and var).<br>
+    <br>
+    <br>
+    <h3>Modifiers</h3>
+    <br>
+    <table border="1" cellpadding="2" cellspacing="2" width="100%">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Syntax<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td>public</td>
+          <td style="vertical-align: top;">Marks a member as being
+            externally visible.<br>
+            This will be the default access for struct members.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>private</td>
+          <td style="vertical-align: top;">Marks a member as only being
+            visible within a given class or struct.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>protected</td>
+          <td style="vertical-align: top;">Marks a member as only being
+            visible within a given class or struct, and in direct
+            subclasses.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">internal<br>
+          </td>
+          <td style="vertical-align: top;">Marks a member as only being
+            visible from within the same package.<br>
+          </td>
+        </tr>
+        <tr>
+          <td><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td>static</td>
+          <td style="vertical-align: top;">Marks class fields as holding
+            a value which does not depend on an instance (these may be
+            accessed directly using the class name).<br>
+            Marks methods as not depending on having an instance, and
+            they may be called directly using the class ('this' is N/A
+            in a static method).<br>
+          </td>
+        </tr>
+        <tr>
+          <td>native</td>
+          <td style="vertical-align: top;">Marks a method as being
+            defined externally.<br>
+            May be used with import to indicate that the package is
+            defined in a different language (such as C).<br>
+            May be used with package to indicate that the contents of
+            the package should be visible from other languages (such as
+            C).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">final<br>
+          </td>
+          <td style="vertical-align: top;">Marks an initialized field or
+            variable, or an argument, as being constant.<br>
+            Marks an uninitialized field as assign-once (during the
+            constructor).<br>
+            Marks a method as being unable to be overloaded.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">abstract<br>
+          </td>
+          <td style="vertical-align: top;">Marks a class as being unable
+            to be instantiated.<br>
+            Marks a method as not having a body (the body is to be
+            provided in a derived class).<br>
+            This is an implied property for interfaces and interface
+            methods, and as such may not be included.<br>
+            When used with import, then the package is not itself
+            imported.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">async<br>
+          </td>
+          <td style="vertical-align: top;">Reserved for now.<br>
+            Will mark a method as asynchronous, where an async method
+            may run in parallel with the caller.<br>
+            May be used to indicate a block of code which should also be
+            run async.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">const<br>
+          </td>
+          <td style="vertical-align: top;">Marks a value as being
+            constant and unchangable. It will differ from final in tha
+            final says that the thing named is unchangable (a method may
+            not be overloaded and a variable not assigned). The const
+            modifier, however, will indicate that the referenced object
+            may not be changed (field assignment, setters, ... will be
+            disallowed).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">volatile<br>
+          </td>
+          <td style="vertical-align: top;">Indicates that the variables'
+            value may change without warning. This may also imply
+            bus-locking or similar as needed to avoid stale cached
+            values.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">synchronized<br>
+          </td>
+          <td style="vertical-align: top;">When applied to methods means
+            that the object will be locked during the execution of the
+            method.<br>
+            When applied to a block will mean to treat the block as a
+            "critical section", and only allow a single version of it to
+            run at a time.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">transient<br>
+          </td>
+          <td style="vertical-align: top;">Indicates that a field should
+            not be preserved when serializing an object.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">dynamic<br>
+          </td>
+          <td style="vertical-align: top;">Marks a class as being able
+            to be extended at runtime, allowing the addition of new
+            fields and methods.<br>
+            Declare a variable using dynamic scope.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">delegate<br>
+          </td>
+          <td style="vertical-align: top;">Serves to mark delegate
+            fields and methods.<br>
+            For import, indicates that imported contents are also
+            visible when a package is imported.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">extern<br>
+          </td>
+          <td style="vertical-align: top;">For import, indicates that
+            the given script module should be loaded into a VM.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">$[</span> (<span style="font-style: italic;">attrname</span>
+            [ <span style="font-weight: bold;">(</span><span
+              style="font-style: italic;">exprlist</span><span
+              style="font-weight: bold;">)</span> ] [<span
+              style="font-weight: bold;">,</span>] )<sup>+</sup> <span
+              style="font-weight: bold;">]</span><br>
+          </td>
+          <td style="vertical-align: top;">Declaration Attribute.<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+  </body>
+</html>

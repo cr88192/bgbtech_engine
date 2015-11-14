@@ -1,0 +1,180 @@
+BGBTech Video Codec 0
+
+Derived from the JPEG format.
+BTVC0 will use a subset of the Baseline JPEG format for encoding frames.
+
+Frames may be encoded as either Mono (1 component) or YUV (3 components), with the YUV colorspace being either YCbCr or RCT.
+
+
+Markers:
+
+Markers begin with the 0xFF byte.
+If the following byte is 0x00, then this marker byte escapes a literal 0xFF.
+0xFF bytes are to be escaped inside of data segments such as to allow markers to be readily identified.
+
+Values encoded in multiple bytes will be in big-endian ordering.
+Bits will also be packed into bytes starting with the most-significant bit, and moving towards the least significant bit.
+
+
+BTVC_DVFH	0xB0	Define Video Frame Header
+BTVC_SOMV	0xB1	Start Of Motion Vectors
+...
+
+BTVC_SOF0	0xC0	Start Of Frame
+BTVC_SOF1	0xC1	(BTVC: N/A)
+BTVC_SOF2	0xC2	(BTVC: N/A)
+BTVC_SOF3	0xC3	(BTVC: N/A)
+BTVC_DHT	0xC4	Define Huffman Table
+BTVC_SOF5	0xC5	(BTVC: N/A)
+BTVC_SOF6	0xC6	(BTVC: N/A)
+BTVC_SOF7	0xC7	(BTVC: N/A)
+BTVC_JPG	0xC8	(Reserved)
+BTVC_SOF9	0xC9	(BTVC: N/A)
+BTVC_SOF10	0xCA	(BTVC: N/A)
+BTVC_SOF11	0xCB	(BTVC: N/A)
+BTVC_DAC	0xCC	(BTVC: N/A)
+BTVC_SOF13	0xCD	(BTVC: N/A)
+BTVC_SOF14	0xCE	(BTVC: N/A)
+BTVC_SOF15	0xCF	(BTVC: N/A)
+
+BTVC_RST0	0xD0	Restart
+BTVC_RST1	0xD1
+BTVC_RST2	0xD2
+BTVC_RST3	0xD3
+BTVC_RST4	0xD4
+BTVC_RST5	0xD5
+BTVC_RST6	0xD6
+BTVC_RST7	0xD7
+
+BTVC_SOI	0xD8	Start Of Image
+BTVC_EOI	0xD9	End Of Image
+BTVC_SOS	0xDA	Start Of Scan
+BTVC_DQT	0xDB	Define Quantization Table
+BTVC_DNL	0xDC	(BTVC: N/A)
+BTVC_DRI	0xDD	(BTVC: N/A)
+BTVC_DHP	0xDE	(BTVC: N/A)
+BTVC_EXP	0xDF	(BTVC: N/A)
+
+BTVC_APP0	0xE0	Application Extension Marker
+BTVC_APP1	0xE1
+BTVC_APP2	0xE2
+BTVC_APP3	0xE3
+BTVC_APP4	0xE4
+BTVC_APP5	0xE5
+BTVC_APP6	0xE6
+BTVC_APP7	0xE7
+BTVC_APP8	0xE8
+BTVC_APP9	0xE9
+BTVC_APP10	0xEA
+BTVC_APP11	0xEB
+BTVC_APP12	0xEC
+BTVC_APP13	0xED
+BTVC_APP14	0xEE
+BTVC_APP15	0xEF
+
+BTVC_JPG0	0xF0	JPEG Extension Marker
+BTVC_JPG1	0xF1
+BTVC_JPG2	0xF2
+BTVC_JPG3	0xF3
+BTVC_JPG4	0xF4
+BTVC_JPG5	0xF5
+BTVC_JPG6	0xF6
+BTVC_JPG7	0xF7
+BTVC_JPG8	0xF8
+BTVC_JPG9	0xF9
+BTVC_JPG10	0xFA
+BTVC_JPG11	0xFB
+BTVC_JPG12	0xFC
+BTVC_JPG13	0xFD
+BTVC_COM	0xFE	Comment
+
+
+SOF0:
+
+FF,SOF0
+	Lf P Ys Xs Nf ( Ci Hi Vi Tqi )[Nf]
+
+Lf(16) = Length Of Frame Header (16-bits)
+P(8) = Sample Bits (8 bits)
+Ys(16) = Image Y Size (16-bits)
+Xs(16) = Image X Size (16-bits)
+Nf(8) = Number of Components
+
+Ci(8) = Component ID
+Hi(4) = Horizontal Sample Factor
+Vi(4) = Vertical Sample Factor
+Tqi(8) = Quantization Table Selector
+
+FF,SOS
+	Ls Ns ( Csi Tdi Tai )[Ns] Ss Se Ah Al
+
+Ls(16) = Length of Scan Header
+Ns(8) = Number of components in Scan
+Csi(8) = Scan Component Selector
+Tdi(4) = DC Huffman Table
+Tai(4) = AC Huffman Table
+
+Ss(8) = Start of Spectral Selection (0)
+Se(8) = End Of Spectral Selection (63)
+Ah(4) = Successive approximation bit position high (0)
+Al(4) = Successive approximation bit position low (0)
+
+
+The SOS marker is followed by the compressed DCT blocks.
+
+
+FF,DQT
+	Lq Pq Tq Q0..63
+
+Lq(16) = Quantization Table Length
+Pq(4) = Quantization table element precision (0)
+Tq(4) = Quantization table destination identifier. Specifies which quantization table is being defined (0-3).
+
+Qi = Quantization table values.
+
+64-bytes, Quanization Scales (ZigZag ordering)
+
+FF,DHT
+	Lh Tc Th L1..L16 Vij
+	
+Lh(16) = Huffman Table Length
+Tc(4) = Table Class
+Th(4) = Huffman Table ID
+Li(8) = Number of Huffman Codes of Length i
+Vij(8) = Byte-value for each Huffman Code
+
+FF,COM
+	Lc Cmi
+Lc(16) = Length Of Comment Segment
+Cmi(8n) = Comment Bytes
+
+FF,APPn
+	Lp Api
+Lp(16) = Length of Application Segment
+Api(8n) = Application Segment Bytes
+
+
+FF,DVFH
+	Lvh Tf Td Lid
+
+Lv(16) = Length of Video Header
+
+Tf(4) = 4-bit frame-type (0=I-Frame, 1=P-Frame, 2-15=Reserved)
+Td(4) = 4-bit delta type (0=None, 1=Subtract I-Frame YUV, 2-15=Reserved)
+Lid(8) = Layer ID.
+
+The layer ID will specify the layer used for motion compensation.
+A P-Frame will refer to the last I-Frame with the same layer-ID, which will need to have both the same resolution and image-layout.
+
+
+FF,SOMV
+	Lmh Hm Mt
+
+Lmh(16) = Length of Motion Header
+Hm(4) = Huffman table for motion vectors.
+Mt(4) = Motion Vector Type (0=Default, 1=15=Reserved)
+
+Motion Vectors:
+	Huffman coded values: ZcBc
+	Zc = zero count
+	Bc = bit-count 

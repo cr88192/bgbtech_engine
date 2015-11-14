@@ -1,0 +1,152 @@
+Dynamically Typed Object Orientation
+
+Purpose:
+An dynamic object system is provided.
+This will provide a general prototype-based OO setup.
+The purpose will not to be "high performance", or to replace more traditional object systems or limit custom types/data, however, a goal will be that performance remain "acceptable" for many tasks.
+
+Objects will use a Prototype Object System.
+
+In this system, each object itself is viewed primarily as a bag of slots, with additional behaviors being gained by 'delegation'. In this system, a failure to locate a slot in a given object causes the slot to be looked up. Within this system, multiple delegates are allowed per-object (however, "parent" is the default). Additionally, the delegation graph will be allowed to be cyclic.
+
+Some calls may return a special value 'UNDEFINED', which will signal an error condition (unlike NULL, which simply means 'no value'). It will be considered invalid to use this value otherwise (this value is only returned, in error conditions, and is not to be passed around or stored). Later this value may also be used as a means of raising exceptions.
+
+When calling a method, a special method 'doesNotUnderstand' may be called prior to returning with an error condition. The 'doesNotUnderstand' method will be called with the same arguments as the original method call, but the args list will be prefixed with the method name.
+
+
+Conventions:
+DyOO will use a variant camelCase naming scheme.
+
+
+DyOO will have 2 major interfaces:
+
+Generating code to interface with existing dynamic types. This will be done by registering certain callbacks with the types. This will be intended mostly for types that are implemented in plain C (as structs, ...), but for whatever reason it is useful to be able to them access dynamically.
+
+A full prototype system, where methods are objects in themselves.
+
+For the former interface, these functions are provided.
+void dyTypeGetSlot(char *ty, dyt (*fcn)(dyt obj, dyt sym));
+void dyTypeSetSlot(char *ty, dyt (*fcn)(dyt obj, dyt sym, dyt val));
+void dyTypeNextSlot(char *ty, dyt (*fcn)(dyt obj, dyt sym));
+void dyTypeCallMethod(char *ty, dyt (*fcn)(dyt obj, dyt sym, dyt *args, int nargs));
+void dyTypeApply(char *ty, dyt (*fcn)(dyt obj, dyt *args, int nargs));
+
+
+For the latter interface:
+dyt dyFunc(dyt (*fcn)(dyt *args, int nargs));
+dyt dyMethod(dyt (*fcn)(dyt self, dyt *args, int nargs));
+Create a function or method.
+The primary difference between them will be the existence of the 'self' argument.
+
+Additional forms will be provided for functions with a fixed number of args:
+dyt dyFunc0(dyt (*fcn)());
+dyt dyFunc1(dyt (*fcn)(dyt));
+dyt dyFunc2(dyt (*fcn)(dyt, dyt));
+dyt dyFunc3(dyt (*fcn)(dyt, dyt, dyt));
+dyt dyFunc4(dyt (*fcn)(dyt, dyt, dyt, dyt));
+dyt dyFunc5(dyt (*fcn)(dyt, dyt, dyt, dyt, dyt));
+dyt dyFunc6(dyt (*fcn)(dyt, dyt, dyt, dyt, dyt, dyt));
+dyt dyFunc7(dyt (*fcn)(dyt, dyt, dyt, dyt, dyt, dyt, dyt));
+dyt dyFunc8(dyt (*fcn)(dyt, dyt, dyt, dyt, dyt, dyt, dyt, dyt));
+
+dyt dyMethod0(dyt (*fcn)(dyt self));
+dyt dyMethod1(dyt (*fcn)(dyt self, dyt a));
+dyt dyMethod2(dyt (*fcn)(dyt self, dyt a, dyt b));
+... (up to 8)
+dyt dyMethodN(dyt (*fcn)(dyt self, dyt rest));
+dyt dyMethod1N(dyt (*fcn)(dyt self, dyt a, dyt rest));
+dyt dyMethod2N(dyt (*fcn)(dyt self, dyt a, dyt b, dyt rest));
+... (up to 8)
+
+
+Objects:
+
+dyt dyObject();
+dyt dyObjectParent(dyt parent);
+Create a new prototype object. In the former case, the object is empty, and in the a latter, a parent is defined. The parent will be used in a 'parent' delegate slot.
+
+dyt dyGet(dyt obj, char *sym);
+Get a slot from an object.
+Returns UNDEFINED if the slot was not found.
+May recurse into delegates in order to locate the slot.
+
+void dySet(dyt obj, char *sym, dyt val);
+Set a slot in an object.
+Recursion may be used in order to locate the slot, and if found, it is set in the object in which it is defined. If not found, it is bound within the current object.
+
+void dyBind(dyt obj, char *sym, dyt val);
+This is similar to dySet(), but differs primarily in the way in which slots are assigned. In the case of dyBind, if the slot does not exist within the current object, it is created (rather than recursing and assigning).
+
+void dyBindMethod(dyt obj, char *sym, dyt mth);
+This will bind a method in the current object. This will behave differently than the normal 'set' or 'bind' operations, in that multiple versions of a method may be bound in an object. In this case, they will be merged into a kind of 'multi-method', which will dispatch based on args count. As such, Set() and Bind(), will not perform such merging (but will simply replace the method, including multi-methods).
+
+void dyDefMethod(dyt obj, char *sym,
+	dyt (*fcn)(dyt self, dyt *args, int nargs));
+dyt dyDefMethod0(dyt obj, char *sym,
+	dyt (*fcn)(dyt self));
+dyt dyDefMethod1(dyt obj, char *sym,
+	dyt (*fcn)(dyt self, dyt a));
+dyt dyDefMethod2(dyt obj, char *sym,
+	dyt (*fcn)(dyt self, dyt a, dyt b));
+... (up to 8)
+
+void dyDefMethodN(dyt obj, char *sym,
+	dyt (*fcn)(dyt self, dyt rest));
+dyt dyDefMethod1N(dyt obj, char *sym,
+	dyt (*fcn)(dyt self, dyt a, dyt rest));
+dyt dyDefMethod2N(dyt obj, char *sym,
+	dyt (*fcn)(dyt self, dyt a, dyt b, dyt rest));
+... (up to 8)
+
+Define a method for an object.
+This will be similar to the above, but will accept a raw function pointer instead of a method object.
+
+The N-forms will fold the rest of the args into a list.
+
+
+dyt dyGetDelegate(dyt obj, char *sym);
+void dySetDelegate(dyt obj, char *sym, dyt val);
+Will get or set the value of an object's delegate.
+
+dyt dyGetParent(dyt obj);
+void dySetParent(dyt obj, dyt val);
+Special cases of the above, but are specialized to the 'parent' delegate.
+
+dyt dyCall(dyt obj, char *sym, dyt *args, int nargs);
+dyt dyCall0(dyt obj, char *sym);
+dyt dyCall1(dyt obj, char *sym, dyt a);
+dyt dyCall2(dyt obj, char *sym, dyt a, dyt b);
+... (up to 8)
+dyt dyCallN(dyt obj, char *sym, dyt args);
+dyt dyCall1N(dyt obj, char *sym, dyt a, dyt args);
+dyt dyCall2N(dyt obj, char *sym, dyt a, dyt b, dyt args);
+... (up to 8)
+
+
+Call a method within an object, and return the result.
+Returns UNDEFINED if the method was not found (or if there is no match for the passed args list).
+Otherwise, this will return the return value of the method.
+
+dyCallN accepts args as either an array or a list.
+
+
+A simple example:
+
+dyt testMath_doesNotUnderstand(dyt self, dyt sym, dyt rest)
+{
+	if(!strcmp(sym, "pyth"))
+		return(dysqrt(dyadd(
+			dysqr(dycar(rest)),
+			dysqr(dycadr(rest)))));
+	return(NULL);
+}
+
+...
+dyt obj, v;
+
+obj=dyObjectParent(dyTop());
+dySetDelegate(dyTop(), "testMath", obj);
+dyDefMethod1N(obj, "doesNotUnderstand", testMath_doesNotUnderstand);
+
+v=dyCall2(dyTop(), "pyth", dyint(3), dyint(4));
+

@@ -1,0 +1,78 @@
+VM Implementation Notes
+
+Calling Convention:
+* Should match native C ABI if possible;
+* Otherwise, a non-standard ABI may be used internally.
+** Calls in to/out of the VM would be via an FFI.
+
+Dynamic Types:
+* For variant, use the 64-bit DyTF scheme.
+**	Hih 4 bits:
+***		0: Pointer
+***		1/2: Fixnum
+***		3/4: Flonum
+***		5: Reserved
+***		6: Spaces / Reserved
+***		7: Tag2
+***		8: Flonum2
+***		9/A: Reserved
+***		B/C: Flonum
+***		D/E: Fixnum
+***		F: Pointer
+
+
+Object Instance Layout (Pointer Words):
+*	Vtable (Native ABI for methods)
+*	DyMap (NULL if unused)
+*	Reserved (NULL)
+*	Reserved (NULL)
+*	Start of instance data
+*	...
+*	Interface Vtable Stubs (Per Interface)
+*	...
+
+VTable Layout:
+*	Class Version Info (VM)
+*	Object Base Offset
+**		Specifies object base relative to the interface pointer.
+*	Field Offset Table
+**		Specifies the offsets of any class/interface fields.
+*	VM VTable
+**		Provides methods in a form relevant to an interpreter or VM.
+*	Native Methods.
+*	...
+*	Field Offset Table
+**		Each offset as a DWORD
+
+Loading a field (Example):
+ ;ECX=Instance (Base or interface)
+ mov eax, [ecx]				;Vtable
+ mov edx, [eax+8]			;Object FOT
+ add ecx, [eax+4]			;Object base
+ mov edx, [edx+(INDEX*4)]	;Field Offset
+ mov eax, [ecx+edx]			;Load field
+
+ ;ECX=Instance (Base Only)
+ mov eax, [ecx+OFFS]		;Load field directly
+
+
+DyMap:
+* Pointer: mapKeys
+* Pointer: mapValues
+* DWORD: numKeys
+* DWORD: maxKeys
+* DWORD: flags
+** Low 2 bits:
+*** 0=Unordered (linear search, small objects)
+**** Dense packing, range=0..(numKeys-1)
+*** 1=Ordered (binary search)
+**** Dense packing, range=0..(numKeys-1)
+**** Sorted by key name and signature
+*** 2=Hash Table
+**** Sparse packing, range=0..(maxKeys-1)
+**** numKeys: current numbers of keys in hash
+**** maxKeys: is power of 2.
+
+mapKeys will be pointers to SlotInfo structs, which will hold a name, signature, and flags.
+
+mapValues will be 64-bit Value unions.

@@ -1,0 +1,8 @@
+$flags voxel alpha
+
+$vox_img_top_scale 8
+$vox_img_side_scale 8
+$vox_img_bot_scale 8
+
+// $blend GL_SRC_ALPHA GL_SRC_COLOR
+$blend GL_SRC_ALPHA GL_SRC_COLOR

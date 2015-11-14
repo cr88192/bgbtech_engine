@@ -1,0 +1,143 @@
+Generic XML Expressions
+
+
+This will borrow some from the C Parse-tree syntax.
+
+Toplevel:
+<module>
+	<structs/>
+	<types/>
+	<typedefs/>
+	<body/>
+</module>
+
+
+Structs
+
+Structs will hold abstract structural definitions and similar.
+
+<struct id="id" name="name"> def* </struct>
+<union id="id" name="name"> def* </union>
+
+<enum id="id" name="name">
+	<def name="name" value="value"/>*
+</enum>
+
+<proto id="id" name="name" type="type">
+	<args>
+		vars*
+	</args>
+</proto>
+
+These may be used in composing types. ID is a unique identifier for the object, wheras name is possibly non-unique (or empty), and gives the name of the struct at its point of definition.
+
+
+Types
+
+The 'types' will hold any abstract type definitions, which may later be referenced by expressions or declarations.
+
+<type id="id" name="name" fl="flags" ind="ind">
+	[<size>ord*</size>]
+	[<rsize>ord*</rsize>]
+</type>
+
+Identifies a unique type. Types will be merged if they have the same structure.
+
+
+Typedefs
+
+This will be a list of vars.
+
+<var name="..." type="type">
+	[ <value/> ]
+</var>
+
+These will identify specific named types.
+
+
+
+Simple Composites
+
+<value>expr</value>
+<left>expr</left>
+<right>expr</right>
+
+
+Basic Expressions
+
+<ref name="var"/>
+Refer to a variable.
+
+<string value="text"/>
+<int value="value"/>
+<real value="value"/>
+<complex real="real" imag="imag"/>
+
+
+<goto name="var"/>
+<label name="var"/>
+
+
+Compound Expressions
+
+<binary op="operator">
+	<left/>
+	<right/>
+</binary>
+
+<funcall name="var">
+	<args>args...</args>
+</funcall>
+
+<funcall>
+	<func>expr</func>
+	<args>args...</args>
+</funcall>
+
+<return>
+	<value/>
+</return>
+
+<preinc> <expr/> </preinc>
+<predec> <expr/> </predec>
+<postinc> <expr/> </postinc>
+<postdec> <expr/> </postdec>
+
+
+<cast>
+	<tyexpr/>
+	<value/>
+</cast>
+
+<assign [op="op"]>
+	<left/>
+	<right/>
+</assign>
+
+<objref name="slot">
+	<value/>
+</objref>
+
+<getindex>
+	<array/>
+	<index/>
+</getindex>
+
+<begin>
+	exprs...
+</begin>
+
+<if> <cond/> <then/> <else/> </if>
+<for> <init/> <cond/> <step/> <body/> </for>
+<while> <cond/> <body/> </while>
+
+
+<function name="name" type="type">
+	<args>
+		vars...
+	</args>
+	<body>
+		statements...
+	</body>
+</function>
+

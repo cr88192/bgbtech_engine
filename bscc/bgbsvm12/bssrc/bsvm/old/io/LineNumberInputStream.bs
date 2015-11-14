@@ -1,0 +1,27 @@
+package bsvm.io;
+
+public class LineNumberInputStream extends FilterInputStream
+{
+
+public LineNumberInputStream(InputStream in)
+	{ super(in); }
+
+public int available()
+	{ return 0; }
+public int getLineNumber()
+	{ return 0; }
+public void mark(int readlimit)
+	{}
+public int read()
+	{ return 0; }
+public int read(byte[] b, int off, int len)
+	{ return 0; }
+public void reset()
+	{}
+public void setLineNumber(int lineNumber)
+	{}
+public long skip(long n)
+	{ return 0; }
+
+}
+

@@ -1,0 +1,10 @@
+$flags hills2x
+
+$biome_id 3
+$biome_val_arcane 1
+$biome_val_temperature 0
+$biome_val_humidity 0
+
+$biome_clr_grass 255 255 255
+$biome_clr_water 255 255 255
+$biome_clr_sun 255 255 255

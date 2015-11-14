@@ -1,0 +1,42 @@
+CFLAGS = -g -pg -I. -DLIBZPACK_C
+
+EXE = .elf
+O = .o
+A = .a
+DLL=.so
+
+ZPACK_SRCS = \
+	deflate.c \
+	inflate.c \
+	zpack_cache.c \
+	zpack_dir.c \
+	zpack_image.c \
+	zpack_io.c \
+	zpack_spans.c \
+	zpack_util.c \
+	zpack_misc.c
+
+ZPACK_OBJS = $(ZPACK_SRCS:.c=.o)
+
+all: libzpack.a zpack zpacksh
+
+%$(O): %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+libzpack$(A): $(ZPACK_OBJS)
+	ar -cr libzpack$(A) $(ZPACK_OBJS)
+
+libzpack$(DLL): $(ZPACK_OBJS)
+	$(CC) -g -pg -shared -o libzpack$(DLL) $(ZPACK_SRCS) -fPIC $(CFLAGS)
+
+zpack$(EXE): zpack.c libzpack$(A)
+	$(CC) -g -pg -I. -L. -o zpack$(EXE) zpack.c -lzpack
+
+zpacksh$(EXE): zpacksh.c libzpack.a
+#	$(CC) -g -pg -I. -L. -o zpacksh$(EXE) zpacksh.c -lzpack
+	$(CC) -g -pg -I. -L. -o zpacksh$(EXE) zpacksh.c -lreadline -lzpack
+
+includes:
+libs: libzpack$(A) libzpack$(DLL)
+apps: zpack$(EXE) zpacksh$(EXE)
+

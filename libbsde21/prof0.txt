@@ -1,0 +1,1034 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+ no time accumulated
+
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  Ts/call  Ts/call  name    
+  0.00      0.00     0.00 331069896     0.00     0.00  BSDE_Collide(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**)
+  0.00      0.00     0.00 331069896     0.00     0.00  bsde_collide(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**, double*, double*, double*, double*)
+  0.00      0.00     0.00 331069896     0.00     0.00  bsde_collide_obb(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**, double*, double*, double*, double*)
+  0.00      0.00     0.00 331069896     0.00     0.00  BSDE_SolidAABB_BoxCollideP(double*, double*, double*, double*)
+  0.00      0.00     0.00 330035352     0.00     0.00  BSDE_SolidHull_CheckObbCollide(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*)
+  0.00      0.00     0.00 219158959     0.00     0.00  BSDE_PlaneD_TransformPoint(double*, double*, double*)
+  0.00      0.00     0.00 65885710     0.00     0.00  bsde_finite(double)
+  0.00      0.00     0.00 56417828     0.00     0.00  BSDE_SolidAABB_BoxPlaneExtents(double*, double*, double*, double*, double*)
+  0.00      0.00     0.00 46077309     0.00     0.00  BSDE_PlaneD_TransformNormal(double*, double*, double*)
+  0.00      0.00     0.00 44641880     0.00     0.00  BSDE_Mat3D_MatMult(double*, double*, double*)
+  0.00      0.00     0.00 22320940     0.00     0.00  BSDE_Mat3D_Scale(double*, double, double*)
+  0.00      0.00     0.00 22320940     0.00     0.00  BSDE_Mat3D_Transpose(double*, double*)
+  0.00      0.00     0.00 22320940     0.00     0.00  BSDE_QuatD_To3Matrix(double*, double*)
+  0.00      0.00     0.00 22318402     0.00     0.00  BSDE_QuatD_ToMatrix(double*, double*)
+  0.00      0.00     0.00 22318402     0.00     0.00  BSDE_QuatD_Magnitude(double*)
+  0.00      0.00     0.00 22318402     0.00     0.00  BSDE_QuatD_Normalize(double*, double*)
+  0.00      0.00     0.00 21116343     0.00     0.00  BSDE_SolidHull_Box(BSDE_Solid_s*, double*, double*, double*)
+  0.00      0.00     0.00 17098182     0.00     0.00  BSDE_GetThreadState()
+  0.00      0.00     0.00 17098181     0.00     0.00  BSDE_GetWorld()
+  0.00      0.00     0.00 15502722     0.00     0.00  BSDE_MatND_MatMult(double*, int, int, double*, int, int, double*)
+  0.00      0.00     0.00 11160470     0.00     0.00  BSDE_WorldInertiaTensor(BSDE_Solid_s*)
+  0.00      0.00     0.00 11159201     0.00     0.00  BSDE_BoxMove(BSDE_Solid_s*, double*, double*)
+  0.00      0.00     0.00 11159201     0.00     0.00  BSDE_Predict(BSDE_World_s*, BSDE_Solid_s*, double)
+  0.00      0.00     0.00 11159201     0.00     0.00  V3D_NORMALIZE(double*, double*)
+  0.00      0.00     0.00 11159201     0.00     0.00  V3D_NORMALIZE(double*, double*)
+  0.00      0.00     0.00 11159201     0.00     0.00  BSDE_UpdateVel(BSDE_World_s*, BSDE_Solid_s*, double)
+  0.00      0.00     0.00 11159201     0.00     0.00  BSDE_QuatD_FromAxis(double*, double, double*)
+  0.00      0.00     0.00 11159201     0.00     0.00  BSDE_QuatD_Multiply(double*, double*, double*)
+  0.00      0.00     0.00 10624453     0.00     0.00  BSDE_Update(BSDE_World_s*, BSDE_Solid_s*, double)
+  0.00      0.00     0.00 10558812     0.00     0.00  BSDE_QuatD_Identity(double*)
+  0.00      0.00     0.00 10557543     0.00     0.00  BSDE_SolidHull_BoxMove(BSDE_Solid_s*, double*, double*, double*, double*)
+  0.00      0.00     0.00  8684506     0.00     0.00  V3D_NORMALIZE(double*, double*)
+  0.00      0.00     0.00  8643298     0.00     0.00  BSDE_PlaneD_LinePlaneIntersect(double*, double*, double*, double*)
+  0.00      0.00     0.00  8380263     0.00     0.00  BSDE_SolidOBB_ObbPlaneExtents(double*, double*, double*, double*, double*)
+  0.00      0.00     0.00  6437458     0.00     0.00  BSDE_GetAttrFV(BSDE_Solid_s*, int, float*, int)
+  0.00      0.00     0.00  6437458     0.00     0.00  bsdeGetAttrFV
+  0.00      0.00     0.00  6398276     0.00     0.00  BSDE_SolidHull_ClipFace(double*, double*, double*, int)
+  0.00      0.00     0.00  6393917     0.00     0.00  BSDE_GetAttrI(BSDE_Solid_s*, int)
+  0.00      0.00     0.00  6393917     0.00     0.00  bsdeGetAttrI
+  0.00      0.00     0.00  6360422     0.00     0.00  BSDE_SolidHull2_ProjectPointsLine(double*, int, double*, double*, double*, double*)
+  0.00      0.00     0.00  5197824     0.00     0.00  BSDE_PointCollide(BSDE_Solid_s*, double*)
+  0.00      0.00     0.00  5148672     0.00     0.00  BSDE_SolidHull_PointCollide(BSDE_Solid_s*, double*, double*)
+  0.00      0.00     0.00  4342252     0.00     0.00  BSDE_ApplyPointForce(BSDE_Solid_s*, double*, double*)
+  0.00      0.00     0.00  4342252     0.00     0.00  BSDE_GetPointVelocity(BSDE_Solid_s*, double*, double*)
+  0.00      0.00     0.00  4253688     0.00     0.00  BSDE_GetAttrIV(BSDE_Solid_s*, int, int*, int)
+  0.00      0.00     0.00  4253688     0.00     0.00  bsdeGetAttrIV
+  0.00      0.00     0.00  3304616     0.00     0.00  BSDE_Iter3_CollideList(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, int)
+  0.00      0.00     0.00  2171125     0.00     0.00  BSDE_ComputeImpulse3(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double, double, double*, double*)
+  0.00      0.00     0.00  1590105     0.00     0.00  BSDE_SolidHull_ProjectLine(BSDE_Solid_s*, double*, double*, double*, double*)
+  0.00      0.00     0.00  1590105     0.00     0.00  BSDE_PlaneD_TransformVectorT(double*, double*, double*)
+  0.00      0.00     0.00  1075116     0.00     0.00  V3D_NORMALIZE(double*, double*)
+  0.00      0.00     0.00   915611     0.00     0.00  V3D_NORMALIZE(double*, double*)
+  0.00      0.00     0.00   601658     0.00     0.00  BSDE_SolidOBB_BoxMove(double*, double*, double*, double*, double*, double*)
+  0.00      0.00     0.00   537558     0.00     0.00  BSDE_PlaneD_AdjacentNormals(double*, double*, double*)
+  0.00      0.00     0.00   537558     0.00     0.00  BSDE_SolidHull_MakePlaneFace(double*, double*)
+  0.00      0.00     0.00   534815     0.00     0.00  BSDE_FreeContacts()
+  0.00      0.00     0.00   534815     0.00     0.00  BSDE_Iter3_CollideBiObj(BSDE_World_s*, BSDE_Solid_s*, int)
+  0.00      0.00     0.00   534815     0.00     0.00  BSDE_Iter3_CollideBiTree(BSDE_World_s*, BSDE_BinaryNode_s*, BSDE_Solid_s*, int)
+  0.00      0.00     0.00   530036     0.00     0.00  V3D_NORMALIZE(double*, double*)
+  0.00      0.00     0.00   530035     0.00     0.00  BSDE_HandleContact(BSDE_World_s*, BSDE_Contact_s*, double)
+  0.00      0.00     0.00   530035     0.00     0.00  BSDE_MakePointsContact(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double, int)
+  0.00      0.00     0.00   530035     0.00     0.00  BSDE_SolidHull_ContactBox(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double*, double*, double*, double*, double*)
+  0.00      0.00     0.00   530035     0.00     0.00  BSDE_SolidHull2_CalcCollide(double*, double*, double*, double*, int, int, int, int, double*, double*, double*, double*, double*)
+  0.00      0.00     0.00   530035     0.00     0.00  BSDE_SolidOBB3_GenNormsLocal(double*, double*, double*)
+  0.00      0.00     0.00   530035     0.00     0.00  BSDE_SolidHull_ContactGeneric(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double*, double*, double*, double*, double*)
+  0.00      0.00     0.00   530035     0.00     0.00  BSDE_SolidOBB3_GenPointsLocal(double*, double*, double*)
+  0.00      0.00     0.00   214475     0.00     0.00  BSDE_Iter3_CalcNormal(BSDE_Solid_s*, double*)
+  0.00      0.00     0.00   214475     0.00     0.00  BSDE_Iter3_CalcCentroid(BSDE_Solid_s*, double*)
+  0.00      0.00     0.00   214475     0.00     0.00  BSDE_Iter3_AllocBinaryNode()
+  0.00      0.00     0.00   179041     0.00     0.00  kralloc
+  0.00      0.00     0.00   142330     0.00     0.00  BSDE_PlaneD_TransformVector(double*, double*, double*)
+  0.00      0.00     0.00    56030     0.00     0.00  PDGL_DeltaMS
+  0.00      0.00     0.00    56030     0.00     0.00  PDGL_TimeMS
+  0.00      0.00     0.00    45018     0.00     0.00  V3D_NORMALIZE(double*, double*)
+  0.00      0.00     0.00    37615     0.00     0.00  V3F_NORMALIZE
+  0.00      0.00     0.00    15851     0.00     0.00  PDGL_KeyDown
+  0.00      0.00     0.00    13385     0.00     0.00  PD3D_DrawCube
+  0.00      0.00     0.00    11948     0.00     0.00  ksplit
+  0.00      0.00     0.00     8399     0.00     0.00  BSDE_WorldForces(BSDE_World_s*, double)
+  0.00      0.00     0.00     8399     0.00     0.00  BSDE_WorldSingleStep2(BSDE_World_s*, double)
+  0.00      0.00     0.00     8399     0.00     0.00  BSDE_Iter3_BuildBiNode(BSDE_Solid_s*)
+  0.00      0.00     0.00     7523     0.00     0.00  Hull_AdjacentNormals22
+  0.00      0.00     0.00     7523     0.00     0.00  V3D_NORMALIZE(double*, double*)
+  0.00      0.00     0.00     3384     0.00     0.00  PD3D_Vec_AllocVec
+  0.00      0.00     0.00     3384     0.00     0.00  VEC3
+  0.00      0.00     0.00     2972     0.00     0.00  BSDE_SetAttrFV(BSDE_Solid_s*, int, float*, int)
+  0.00      0.00     0.00     2972     0.00     0.00  bsdeSetAttrFV
+  0.00      0.00     0.00     2538     0.00     0.00  BSDE_Mat3D_Copy(double*, double*)
+  0.00      0.00     0.00     1693     0.00     0.00  GfxDrv_BeginDrawing
+  0.00      0.00     0.00     1693     0.00     0.00  GfxDrv_EndDrawing
+  0.00      0.00     0.00     1693     0.00     0.00  GfxDrv_GetWindowSize
+  0.00      0.00     0.00     1693     0.00     0.00  Mouse_GetPos
+  0.00      0.00     0.00     1693     0.00     0.00  PDGL_GetKeybuf
+  0.00      0.00     0.00     1693     0.00     0.00  bsdeHide
+  0.00      0.00     0.00     1693     0.00     0.00  pdgl_main_body
+  0.00      0.00     0.00     1692     0.00     0.00  Draw_SetPerspective_3D
+  0.00      0.00     0.00     1692     0.00     0.00  Draw_SetSolid2_2D
+  0.00      0.00     0.00     1692     0.00     0.00  BSDE_StepWorld(BSDE_World_s*, double)
+  0.00      0.00     0.00     1692     0.00     0.00  BSDE_GetWorldAttrF(BSDE_World_s*, int)
+  0.00      0.00     0.00     1692     0.00     0.00  bsdeGetWorldAttrF
+  0.00      0.00     0.00     1692     0.00     0.00  bsdeStepWorld
+  0.00      0.00     0.00     1692     0.00     0.00  draw_ents
+  0.00      0.00     0.00     1692     0.00     0.00  draw_ents2
+  0.00      0.00     0.00     1270     0.00     0.00  BSDE_SetAttrF(BSDE_Solid_s*, int, double)
+  0.00      0.00     0.00     1270     0.00     0.00  bsdeSetAttrF
+  0.00      0.00     0.00     1269     0.00     0.00  BSDE_AddSolidWorld(BSDE_World_s*, BSDE_Solid_s*)
+  0.00      0.00     0.00     1269     0.00     0.00  BSDE_MatND_Inverse(double*, double*, int)
+  0.00      0.00     0.00     1269     0.00     0.00  BSDE_BuildInertiaTensor(BSDE_Solid_s*)
+  0.00      0.00     0.00     1269     0.00     0.00  BSDE_Box(BSDE_Solid_s*, double*, double*)
+  0.00      0.00     0.00     1268     0.00     0.00  main_addsolid
+  0.00      0.00     0.00     1257     0.00     0.00  BSDE_NewHull(double*, int)
+  0.00      0.00     0.00     1257     0.00     0.00  BSDE_SetAttrI(BSDE_Solid_s*, int, int)
+  0.00      0.00     0.00     1257     0.00     0.00  BSDE_SolidHull_MakeHullFaces(BSDE_Solid_s*)
+  0.00      0.00     0.00     1257     0.00     0.00  bsdeNewHullF
+  0.00      0.00     0.00     1257     0.00     0.00  bsdeSetAttrI
+  0.00      0.00     0.00     1257     0.00     0.00  load_brush
+  0.00      0.00     0.00     1257     0.00     0.00  send_brush
+  0.00      0.00     0.00      612     0.00     0.00  GfxDev_Key_Event
+  0.00      0.00     0.00      612     0.00     0.00  GfxDrv_MapKey
+  0.00      0.00     0.00      369     0.00     0.00  load_entity
+  0.00      0.00     0.00      128     0.00     0.00  BSDE_Rand(BSDE_World_s*)
+  0.00      0.00     0.00       12     0.00     0.00  BSDE_NewAABB(double, double, double, double, double, double)
+  0.00      0.00     0.00       11     0.00     0.00  BSDE_NewOBB(double, double, double, double, double, double)
+  0.00      0.00     0.00       11     0.00     0.00  bsdeNewOBB
+  0.00      0.00     0.00        3     0.00     0.00  BSDE_SetWorldAttrF(BSDE_World_s*, int, double)
+  0.00      0.00     0.00        3     0.00     0.00  bsdeSetWorldf
+  0.00      0.00     0.00        1     0.00     0.00  GfxDrv_CenterWindow
+  0.00      0.00     0.00        1     0.00     0.00  GfxDrv_GL_Init
+  0.00      0.00     0.00        1     0.00     0.00  GfxDrv_Init
+  0.00      0.00     0.00        1     0.00     0.00  GfxDrv_Start
+  0.00      0.00     0.00        1     0.00     0.00  GfxDrv_VID_InitDIB
+  0.00      0.00     0.00        1     0.00     0.00  GfxDrv_VID_SetWindowedMode
+  0.00      0.00     0.00        1     0.00     0.00  GfxDrv_VID_Shutdown
+  0.00      0.00     0.00        1     0.00     0.00  GfxDrv_bSetupPixelFormat
+  0.00      0.00     0.00        1     0.00     0.00  WinMain@16
+  0.00      0.00     0.00        1     0.00     0.00  BSDE_SRand2(BSDE_World_s*, unsigned int, unsigned int)
+  0.00      0.00     0.00        1     0.00     0.00  BSDE_Seed21(BSDE_World_s*)
+  0.00      0.00     0.00        1     0.00     0.00  BSDE_NewWorld()
+  0.00      0.00     0.00        1     0.00     0.00  BSDE_SetWorld(int)
+  0.00      0.00     0.00        1     0.00     0.00  BSDE_CreateWorld()
+  0.00      0.00     0.00        1     0.00     0.00  BSDE_SetWorldAttrDV(BSDE_World_s*, int, double*, int)
+  0.00      0.00     0.00        1     0.00     0.00  BSDE_ComputeImpulse2(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double, double, double*, double*)
+  0.00      0.00     0.00        1     0.00     0.00  bsdeNewAABB
+  0.00      0.00     0.00        1     0.00     0.00  bsdeNewWorld
+  0.00      0.00     0.00        1     0.00     0.00  bsdeSetWorld3f
+  0.00      0.00     0.00        1     0.00     0.00  bsdeSetWorlddv
+  0.00      0.00     0.00        1     0.00     0.00  load_map
+  0.00      0.00     0.00        1     0.00     0.00  pdgl_main_readlights
+  0.00      0.00     0.00        1     0.00     0.00  pdgl_main_shutdown
+  0.00      0.00     0.00        1     0.00     0.00  pdgl_main_startup
+  0.00      0.00     0.00        1     0.00     0.00  send_brushes
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+ 
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this 
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 0 byte(s) no time propagated
+
+index % time    self  children    called     name
+                0.00    0.00 331069896/331069896     BSDE_Iter3_CollideList(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, int) [49]
+[3]      0.0    0.00    0.00 331069896         BSDE_Collide(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**) [3]
+                0.00    0.00 331069896/331069896     bsde_collide(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**, double*, double*, double*, double*) [4]
+-----------------------------------------------
+                0.00    0.00 331069896/331069896     BSDE_Collide(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**) [3]
+[4]      0.0    0.00    0.00 331069896         bsde_collide(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**, double*, double*, double*, double*) [4]
+                0.00    0.00 331069896/331069896     bsde_collide_obb(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**, double*, double*, double*, double*) [5]
+-----------------------------------------------
+                0.00    0.00 331069896/331069896     bsde_collide(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**, double*, double*, double*, double*) [4]
+[5]      0.0    0.00    0.00 331069896         bsde_collide_obb(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**, double*, double*, double*, double*) [5]
+                0.00    0.00 330035352/330035352     BSDE_SolidHull_CheckObbCollide(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*) [7]
+                0.00    0.00 1034544/331069896     BSDE_SolidAABB_BoxCollideP(double*, double*, double*, double*) [6]
+                0.00    0.00  530035/530035      BSDE_SolidHull_ContactGeneric(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double*, double*, double*, double*, double*) [67]
+                0.00    0.00  530035/530035      BSDE_MakePointsContact(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double, int) [63]
+-----------------------------------------------
+                0.00    0.00 1034544/331069896     bsde_collide_obb(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**, double*, double*, double*, double*) [5]
+                0.00    0.00 330035352/331069896     BSDE_SolidHull_CheckObbCollide(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*) [7]
+[6]      0.0    0.00    0.00 331069896         BSDE_SolidAABB_BoxCollideP(double*, double*, double*, double*) [6]
+-----------------------------------------------
+                0.00    0.00 330035352/330035352     bsde_collide_obb(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**, double*, double*, double*, double*) [5]
+[7]      0.0    0.00    0.00 330035352         BSDE_SolidHull_CheckObbCollide(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*) [7]
+                0.00    0.00 330035352/331069896     BSDE_SolidAABB_BoxCollideP(double*, double*, double*, double*) [6]
+                0.00    0.00 4770315/8380263     BSDE_SolidOBB_ObbPlaneExtents(double*, double*, double*, double*, double*) [36]
+                0.00    0.00 3180210/46077309     BSDE_PlaneD_TransformNormal(double*, double*, double*) [11]
+                0.00    0.00 1590105/1590105     BSDE_SolidHull_ProjectLine(BSDE_Solid_s*, double*, double*, double*, double*) [51]
+-----------------------------------------------
+                0.00    0.00 50883376/219158959     BSDE_SolidHull2_ProjectPointsLine(double*, int, double*, double*, double*, double*) [42]
+                0.00    0.00 168275583/219158959     BSDE_SolidHull_Box(BSDE_Solid_s*, double*, double*, double*) [19]
+[8]      0.0    0.00    0.00 219158959         BSDE_PlaneD_TransformPoint(double*, double*, double*) [8]
+-----------------------------------------------
+                0.00    0.00 21248906/65885710     BSDE_Update(BSDE_World_s*, BSDE_Solid_s*, double) [31]
+                0.00    0.00 44636804/65885710     BSDE_UpdateVel(BSDE_World_s*, BSDE_Solid_s*, double) [28]
+[9]      0.0    0.00    0.00 65885710         bsde_finite(double) [9]
+-----------------------------------------------
+                0.00    0.00  211384/56417828     BSDE_Iter3_CollideBiTree(BSDE_World_s*, BSDE_BinaryNode_s*, BSDE_Solid_s*, int) [60]
+                0.00    0.00 56206444/56417828     BSDE_Iter3_BuildBiNode(BSDE_Solid_s*) [83]
+[10]     0.0    0.00    0.00 56417828         BSDE_SolidAABB_BoxPlaneExtents(double*, double*, double*, double*, double*) [10]
+-----------------------------------------------
+                0.00    0.00 3180210/46077309     BSDE_SolidHull_CheckObbCollide(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*) [7]
+                0.00    0.00 12720840/46077309     BSDE_SolidHull2_CalcCollide(double*, double*, double*, double*, int, int, int, int, double*, double*, double*, double*, double*) [65]
+                0.00    0.00 30176259/46077309     BSDE_SolidHull_PointCollide(BSDE_Solid_s*, double*, double*) [44]
+[11]     0.0    0.00    0.00 46077309         BSDE_PlaneD_TransformNormal(double*, double*, double*) [11]
+-----------------------------------------------
+                0.00    0.00 44641880/44641880     BSDE_WorldInertiaTensor(BSDE_Solid_s*) [23]
+[12]     0.0    0.00    0.00 44641880         BSDE_Mat3D_MatMult(double*, double*, double*) [12]
+-----------------------------------------------
+                0.00    0.00 22320940/22320940     BSDE_WorldInertiaTensor(BSDE_Solid_s*) [23]
+[13]     0.0    0.00    0.00 22320940         BSDE_Mat3D_Scale(double*, double, double*) [13]
+-----------------------------------------------
+                0.00    0.00 22320940/22320940     BSDE_WorldInertiaTensor(BSDE_Solid_s*) [23]
+[14]     0.0    0.00    0.00 22320940         BSDE_Mat3D_Transpose(double*, double*) [14]
+-----------------------------------------------
+                0.00    0.00 22320940/22320940     BSDE_WorldInertiaTensor(BSDE_Solid_s*) [23]
+[15]     0.0    0.00    0.00 22320940         BSDE_QuatD_To3Matrix(double*, double*) [15]
+-----------------------------------------------
+                0.00    0.00 22318402/22318402     BSDE_Predict(BSDE_World_s*, BSDE_Solid_s*, double) [25]
+[16]     0.0    0.00    0.00 22318402         BSDE_QuatD_ToMatrix(double*, double*) [16]
+-----------------------------------------------
+                0.00    0.00 22318402/22318402     BSDE_QuatD_Normalize(double*, double*) [18]
+[17]     0.0    0.00    0.00 22318402         BSDE_QuatD_Magnitude(double*) [17]
+-----------------------------------------------
+                0.00    0.00 11159201/22318402     BSDE_Predict(BSDE_World_s*, BSDE_Solid_s*, double) [25]
+                0.00    0.00 11159201/22318402     BSDE_QuatD_Multiply(double*, double*, double*) [30]
+[18]     0.0    0.00    0.00 22318402         BSDE_QuatD_Normalize(double*, double*) [18]
+                0.00    0.00 22318402/22318402     BSDE_QuatD_Magnitude(double*) [17]
+-----------------------------------------------
+                0.00    0.00    1257/21116343     BSDE_Box(BSDE_Solid_s*, double*, double*) [111]
+                0.00    0.00 21115086/21116343     BSDE_SolidHull_BoxMove(BSDE_Solid_s*, double*, double*, double*, double*) [33]
+[19]     0.0    0.00    0.00 21116343         BSDE_SolidHull_Box(BSDE_Solid_s*, double*, double*, double*) [19]
+                0.00    0.00 168275583/219158959     BSDE_PlaneD_TransformPoint(double*, double*, double*) [8]
+-----------------------------------------------
+                0.00    0.00       1/17098182     BSDE_SetWorld(int) [141]
+                0.00    0.00 17098181/17098182     BSDE_GetWorld() [21]
+[20]     0.0    0.00    0.00 17098182         BSDE_GetThreadState() [20]
+-----------------------------------------------
+                0.00    0.00       1/17098181     bsdeSetWorlddv [148]
+                0.00    0.00       2/17098181     bsdeNewAABB [145]
+                0.00    0.00       3/17098181     bsdeSetWorldf [128]
+                0.00    0.00      22/17098181     bsdeNewOBB [126]
+                0.00    0.00    1257/17098181     bsdeSetAttrI [117]
+                0.00    0.00    1270/17098181     bsdeSetAttrF [107]
+                0.00    0.00    1692/17098181     bsdeStepWorld [103]
+                0.00    0.00    1692/17098181     bsdeGetWorldAttrF [102]
+                0.00    0.00    1693/17098181     bsdeHide [96]
+                0.00    0.00    2514/17098181     bsdeNewHullF [116]
+                0.00    0.00    2972/17098181     bsdeSetAttrFV [89]
+                0.00    0.00 4253688/17098181     bsdeGetAttrIV [48]
+                0.00    0.00 6393917/17098181     bsdeGetAttrI [41]
+                0.00    0.00 6437458/17098181     bsdeGetAttrFV [38]
+[21]     0.0    0.00    0.00 17098181         BSDE_GetWorld() [21]
+                0.00    0.00 17098181/17098182     BSDE_GetThreadState() [20]
+-----------------------------------------------
+                0.00    0.00       2/15502722     BSDE_ComputeImpulse2(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double, double, double*, double*) [144]
+                0.00    0.00 4342250/15502722     BSDE_ComputeImpulse3(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double, double, double*, double*) [50]
+                0.00    0.00 11160470/15502722     BSDE_WorldInertiaTensor(BSDE_Solid_s*) [23]
+[22]     0.0    0.00    0.00 15502722         BSDE_MatND_MatMult(double*, int, int, double*, int, int, double*) [22]
+-----------------------------------------------
+                0.00    0.00    1269/11160470     BSDE_BuildInertiaTensor(BSDE_Solid_s*) [110]
+                0.00    0.00 11159201/11160470     BSDE_Predict(BSDE_World_s*, BSDE_Solid_s*, double) [25]
+[23]     0.0    0.00    0.00 11160470         BSDE_WorldInertiaTensor(BSDE_Solid_s*) [23]
+                0.00    0.00 44641880/44641880     BSDE_Mat3D_MatMult(double*, double*, double*) [12]
+                0.00    0.00 22320940/22320940     BSDE_Mat3D_Scale(double*, double, double*) [13]
+                0.00    0.00 22320940/22320940     BSDE_QuatD_To3Matrix(double*, double*) [15]
+                0.00    0.00 22320940/22320940     BSDE_Mat3D_Transpose(double*, double*) [14]
+                0.00    0.00 11160470/15502722     BSDE_MatND_MatMult(double*, int, int, double*, int, int, double*) [22]
+-----------------------------------------------
+                0.00    0.00 11159201/11159201     BSDE_Predict(BSDE_World_s*, BSDE_Solid_s*, double) [25]
+[24]     0.0    0.00    0.00 11159201         BSDE_BoxMove(BSDE_Solid_s*, double*, double*) [24]
+                0.00    0.00 10557543/10557543     BSDE_SolidHull_BoxMove(BSDE_Solid_s*, double*, double*, double*, double*) [33]
+                0.00    0.00  601658/601658      BSDE_SolidOBB_BoxMove(double*, double*, double*, double*, double*, double*) [55]
+-----------------------------------------------
+                0.00    0.00 11159201/11159201     BSDE_WorldSingleStep2(BSDE_World_s*, double) [82]
+[25]     0.0    0.00    0.00 11159201         BSDE_Predict(BSDE_World_s*, BSDE_Solid_s*, double) [25]
+                0.00    0.00 22318402/22318402     BSDE_QuatD_ToMatrix(double*, double*) [16]
+                0.00    0.00 11159201/11159201     V3D_NORMALIZE(double*, double*) [26]
+                0.00    0.00 11159201/11159201     BSDE_QuatD_FromAxis(double*, double, double*) [29]
+                0.00    0.00 11159201/11159201     BSDE_QuatD_Multiply(double*, double*, double*) [30]
+                0.00    0.00 11159201/22318402     BSDE_QuatD_Normalize(double*, double*) [18]
+                0.00    0.00 11159201/11160470     BSDE_WorldInertiaTensor(BSDE_Solid_s*) [23]
+                0.00    0.00 11159201/11159201     BSDE_BoxMove(BSDE_Solid_s*, double*, double*) [24]
+-----------------------------------------------
+                0.00    0.00 11159201/11159201     BSDE_Predict(BSDE_World_s*, BSDE_Solid_s*, double) [25]
+[26]     0.0    0.00    0.00 11159201         V3D_NORMALIZE(double*, double*) [26]
+-----------------------------------------------
+                0.00    0.00 11159201/11159201     BSDE_QuatD_FromAxis(double*, double, double*) [29]
+[27]     0.0    0.00    0.00 11159201         V3D_NORMALIZE(double*, double*) [27]
+-----------------------------------------------
+                0.00    0.00 11159201/11159201     BSDE_WorldSingleStep2(BSDE_World_s*, double) [82]
+[28]     0.0    0.00    0.00 11159201         BSDE_UpdateVel(BSDE_World_s*, BSDE_Solid_s*, double) [28]
+                0.00    0.00 44636804/65885710     bsde_finite(double) [9]
+                0.00    0.00 10557543/10558812     BSDE_QuatD_Identity(double*) [32]
+-----------------------------------------------
+                0.00    0.00 11159201/11159201     BSDE_Predict(BSDE_World_s*, BSDE_Solid_s*, double) [25]
+[29]     0.0    0.00    0.00 11159201         BSDE_QuatD_FromAxis(double*, double, double*) [29]
+                0.00    0.00 11159201/11159201     V3D_NORMALIZE(double*, double*) [27]
+-----------------------------------------------
+                0.00    0.00 11159201/11159201     BSDE_Predict(BSDE_World_s*, BSDE_Solid_s*, double) [25]
+[30]     0.0    0.00    0.00 11159201         BSDE_QuatD_Multiply(double*, double*, double*) [30]
+                0.00    0.00 11159201/22318402     BSDE_QuatD_Normalize(double*, double*) [18]
+-----------------------------------------------
+                0.00    0.00 10624453/10624453     BSDE_WorldSingleStep2(BSDE_World_s*, double) [82]
+[31]     0.0    0.00    0.00 10624453         BSDE_Update(BSDE_World_s*, BSDE_Solid_s*, double) [31]
+                0.00    0.00 21248906/65885710     bsde_finite(double) [9]
+-----------------------------------------------
+                0.00    0.00      12/10558812     BSDE_NewAABB(double, double, double, double, double, double) [124]
+                0.00    0.00    1257/10558812     BSDE_NewHull(double*, int) [113]
+                0.00    0.00 10557543/10558812     BSDE_UpdateVel(BSDE_World_s*, BSDE_Solid_s*, double) [28]
+[32]     0.0    0.00    0.00 10558812         BSDE_QuatD_Identity(double*) [32]
+-----------------------------------------------
+                0.00    0.00 10557543/10557543     BSDE_BoxMove(BSDE_Solid_s*, double*, double*) [24]
+[33]     0.0    0.00    0.00 10557543         BSDE_SolidHull_BoxMove(BSDE_Solid_s*, double*, double*, double*, double*) [33]
+                0.00    0.00 21115086/21116343     BSDE_SolidHull_Box(BSDE_Solid_s*, double*, double*, double*) [19]
+-----------------------------------------------
+                0.00    0.00       2/8684506     BSDE_ComputeImpulse2(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double, double, double*, double*) [144]
+                0.00    0.00 8684504/8684506     BSDE_ApplyPointForce(BSDE_Solid_s*, double*, double*) [45]
+[34]     0.0    0.00    0.00 8684506         V3D_NORMALIZE(double*, double*) [34]
+-----------------------------------------------
+                0.00    0.00 8643298/8643298     BSDE_SolidHull_ClipFace(double*, double*, double*, int) [39]
+[35]     0.0    0.00    0.00 8643298         BSDE_PlaneD_LinePlaneIntersect(double*, double*, double*, double*) [35]
+-----------------------------------------------
+                0.00    0.00 3609948/8380263     BSDE_SolidOBB_BoxMove(double*, double*, double*, double*, double*, double*) [55]
+                0.00    0.00 4770315/8380263     BSDE_SolidHull_CheckObbCollide(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*) [7]
+[36]     0.0    0.00    0.00 8380263         BSDE_SolidOBB_ObbPlaneExtents(double*, double*, double*, double*, double*) [36]
+-----------------------------------------------
+                0.00    0.00 6437458/6437458     bsdeGetAttrFV [38]
+[37]     0.0    0.00    0.00 6437458         BSDE_GetAttrFV(BSDE_Solid_s*, int, float*, int) [37]
+-----------------------------------------------
+                0.00    0.00    3386/6437458     pdgl_main_body [97]
+                0.00    0.00 2153614/6437458     draw_ents [104]
+                0.00    0.00 4280458/6437458     draw_ents2 [105]
+[38]     0.0    0.00    0.00 6437458         bsdeGetAttrFV [38]
+                0.00    0.00 6437458/17098181     BSDE_GetWorld() [21]
+                0.00    0.00 6437458/6437458     BSDE_GetAttrFV(BSDE_Solid_s*, int, float*, int) [37]
+-----------------------------------------------
+                0.00    0.00   37856/6398276     BSDE_SolidHull_MakeHullFaces(BSDE_Solid_s*) [115]
+                0.00    0.00 6360420/6398276     BSDE_SolidHull2_CalcCollide(double*, double*, double*, double*, int, int, int, int, double*, double*, double*, double*, double*) [65]
+[39]     0.0    0.00    0.00 6398276         BSDE_SolidHull_ClipFace(double*, double*, double*, int) [39]
+                0.00    0.00 8643298/8643298     BSDE_PlaneD_LinePlaneIntersect(double*, double*, double*, double*) [35]
+-----------------------------------------------
+                0.00    0.00 6393917/6393917     bsdeGetAttrI [41]
+[40]     0.0    0.00    0.00 6393917         BSDE_GetAttrI(BSDE_Solid_s*, int) [40]
+-----------------------------------------------
+                0.00    0.00 6393917/6393917     draw_ents [104]
+[41]     0.0    0.00    0.00 6393917         bsdeGetAttrI [41]
+                0.00    0.00 6393917/17098181     BSDE_GetWorld() [21]
+                0.00    0.00 6393917/6393917     BSDE_GetAttrI(BSDE_Solid_s*, int) [40]
+-----------------------------------------------
+                0.00    0.00 6360422/6360422     BSDE_SolidHull2_CalcCollide(double*, double*, double*, double*, int, int, int, int, double*, double*, double*, double*, double*) [65]
+[42]     0.0    0.00    0.00 6360422         BSDE_SolidHull2_ProjectPointsLine(double*, int, double*, double*, double*, double*) [42]
+                0.00    0.00 50883376/219158959     BSDE_PlaneD_TransformPoint(double*, double*, double*) [8]
+-----------------------------------------------
+                0.00    0.00 5197824/5197824     BSDE_BuildInertiaTensor(BSDE_Solid_s*) [110]
+[43]     0.0    0.00    0.00 5197824         BSDE_PointCollide(BSDE_Solid_s*, double*) [43]
+                0.00    0.00 5148672/5148672     BSDE_SolidHull_PointCollide(BSDE_Solid_s*, double*, double*) [44]
+-----------------------------------------------
+                0.00    0.00 5148672/5148672     BSDE_PointCollide(BSDE_Solid_s*, double*) [43]
+[44]     0.0    0.00    0.00 5148672         BSDE_SolidHull_PointCollide(BSDE_Solid_s*, double*, double*) [44]
+                0.00    0.00 30176259/46077309     BSDE_PlaneD_TransformNormal(double*, double*, double*) [11]
+-----------------------------------------------
+                0.00    0.00 4342252/4342252     BSDE_HandleContact(BSDE_World_s*, BSDE_Contact_s*, double) [62]
+[45]     0.0    0.00    0.00 4342252         BSDE_ApplyPointForce(BSDE_Solid_s*, double*, double*) [45]
+                0.00    0.00 8684504/8684506     V3D_NORMALIZE(double*, double*) [34]
+-----------------------------------------------
+                0.00    0.00       2/4342252     BSDE_ComputeImpulse2(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double, double, double*, double*) [144]
+                0.00    0.00 4342250/4342252     BSDE_ComputeImpulse3(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double, double, double*, double*) [50]
+[46]     0.0    0.00    0.00 4342252         BSDE_GetPointVelocity(BSDE_Solid_s*, double*, double*) [46]
+-----------------------------------------------
+                0.00    0.00 4253688/4253688     bsdeGetAttrIV [48]
+[47]     0.0    0.00    0.00 4253688         BSDE_GetAttrIV(BSDE_Solid_s*, int, int*, int) [47]
+-----------------------------------------------
+                0.00    0.00 4253688/4253688     draw_ents [104]
+[48]     0.0    0.00    0.00 4253688         bsdeGetAttrIV [48]
+                0.00    0.00 4253688/17098181     BSDE_GetWorld() [21]
+                0.00    0.00 4253688/4253688     BSDE_GetAttrIV(BSDE_Solid_s*, int, int*, int) [47]
+-----------------------------------------------
+                0.00    0.00  933215/3304616     BSDE_Iter3_CollideBiTree(BSDE_World_s*, BSDE_BinaryNode_s*, BSDE_Solid_s*, int) [60]
+                0.00    0.00 2371401/3304616     BSDE_Iter3_CollideBiObj(BSDE_World_s*, BSDE_Solid_s*, int) [59]
+[49]     0.0    0.00    0.00 3304616         BSDE_Iter3_CollideList(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, int) [49]
+                0.00    0.00 331069896/331069896     BSDE_Collide(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**) [3]
+-----------------------------------------------
+                0.00    0.00 2171125/2171125     BSDE_HandleContact(BSDE_World_s*, BSDE_Contact_s*, double) [62]
+[50]     0.0    0.00    0.00 2171125         BSDE_ComputeImpulse3(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double, double, double*, double*) [50]
+                0.00    0.00 4342250/4342252     BSDE_GetPointVelocity(BSDE_Solid_s*, double*, double*) [46]
+                0.00    0.00 4342250/15502722     BSDE_MatND_MatMult(double*, int, int, double*, int, int, double*) [22]
+-----------------------------------------------
+                0.00    0.00 1590105/1590105     BSDE_SolidHull_CheckObbCollide(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*) [7]
+[51]     0.0    0.00    0.00 1590105         BSDE_SolidHull_ProjectLine(BSDE_Solid_s*, double*, double*, double*, double*) [51]
+                0.00    0.00 1590105/1590105     BSDE_PlaneD_TransformVectorT(double*, double*, double*) [52]
+-----------------------------------------------
+                0.00    0.00 1590105/1590105     BSDE_SolidHull_ProjectLine(BSDE_Solid_s*, double*, double*, double*, double*) [51]
+[52]     0.0    0.00    0.00 1590105         BSDE_PlaneD_TransformVectorT(double*, double*, double*) [52]
+-----------------------------------------------
+                0.00    0.00 1075116/1075116     BSDE_PlaneD_AdjacentNormals(double*, double*, double*) [56]
+[53]     0.0    0.00    0.00 1075116         V3D_NORMALIZE(double*, double*) [53]
+-----------------------------------------------
+                0.00    0.00  915611/915611      BSDE_Iter3_CalcNormal(BSDE_Solid_s*, double*) [69]
+[54]     0.0    0.00    0.00  915611         V3D_NORMALIZE(double*, double*) [54]
+-----------------------------------------------
+                0.00    0.00  601658/601658      BSDE_BoxMove(BSDE_Solid_s*, double*, double*) [24]
+[55]     0.0    0.00    0.00  601658         BSDE_SolidOBB_BoxMove(double*, double*, double*, double*, double*, double*) [55]
+                0.00    0.00 3609948/8380263     BSDE_SolidOBB_ObbPlaneExtents(double*, double*, double*, double*, double*) [36]
+-----------------------------------------------
+                0.00    0.00  537558/537558      BSDE_SolidHull_MakePlaneFace(double*, double*) [57]
+[56]     0.0    0.00    0.00  537558         BSDE_PlaneD_AdjacentNormals(double*, double*, double*) [56]
+                0.00    0.00 1075116/1075116     V3D_NORMALIZE(double*, double*) [53]
+-----------------------------------------------
+                0.00    0.00    7523/537558      BSDE_SolidHull_MakeHullFaces(BSDE_Solid_s*) [115]
+                0.00    0.00  530035/537558      BSDE_SolidHull2_CalcCollide(double*, double*, double*, double*, int, int, int, int, double*, double*, double*, double*, double*) [65]
+[57]     0.0    0.00    0.00  537558         BSDE_SolidHull_MakePlaneFace(double*, double*) [57]
+                0.00    0.00  537558/537558      BSDE_PlaneD_AdjacentNormals(double*, double*, double*) [56]
+-----------------------------------------------
+                0.00    0.00  534815/534815      BSDE_WorldSingleStep2(BSDE_World_s*, double) [82]
+[58]     0.0    0.00    0.00  534815         BSDE_FreeContacts() [58]
+-----------------------------------------------
+                0.00    0.00  534815/534815      BSDE_WorldSingleStep2(BSDE_World_s*, double) [82]
+[59]     0.0    0.00    0.00  534815         BSDE_Iter3_CollideBiObj(BSDE_World_s*, BSDE_Solid_s*, int) [59]
+                0.00    0.00 2371401/3304616     BSDE_Iter3_CollideList(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, int) [49]
+                0.00    0.00  534815/534815      BSDE_Iter3_CollideBiTree(BSDE_World_s*, BSDE_BinaryNode_s*, BSDE_Solid_s*, int) [60]
+-----------------------------------------------
+                              398400             BSDE_Iter3_CollideBiTree(BSDE_World_s*, BSDE_BinaryNode_s*, BSDE_Solid_s*, int) [60]
+                0.00    0.00  534815/534815      BSDE_Iter3_CollideBiObj(BSDE_World_s*, BSDE_Solid_s*, int) [59]
+[60]     0.0    0.00    0.00  534815+398400  BSDE_Iter3_CollideBiTree(BSDE_World_s*, BSDE_BinaryNode_s*, BSDE_Solid_s*, int) [60]
+                0.00    0.00  933215/3304616     BSDE_Iter3_CollideList(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, int) [49]
+                0.00    0.00  211384/56417828     BSDE_SolidAABB_BoxPlaneExtents(double*, double*, double*, double*, double*) [10]
+                              398400             BSDE_Iter3_CollideBiTree(BSDE_World_s*, BSDE_BinaryNode_s*, BSDE_Solid_s*, int) [60]
+-----------------------------------------------
+                0.00    0.00  530036/530036      BSDE_SolidHull2_CalcCollide(double*, double*, double*, double*, int, int, int, int, double*, double*, double*, double*, double*) [65]
+[61]     0.0    0.00    0.00  530036         V3D_NORMALIZE(double*, double*) [61]
+-----------------------------------------------
+                0.00    0.00  530035/530035      BSDE_WorldSingleStep2(BSDE_World_s*, double) [82]
+[62]     0.0    0.00    0.00  530035         BSDE_HandleContact(BSDE_World_s*, BSDE_Contact_s*, double) [62]
+                0.00    0.00 4342252/4342252     BSDE_ApplyPointForce(BSDE_Solid_s*, double*, double*) [45]
+                0.00    0.00 2171125/2171125     BSDE_ComputeImpulse3(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double, double, double*, double*) [50]
+                0.00    0.00       1/1           BSDE_ComputeImpulse2(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double, double, double*, double*) [144]
+-----------------------------------------------
+                0.00    0.00  530035/530035      bsde_collide_obb(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**, double*, double*, double*, double*) [5]
+[63]     0.0    0.00    0.00  530035         BSDE_MakePointsContact(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double, int) [63]
+-----------------------------------------------
+                0.00    0.00  530035/530035      BSDE_SolidHull_ContactGeneric(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double*, double*, double*, double*, double*) [67]
+[64]     0.0    0.00    0.00  530035         BSDE_SolidHull_ContactBox(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double*, double*, double*, double*, double*) [64]
+                0.00    0.00  530035/530035      BSDE_SolidOBB3_GenPointsLocal(double*, double*, double*) [68]
+                0.00    0.00  530035/530035      BSDE_SolidOBB3_GenNormsLocal(double*, double*, double*) [66]
+                0.00    0.00  530035/530035      BSDE_SolidHull2_CalcCollide(double*, double*, double*, double*, int, int, int, int, double*, double*, double*, double*, double*) [65]
+-----------------------------------------------
+                0.00    0.00  530035/530035      BSDE_SolidHull_ContactBox(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double*, double*, double*, double*, double*) [64]
+[65]     0.0    0.00    0.00  530035         BSDE_SolidHull2_CalcCollide(double*, double*, double*, double*, int, int, int, int, double*, double*, double*, double*, double*) [65]
+                0.00    0.00 12720840/46077309     BSDE_PlaneD_TransformNormal(double*, double*, double*) [11]
+                0.00    0.00 6360422/6360422     BSDE_SolidHull2_ProjectPointsLine(double*, int, double*, double*, double*, double*) [42]
+                0.00    0.00 6360420/6398276     BSDE_SolidHull_ClipFace(double*, double*, double*, int) [39]
+                0.00    0.00  530036/530036      V3D_NORMALIZE(double*, double*) [61]
+                0.00    0.00  530035/537558      BSDE_SolidHull_MakePlaneFace(double*, double*) [57]
+-----------------------------------------------
+                0.00    0.00  530035/530035      BSDE_SolidHull_ContactBox(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double*, double*, double*, double*, double*) [64]
+[66]     0.0    0.00    0.00  530035         BSDE_SolidOBB3_GenNormsLocal(double*, double*, double*) [66]
+-----------------------------------------------
+                0.00    0.00  530035/530035      bsde_collide_obb(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**, double*, double*, double*, double*) [5]
+[67]     0.0    0.00    0.00  530035         BSDE_SolidHull_ContactGeneric(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double*, double*, double*, double*, double*) [67]
+                0.00    0.00  530035/530035      BSDE_SolidHull_ContactBox(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double*, double*, double*, double*, double*) [64]
+-----------------------------------------------
+                0.00    0.00  530035/530035      BSDE_SolidHull_ContactBox(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double*, double*, double*, double*, double*) [64]
+[68]     0.0    0.00    0.00  530035         BSDE_SolidOBB3_GenPointsLocal(double*, double*, double*) [68]
+-----------------------------------------------
+                0.00    0.00  214475/214475      BSDE_Iter3_BuildBiNode(BSDE_Solid_s*) [83]
+[69]     0.0    0.00    0.00  214475         BSDE_Iter3_CalcNormal(BSDE_Solid_s*, double*) [69]
+                0.00    0.00  915611/915611      V3D_NORMALIZE(double*, double*) [54]
+                0.00    0.00  214475/214475      BSDE_Iter3_CalcCentroid(BSDE_Solid_s*, double*) [70]
+-----------------------------------------------
+                0.00    0.00  214475/214475      BSDE_Iter3_CalcNormal(BSDE_Solid_s*, double*) [69]
+[70]     0.0    0.00    0.00  214475         BSDE_Iter3_CalcCentroid(BSDE_Solid_s*, double*) [70]
+-----------------------------------------------
+                0.00    0.00  214475/214475      BSDE_Iter3_BuildBiNode(BSDE_Solid_s*) [83]
+[71]     0.0    0.00    0.00  214475         BSDE_Iter3_AllocBinaryNode() [71]
+-----------------------------------------------
+                0.00    0.00    3384/179041      PD3D_Vec_AllocVec [86]
+                0.00    0.00  175657/179041      ksplit [80]
+[72]     0.0    0.00    0.00  179041         kralloc [72]
+-----------------------------------------------
+                0.00    0.00  142330/142330      BSDE_WorldForces(BSDE_World_s*, double) [81]
+[73]     0.0    0.00    0.00  142330         BSDE_PlaneD_TransformVector(double*, double*, double*) [73]
+-----------------------------------------------
+                0.00    0.00   56030/56030       WinMain@16 [137]
+[74]     0.0    0.00    0.00   56030         PDGL_DeltaMS [74]
+                0.00    0.00   56030/56030       PDGL_TimeMS [75]
+-----------------------------------------------
+                0.00    0.00   56030/56030       PDGL_DeltaMS [74]
+[75]     0.0    0.00    0.00   56030         PDGL_TimeMS [75]
+-----------------------------------------------
+                0.00    0.00   45018/45018       BSDE_SolidHull_MakeHullFaces(BSDE_Solid_s*) [115]
+[76]     0.0    0.00    0.00   45018         V3D_NORMALIZE(double*, double*) [76]
+-----------------------------------------------
+                0.00    0.00   15046/37615       Hull_AdjacentNormals22 [84]
+                0.00    0.00   22569/37615       load_brush [118]
+[77]     0.0    0.00    0.00   37615         V3F_NORMALIZE [77]
+-----------------------------------------------
+                0.00    0.00     612/15851       GfxDev_Key_Event [120]
+                0.00    0.00   15239/15851       pdgl_main_body [97]
+[78]     0.0    0.00    0.00   15851         PDGL_KeyDown [78]
+-----------------------------------------------
+                0.00    0.00   13385/13385       draw_ents [104]
+[79]     0.0    0.00    0.00   13385         PD3D_DrawCube [79]
+-----------------------------------------------
+                0.00    0.00      13/11948       pdgl_main_readlights [150]
+                0.00    0.00     370/11948       load_map [149]
+                0.00    0.00    2785/11948       load_entity [122]
+                0.00    0.00    8780/11948       load_brush [118]
+[80]     0.0    0.00    0.00   11948         ksplit [80]
+                0.00    0.00  175657/179041      kralloc [72]
+-----------------------------------------------
+                0.00    0.00    8399/8399        BSDE_StepWorld(BSDE_World_s*, double) [100]
+[81]     0.0    0.00    0.00    8399         BSDE_WorldForces(BSDE_World_s*, double) [81]
+                0.00    0.00  142330/142330      BSDE_PlaneD_TransformVector(double*, double*, double*) [73]
+-----------------------------------------------
+                0.00    0.00    8399/8399        BSDE_StepWorld(BSDE_World_s*, double) [100]
+[82]     0.0    0.00    0.00    8399         BSDE_WorldSingleStep2(BSDE_World_s*, double) [82]
+                0.00    0.00 11159201/11159201     BSDE_Predict(BSDE_World_s*, BSDE_Solid_s*, double) [25]
+                0.00    0.00 11159201/11159201     BSDE_UpdateVel(BSDE_World_s*, BSDE_Solid_s*, double) [28]
+                0.00    0.00 10624453/10624453     BSDE_Update(BSDE_World_s*, BSDE_Solid_s*, double) [31]
+                0.00    0.00  534815/534815      BSDE_Iter3_CollideBiObj(BSDE_World_s*, BSDE_Solid_s*, int) [59]
+                0.00    0.00  534815/534815      BSDE_FreeContacts() [58]
+                0.00    0.00  530035/530035      BSDE_HandleContact(BSDE_World_s*, BSDE_Contact_s*, double) [62]
+                0.00    0.00    8399/8399        BSDE_Iter3_BuildBiNode(BSDE_Solid_s*) [83]
+-----------------------------------------------
+                              206076             BSDE_Iter3_BuildBiNode(BSDE_Solid_s*) [83]
+                0.00    0.00    8399/8399        BSDE_WorldSingleStep2(BSDE_World_s*, double) [82]
+[83]     0.0    0.00    0.00    8399+206076  BSDE_Iter3_BuildBiNode(BSDE_Solid_s*) [83]
+                0.00    0.00 56206444/56417828     BSDE_SolidAABB_BoxPlaneExtents(double*, double*, double*, double*, double*) [10]
+                0.00    0.00  214475/214475      BSDE_Iter3_AllocBinaryNode() [71]
+                0.00    0.00  214475/214475      BSDE_Iter3_CalcNormal(BSDE_Solid_s*, double*) [69]
+                              206076             BSDE_Iter3_BuildBiNode(BSDE_Solid_s*) [83]
+-----------------------------------------------
+                0.00    0.00    7523/7523        load_brush [118]
+[84]     0.0    0.00    0.00    7523         Hull_AdjacentNormals22 [84]
+                0.00    0.00   15046/37615       V3F_NORMALIZE [77]
+-----------------------------------------------
+                0.00    0.00    7523/7523        BSDE_NewHull(double*, int) [113]
+[85]     0.0    0.00    0.00    7523         V3D_NORMALIZE(double*, double*) [85]
+-----------------------------------------------
+                0.00    0.00    3384/3384        VEC3 [87]
+[86]     0.0    0.00    0.00    3384         PD3D_Vec_AllocVec [86]
+                0.00    0.00    3384/179041      kralloc [72]
+-----------------------------------------------
+                0.00    0.00    3384/3384        pdgl_main_body [97]
+[87]     0.0    0.00    0.00    3384         VEC3 [87]
+                0.00    0.00    3384/3384        PD3D_Vec_AllocVec [86]
+-----------------------------------------------
+                0.00    0.00    2972/2972        bsdeSetAttrFV [89]
+[88]     0.0    0.00    0.00    2972         BSDE_SetAttrFV(BSDE_Solid_s*, int, float*, int) [88]
+-----------------------------------------------
+                0.00    0.00       1/2972        pdgl_main_startup [152]
+                0.00    0.00    1257/2972        send_brush [119]
+                0.00    0.00    1714/2972        pdgl_main_body [97]
+[89]     0.0    0.00    0.00    2972         bsdeSetAttrFV [89]
+                0.00    0.00    2972/17098181     BSDE_GetWorld() [21]
+                0.00    0.00    2972/2972        BSDE_SetAttrFV(BSDE_Solid_s*, int, float*, int) [88]
+-----------------------------------------------
+                0.00    0.00    2538/2538        BSDE_BuildInertiaTensor(BSDE_Solid_s*) [110]
+[90]     0.0    0.00    0.00    2538         BSDE_Mat3D_Copy(double*, double*) [90]
+-----------------------------------------------
+                0.00    0.00    1693/1693        WinMain@16 [137]
+[91]     0.0    0.00    0.00    1693         GfxDrv_BeginDrawing [91]
+-----------------------------------------------
+                0.00    0.00    1693/1693        WinMain@16 [137]
+[92]     0.0    0.00    0.00    1693         GfxDrv_EndDrawing [92]
+-----------------------------------------------
+                0.00    0.00    1693/1693        WinMain@16 [137]
+[93]     0.0    0.00    0.00    1693         GfxDrv_GetWindowSize [93]
+-----------------------------------------------
+                0.00    0.00    1693/1693        WinMain@16 [137]
+[94]     0.0    0.00    0.00    1693         Mouse_GetPos [94]
+-----------------------------------------------
+                0.00    0.00    1693/1693        WinMain@16 [137]
+[95]     0.0    0.00    0.00    1693         PDGL_GetKeybuf [95]
+-----------------------------------------------
+                0.00    0.00    1693/1693        pdgl_main_body [97]
+[96]     0.0    0.00    0.00    1693         bsdeHide [96]
+                0.00    0.00    1693/17098181     BSDE_GetWorld() [21]
+-----------------------------------------------
+                0.00    0.00    1693/1693        WinMain@16 [137]
+[97]     0.0    0.00    0.00    1693         pdgl_main_body [97]
+                0.00    0.00   15239/15851       PDGL_KeyDown [78]
+                0.00    0.00    3386/6437458     bsdeGetAttrFV [38]
+                0.00    0.00    3384/3384        VEC3 [87]
+                0.00    0.00    1714/2972        bsdeSetAttrFV [89]
+                0.00    0.00    1693/1693        bsdeHide [96]
+                0.00    0.00    1692/1692        Draw_SetPerspective_3D [98]
+                0.00    0.00    1692/1692        draw_ents2 [105]
+                0.00    0.00    1692/1692        bsdeGetWorldAttrF [102]
+                0.00    0.00    1692/1692        bsdeStepWorld [103]
+                0.00    0.00    1692/1692        Draw_SetSolid2_2D [99]
+                0.00    0.00      11/11          bsdeNewOBB [126]
+                0.00    0.00      11/1268        main_addsolid [112]
+                0.00    0.00      11/1270        bsdeSetAttrF [107]
+-----------------------------------------------
+                0.00    0.00    1692/1692        pdgl_main_body [97]
+[98]     0.0    0.00    0.00    1692         Draw_SetPerspective_3D [98]
+-----------------------------------------------
+                0.00    0.00    1692/1692        pdgl_main_body [97]
+[99]     0.0    0.00    0.00    1692         Draw_SetSolid2_2D [99]
+-----------------------------------------------
+                0.00    0.00    1692/1692        bsdeStepWorld [103]
+[100]    0.0    0.00    0.00    1692         BSDE_StepWorld(BSDE_World_s*, double) [100]
+                0.00    0.00    8399/8399        BSDE_WorldForces(BSDE_World_s*, double) [81]
+                0.00    0.00    8399/8399        BSDE_WorldSingleStep2(BSDE_World_s*, double) [82]
+-----------------------------------------------
+                0.00    0.00    1692/1692        bsdeGetWorldAttrF [102]
+[101]    0.0    0.00    0.00    1692         BSDE_GetWorldAttrF(BSDE_World_s*, int) [101]
+-----------------------------------------------
+                0.00    0.00    1692/1692        pdgl_main_body [97]
+[102]    0.0    0.00    0.00    1692         bsdeGetWorldAttrF [102]
+                0.00    0.00    1692/17098181     BSDE_GetWorld() [21]
+                0.00    0.00    1692/1692        BSDE_GetWorldAttrF(BSDE_World_s*, int) [101]
+-----------------------------------------------
+                0.00    0.00    1692/1692        pdgl_main_body [97]
+[103]    0.0    0.00    0.00    1692         bsdeStepWorld [103]
+                0.00    0.00    1692/17098181     BSDE_GetWorld() [21]
+                0.00    0.00    1692/1692        BSDE_StepWorld(BSDE_World_s*, double) [100]
+-----------------------------------------------
+                0.00    0.00    1692/1692        draw_ents2 [105]
+[104]    0.0    0.00    0.00    1692         draw_ents [104]
+                0.00    0.00 6393917/6393917     bsdeGetAttrI [41]
+                0.00    0.00 4253688/4253688     bsdeGetAttrIV [48]
+                0.00    0.00 2153614/6437458     bsdeGetAttrFV [38]
+                0.00    0.00   13385/13385       PD3D_DrawCube [79]
+-----------------------------------------------
+                0.00    0.00    1692/1692        pdgl_main_body [97]
+[105]    0.0    0.00    0.00    1692         draw_ents2 [105]
+                0.00    0.00 4280458/6437458     bsdeGetAttrFV [38]
+                0.00    0.00    1692/1692        draw_ents [104]
+-----------------------------------------------
+                0.00    0.00    1270/1270        bsdeSetAttrF [107]
+[106]    0.0    0.00    0.00    1270         BSDE_SetAttrF(BSDE_Solid_s*, int, double) [106]
+-----------------------------------------------
+                0.00    0.00       2/1270        pdgl_main_startup [152]
+                0.00    0.00      11/1270        pdgl_main_body [97]
+                0.00    0.00    1257/1270        send_brush [119]
+[107]    0.0    0.00    0.00    1270         bsdeSetAttrF [107]
+                0.00    0.00    1270/17098181     BSDE_GetWorld() [21]
+                0.00    0.00    1270/1270        BSDE_SetAttrF(BSDE_Solid_s*, int, double) [106]
+-----------------------------------------------
+                0.00    0.00       1/1269        bsdeNewAABB [145]
+                0.00    0.00      11/1269        bsdeNewOBB [126]
+                0.00    0.00    1257/1269        bsdeNewHullF [116]
+[108]    0.0    0.00    0.00    1269         BSDE_AddSolidWorld(BSDE_World_s*, BSDE_Solid_s*) [108]
+-----------------------------------------------
+                0.00    0.00    1269/1269        BSDE_BuildInertiaTensor(BSDE_Solid_s*) [110]
+[109]    0.0    0.00    0.00    1269         BSDE_MatND_Inverse(double*, double*, int) [109]
+-----------------------------------------------
+                0.00    0.00      12/1269        BSDE_NewAABB(double, double, double, double, double, double) [124]
+                0.00    0.00    1257/1269        BSDE_NewHull(double*, int) [113]
+[110]    0.0    0.00    0.00    1269         BSDE_BuildInertiaTensor(BSDE_Solid_s*) [110]
+                0.00    0.00 5197824/5197824     BSDE_PointCollide(BSDE_Solid_s*, double*) [43]
+                0.00    0.00    2538/2538        BSDE_Mat3D_Copy(double*, double*) [90]
+                0.00    0.00    1269/1269        BSDE_Box(BSDE_Solid_s*, double*, double*) [111]
+                0.00    0.00    1269/1269        BSDE_MatND_Inverse(double*, double*, int) [109]
+                0.00    0.00    1269/11160470     BSDE_WorldInertiaTensor(BSDE_Solid_s*) [23]
+-----------------------------------------------
+                0.00    0.00    1269/1269        BSDE_BuildInertiaTensor(BSDE_Solid_s*) [110]
+[111]    0.0    0.00    0.00    1269         BSDE_Box(BSDE_Solid_s*, double*, double*) [111]
+                0.00    0.00    1257/21116343     BSDE_SolidHull_Box(BSDE_Solid_s*, double*, double*, double*) [19]
+-----------------------------------------------
+                0.00    0.00      11/1268        pdgl_main_body [97]
+                0.00    0.00    1257/1268        send_brush [119]
+[112]    0.0    0.00    0.00    1268         main_addsolid [112]
+-----------------------------------------------
+                0.00    0.00    1257/1257        bsdeNewHullF [116]
+[113]    0.0    0.00    0.00    1257         BSDE_NewHull(double*, int) [113]
+                0.00    0.00    7523/7523        V3D_NORMALIZE(double*, double*) [85]
+                0.00    0.00    1257/10558812     BSDE_QuatD_Identity(double*) [32]
+                0.00    0.00    1257/1257        BSDE_SolidHull_MakeHullFaces(BSDE_Solid_s*) [115]
+                0.00    0.00    1257/1269        BSDE_BuildInertiaTensor(BSDE_Solid_s*) [110]
+-----------------------------------------------
+                0.00    0.00    1257/1257        bsdeSetAttrI [117]
+[114]    0.0    0.00    0.00    1257         BSDE_SetAttrI(BSDE_Solid_s*, int, int) [114]
+-----------------------------------------------
+                0.00    0.00    1257/1257        BSDE_NewHull(double*, int) [113]
+[115]    0.0    0.00    0.00    1257         BSDE_SolidHull_MakeHullFaces(BSDE_Solid_s*) [115]
+                0.00    0.00   45018/45018       V3D_NORMALIZE(double*, double*) [76]
+                0.00    0.00   37856/6398276     BSDE_SolidHull_ClipFace(double*, double*, double*, int) [39]
+                0.00    0.00    7523/537558      BSDE_SolidHull_MakePlaneFace(double*, double*) [57]
+-----------------------------------------------
+                0.00    0.00    1257/1257        send_brush [119]
+[116]    0.0    0.00    0.00    1257         bsdeNewHullF [116]
+                0.00    0.00    2514/17098181     BSDE_GetWorld() [21]
+                0.00    0.00    1257/1257        BSDE_NewHull(double*, int) [113]
+                0.00    0.00    1257/1269        BSDE_AddSolidWorld(BSDE_World_s*, BSDE_Solid_s*) [108]
+-----------------------------------------------
+                0.00    0.00    1257/1257        send_brush [119]
+[117]    0.0    0.00    0.00    1257         bsdeSetAttrI [117]
+                0.00    0.00    1257/17098181     BSDE_GetWorld() [21]
+                0.00    0.00    1257/1257        BSDE_SetAttrI(BSDE_Solid_s*, int, int) [114]
+-----------------------------------------------
+                0.00    0.00    1257/1257        load_entity [122]
+[118]    0.0    0.00    0.00    1257         load_brush [118]
+                0.00    0.00   22569/37615       V3F_NORMALIZE [77]
+                0.00    0.00    8780/11948       ksplit [80]
+                0.00    0.00    7523/7523        Hull_AdjacentNormals22 [84]
+-----------------------------------------------
+                0.00    0.00    1257/1257        send_brushes [153]
+[119]    0.0    0.00    0.00    1257         send_brush [119]
+                0.00    0.00    1257/1257        bsdeNewHullF [116]
+                0.00    0.00    1257/1268        main_addsolid [112]
+                0.00    0.00    1257/2972        bsdeSetAttrFV [89]
+                0.00    0.00    1257/1270        bsdeSetAttrF [107]
+                0.00    0.00    1257/1257        bsdeSetAttrI [117]
+-----------------------------------------------
+                0.00    0.00     612/612         GfxDrv_MainWndProc@16 [188]
+[120]    0.0    0.00    0.00     612         GfxDev_Key_Event [120]
+                0.00    0.00     612/15851       PDGL_KeyDown [78]
+-----------------------------------------------
+                0.00    0.00     612/612         GfxDrv_MainWndProc@16 [188]
+[121]    0.0    0.00    0.00     612         GfxDrv_MapKey [121]
+-----------------------------------------------
+                0.00    0.00     369/369         load_map [149]
+[122]    0.0    0.00    0.00     369         load_entity [122]
+                0.00    0.00    2785/11948       ksplit [80]
+                0.00    0.00    1257/1257        load_brush [118]
+-----------------------------------------------
+                0.00    0.00     128/128         BSDE_Seed21(BSDE_World_s*) [139]
+[123]    0.0    0.00    0.00     128         BSDE_Rand(BSDE_World_s*) [123]
+-----------------------------------------------
+                0.00    0.00       1/12          bsdeNewAABB [145]
+                0.00    0.00      11/12          BSDE_NewOBB(double, double, double, double, double, double) [125]
+[124]    0.0    0.00    0.00      12         BSDE_NewAABB(double, double, double, double, double, double) [124]
+                0.00    0.00      12/10558812     BSDE_QuatD_Identity(double*) [32]
+                0.00    0.00      12/1269        BSDE_BuildInertiaTensor(BSDE_Solid_s*) [110]
+-----------------------------------------------
+                0.00    0.00      11/11          bsdeNewOBB [126]
+[125]    0.0    0.00    0.00      11         BSDE_NewOBB(double, double, double, double, double, double) [125]
+                0.00    0.00      11/12          BSDE_NewAABB(double, double, double, double, double, double) [124]
+-----------------------------------------------
+                0.00    0.00      11/11          pdgl_main_body [97]
+[126]    0.0    0.00    0.00      11         bsdeNewOBB [126]
+                0.00    0.00      22/17098181     BSDE_GetWorld() [21]
+                0.00    0.00      11/11          BSDE_NewOBB(double, double, double, double, double, double) [125]
+                0.00    0.00      11/1269        BSDE_AddSolidWorld(BSDE_World_s*, BSDE_Solid_s*) [108]
+-----------------------------------------------
+                0.00    0.00       3/3           bsdeSetWorldf [128]
+[127]    0.0    0.00    0.00       3         BSDE_SetWorldAttrF(BSDE_World_s*, int, double) [127]
+-----------------------------------------------
+                0.00    0.00       3/3           pdgl_main_startup [152]
+[128]    0.0    0.00    0.00       3         bsdeSetWorldf [128]
+                0.00    0.00       3/17098181     BSDE_GetWorld() [21]
+                0.00    0.00       3/3           BSDE_SetWorldAttrF(BSDE_World_s*, int, double) [127]
+-----------------------------------------------
+                0.00    0.00       1/1           GfxDrv_VID_SetWindowedMode [134]
+[129]    0.0    0.00    0.00       1         GfxDrv_CenterWindow [129]
+-----------------------------------------------
+                0.00    0.00       1/1           GfxDrv_Start [132]
+[130]    0.0    0.00    0.00       1         GfxDrv_GL_Init [130]
+-----------------------------------------------
+                0.00    0.00       1/1           WinMain@16 [137]
+[131]    0.0    0.00    0.00       1         GfxDrv_Init [131]
+-----------------------------------------------
+                0.00    0.00       1/1           WinMain@16 [137]
+[132]    0.0    0.00    0.00       1         GfxDrv_Start [132]
+                0.00    0.00       1/1           GfxDrv_VID_InitDIB [133]
+                0.00    0.00       1/1           GfxDrv_VID_SetWindowedMode [134]
+                0.00    0.00       1/1           GfxDrv_bSetupPixelFormat [136]
+                0.00    0.00       1/1           GfxDrv_GL_Init [130]
+-----------------------------------------------
+                0.00    0.00       1/1           GfxDrv_Start [132]
+[133]    0.0    0.00    0.00       1         GfxDrv_VID_InitDIB [133]
+-----------------------------------------------
+                0.00    0.00       1/1           GfxDrv_Start [132]
+[134]    0.0    0.00    0.00       1         GfxDrv_VID_SetWindowedMode [134]
+                0.00    0.00       1/1           GfxDrv_CenterWindow [129]
+-----------------------------------------------
+                0.00    0.00       1/1           WinMain@16 [137]
+[135]    0.0    0.00    0.00       1         GfxDrv_VID_Shutdown [135]
+-----------------------------------------------
+                0.00    0.00       1/1           GfxDrv_Start [132]
+[136]    0.0    0.00    0.00       1         GfxDrv_bSetupPixelFormat [136]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1015]
+[137]    0.0    0.00    0.00       1         WinMain@16 [137]
+                0.00    0.00   56030/56030       PDGL_DeltaMS [74]
+                0.00    0.00    1693/1693        GfxDrv_GetWindowSize [93]
+                0.00    0.00    1693/1693        PDGL_GetKeybuf [95]
+                0.00    0.00    1693/1693        Mouse_GetPos [94]
+                0.00    0.00    1693/1693        GfxDrv_BeginDrawing [91]
+                0.00    0.00    1693/1693        pdgl_main_body [97]
+                0.00    0.00    1693/1693        GfxDrv_EndDrawing [92]
+                0.00    0.00       1/1           GfxDrv_Init [131]
+                0.00    0.00       1/1           GfxDrv_Start [132]
+                0.00    0.00       1/1           pdgl_main_startup [152]
+                0.00    0.00       1/1           pdgl_main_shutdown [151]
+                0.00    0.00       1/1           GfxDrv_VID_Shutdown [135]
+-----------------------------------------------
+                0.00    0.00       1/1           BSDE_CreateWorld() [142]
+[138]    0.0    0.00    0.00       1         BSDE_SRand2(BSDE_World_s*, unsigned int, unsigned int) [138]
+-----------------------------------------------
+                0.00    0.00       1/1           BSDE_CreateWorld() [142]
+[139]    0.0    0.00    0.00       1         BSDE_Seed21(BSDE_World_s*) [139]
+                0.00    0.00     128/128         BSDE_Rand(BSDE_World_s*) [123]
+-----------------------------------------------
+                0.00    0.00       1/1           BSDE_CreateWorld() [142]
+[140]    0.0    0.00    0.00       1         BSDE_NewWorld() [140]
+-----------------------------------------------
+                0.00    0.00       1/1           BSDE_CreateWorld() [142]
+[141]    0.0    0.00    0.00       1         BSDE_SetWorld(int) [141]
+                0.00    0.00       1/17098182     BSDE_GetThreadState() [20]
+-----------------------------------------------
+                0.00    0.00       1/1           bsdeNewWorld [146]
+[142]    0.0    0.00    0.00       1         BSDE_CreateWorld() [142]
+                0.00    0.00       1/1           BSDE_NewWorld() [140]
+                0.00    0.00       1/1           BSDE_SetWorld(int) [141]
+                0.00    0.00       1/1           BSDE_SRand2(BSDE_World_s*, unsigned int, unsigned int) [138]
+                0.00    0.00       1/1           BSDE_Seed21(BSDE_World_s*) [139]
+-----------------------------------------------
+                0.00    0.00       1/1           bsdeSetWorlddv [148]
+[143]    0.0    0.00    0.00       1         BSDE_SetWorldAttrDV(BSDE_World_s*, int, double*, int) [143]
+-----------------------------------------------
+                0.00    0.00       1/1           BSDE_HandleContact(BSDE_World_s*, BSDE_Contact_s*, double) [62]
+[144]    0.0    0.00    0.00       1         BSDE_ComputeImpulse2(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double, double, double*, double*) [144]
+                0.00    0.00       2/4342252     BSDE_GetPointVelocity(BSDE_Solid_s*, double*, double*) [46]
+                0.00    0.00       2/15502722     BSDE_MatND_MatMult(double*, int, int, double*, int, int, double*) [22]
+                0.00    0.00       2/8684506     V3D_NORMALIZE(double*, double*) [34]
+-----------------------------------------------
+                0.00    0.00       1/1           pdgl_main_startup [152]
+[145]    0.0    0.00    0.00       1         bsdeNewAABB [145]
+                0.00    0.00       2/17098181     BSDE_GetWorld() [21]
+                0.00    0.00       1/12          BSDE_NewAABB(double, double, double, double, double, double) [124]
+                0.00    0.00       1/1269        BSDE_AddSolidWorld(BSDE_World_s*, BSDE_Solid_s*) [108]
+-----------------------------------------------
+                0.00    0.00       1/1           pdgl_main_startup [152]
+[146]    0.0    0.00    0.00       1         bsdeNewWorld [146]
+                0.00    0.00       1/1           BSDE_CreateWorld() [142]
+-----------------------------------------------
+                0.00    0.00       1/1           pdgl_main_startup [152]
+[147]    0.0    0.00    0.00       1         bsdeSetWorld3f [147]
+                0.00    0.00       1/1           bsdeSetWorlddv [148]
+-----------------------------------------------
+                0.00    0.00       1/1           bsdeSetWorld3f [147]
+[148]    0.0    0.00    0.00       1         bsdeSetWorlddv [148]
+                0.00    0.00       1/17098181     BSDE_GetWorld() [21]
+                0.00    0.00       1/1           BSDE_SetWorldAttrDV(BSDE_World_s*, int, double*, int) [143]
+-----------------------------------------------
+                0.00    0.00       1/1           pdgl_main_startup [152]
+[149]    0.0    0.00    0.00       1         load_map [149]
+                0.00    0.00     370/11948       ksplit [80]
+                0.00    0.00     369/369         load_entity [122]
+                0.00    0.00       1/1           send_brushes [153]
+-----------------------------------------------
+                0.00    0.00       1/1           pdgl_main_startup [152]
+[150]    0.0    0.00    0.00       1         pdgl_main_readlights [150]
+                0.00    0.00      13/11948       ksplit [80]
+-----------------------------------------------
+                0.00    0.00       1/1           WinMain@16 [137]
+[151]    0.0    0.00    0.00       1         pdgl_main_shutdown [151]
+-----------------------------------------------
+                0.00    0.00       1/1           WinMain@16 [137]
+[152]    0.0    0.00    0.00       1         pdgl_main_startup [152]
+                0.00    0.00       3/3           bsdeSetWorldf [128]
+                0.00    0.00       2/1270        bsdeSetAttrF [107]
+                0.00    0.00       1/1           bsdeNewWorld [146]
+                0.00    0.00       1/1           bsdeSetWorld3f [147]
+                0.00    0.00       1/1           pdgl_main_readlights [150]
+                0.00    0.00       1/1           load_map [149]
+                0.00    0.00       1/1           bsdeNewAABB [145]
+                0.00    0.00       1/2972        bsdeSetAttrFV [89]
+-----------------------------------------------
+                0.00    0.00       1/1           load_map [149]
+[153]    0.0    0.00    0.00       1         send_brushes [153]
+                0.00    0.00    1257/1257        send_brush [119]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+
+Index by function name
+
+  [98] Draw_SetPerspective_3D [37] BSDE_GetAttrFV(BSDE_Solid_s*, int, float*, int) [51] BSDE_SolidHull_ProjectLine(BSDE_Solid_s*, double*, double*, double*, double*)
+  [99] Draw_SetSolid2_2D      [47] BSDE_GetAttrIV(BSDE_Solid_s*, int, int*, int) [56] BSDE_PlaneD_AdjacentNormals(double*, double*, double*)
+ [120] GfxDev_Key_Event       [88] BSDE_SetAttrFV(BSDE_Solid_s*, int, float*, int) [11] BSDE_PlaneD_TransformNormal(double*, double*, double*)
+  [91] GfxDrv_BeginDrawing   [100] BSDE_StepWorld(BSDE_World_s*, double) [73] BSDE_PlaneD_TransformVector(double*, double*, double*)
+ [129] GfxDrv_CenterWindow    [28] BSDE_UpdateVel(BSDE_World_s*, BSDE_Solid_s*, double) [65] BSDE_SolidHull2_CalcCollide(double*, double*, double*, double*, int, int, int, int, double*, double*, double*, double*, double*)
+  [92] GfxDrv_EndDrawing      [90] BSDE_Mat3D_Copy(double*, double*) [44] BSDE_SolidHull_PointCollide(BSDE_Solid_s*, double*, double*)
+ [130] GfxDrv_GL_Init        [142] BSDE_CreateWorld()     [52] BSDE_PlaneD_TransformVectorT(double*, double*, double*)
+  [93] GfxDrv_GetWindowSize   [13] BSDE_Mat3D_Scale(double*, double, double*) [115] BSDE_SolidHull_MakeHullFaces(BSDE_Solid_s*)
+ [131] GfxDrv_Init            [81] BSDE_WorldForces(BSDE_World_s*, double) [57] BSDE_SolidHull_MakePlaneFace(double*, double*)
+ [121] GfxDrv_MapKey           [5] bsde_collide_obb(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**, double*, double*, double*, double*) [66] BSDE_SolidOBB3_GenNormsLocal(double*, double*, double*)
+ [132] GfxDrv_Start           [58] BSDE_FreeContacts()    [67] BSDE_SolidHull_ContactGeneric(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double*, double*, double*, double*, double*)
+ [133] GfxDrv_VID_InitDIB     [43] BSDE_PointCollide(BSDE_Solid_s*, double*) [68] BSDE_SolidOBB3_GenPointsLocal(double*, double*, double*)
+ [134] GfxDrv_VID_SetWindowedMode [108] BSDE_AddSolidWorld(BSDE_World_s*, BSDE_Solid_s*) [36] BSDE_SolidOBB_ObbPlaneExtents(double*, double*, double*, double*, double*)
+ [135] GfxDrv_VID_Shutdown   [101] BSDE_GetWorldAttrF(BSDE_World_s*, int) [35] BSDE_PlaneD_LinePlaneIntersect(double*, double*, double*, double*)
+ [136] GfxDrv_bSetupPixelFormat [62] BSDE_HandleContact(BSDE_World_s*, BSDE_Contact_s*, double) [10] BSDE_SolidAABB_BoxPlaneExtents(double*, double*, double*, double*, double*)
+  [84] Hull_AdjacentNormals22 [12] BSDE_Mat3D_MatMult(double*, double*, double*) [7] BSDE_SolidHull_CheckObbCollide(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*)
+  [94] Mouse_GetPos          [109] BSDE_MatND_Inverse(double*, double*, int) [42] BSDE_SolidHull2_ProjectPointsLine(double*, int, double*, double*, double*, double*)
+  [79] PD3D_DrawCube          [22] BSDE_MatND_MatMult(double*, int, int, double*, int, int, double*) [111] BSDE_Box(BSDE_Solid_s*, double*, double*)
+  [86] PD3D_Vec_AllocVec     [127] BSDE_SetWorldAttrF(BSDE_World_s*, int, double) [123] BSDE_Rand(BSDE_World_s*)
+  [74] PDGL_DeltaMS           [19] BSDE_SolidHull_Box(BSDE_Solid_s*, double*, double*, double*) [38] bsdeGetAttrFV
+  [95] PDGL_GetKeybuf         [20] BSDE_GetThreadState()  [41] bsdeGetAttrI
+  [78] PDGL_KeyDown           [29] BSDE_QuatD_FromAxis(double*, double, double*) [48] bsdeGetAttrIV
+  [75] PDGL_TimeMS            [32] BSDE_QuatD_Identity(double*) [102] bsdeGetWorldAttrF
+  [77] V3F_NORMALIZE (pdgl_math.h) [30] BSDE_QuatD_Multiply(double*, double*, double*) [96] bsdeHide
+  [87] VEC3 (pdgl_math.h)     [16] BSDE_QuatD_ToMatrix(double*, double*) [145] bsdeNewAABB
+ [137] WinMain@16            [143] BSDE_SetWorldAttrDV(BSDE_World_s*, int, double*, int) [116] bsdeNewHullF
+ [125] BSDE_NewOBB(double, double, double, double, double, double) [45] BSDE_ApplyPointForce(BSDE_Solid_s*, double*, double*) [126] bsdeNewOBB
+ [138] BSDE_SRand2(BSDE_World_s*, unsigned int, unsigned int) [144] BSDE_ComputeImpulse2(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double, double, double*, double*) [146] bsdeNewWorld
+ [139] BSDE_Seed21(BSDE_World_s*) [50] BSDE_ComputeImpulse3(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double, double, double*, double*) [107] bsdeSetAttrF
+  [31] BSDE_Update(BSDE_World_s*, BSDE_Solid_s*, double) [14] BSDE_Mat3D_Transpose(double*, double*) [89] bsdeSetAttrFV
+   [9] bsde_finite(double)    [17] BSDE_QuatD_Magnitude(double*) [117] bsdeSetAttrI
+  [24] BSDE_BoxMove(BSDE_Solid_s*, double*, double*) [18] BSDE_QuatD_Normalize(double*, double*) [147] bsdeSetWorld3f
+   [3] BSDE_Collide(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**) [15] BSDE_QuatD_To3Matrix(double*, double*) [148] bsdeSetWorlddv
+ [124] BSDE_NewAABB(double, double, double, double, double, double) [46] BSDE_GetPointVelocity(BSDE_Solid_s*, double*, double*) [128] bsdeSetWorldf
+ [113] BSDE_NewHull(double*, int) [69] BSDE_Iter3_CalcNormal(BSDE_Solid_s*, double*) [103] bsdeStepWorld
+  [25] BSDE_Predict(BSDE_World_s*, BSDE_Solid_s*, double) [55] BSDE_SolidOBB_BoxMove(double*, double*, double*, double*, double*, double*) [104] draw_ents
+   [4] bsde_collide(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, BSDE_Contact_s**, double*, double*, double*, double*) [82] BSDE_WorldSingleStep2(BSDE_World_s*, double) [105] draw_ents2
+  [40] BSDE_GetAttrI(BSDE_Solid_s*, int) [83] BSDE_Iter3_BuildBiNode(BSDE_Solid_s*) [72] kralloc
+  [21] BSDE_GetWorld()        [49] BSDE_Iter3_CollideList(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, int) [80] ksplit
+ [140] BSDE_NewWorld()        [63] BSDE_MakePointsContact(BSDE_World_s*, BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double, int) [118] load_brush
+ [106] BSDE_SetAttrF(BSDE_Solid_s*, int, double) [33] BSDE_SolidHull_BoxMove(BSDE_Solid_s*, double*, double*, double*, double*) [122] load_entity
+ [114] BSDE_SetAttrI(BSDE_Solid_s*, int, int) [110] BSDE_BuildInertiaTensor(BSDE_Solid_s*) [149] load_map
+ [141] BSDE_SetWorld(int)     [70] BSDE_Iter3_CalcCentroid(BSDE_Solid_s*, double*) [112] main_addsolid
+  [85] V3D_NORMALIZE(double*, double*) (api_bsde.cpp) [59] BSDE_Iter3_CollideBiObj(BSDE_World_s*, BSDE_Solid_s*, int) [97] pdgl_main_body
+  [61] V3D_NORMALIZE(double*, double*) (solid_obb3.cpp) [39] BSDE_SolidHull_ClipFace(double*, double*, double*, int) [150] pdgl_main_readlights
+  [76] V3D_NORMALIZE(double*, double*) (math_matd.cpp) [23] BSDE_WorldInertiaTensor(BSDE_Solid_s*) [151] pdgl_main_shutdown
+  [53] V3D_NORMALIZE(double*, double*) (math_vec3.cpp) [60] BSDE_Iter3_CollideBiTree(BSDE_World_s*, BSDE_BinaryNode_s*, BSDE_Solid_s*, int) [152] pdgl_main_startup
+  [54] V3D_NORMALIZE(double*, double*) (bsde_force.cpp) [64] BSDE_SolidHull_ContactBox(BSDE_Solid_s*, BSDE_Solid_s*, double*, double*, double*, double*, double*, double*, double*) [119] send_brush
+  [34] V3D_NORMALIZE(double*, double*) (bsde_thread.cpp) [71] BSDE_Iter3_AllocBinaryNode() [153] send_brushes
+  [27] V3D_NORMALIZE(double*, double*) (bsde_math.cpp) [8] BSDE_PlaneD_TransformPoint(double*, double*, double*)
+  [26] V3D_NORMALIZE(double*, double*) (bsde_joint.cpp) [6] BSDE_SolidAABB_BoxCollideP(double*, double*, double*, double*)

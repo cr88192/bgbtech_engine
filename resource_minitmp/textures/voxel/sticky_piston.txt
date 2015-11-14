@@ -1,0 +1,11 @@
+// $flags voxel alpha nonsolid
+$flags voxel
+
+$vox_img_top textures/voxel/sticky_piston_top
+$vox_img_side textures/voxel/piston_side
+$vox_img_bot textures/voxel/piston_side
+
+$vox_EmitBlock BTGE_VoxelPiston_EmitBlock
+$vox_BlockUpdate BTGE_VoxelPiston_UpdateVoxel
+// $vox_mins 0 0 0
+// $vox_maxs 32 32 8

@@ -1,0 +1,128 @@
+ExWAD: Executable WAD
+
+ExWAD will be a format vaguely similar to the WAD2/WAD3 format used in
+Quake and Half-Life, but will differ in a few ways, and will be intended
+for the storage of executable code (rather than textures and image lumps).
+
+ExWAD images may optionally follow after a PE/COFF image, ELF image, or after
+a shebang/hash-bang.
+
+The ExWAD header and the start of the directory will need to be aligned on
+16-byte boundaries.
+
+RVA's will be addresses relative to the start of the file/image, rather than
+of the location of the ExWAD header.
+
+All characters will be assumed to be ASCII or UTF-8, and multi-byte values
+will be in little-endian byte ordering.
+
+
+struct ExWAD_Header_s
+{
+byte magic[8];		//"ExWAD100"
+u32 num_dirents;	//number of directory entries
+u32 rva_dirents;	//RVA of directory entries
+byte magic2[8];		//"DAWxE\r\n\xFF"
+u32 head_rva;		//self RVA (start of header)
+u16 head_size;		//size of header
+u16 head_hash;		//header hash
+};
+
+The header-hash will use this function:
+int ExWAD_Hash16(void *buf, int szbuf)
+{
+	byte *cs, *ce;
+	int i, h;
+	h=0; cs=(byte *)buf; ce=(byte *)buf+szbuf;
+	while(cs<ce)h=(h*65521+1)+(*cs++);
+	i=((h*65521+1)>>16)&65535;
+	return(i);
+}
+
+
+
+struct ExWAD_DirEnt_s
+{
+u32 rva_data;		//RVA of (compressed) data
+u32 dsize_data;		//uncompressed size of data
+u32 csize_data;		//compressed size of data
+byte type;			//file/entry type (0=default, 1..255, special members)
+byte method;		//compression method (0=store, 8=Deflate, 9=Deflate64)
+u16 flags;			//special flags
+union
+{
+ struct
+ {
+  u32 rva_name;		//RVA of file-name (virtual path)
+  byte _resv1[12];	//reserved
+ };
+ struct
+ {
+  byte name[16];	//inline name
+ };
+};
+};
+
+Names:
+Names will follow a Unix-style naming convention, and will be assumed to be
+relative to a certain base path. There will not be any leading '/'.
+Normally, files will have a file extension.
+
+Example: "foo/bar/baz.txt".
+
+Allowed Name Characters:
+	A..Z	a..z	0..9
+	. _ -
+
+Disallowed Characters
+	0x00..0x1F
+	|\?*<":>+[]/
+
+Type:
+	0: Ordinary File (type determined based on file extension).
+	1: Extension Dirent (structural extension of prior dirent, reserved).
+	2..255: Reserved
+
+Method:
+	0: Store (no compression, dsize==csize)
+	1..7: Reserved
+	8: Deflate
+	9: Deflate64 (Deflate with 64kB window).
+
+With Deflate and Deflate64, a CRC32 value will be placed immediately following the compressed data.
+
+Flags:
+	1: RVA Name (otherwise, inline name)
+    2: Directory Prefix:
+        Last 2 bytes of the name field give the base index of
+        the parent directory.
+
+Storage:
+
+Folowing a Shebang
+
+"#!/usr/bin/whatever\n\0"
+Then padded with 0's until a multiple of 16 bytes.
+The idea is that an OS will invoke the requested loader, and ignore the rest
+of the file.
+
+Optionally, there may be text following the shebang but before the 0-byte
+terminator. At least a single 0-byte will be needed preceding the ExWAD
+header.
+
+
+Following a PE/COFF Stub or Image
+
+This is basically the same as tacking the archive after the PE/COFF image,
+except that byte address 0x38 may contain a header offset hint.
+
+Note that bytes 0x00/0x01 contain "MZ", and 0x3C-0x3F contain the offset of
+the PE header. The value at 0x38 is theoretically reserved by MS, but it
+should work (and they don't appear to be doing much with the MZ header
+anyways).
+
+
+Following a ELF Stub or Image
+
+This is roughly the same as the PE/COFF case, except 0x0C contains the
+offset hint.

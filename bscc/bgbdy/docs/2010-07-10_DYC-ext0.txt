@@ -1,0 +1,53 @@
+
+First, to note an existing extension.
+
+int dycDObjectP(dyt obj);
+
+void *dycDCallSigU(dyt obj, char *name, char *sig, void **args);
+void *dycDCallSigV(dyt obj, char *name, char *sig, va_list args);
+void *dycDCallSig(dyt obj, char *name, char *sig, ...);
+
+dyt dycDCallSigVr(dyt obj, char *name, char *sig, va_list lst);
+int dycDCallSigVi(dyt obj, char *name, char *sig, va_list lst);
+s64 dycDCallSigVl(dyt obj, char *name, char *sig, va_list lst);
+float dycDCallSigVf(dyt obj, char *name, char *sig, va_list lst);
+double dycDCallSigVd(dyt obj, char *name, char *sig, va_list lst);
+
+dyt dycDCallSigUr(dyt obj, char *name, char *sig, void **args);
+int dycDCallSigUi(dyt obj, char *name, char *sig, void **args);
+s64 dycDCallSigUl(dyt obj, char *name, char *sig, void **args);
+float dycDCallSigUf(dyt obj, char *name, char *sig, void **args);
+double dycDCallSigUd(dyt obj, char *name, char *sig, void **args);
+
+int dycDCallSigi(dyt obj, char *name, char *sig, ...);
+s64 dycDCallSigl(dyt obj, char *name, char *sig, ...);
+float dycDCallSigf(dyt obj, char *name, char *sig, ...);
+double dycDCallSigd(dyt obj, char *name, char *sig, ...);
+
+void *dycDCallU(dyt obj, dycMethod mth, void **args);
+void *dycDCallV(dyt obj, dycMethod mth, va_list args);
+void *dycDCall(dyt obj, dycMethod mth, ...);
+
+int dycDCallUi(dyt obj, dycMethod mth, void **args);
+s64 dycDCallUl(dyt obj, dycMethod mth, void **args);
+float dycDCallUf(dyt obj, dycMethod mth, void **args);
+double dycDCallUd(dyt obj, dycMethod mth, void **args);
+dyt dycDCallUr(dyt obj, dycMethod mth, void **args);
+void *dycDCallUp(dyt obj, dycMethod mth, void **args);
+void dycDCallUv(dyt obj, dycMethod mth, void **args);
+
+int dycDCallVi(dyt obj, dycMethod mth, va_list args);
+s64 dycDCallVl(dyt obj, dycMethod mth, va_list args);
+float dycDCallVf(dyt obj, dycMethod mth, va_list args);
+double dycDCallVd(dyt obj, dycMethod mth, va_list args);
+dyt dycDCallVr(dyt obj, dycMethod mth, va_list args);
+void *dycDCallVp(dyt obj, dycMethod mth, va_list args);
+void dycDCallVv(dyt obj, dycMethod mth, va_list args);
+
+int dycDCalli(dyt obj, dycMethod mth, ...);
+s64 dycDCalll(dyt obj, dycMethod mth, ...);
+float dycDCallf(dyt obj, dycMethod mth, ...);
+double dycDCalld(dyt obj, dycMethod mth, ...);
+dyt dycDCallr(dyt obj, dycMethod mth, ...);
+void *dycDCallp(dyt obj, dycMethod mth, ...);
+void dycDCallv(dyt obj, dycMethod mth, ...);

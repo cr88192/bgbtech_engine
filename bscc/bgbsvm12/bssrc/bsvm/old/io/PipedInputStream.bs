@@ -1,0 +1,20 @@
+package bsvm.io;
+
+public class PipedInputStream extends InputStream
+{
+public PipedInputStream()
+	{}
+public PipedInputStream(PipedOutputStream src)
+	{}
+
+public int available()
+	{ return 0; }
+public void close()
+	{}
+public void connect(PipedOutputStream src)
+	{}
+public int read()
+	{ return 0; }
+public int read(byte[] b, int off, int len)
+	{ return 0; }
+}

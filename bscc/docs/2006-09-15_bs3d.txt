@@ -1,0 +1,50 @@
+BS3D
+
+	Will work as an interface library between BS1 and LBXGL. Will also represent the scene graph and renderable geometry as S-Expressions. Consider also an interface to the physics engine.
+
+	External representation will be that of (a variant of) S-Expressions.
+
+name				symbol
+name:				keyword
+:name				keyword (alternative syntax)
+"text"			string
+[0..9]+			integer
+[0..9]+ '.' [0..9]+	float number
+
+(...)				list (code or data)
+[...]				list (alternative, data-specific)
+{...}				dictionary/object
+#(...)			array/vector
+#[...]			numeric vector (or fvec)
+#{...}			matrix
+
+An object will follow the form:
+{[key: value]+}
+
+Special/Common Properties:
+	classname		Refers to the type of an object;
+	id			Contains an ID string for this object;
+	name			Gives a context-local name;
+	origin		Object origin (fvec);
+	rotation		Quat (fvec) or 3x3 Rotation matrix (to decide);
+	children		List of child objects.
+	...
+
+	Ok, it is assumed that whatever representation used is sufficient to represent relevant properties of the data. Data that is irregular or presumably can be recalculated as needed is typically not included.
+
+	I will assume that properties with names ending in '_' should not be stored (if present, they will hold temporary and/or computed values).
+
+
+Object Types:
+worldspawn		Will work as the root object for the scene;
+static		All contained objects are a static part of the scene;
+statichull		A statically placed convex polyhedron;
+hull			A convex polyhedron;
+trimesh		A triangle mesh;
+weightedmesh	A triangle mesh with vertex weighting.
+
+hull/statichull
+faces:	[ {norm: #[x y z d] sdir: #[x y z d] tdir: #[x y z d] tex: "texname" ...}+ ]
+
+trimesh/weightedmesh
+tris: [ #(v0 v1 v2 [s0 s1 s2]) ]

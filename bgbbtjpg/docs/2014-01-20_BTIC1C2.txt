@@ -1,0 +1,726 @@
+== BTIC1C ==
+
+BTIC1C is an extended form of the Apple Video / RPZA format.
+
+Some Info on Apple Video:
+
+[http://en.wikipedia.org/wiki/Apple_Video http://en.wikipedia.org/wiki/Apple_Video]
+
+[http://wiki.multimedia.cx/index.php?title=Apple_RPZA http://wiki.multimedia.cx/index.php?title=Apple_RPZA]
+
+[http://multimedia.cx/rpza.txt http://multimedia.cx/rpza.txt]
+
+
+AVI FOURCC: bt1c / c1tb (BTIC1C mode)
+
+Update FOURCC: BTIC / bt1c
+
+
+AVI FOURCC: rpza / azpr (RPZA emulation mode)
+
+
+Description:
+
+Basically RPZA, but with a few possible additions:
+* Ability to encode references to runs of prior blocks;
+* Formally defining alpha-support;
+* Probably also putting it in a TLV packaging;
+* ...
+
+Other Extensions:
+* Deflate Compression
+* More features / modes for encoding blocks
+* ...
+
+
+=== Baseline ===
+
+Baseline Mode:
+* Only RPZA-like features and Deflate/'ZI' images are used.
+* Alternate modes are not allowed for baseline videos nor required to be supported by a decoder.
+
+
+== File Structure ==
+
+File structure for images is:
+* Top-Level File Header (Standalone Files Only)
+* (Opt) Headers* (Invalid in RPZA Mode)
+* Base Image
+** (Opt) Alpha Extension
+* Headers*
+** Component Layers (for Base Image)
+* Tag Layers
+** Component Layers (for each tag layer).
+*** Image Data (for each component layer)
+*** (Opt) Alpha Extension
+
+Currently, all layers will have the same resolution and format.
+
+
+=== TLV ===
+
+TLV Bytes:
+* 0xE0: End-Of-Image Marker
+* 0xE1: len=Word24, Image Data
+* 0xE2: Reserved
+* 0xE3: len=Word24, tag=TWOCC
+* 0xE4: len=Word24, tag=FOURCC
+* 0xE5: len=Byte, tag=TWOCC
+* 0xE6: len=Word56, tag=FOURCC
+
+Values will be encoded in big-endian ordering.
+
+Each chunk header will be followed by the payload, and the length will include the size of the header.
+
+
+=== Headers ===
+
+BTIC1C Mode will have the header:
+ TWOCC('HD')
+   xsize:WORD
+   ysize:WORD
+   imgtype:BYTE
+   clrmode:BYTE
+   mipstart:BYTE
+   mipend:BYTE
+   flags:DWORD
+
+ImgType:
+* 0=RGBA
+* 1=RGB
+* 16=DXT1 (Opaque)
+* 18=DXT5
+* 21=BC6H_SF16 (1)
+* 22=BC7 (1)
+* 23=DXT1F (DXT1 Fast)
+* 24=DXT5F (DXT5 Fast)
+* 25=DXT1A (DXT1+Alpha)
+* 26=DXT5-UVAY (U, V, A, Y)
+* 27=BC7_SRGB (1)
+* 28=BC6H_UF16 (1)
+
+ClrMode:
+* 0=RGB(A)
+* 1=YCbCr
+* 2=RCT
+* 3=YCoCg
+
+The image type and color mode will mostly indicate the intended target format for decoding the image.
+This is more of a hint than an edict, and may provide a hint to the decoder/renderer which format it should use (if possible) for decoding.
+
+They may also effect the interpretation of some members.
+
+
+MipStart and MipEnd may indicate the presence of additional mip-levels. These will exist as a series recursively downsampled versions of the image. The number of encoded mip-levels will be ((MipEnd-MipStart)+1).
+
+Mipmaps will be placed end-to-end in the image, with the first/largest mip-level being present first.
+The size of the image will also be padded to a complete row of blocks.
+
+This header may be placed after the image data for the base plane.
+
+
+(1): These modes would effectively require higher bit-depths than BTIC1C can currently provide to be effective.
+Would need to devise a "good" way to support the extended bit-depth.
+
+
+=== Layers ===
+
+* TWOCC('CL')
+** Component Layer.
+** Layer Name is given as an ASCIZ string.
+
+* TWOCC('TL')
+** Tag Layer.
+** Layer Name is given as an ASCIZ string.
+
+These will be positional markers and directly precede the data which they apply to.
+
+Implicitly, each layer will end when a new layer begins. Component layers will end prior component layers, and tag layers will end both component and tag layers.
+
+Zero or more strings may follow the initial layer name, which may give additional parameters in key/value form.
+
+
+=== BTIC1C + Deflate ===
+
+FOURCC: 'B1CZ'
+
+Basically, the same format as above, but with the entire frame Deflate-compressed and put into a buffer.
+The compressed data will include a Zlib header.
+
+
+TWOCC: 'ZL'
+
+Alternate form for a Deflated frame.
+
+
+TWOCC: 'ZI'
+
+Deflate-compressed image. This will only apply to a single image (and extension images), and will not include the headers or other layers (which will be stored separately).
+
+Of these, only 'ZI' is currently used.
+
+
+TWOCC: 'ZA'
+
+Deflate + Arithmetic Mode.
+
+Possible: [[BTLZA]]
+
+
+=== Top Level File Header ===
+
+This appears at the start of a standalone file, and serves mostly to identify the format.
+This is not used with an AVI container.
+
+ magic:BYTE[8]="BTIC1C\r\n";		//magic sequence
+ size:DWORD						//file payload size
+ check:DWORD;					//Adler32 checksum (optional)
+ ... TLV Data ...
+
+
+== General ==
+
+Values will be encoded in big-endian order.
+The image will be encoded in a raster order starting from the upper-left corner of the image.
+
+Image structure will generally consist of an opcode byte followed by any data.
+
+
+Opcode Byte:
+* High 3 bits hold opcode;
+* Low 5 bits hold run length, or data.
+
+Lengths will be stored minus one, so an operation will apply to length+1 blocks.
+
+For example, 0x80 will encode a skip of 1 block, and 0x9F will encode a skip of 32 blocks.
+
+
+Opcode Byte Ranges:
+* 0x00-0x7F:
+**  Raw Block
+* 0x80-0x9F:
+**  Skip (Reuse from prior frame)
+* 0xA0-0xBF:
+**  Single Color Run
+**  Color Bit 15=Alpha / Transparent
+***    May indicate(2) alpha blended colors (RGBA3534).
+***    Otherwise (3) uses RGB555 (with full transparency assumed).
+***    Otherwise may indicate (if enabled) use of differential colors.
+**  Else:
+***    Opaque Color in RGB555.
+* 0xC0-0xDF:
+**  Pixel Blocks
+**  ColorA Bit 15:
+***    (Drop) Indicates(2) alpha blended colors (RGBA3534).
+***    (New) Indicates Diff Color Mode
+**  ColorB Bit 15:
+***    Enables direct transparency (RGB555).
+* 0xE0-0xFF:
+**  Extended Ops, Low 5=Op Number
+***    0xE0: End Of Image / Mode-Escape
+****      Default Mode: End Of Image
+****      Alternate Modes: Jump to Default Mode.
+*****       Shorthand for F0,F0
+***    0xE1: Image Data, Len=Word24
+***    0xE2(1): TLV Chunk A, Tag=Byte, Len=Word
+***    0xE3(1): TLV Chunk B, Len=Word24, Tag=TWOCC
+***    0xE4(1): TLV Chunk C, Len=Word24, Tag=FOURCC
+***    0xE5(1): TLV Chunk D, Len=Byte, Tag=TWOCC
+****      Within image data, these will be used for optional features.
+****      If the first character of the tag is upper-case, this is Must-Understand.
+****      Otherwise, unrecognized markers are ignored.
+***    0xE6: Drop / Reserved
+***    0xE7: Drop / Reserved
+***    0xE8(1): Prior Block (Length=1, Dist=1)
+***    0xE9(1): Run (Length=Byte, Dist=1)
+***    0xEA(1): Run (Length=1, Dist=Byte)
+***    0xEB(1): Run (Length=1, Dist=Word)
+***    0xEC(1): Run (Length=Byte, Dist=Byte)
+***    0xED(1): Run (Length=Byte, Dist=Word)
+***    0xEE(1): Skip / Translate
+****      Next Byte Top 3 Bits:
+*****       000: 13-bit Skip
+*****       001: Len(5b), Y-Offs(4b), X-Offs(4b)
+*****       010: Len(13b), Y-Offs(8b), X-Offs(8b)
+*****       011: Reserved
+****      Encodes a longer skip and/or a Skip+Translate
+****      A Skip+Translate will copy a run of blocks from the prior frame relative to the current position.
+****      Each offset will use bias values (8 and 128), and will always use the full-length scanline for Y.
+***    0xEF(1): Set Controller
+****      Next Byte, High 3: Mode
+*****       000: Enable Feature (5-bit ID)
+*****       001: Disable Feature (5-bit ID)
+*****       010: Enable Feature (13-bit ID)
+*****       011: Disable Feature (13-bit ID)
+*****       100: Set Controller (5-bit ID, 8-bit value)
+*****       101: Set Controller (5-bit ID, 16-bit value)
+*****       110: Larger Mode Prefix
+******        0-23: Modes 0-23
+******        24-27: Modes 0-1023
+******        28: Modes 0-65535
+*****       111: Escape
+****      Low 5: Controller ID
+*****       Another byte if 13-bit ID.
+*****       Opcode for Escape
+****      If set-controller: 8 or 16 bit value.
+***    0xF0-0xF7(1): Mode Prefix (Modes 0-7)
+***    0xF8-0xFB(1): Multi-Byte Commands (Global)
+***    0xFC-0xFF(1): Multi-Byte Commands (Mode Specific)
+****      F8/F9, FC/FD: Two Byte Commands
+*****       Another byte follows, giving the second byte of the command.
+****      FA/FE: Three Byte Commands
+*****       Two bytes follow giving the command.
+*****       0x2020-0x7F7F represents a TWOCC space.
+****      FB/FF: Five Byte Commands
+*****       Four bytes follow giving the command.
+*****       0x20202020-0x7F7F7F7F represents a FOURCC space.
+
+
+(1): Invalid in RPZA mode.
+
+Note that run lengths and offsets will be stored minus one, so the maximum length is 256 and the maximum distance for a word is 65536.
+
+The distance may be less than the length, which may be used to encode repeating patterns of blocks.
+
+(2): N/A in RPZA and DXT1 modes or with an Alpha-Extension chunk, where only RGB555 may be used.
+In RPZA mode, this may give a "generic" transparent color.
+Effectively deprecated/dropped.
+
+(3): N/A with AX chunk.
+
+
+* 0xFC, 0x80-0x9F (4)
+** Run of flat colors (1-32).
+** Followed by N colors, with a single color for each block.
+
+(4): Invalid in BTIC1C Baseline
+
+
+=== Alternate Modes ===
+
+Alternate modes may provide alternative ways to encode blocks more compactly.
+
+This system is modal and thus depends on an explicit "state", as well as several tables:
+* A 256-color palette with RGB555 colors (or higher)
+* A 16-color palette with RGB555 colors (or higher)
+* A 256-entry table of block patterns (32-bits each).
+
+These tables will be preserved between frames, however the image will reset to Default-Mode (RGB555 colors and 32-bit pixel blocks) at the start of each image frame.
+
+Mode Prefix bytes will allow indicating a command which will be interpreted as-if the block were encoded in this mode.
+
+A Default-Mode prefix followed by another mode prefix byte will be interpreted as a Mode-Set command.
+
+
+Mode Prefix Bytes:
+*    0xF0: Default-Mode Prefix, Mode Set
+*    0xF1: SLQA (8-bit index color mode, 16-bit PixelBlock16)
+*    0xF2: SLQB (4-bit index color mode, 8-bit PixelIndex8)
+*    0xF3: SLQC (8-bit index color mode, 8-bit PixelIndex8)
+*    0xF4: SLQD (normal/diff color mode, 16-bit PixelBlock16)
+*    0xF5: SLQE (normal/diff color mode, 8-bit PixelBlock8)
+
+Mode Commands (N/A in Default Mode):
+*      0xE0: Return to Default-Mode
+*      0xF8, 0x81: Reset Tables
+**        Palettes and tables should be reset to default values.
+*      0xF8, 0x82: Update 256 Color Palette (RGB555)
+**        Start:Byte, End:Byte, Colors:RGB555[(End-Start)+1]
+**        Update Palette using RGB555 colors.
+*      0xF8, 0x83: Update 16-color Palette (8-bit indices)
+**        StartEnd:Byte, Colors:Byte[(End-Start)+1]
+**        Colors will index into the 256-color palette.
+*      0xF8, 0x84: Update 16-color Palette (RGB555)
+**        StartEnd:Byte, Colors:RGB555[(End-Start)+1]
+**        Update Palette using RGB555 colors.
+*      0xF8, 0x85: Update Block Patterns (for PixelIndex)
+**        Start:Byte, End:Byte, Pattern:PixelBlock32[(End-Start)+1]
+
+** Default 256-color palette will be:
+*** 0-15: Basic 16 colors.
+*** 16-31: 16 shades of gray.
+*** 32-255: 224 colors (7x8x4).
+** The default 16-color palette will have the usual basic 16 colors (HiRGB).
+
+
+Controller 0: Block Mode (Allows modes beyond mode 7).
+
+
+Possible: Change way modes are handled, make features individually selectable with the mode basically as a way of choosing a combination of features (Color Type, Block Type, ...).
+
+Mode 0 would remain as a fixed default mode though, so only 1-7 could be made customizable.
+
+Also possible: Modes 1-7 are basically presets from a potentially larger mode table, with modes being assignable from a larger table of available modes.
+
+
+==== Possible (Bigger Index Modes) ====
+
+
+Possible: Bigger Index Modes
+* Used if palette was set in extended mode.
+** Colors 0x00-0x7F: Same
+** Colors 0x80-0xBF: Extended Colors (0-16383)
+*** Another byte follows.
+** Colors 0xC0-0xCF: Predicted Color
+*** Low 4 bits holds color predictor.
+*** 0=Left (A)
+*** 1=Up (B)
+*** 2=Up-Left (C)
+*** 3=Paeth
+*** 4=Paeth2
+
+* 0xF8, 0x8C: Update Palette Extended RGB555
+* 0xF8, 0x8D: Update Palette Extended RGB23
+* 0xF8, 0x8E: Update Palette Extended RGB31FS
+* 0xF8, 0x8F: Update Palette Extended RGB31FU
+**    Start:VLI2, End:VLI2, Colors:RGBXX[(End-Start)+1]
+**    Update Palette with extended colors (Sets indexed colors to extended mode).
+
+
+==== Possible (Extended Depth and Modes) ====
+
+*      0xF8, 0x86: Update 256 Color Palette (RGB23)
+**        Start:Byte, End:Byte, Colors:RGB23[(End-Start)+1]
+**        Update Palette using RGB23 colors.
+*      0xF8, 0x87: Update 256 Color Palette (RGBA31)
+**        Start:Byte, End:Byte, Colors:RGBA31[(End-Start)+1]
+**        Update Palette using RGB31FS colors.
+*      0xF8, 0x88: Update 256 Color Palette (RGB31FS)
+**        Start:Byte, End:Byte, Colors:RGB31FS[(End-Start)+1]
+**        Update Palette using RGB31FS colors.
+*      0xF8, 0x89: Update 256 Color Palette (RGB31FU)
+**        Start:Byte, End:Byte, Colors:RGB31FU[(End-Start)+1]
+**        Update Palette using RGB31FU colors.
+
+* 0xF8, 0x8A: Assign Mode Preset
+** TableID:WORD
+** High 4 bits: Preset Number (1-7)
+** Low 12 bits: Mode ID
+* 0xF8, 0x8B: Define Mode
+** 4 bits: Layout
+** MSB:
+*** 0, 7-bit Mode is used
+*** 1, 3 bit layout is used, followed by 12-bit mode.
+** Layout 0 (Default):
+*** 4 bits: ColorSpace
+*** 4 bits: PixelBlock
+** Modes 0-63 could be reserved for fixed (format-defined) modes.
+
+
+If modes are customizable, possible:
+* Color Type
+** 0: RGB555
+** 1: Index8
+** 2: Index4
+** Diff7
+*** Current Differential Colors
+*** Logical Sub-mode of RGB555
+** Diff15 (Possible)
+*** Differential Colors with 5-bit deltas.
+*** Likely for a bigger colorspace.
+*** Could be sub-mode of BGR23 or BGR31F
+** 3: RGB23 (Possible)
+*** X bit, P bit (B/R), RGB787
+** 4: RGBA31 (Drop)
+*** X bit, P bit (B/R), RGBA7878
+** 5: RGB31FS (Possible)
+** 6: RGB31FU (Possible)
+*** X bit, P bit, 3x 10 bits (RGB).
+*** High bits of a Float16 value.
+*** S is signed, U is unsigned.
+* Pixel Block Type
+** 0: 4x4 2bpp (32 bits)
+** 1: 4x4 1bpp (16 bits)
+** 2: 2x2 2bpp (8 bits)
+** 3: PixelIndex (8 bits)
+** Theoretical:
+*** 2x2 1bpp, 1x1, ...
+
+
+Fixed Modes:
+* 0: RGB555 / Diff7, PixelBlock32
+* 1: Index8, PixelBlock16
+* 2: Index4, PixelIndex8
+* 3: Index8, PixelIndex8
+* 4: RGB555 / Diff7, PixelBlock16
+* 5: RGB555 / Diff7, PixelBlock2x2
+* 6: RGB23 / Diff15, PixelBlock32
+* 7: RGB31FS / Diff15, PixelBlock32
+* 8: RGB31FU / Diff15, PixelBlock32
+* 9: RGBA31 / Diff15, PixelBlock32
+
+
+Note:
+* Full precision may not be preserved if more than that supported by the output, the encoder should not produce output which solely depends on a particular color depth.
+
+
+=== Colors ===
+
+Stored in big-endian order.
+
+RGB555 = x.RRRRR.GGGGG.BBBBB
+
+RGBA3534 = x.AAAA.RRR.GGGGG.BBB (Dropped)
+
+
+Alpha-blended colors will have both colors in the block use the RGBA3534 format.
+
+Alpha blended modes will not be supported for decoding to DXT1, which will instead interpret alpha color-blocks as fully transparent, and pixel-blocks as opaque. Likewise, alpha-blended colors are invalid in RPZA mode.
+
+In both DXT1 and RPZA mode, the color will be interpreted as being RGB555.
+This will also be the behavior in DXT5 mode if an Alpha Extension chunk is present.
+
+If RGB555 colors are converted to 24-bit or 32-bit RGB(A), then the high order bits will be copied to the low bits.
+
+For example, 5 bits are mapped to 8 bits as:
+* 76543 -> 76543765
+
+
+==== Extended Colors ====
+
+RGB23 = x.P.RRRRRRR.GGGGGGGG.BBBBBBB
+
+RGBA31 = x.P.RRRRRRR.GGGGGGGG.BBBBBBB.AAAAAAAA
+
+RGB31FU = x.P.RRRRRRRRRR.GGGGGGGGGG.BBBBBBBBBB
+
+RGB31FS = x.P.RRRRRRRRRR.GGGGGGGGGG.BBBBBBBBBB
+
+The x bit is unused in the color value.
+
+The P bit is basically a shared low order bit.
+For RGB23 and RGBA31, it will encode the low order bit for B and R.
+For RGB31F it will apply to all 3 colors.
+
+For the 31F variants, the color will represent the high order bits of a half-float:
+* 31U = EEEEE.FFFFF
+* 31S = S.EEEEE.FFFF
+** 31S encodes a sign at the cost of one mantissa bit.
+
+For expanding out the values, the rules will be as such:
+* The color bits are copied to their place in the output value;
+* If applicable, the P bit is copied below these bits.
+* Any remaining bits are filled in by copying the high-order bits.
+
+For example, a 31U value abcdefghij would be expaneded to a 16-bit half-float as:
+* 0abcdefghijPabcd
+
+
+=== Differential Colors ===
+
+x.ddddddd
+
+With a differential color block, the color will be predicted from adjacent blocks:
+* C B
+* A x
+
+This will be handled by running a Paeth predictor on the RGB555 pixel-blocks.
+
+* ddddddd: 5x5x5 cube, -2..2
+** (dR*5+dG)*5+dB
+
+A scale factor will indicate the magnitude of the delta:
+* 0: -2, -1, 0, 1, 2
+* 1: -4, -1, 0, 1, 4
+* 2: -6, -2, 0, 2, 6
+* 3: -8, -2, 0, 2, 8
+* 4: -13, -3, 0, 3, 13
+* 5: -17, -5, 0, 5, 17
+* 6: -23, -7, 0, 7, 23
+* 7: -29, -9, 0, 9, 29
+
+0..124: Deltas.
+
+* F8 8F xx: Set Diff Color Mode
+** 00: Disable
+** 01: Last Block
+** 02: Paeth (Per RGB Block)
+** 03: Paeth2 (Per Component)
+* F8 90: Set Scale=0
+* F8 91: Set Scale=1
+* ...
+* F8 96: Set Scale=6
+* F8 97: Set Scale=7
+* Special Scales
+** F8 98: Set Scale=8
+** ...
+** F8 9F: Set Scale=15
+
+
+Simple Color Deblocking:
+* F8 A0: Deblock Mode: None
+* F8 A1: Deblock Mode: Left (Interpolate)
+* F8 A2: Deblock Mode: Up (Interpolate)
+* F8 A3: Deblock Mode: Up/Left (Interpolate)
+* F8 A4: Deblock Mode: Full (Interpolate)
+* F8 A5: Deblock Mode: Left (Extrapolate)
+* F8 A6: Deblock Mode: Up (Extrapolate)
+* F8 A7: Deblock Mode: Up/Left (Extrapolate)
+
+These indicate that flat color blocks will instead give a gradient.
+With interpolate, the color will give the value for the lower/right corner, and the other color will be given by the upper/left block (or an average of the up and left blocks).
+
+With extrapolate, it will be similar, except that the color will give the center value (and the lower/right value will be extrapolated, 2C-P).
+
+Note: Left and Up/Left will only apply to the first block in a color-span, after which point it will behave as None or Up. Up/Left extrapolate with multi-block runs will only extrapolate Up, but will interpolate Left.
+
+
+==== Diff15 (Possible) ====
+
+xrrrrrgg gggbbbbb
+
+Differences will be similar to the 8-bit case, but will differ mostly in the range of the difference values.
+
+Scale will apply similarly as well, with 0 mapping directly from -16..15.
+
+Scales 1-7 will approximately follow a log scale (RGB24 / RGBA31):
+* 1: -32..32
+* 2: -48..48
+* 3: -64..64
+* 4: -96..96
+* 5: -128..128
+* 6: -192..192
+* 7: -256..256
+
+Scales RGB31F (Expanded to 16):
+* 0: -16..15
+* 1: -32..32
+* 2: -48..48
+* 3: -64..64
+* 4: -96..96
+* 5: -128..128
+* 6: -192..192
+* 7: -256..256
+* 8: -512..512
+* 9: -1024..1024
+* 10: -2048..2048
+* 11: -4096..4096
+* 12: -8192..8192
+* 13: -16384..16384
+* 14: -32768..32768
+* 15: -65536..65536
+
+
+=== Pixel Blocks (Default 32-bit) ===
+
+After ColorA and ColorB, there will be pixel bits for one or more blocks.
+
+Each block will be 4x4 pixels, with 2 bits per pixel.
+
+These pixel blocks will be encoded with the left pixel in the high 2 bits.
+
+
+If using direct (non-interpolated) transparency:
+*	0=ColorB
+*	1=Average (1/2 ColorB + 1/2 ColorA)
+*	2=Transparent
+*	3=ColorA
+
+Otherwise (Opaque and Alpha-Blend modes):
+*	0=ColorB
+*	1=2/3 ColorB + 1/3 ColorA
+*	2=1/3 ColorB + 2/3 ColorA
+*	3=ColorA
+
+
+==== 16-bit pixel blocks (PixelBlock16) ====
+
+Each block will be 4x4 pixels, with 1 bit per pixel:
+*	0=ColorB
+*	1=ColorA
+
+
+==== 8-bit pixel 2x2 blocks (PixelBlock8) ====
+
+Each block will be 2x2 pixels, with 2 bits per pixel:
+*	0=ColorB
+*	1=2/3 ColorB + 1/3 ColorA
+*	2=1/3 ColorB + 2/3 ColorA
+*	3=ColorA
+
+
+==== 8-bit pixel blocks (PixelIndex8) ====
+
+Will be an approximate pixel block, with the following bit definitions:
+* ABCDHVSS
+* ABCD
+** Will refer to the 4 corners of the block
+** Will indicate whether the 2x2 pixel block is initially set or clear.
+* H: Horizontal Bar (Middle 2 pixels, across block)
+* V: Vertical Bar (Middle 2 pixels, across block)
+* SS: Softness
+** 0=Hard, No softening
+** 1=SoftenAvg, Blur + Round Nearest
+** 2=SoftenDn, Blur + Round Down
+** 3=SoftenUp, Blur + Round Up
+
+Cases where ABCD=15 will be special dither patterns:
+* H: Half Horizontal
+* V: Half Vertical
+* SS:
+** 0=Full Range
+** 1=Middle Range
+** 2=1/3 Range
+** 3=2/3 Range
+
+
+=== Raw Block ===
+
+Represents a raw opaque block.
+
+ColorA will use the opcode as the MSB.
+
+ColorB will be RGB555.
+
+If bit 15 is set, then ColorB will be followed by 4 bytes encoding the interpolated pixels.
+
+Otherwise, ColorB will be followed by 14 more colors encoding raw color values (A block will be given as an array of 16 pixel colors).
+
+
+=== Alpha Extension ===
+
+In alpha extension mode, the image will be encoded as a pair.
+
+The first image will be encoded the same as a raw RGB image in BTIC1C-DXT1 or PPZA mode. Bitwise alpha may be used (albeit ignored). Blended and Split Alpha are invalid in this mode.
+
+A secondary image will be encoded inside a TWOCC('AX') chunk directly following the image chunk, which will use a similar opcode format to the main image and encode the alpha component.
+
+* 0x00-0x7F
+** AlphaAB, PixelBlock
+* 0x80-0x9F
+** Same, Encodes a skip in the Alpha plane.
+* 0xA0-0xBF
+** Flat alpha blocks.
+** Alpha, will encode the alpha value in the low 7 bits.
+** Bit 7 is reserved.
+* 0xC0-0xDF
+** AlphaAB, PixelBlock+
+* 0xE0-0xFF
+** Same
+
+
+Alpha value will be a byte with the alpha in the low 7 bits, if bit 7 is clear.
+
+If bit 7 is set, it will be 16 bits with alpha in the low 8, and 3 refine bits (bits 8-10).
+
+
+AlphaAB will encode AlphaA and AlphaB into a 16 or 32-bit quantity.
+* Bit 7 of first byte is 0
+** 16 bits are used.
+** First byte has AlphaA in the low 7 bits.
+** Second byte has AlphaB in the low 7 bits.
+* Bit 7 of first byte is 1
+** 32 bits are used.
+** First 16 bit quantity has AlphaA in the low 8 bits, and 3 RefineA bits (bits 8-10).
+** Second 16 bit quantity has AlphaB in the low 8 bits and 3 RefineB bits.
+
+
+RefineA/B are bits which may be used to refine the color of the main pixel block.
+
+In the DXT5 case, bit 2 of each will encode the low bit of the green component.
+For RGBA decoding, they will be used to refine the gamma of the RGB triple.
+
+Unused bits are to be set to 0.
+
+
+PixelBlocks will remain 32-bits, using the same format as for color pixel blocks.

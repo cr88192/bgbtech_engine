@@ -1,0 +1,40 @@
+//crun0.c
+int crun_init();
+int crun_prologue(char **rt);
+int main(int argc, char *argv[]);
+//crun_core.c
+int crun_sputs(char **rt, char *str);
+int crun_printsf(char **rt, char *str, ...);
+int crun_system(char *str);
+int crun_call(char *app, char **args);
+int crun_callmake(char *dir, char *mkfile, char *targ);
+int crun_dechexchar(int i);
+int crun_dechexchar1(char *s);
+int crun_dechexchar2(char *s);
+void *crun_ralloc(int sz);
+char *crun_rstrdup(char *s);
+char **crun_rsplit(char *s);
+char **crun_split(char *s);
+int crun_freestrs(char **a);
+char **crun_dupstrs(char **a);
+int crun_bufferhash(void *buf, int sz);
+int crun_filehash(char *name);
+crun_time_t crun_futuretime();
+crun_time_t crun_filetime(char *name);
+crun_time_t crun_filetime(char *name);
+crun_depvar *crun_lookupdepvar(char *name);
+crun_depvar *crun_getdepvar(char *name);
+crun_depvar *crun_setdepvar(char *name, char *value);
+char *crun_getvar(char *name);
+void crun_setvar(char *name, char *value);
+char *crun_expandvars(char *str);
+crun_depcmd *crun_lookupdepcmd(char *name);
+crun_depcmd *crun_getdepcmd(char *name);
+crun_depcmd *crun_setdepcmd(char *name,int (*fcn)(crun_depcmd *self, char **args));
+int crun_runcmd(char *str);
+crun_depnode *crun_lookupdep(char *name);
+crun_depnode *crun_newdep(char *name, char **deps, char **cmds);
+crun_time_t crun_deptime(char *name);
+int crun_checkdep(char *name);
+int crun_rundeps(char *name);
+//crun_cortxt.c

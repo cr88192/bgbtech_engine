@@ -1,0 +1,117 @@
+JXBC:
+
+A statically typed bytecode.
+
+Structure:
+Frame based, first N spots are for arguments, rest for locals and temporaries.
+
+Frame:
+0, this/class
+1: Arg 0
+2: Arg 1
+...
+N: Arg N-1
+N+1: Var 0
+...
+
+Types:
+Int (int32)
+Long (int64)
+Pointer (Reference, Pointer-sized int)
+Float (float32)
+Double (float64)
+
+These will be the base types.
+
+Some secondary (virtual) base types may exist as well:
+B: bool/byte
+C: signed byte
+H: unsigned byte
+S: signed short
+T: unsigned short
+J: unsigned int
+M: unsigned long
+
+Q: array
+R: reference
+
+these types will only exist for certain opcodes and certain contexts.
+B/C/H/S/T/J: these will be aliased to I;
+M: will be aliased to L;
+Q: will be aliased to P;
+R: will be aliased to P.
+
+
+Note:
+With local variables, it will not be allowed to store one type and read another if the types are not aliased (the interpreter is not required to allow this to work).
+
+Within any reasonable control transfer path, it is required that if the same variable has the same type, it also has the same identity. If the types don't match, the result is undefined (possible validation failure). However, the same variable may be allowed to hold different types within the body of a function provided control may not transfer between them.
+
+
+
+Opcodes:
+0x00..0xBF: Single Byte Opcodes
+0xC0..0xDF: Dual Byte Opcodes
+
+0xC0'00..0xC0'BF: Will be aliased to 0x00..0xBF, except that any variable, reference, or label indices will be wider.
+
+Local variables will default to using an 8 bit index, but may be expanded to 16 bits via a prefix. Labels will default to 16 bits, but will expand to 32.
+
+
+opcodes:
+add[i/l/p/f/d]	<dst>, <srca>, <srcb>
+sub[i/l/p/f/d]	<dst>, <srca>, <srcb>
+mul[i/l/p/f/d]	<dst>, <srca>, <srcb>
+div[i/l/p/f/d]	<dst>, <srca>, <srcb>
+mod[i/l]		<dst>, <srca>, <srcb>
+and[i/l]		<dst>, <srca>, <srcb>
+or[i/l]		<dst>, <srca>, <srcb>
+xor[i/l]		<dst>, <srca>, <srcb>
+
+add[i/l/p/f/d]k	<dst>, <src>, <const>
+sub[i/l/p/f/d]k	<dst>, <src>, <const>
+mul[i/l/p/f/d]k	<dst>, <src>, <const>
+div[i/l/p/f/d]k	<dst>, <src>, <const>
+mod[i/l]k		<dst>, <src>, <const>
+and[i/l]k		<dst>, <src>, <const>
+or[i/l]k		<dst>, <src>, <const>
+xor[i/l]k		<dst>, <src>, <const>
+
+cmp[i/l/p/f/d/r]	<dst>, <srca>, <srcb>
+	dst:int=srca-srcb
+
+jmp			<label>
+
+Conditional Jumps
+jmpt			<var>, <label>	(var != 0)
+jmpf			<var>, <label>	(var == 0)
+jmpe			<var>, <label>	(var == 0)
+jmpne			<var>, <label>	(var != 0)
+jmpl			<var>, <label>	(var < 0)
+jmpg			<var>, <label>	(var > 0)
+jmple			<var>, <label>	(var <= 0)
+jmpge			<var>, <label>	(var >= 0)
+
+Alias:
+jmpz: jmpf, jmpe
+jmpnz: jmpt, jmpne
+
+
+leai <dst>, <src>, <idx:i>, <scale:bk>, <offs:i>
+leaik <dst>, <src>, <idx:i>, <scale:bk>, <offs:ik>
+leak <dst>, <src>, <offs:ik>
+where:
+dst=src+(idx*scale)+offs;
+
+Scale is a byte:
+0: 1
+1: 2
+2: 4
+3: 8
+4: 16
+5: 32
+6: 64
+7: 128
+8: 256
+64: sizeof(Pointer)
+

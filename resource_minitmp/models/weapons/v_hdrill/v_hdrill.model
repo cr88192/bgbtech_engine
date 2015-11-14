@@ -1,0 +1,13 @@
+//Blaster
+
+bones v_bones.bone
+
+vmesh v_blast1.ac
+
+anim active active0.anim
+anim pow power0.anim
+anim idle1 idle1_0.anim
+anim idle2 idle2_0.anim
+anim putway putaway0.anim
+
+origin 0 0 0

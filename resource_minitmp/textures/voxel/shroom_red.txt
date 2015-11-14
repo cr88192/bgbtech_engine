@@ -1,0 +1,8 @@
+// $flags voxel alpha nonsolid
+
+$flags voxel alpha nodepthwrite
+$vox_EmitBlock BTGE_Voxel_EmitBlock_Torch
+
+$vox_mins 8 8 0
+$vox_maxs 24 24 16
+

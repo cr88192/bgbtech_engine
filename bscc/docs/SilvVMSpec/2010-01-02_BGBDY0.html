@@ -1,0 +1,4128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.0  (Win32)">
+	<META NAME="CREATED" CONTENT="20100101;23514800">
+	<META NAME="CHANGED" CONTENT="20100110;16563400">
+	<META NAME="Info 1" CONTENT="">
+	<META NAME="Info 2" CONTENT="">
+	<META NAME="Info 3" CONTENT="">
+	<META NAME="Info 4" CONTENT="">
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<H1>BGBDY: BGB Dynamic Library</H1>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2>Overview</H2>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">This library is roughly divided up like
+this:<BR>BGBDY:</P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in">DY: generic,
+dynamic types facilities;</P>
+<P STYLE="margin-left: 1.58in; margin-bottom: 0in">lists, cons cells,
+arrays, symbols, keywords, strings, fixnum and flonum,
+...;<BR>Prototype-OO facilities (Dynamically-typed);</P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in">VFILE: the VFS
+subsystem;<BR>DYX: XML / DOM related facilities;<BR>DYC:
+Class/Instance OO facilities (Mostly statically-typed);<BR>DYLL:
+low-level facilities</P>
+<P STYLE="margin-left: 1.58in; margin-bottom: 0in">lots of
+decentralized code generation stuff (mostly autonomous);</P>
+<P STYLE="margin-left: 1.58in; margin-bottom: 0in">stuff for
+&quot;closures&quot; and &quot;apply&quot;;<BR>signature string
+machinery (the core of the &quot;signature&quot; system);<BR>the
+metadata database;<BR>exception handling (as a C API);<BR>&hellip;</P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in">DTY: a lot of
+(mostly statically typed) numeric facilities (int128, vector, quat,
+matrix, ...);<BR>BGAL (BGB Genetic Algorithm Library):</P>
+<P STYLE="margin-left: 1.58in; margin-bottom: 0in">genetic algos and
+genetic programming facilities;<BR>neural nets;<BR>...<BR><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>Actually, DYX is more &quot;DOM-ish&quot;,
+but differs somewhat from DOM in terms of  API design.<BR>Its API has
+many aspects which are closer in operation to LISP-style list
+construction/manipulation operations. The reason is mostly that this
+facility was originally implemented mostly for compiler writing, and
+so the API  is &quot;streamlined&quot; somewhat for this task (vs
+ordinary DOM which is traditionally very clunky...).<BR><BR>
+</P>
+<P STYLE="margin-bottom: 0in">DYC primarily handles statically-typed
+Class/Instance OO stuff, and was originally implemented mostly to be
+the back-end object for some of my JVM-related stuff. Although it was
+big and bulky and is mostly independent, some of its internal
+machinery is shared with the dynamically-typed Prototype-OO
+machinery, and in fact DYC Objects should be usable via the P-OO API
+(however, the inverse case is not true at the moment, and so plain
+P-OO objects can't be safely used from the DYC API).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Aside:</P>
+<P STYLE="margin-bottom: 0in">Note that DYC can create its own P-OO
+objects which do work via its APIs, and eventually it may make sense
+to better integrate the mechanisms. However, internally there are
+some differences in terms of the internal workings of the object
+systems which would need to be addressed somehow. A partial issue is
+that of making a system which is efficient for static-typing yet not
+too inflexible, wasteful, or overly complex when used with dynamic
+typing.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Another partial option would be to
+modify or extend the Interface mechanics to be able to deal with
+non-DYC objects, or add some &ldquo;hybrid&rdquo; API calls which
+allow interface methods to be used with pure-dynamic objects.</P>
+<P STYLE="margin-bottom: 0in">End Aside.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>DYLL: is a big component and also
+thus far undocumented...</P>
+<P STYLE="margin-bottom: 0in">Both the Signature system and Metadata
+Database are described in the Metadata spec.</P>
+<P STYLE="margin-bottom: 0in"><BR><BR>BGAL: This actually was copied
+in from elsewhere (it was written apart from my VM subproject), but I
+put it here as I didn't have anywhere else good to put it.<BR><BR>It
+has, notably, not exactly been used much, as I have not exactly been
+running into a whole lot of general-purpose programming problems
+which are reasonably solved by throwing genetic programming or neural
+nets at them... <BR><BR><BR>
+</P>
+<H2>BGBDY</H2>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Dynamic Types</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dy_init(void *base);</P>
+<P STYLE="margin-bottom: 0in">void dy_init2(int (*fcn)());</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Init functions, these bring up BGBDY
+and also BGBGC.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *dygettype(dyt p);</P>
+<P STYLE="margin-bottom: 0in">Get the type name of an object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dytypep(dyt p, char *ty);</P>
+<P STYLE="margin-bottom: 0in">Returns non-zero if a given object is
+of a given type.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dybool(int v);</P>
+<P STYLE="margin-bottom: 0in">Wrap a bool.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyint(int v);</P>
+<P STYLE="margin-bottom: 0in">Wrap an integer value.</P>
+<P STYLE="margin-bottom: 0in">This has a defined range of -2<SUP>31</SUP>
+.. 2<SUP>31</SUP>-1, and may be stored as a fixnum if range allows.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dylong(s64 v);</P>
+<P STYLE="margin-bottom: 0in">dyt dylonglong(s64 v);</P>
+<P STYLE="margin-bottom: 0in">Wrap a long value.</P>
+<P STYLE="margin-bottom: 0in">Longs are kept semantically separate
+from integers.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyflonum(float v);</P>
+<P STYLE="margin-bottom: 0in">Wrap a flonum. A flonum may be stored
+in an in-pointer format and thus have reduced accuracy (A 28-bit
+float format is used on x86).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyfloat(float v);</P>
+<P STYLE="margin-bottom: 0in">dyt dydouble(double v);</P>
+<P STYLE="margin-bottom: 0in">Wrap an item with float or double
+precision. These will keep the needed precision at a cost of likely
+using heap-allocated objects.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyfcomplex(fcomplex v);</P>
+<P STYLE="margin-bottom: 0in">dyt dydcomplex(dcomplex v);</P>
+<P STYLE="margin-bottom: 0in">dyt dycomplex2(double r, double i);</P>
+<P STYLE="margin-bottom: 0in">Create an object holding a complex.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *dystring(char *s);</P>
+<P STYLE="margin-bottom: 0in">char *dysymbol(char *s);</P>
+<P STYLE="margin-bottom: 0in">char *dykeyword(char *s);</P>
+<P STYLE="margin-bottom: 0in">Wrap a string, symbol, or keyword.</P>
+<P STYLE="margin-bottom: 0in">Note that the internal representation
+of these types is C strings in M-UTF-8.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dysym(char *s);</P>
+<P STYLE="margin-bottom: 0in">dyt dyksym(char *s);</P>
+<P STYLE="margin-bottom: 0in">Wrap symbol or keyword.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">u16 *dywstring(u16 *s);</P>
+<P STYLE="margin-bottom: 0in">u16 *dywstring2(char *str);</P>
+<P STYLE="margin-bottom: 0in">Wrap a string in &ldquo;wide&rdquo;
+format.</P>
+<P STYLE="margin-bottom: 0in">Note, this format is specifically
+UTF-16, and similarly it is not safe to cast to/from wchar_t, given
+the exact type of wchar_t is OS dependent.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyustring(char *s);</P>
+<P STYLE="margin-bottom: 0in">dyt dyusym(char *s);</P>
+<P STYLE="margin-bottom: 0in">Wrap a ustring or usym, which attempts
+to pack reduced-character set strings (C identifier format) into a
+smaller representation.</P>
+<P STYLE="margin-bottom: 0in">Use of this feature is discouraged.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dyboolp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dyfixintp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dyintp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dylongp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dylonglongp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dyflonump(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dyfloatp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dydoublep(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dyrealp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dyfcomplexp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dydcomplexp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dycomplexp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dystringp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dysymbolp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dykeywordp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dywstringp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dyustringp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dyusymp(dyt p);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Type predicates. These return 1 if
+passed an object of the correct type, 0 otherwise.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *dystringv(dyt p);</P>
+<P STYLE="margin-bottom: 0in">char *dysymbolv(dyt p);</P>
+<P STYLE="margin-bottom: 0in">u16 *dywstringv(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dyintv(dyt p);</P>
+<P STYLE="margin-bottom: 0in">s64 dylongv(dyt p);</P>
+<P STYLE="margin-bottom: 0in">s64 dylonglongv(dyt p);</P>
+<P STYLE="margin-bottom: 0in">float dyfloatv(dyt p);</P>
+<P STYLE="margin-bottom: 0in">double dydoublev(dyt p);</P>
+<P STYLE="margin-bottom: 0in">double dyrealv(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dcomplex dycomplexv(dyt p);</P>
+<P STYLE="margin-bottom: 0in">fcomplex dyfcomplexv(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dcomplex dydcomplexv(dyt p);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Unwrap a value of a given type.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">double dycreal(dyt p);</P>
+<P STYLE="margin-bottom: 0in">double dycimag(dyt p);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Get the real or imaginary components of
+a complex.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyvec2(float x, float y);</P>
+<P STYLE="margin-bottom: 0in">dyt dyvec3(float x, float y, float z);</P>
+<P STYLE="margin-bottom: 0in">dyt dyvec4(float x, float y, float z,
+float w);</P>
+<P STYLE="margin-bottom: 0in">dyt dyvec2fv(float *v);</P>
+<P STYLE="margin-bottom: 0in">dyt dyvec3fv(float *v);</P>
+<P STYLE="margin-bottom: 0in">dyt dyvec4fv(float *v);</P>
+<P STYLE="margin-bottom: 0in">dyt dyvec2dv(double *v);</P>
+<P STYLE="margin-bottom: 0in">dyt dyvec3dv(double *v);</P>
+<P STYLE="margin-bottom: 0in">dyt dyvec4dv(double *v);</P>
+<P STYLE="margin-bottom: 0in">int dyvec2p(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dyvec3p(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dyvec4p(dyt p);</P>
+<P STYLE="margin-bottom: 0in">void dyvecv2fv(dyt p, float *v);</P>
+<P STYLE="margin-bottom: 0in">void dyvecv3fv(dyt p, float *v);</P>
+<P STYLE="margin-bottom: 0in">void dyvecv4fv(dyt p, float *v);</P>
+<P STYLE="margin-bottom: 0in">void dyvecv2dv(dyt p, double *v);</P>
+<P STYLE="margin-bottom: 0in">void dyvecv3dv(dyt p, double *v);</P>
+<P STYLE="margin-bottom: 0in">void dyvecv4dv(dyt p, double *v);</P>
+<P STYLE="margin-bottom: 0in">vec2 dyvec2v(dyt p);</P>
+<P STYLE="margin-bottom: 0in">vec3 dyvec3v(dyt p);</P>
+<P STYLE="margin-bottom: 0in">vec4 dyvec4v(dyt p);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Wrap or unwrap vector types.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyhash(int cnt);</P>
+<P STYLE="margin-bottom: 0in">int dyhashp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dyhashget(dyt p, char *str);</P>
+<P STYLE="margin-bottom: 0in">dyt dyhashset(dyt obj, char *var, dyt
+val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Basic hash-table operations. These
+hash-tables are indexed via ordinary C strings.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Dynamic Type Operations</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyadd(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">dyt dysub(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">dyt dymul(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">dyt dydiv(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">dyt dymod(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">dyt dyand(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">dyt dyor(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">dyt dyxor(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">dyt dyshl(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">dyt dyshr(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">dyt dyexp(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Basic binary arithmetic operations.</P>
+<P STYLE="margin-bottom: 0in">These will typically automatically
+promote types.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyneg(dyt a);</P>
+<P STYLE="margin-bottom: 0in">dyt dynot(dyt a);</P>
+<P STYLE="margin-bottom: 0in">dyt dylnot(dyt a);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Basic unary arithmetic operations.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dyeqp(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">int dyneqp(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">int dyltp(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">int dygtp(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">int dylep(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">int dygep(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Basic binary compare operations.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dytruep(dyt a);</P>
+<P STYLE="margin-bottom: 0in">int dyfalsep(dyt a);</P>
+<P STYLE="margin-bottom: 0in">Return 1 if a value is 'true' or
+'false', where certain ranges of values will be true or false.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">0, 0.0, NULL, &hellip; Will be false,
+and others will be generally be true.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dysqr(dyt a);</P>
+<P STYLE="margin-bottom: 0in">dyt dysqrt(dyt a);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Get the square or the square root of a
+value.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Cons and List Operations</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dycons(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">Create a new cons with the item A and
+the tail B.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dyconsp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">Returns 1 if p is a cons, 0 otherwise.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dylistp(dyt lst);</P>
+<P STYLE="margin-bottom: 0in">Returns 1 if p is a list, 0 otherwise.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dylistlen(dyt lst);</P>
+<P STYLE="margin-bottom: 0in">Returns the length of a list.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dyFreeCons(dyt p);</P>
+<P STYLE="margin-bottom: 0in">Free a cons cell.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dyFreeList(dyt p);</P>
+<P STYLE="margin-bottom: 0in">Free a list of cons cells.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dyFormIsP(dyt lst, char *str);</P>
+<P STYLE="margin-bottom: 0in">Return 1 if the first item of lst is a
+symbol with the name given in str.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dylist1(dyt a);</P>
+<P STYLE="margin-bottom: 0in">dyt dylist2(dyt a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">dyt dylist3(dyt a, dyt b, dyt c);</P>
+<P STYLE="margin-bottom: 0in">dyt dylist4(dyt a, dyt b, dyt c, dyt
+d);</P>
+<P STYLE="margin-bottom: 0in">dyt dylist5(dyt a, dyt b, dyt c, dyt d,
+dyt e);</P>
+<P STYLE="margin-bottom: 0in">dyt dylist6(dyt a, dyt b, dyt c, dyt d,
+dyt e, dyt f);</P>
+<P STYLE="margin-bottom: 0in">dyt dylist7(dyt a, dyt b, dyt c, dyt d,
+dyt e, dyt f, dyt g);</P>
+<P STYLE="margin-bottom: 0in">dyt dylist8(dyt a, dyt b, dyt c, dyt d,
+dyt e, dyt f, dyt g, dyt h);</P>
+<P STYLE="margin-bottom: 0in">dyt dylist9(dyt a, dyt b, dyt c, dyt d,
+dyt e, dyt f, dyt g, dyt h, dyt i);</P>
+<P STYLE="margin-bottom: 0in">Create a list with the given items.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dylist1s(char *a);</P>
+<P STYLE="margin-bottom: 0in">dyt dylist2s(char *a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">dyt dylist3s(char *a, dyt b, dyt c);</P>
+<P STYLE="margin-bottom: 0in">dyt dylist4s(char *a, dyt b, dyt c, dyt
+d);</P>
+<P STYLE="margin-bottom: 0in">dyt dylist5s(char *a, dyt b, dyt c, dyt
+d, dyt e);</P>
+<P STYLE="margin-bottom: 0in">dyt dylist6s(char *a, dyt b, dyt c, dyt
+d, dyt e, dyt f);</P>
+<P STYLE="margin-bottom: 0in">dyt dylist7s(char *a, dyt b, dyt c, dyt
+d, dyt e, dyt f, dyt g);</P>
+<P STYLE="margin-bottom: 0in">dyt dylist8s(char *a, dyt b, dyt c, dyt
+d, dyt e, dyt f, dyt g, dyt h);</P>
+<P STYLE="margin-bottom: 0in">Create a list with the first item as a
+symbol with the name given in a and the following arguments.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dycons2(dyt a, dyt b, dyt c);</P>
+<P STYLE="margin-bottom: 0in">dyt dycons3(dyt a, dyt b, dyt c, dyt
+d);</P>
+<P STYLE="margin-bottom: 0in">dyt dycons4(dyt a, dyt b, dyt c, dyt d,
+dyt e);</P>
+<P STYLE="margin-bottom: 0in">dyt dycons5(dyt a, dyt b, dyt c, dyt d,
+dyt e, dyt f);</P>
+<P STYLE="margin-bottom: 0in">dyt dycons6(dyt a, dyt b, dyt c, dyt d,
+dyt e, dyt f, dyt g);</P>
+<P STYLE="margin-bottom: 0in">dyt dycons7(dyt a, dyt b, dyt c, dyt d,
+dyt e, dyt f, dyt g, dyt h);</P>
+<P STYLE="margin-bottom: 0in">dyt dycons8(dyt a, dyt b, dyt c, dyt d,
+dyt e, dyt f, dyt g, dyt h, dyt i);</P>
+<P STYLE="margin-bottom: 0in">dyt dycons9(dyt a, dyt b, dyt c, dyt d,
+dyt e, dyt f, dyt g, dyt h, dyt i, dyt j);</P>
+<P STYLE="margin-bottom: 0in">Create an improper list with the given
+items. The last argument is the final tail for the new list.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyconss(char *a, dyt b);</P>
+<P STYLE="margin-bottom: 0in">dyt dycons2s(char *a, dyt b, dyt c);</P>
+<P STYLE="margin-bottom: 0in">dyt dycons3s(char *a, dyt b, dyt c, dyt
+d);</P>
+<P STYLE="margin-bottom: 0in">dyt dycons4s(char *a, dyt b, dyt c, dyt
+d, dyt e);</P>
+<P STYLE="margin-bottom: 0in">dyt dycons5s(char *a, dyt b, dyt c, dyt
+d, dyt e, dyt f);</P>
+<P STYLE="margin-bottom: 0in">dyt dycons6s(char *a, dyt b, dyt c, dyt
+d, dyt e, dyt f, dyt g);</P>
+<P STYLE="margin-bottom: 0in">dyt dycons7s(char *a, dyt b, dyt c, dyt
+d, dyt e, dyt f, dyt g, dyt h);</P>
+<P STYLE="margin-bottom: 0in">Create an improper list with the given
+items. The last argument is the final tail for the new list.</P>
+<P STYLE="margin-bottom: 0in">The first item is a symbol with the
+name given in a.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dycar(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">Get the car of a cons (car) or the tail
+of the cons (cdr).</P>
+<P STYLE="margin-bottom: 0in">Note: These don't perform type checks,
+and so are unsafe if p is not a cons.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dycaar(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdar(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaaar(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdaar(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadar(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddar(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaadr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdadr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaddr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdddr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaaaar(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdaaar(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadaar(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddaar(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaadar(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdadar(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaddar(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdddar(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaaadr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdaadr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadadr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddadr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaaddr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdaddr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadddr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddddr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaddddr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdddddr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadddddr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddddddr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaddddddr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdddddddr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadddddddr(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddddddddr(dyt p);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Step along a chain of car's and cdr's
+to get to a requested item.</P>
+<P STYLE="margin-bottom: 0in">Note: The basic pattern is
+&ldquo;cadr(p)=car(cdr(p))&rdquo;.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dycars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">Safely get the car of a cons (car) or
+the tail of the cons (cdr).</P>
+<P STYLE="margin-bottom: 0in">This version performs type checks and
+returns UNDEFINED if the type checks fail.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dycaars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaaars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdaars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaadrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdadrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaaaars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdaaars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadaars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddaars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaadars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdadars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaddars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdddars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaaadrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdaadrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadadrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddadrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaaddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdaddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaaaaars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdaaaars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadaaars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddaaars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaadaars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdadaars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaddaars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdddaars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaaadars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdaadars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadadars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddadars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaaddars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdaddars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadddars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddddars(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaaaadrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdaaadrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadaadrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddaadrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaadadrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdadadrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaddadrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdddadrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaaaddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdaaddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadaddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddaddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaadddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdadddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaddddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdddddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadddddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddddddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycaddddddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycdddddddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycadddddddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in">dyt dycddddddddrs(dyt p);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Step along a chain of car's and cdr's
+to get to a requested item.</P>
+<P STYLE="margin-bottom: 0in">Note: The basic pattern is
+&ldquo;cadr(p)=car(cdr(p))&rdquo;.</P>
+<P STYLE="margin-bottom: 0in">As above, this version performs type
+checks.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dysetcar(dyt p, dyt v);</P>
+<P STYLE="margin-bottom: 0in">void dysetcdr(dyt p, dyt v);</P>
+<P STYLE="margin-bottom: 0in">Set the car or cdr of a cons.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyreverse(dyt lst);</P>
+<P STYLE="margin-bottom: 0in">Reverse a list, returning the new list.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dynreverse(dyt lst);</P>
+<P STYLE="margin-bottom: 0in">Destructively reverse a list, returning
+the new start of the list.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dynappend(dyt la, dyt lb);</P>
+<P STYLE="margin-bottom: 0in">Destructively append lists.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyListToArray(dyt lst);</P>
+<P STYLE="margin-bottom: 0in">Convert a list to an array.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dylistcopy(dyt lst);</P>
+<P STYLE="margin-bottom: 0in">Copy a list, but does not copy
+sub-lists.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyappend(dyt la, dyt lb);</P>
+<P STYLE="margin-bottom: 0in">Append lists (creates a new list
+containing the contents of both lists).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Dynamically Typed Arrays</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyarray(int cnt);</P>
+<P STYLE="margin-bottom: 0in">Create a new dynamically-typed array
+with a given number of items.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dyarrayp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">Returns 1 if p is a dynamically-typed
+array, 0 otherwise.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyarrayidx(dyt p, int idx);</P>
+<P STYLE="margin-bottom: 0in">Get the array item at a given index.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dyarraysetidx(dyt p, int idx, dyt
+q);</P>
+<P STYLE="margin-bottom: 0in">Set the array item at a given index.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt *dyarrayv(dyt p);</P>
+<P STYLE="margin-bottom: 0in">Get a pointer to the array elemenrts.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dyarraysz(dyt p);</P>
+<P STYLE="margin-bottom: 0in">Get the size of a dynamically-typed
+array.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyWrapArray(dyt *args, int cnt);</P>
+<P STYLE="margin-bottom: 0in">Create a new dynamically-typed array
+from the given items.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Dynamic Types Print</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dyPrintBuf(dyt n, int ind,void
+(*pb)(void *p, char *b), void *ob);</P>
+<P STYLE="margin-bottom: 0in">void dyDumpFD(FILE *fd, dyt n);</P>
+<P STYLE="margin-bottom: 0in">void dyPrintFD(FILE *fd, dyt n);</P>
+<P STYLE="margin-bottom: 0in">char *dyDumpStr(char *buf, dyt n);</P>
+<P STYLE="margin-bottom: 0in">char *dyPrintStr(char *buf, dyt n);</P>
+<P STYLE="margin-bottom: 0in">void dyPrint(dyt n);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Dynamic Types Parse Stream</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dysReadStream dysNewReadStreamBuf(char
+*buf);</P>
+<P STYLE="margin-bottom: 0in">dysReadPos dysGetPos(dysReadStream
+strm);</P>
+<P STYLE="margin-bottom: 0in">void dysSetPos(dysReadStream strm,
+dysReadPos pos);</P>
+<P STYLE="margin-bottom: 0in">int dysPeekChar(dysReadStream strm);</P>
+<P STYLE="margin-bottom: 0in">int dysReadChar(dysReadStream strm);</P>
+<P STYLE="margin-bottom: 0in">int dysPeekCharIdx(dysReadStream strm,
+int idx);</P>
+<P STYLE="margin-bottom: 0in">int dysPeekNibble(dysReadStream strm);</P>
+<P STYLE="margin-bottom: 0in">int dysReadNibble(dysReadStream strm);</P>
+<P STYLE="margin-bottom: 0in">int dysReadHex(dysReadStream strm);</P>
+<P STYLE="margin-bottom: 0in">int dysReadHex8(dysReadStream strm);</P>
+<P STYLE="margin-bottom: 0in">int dysReadHex16(dysReadStream strm);</P>
+<P STYLE="margin-bottom: 0in">int dysReadHex32(dysReadStream strm);</P>
+<P STYLE="margin-bottom: 0in">int dysParseEatWhite(dysReadStream
+strm);</P>
+<P STYLE="margin-bottom: 0in">int dysParseSpecialP(dysReadStream
+strm);</P>
+<P STYLE="margin-bottom: 0in">char *dysParseToken(dysReadStream strm,
+int *ty);</P>
+<P STYLE="margin-bottom: 0in">dyt dysParseList(dysReadStream strm,
+int ind);</P>
+<P STYLE="margin-bottom: 0in">dyt dysParseItem(dysReadStream strm,
+int ind);</P>
+<P STYLE="margin-bottom: 0in">dyt dysParseFromString(char *s);</P>
+<P STYLE="margin-bottom: 0in">dyt dysParseMultiFromString(char *s);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Dynamic Types Print Stream</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dysPrintf(dysPrintStream strm,
+char *str, ...);</P>
+<P STYLE="margin-bottom: 0in">void dysPrintItem(dysPrintStream strm,
+dyt obj);</P>
+<P STYLE="margin-bottom: 0in">void dysPrintFlatten(dysPrintStream
+strm, dyt obj);</P>
+<P STYLE="margin-bottom: 0in">dysPrintStream dysNewStreamFD(FILE
+*fd);</P>
+<P STYLE="margin-bottom: 0in">dysPrintStream dysNewStreamBuf(char
+*buf);</P>
+<P STYLE="margin-bottom: 0in">void dysDestroyStream(dysPrintStream
+strm);</P>
+<P STYLE="margin-bottom: 0in">dysPrintStream
+dysCloneStream(dysPrintStream strm);</P>
+<P STYLE="margin-bottom: 0in">void dysDumpFD(FILE *fd, dyt n);</P>
+<P STYLE="margin-bottom: 0in">void dysPrintFD(FILE *fd, dyt n);</P>
+<P STYLE="margin-bottom: 0in">char *dysDumpStr(char *buf, dyt n);</P>
+<P STYLE="margin-bottom: 0in">char *dysPrintStr(char *buf, dyt n);</P>
+<P STYLE="margin-bottom: 0in">void dysPrint(dyt n);</P>
+<P STYLE="margin-bottom: 0in">void dysPrintln(dyt n);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Dynamic types, Misc</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *BGBDY_WrapIntFast(int i);</P>
+<P STYLE="margin-bottom: 0in">int BGBDY_UnwrapIntFast(void *a);</P>
+<P STYLE="margin-bottom: 0in">Wrap or unwrap a fixnum without type
+checks.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *BGBDY_WrapMiniFloat(double f);</P>
+<P STYLE="margin-bottom: 0in">double BGBDY_UnwrapMiniFloat(void *p);</P>
+<P STYLE="margin-bottom: 0in">Wrap or unwrap a flonum without type
+checks.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Method handling</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyApplyMethod(dyt obj, dyt mth, dyt
+*args, int nargs);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Apply an object method with the given
+dynamically-typed arguments.</P>
+<P STYLE="margin-bottom: 0in">The mth argument is some kind of
+dynamically-typed object which can be applied.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *dyApplyMethodU(dyt obj, dyt
+mth,char *sig, void **args, int szargs);</P>
+<P STYLE="margin-bottom: 0in">void *dyApplyMethodV(dyt obj, dyt
+mth,char *sig, va_list args);</P>
+<P STYLE="margin-bottom: 0in">void *dycApplyMethodU(dycObject obj,
+dyt mth,char *sig, void **args, int szargs);</P>
+<P STYLE="margin-bottom: 0in">void *dycApplyMethodV(dycObject obj,
+dyt mth,char *sig, va_list args);</P>
+<P STYLE="margin-bottom: 0in">void *dycApplyStaticU(dycClass inf, dyt
+mth,char *sig, void **args, int szargs);</P>
+<P STYLE="margin-bottom: 0in">void *dycApplyStaticV(dycClass inf, dyt
+mth,char *sig, va_list args);</P>
+<P STYLE="margin-bottom: 0in">void *dycApplyStructMethodU(void *obj,
+dyt mth,char *sig, void **args, int szargs);</P>
+<P STYLE="margin-bottom: 0in">void *dycApplyStructMethodV(void *obj,
+dyt mth,char *sig, va_list args);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Apply an object method with the given
+signature and statically-typed arguments.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Prototype OO</H3>
+<P STYLE="margin-bottom: 0in">void dyTypeGetSlot(char *ty, dyt
+(*fcn)(dyt, dyt));</P>
+<P STYLE="margin-bottom: 0in">void dyTypeSetSlot(char *ty, dyt
+(*fcn)(dyt, dyt, dyt));</P>
+<P STYLE="margin-bottom: 0in">void dyTypeNextSlot(char *ty, dyt
+(*fcn)(dyt, dyt));</P>
+<P STYLE="margin-bottom: 0in">void dyTypeTrySetSlot(char *ty, dyt
+(*fcn)(dyt, dyt, dyt));</P>
+<P STYLE="margin-bottom: 0in">void dyTypeGetDelegate(char *ty, dyt
+(*fcn)(dyt, dyt));</P>
+<P STYLE="margin-bottom: 0in">void dyTypeSetDelegate(char *ty, dyt
+(*fcn)(dyt, dyt, dyt));</P>
+<P STYLE="margin-bottom: 0in">void dyTypeNextDelegate(char *ty, dyt
+(*fcn)(dyt, dyt));</P>
+<P STYLE="margin-bottom: 0in">void dyTypeCallMethod(char *ty, dyt
+(*fcn)(dyt, dyt, dyt *, int));</P>
+<P STYLE="margin-bottom: 0in">void dyTypeApply(char *ty, dyt
+(*fcn)(dyt, dyt *, int));</P>
+<P STYLE="margin-bottom: 0in">void dyTypeApplyObj(char *ty, dyt
+(*fcn)(dyt, dyt, dyt *, int));</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Set callbacks to allow patching
+arbitrary dynamic types into the object system.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The prototypes for the above callbacks
+will be equivalent to:</P>
+<P STYLE="margin-bottom: 0in">dyt (*get_slot)	(dyt p, char *s);</P>
+<P STYLE="margin-bottom: 0in">dyt (*set_slot)	(dyt p, char *s, dyt
+v);</P>
+<P STYLE="margin-bottom: 0in">char *(*nxt_slot)	(dyt p, char *s);</P>
+<P STYLE="margin-bottom: 0in">dyt (*call_method)	(dyt p, char *s, dyt
+*a, int n);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt (*try_set_slot)	(dyt p, char *s,
+dyt v);</P>
+<P STYLE="margin-bottom: 0in">dyt (*get_del)	(dyt p, char *s);</P>
+<P STYLE="margin-bottom: 0in">dyt (*set_del)	(dyt p, char *s, dyt v);</P>
+<P STYLE="margin-bottom: 0in">char *(*nxt_del)	(dyt p, char *s);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt (*apply)		(dyt p, dyt *a, int n);</P>
+<P STYLE="margin-bottom: 0in">dyt (*applyobj)	(dyt p, dyt o, dyt *a,
+int n);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Where, generally:</P>
+<P STYLE="margin-bottom: 0in">'p'=The dynamically-typed object in
+which the operation is being applied;</P>
+<P STYLE="margin-bottom: 0in">'s'=The name of some-or-another slot
+(There would seem to be an inconsistency here);</P>
+<P STYLE="margin-bottom: 0in">'v'=The name of a value object;</P>
+<P STYLE="margin-bottom: 0in">'a'=An arguments array;</P>
+<P STYLE="margin-bottom: 0in">'n'=The number of arguments in the
+arguments array;</P>
+<P STYLE="margin-bottom: 0in">'o'=The object in which a method is
+being applied.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyObject();</P>
+<P STYLE="margin-bottom: 0in">Create a new empty object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyObjectParent(dyt parent);</P>
+<P STYLE="margin-bottom: 0in">Create a new object with a given
+parent.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dyObjectp(dyt obj);</P>
+<P STYLE="margin-bottom: 0in">Returns non-zero if obj is a prototype
+object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyBind(dyt obj, char *var, dyt
+val);</P>
+<P STYLE="margin-bottom: 0in">Set a slot in a given object, creating
+the slot if it does not exist.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyTrySet(dyt obj, char *var, dyt
+val);</P>
+<P STYLE="margin-bottom: 0in">Try to set a slot, returning the old
+slot value if it was assigned, UNDEFINED otherwise.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyGet(dyt obj, char *sym);</P>
+<P STYLE="margin-bottom: 0in">Get the value of an object slot.</P>
+<P STYLE="margin-bottom: 0in">This may recurse along the delegate
+chain to locate the slot.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dyGeti(dyt obj, char *sym);</P>
+<P STYLE="margin-bottom: 0in">s64 dyGetl(dyt obj, char *sym);</P>
+<P STYLE="margin-bottom: 0in">double dyGetf(dyt obj, char *sym);</P>
+<P STYLE="margin-bottom: 0in">double dyGetd(dyt obj, char *sym);</P>
+<P STYLE="margin-bottom: 0in">void dyGet2fv(dyt obj, char *sym, float
+*v);</P>
+<P STYLE="margin-bottom: 0in">void dyGet3fv(dyt obj, char *sym, float
+*v);</P>
+<P STYLE="margin-bottom: 0in">void dyGet4fv(dyt obj, char *sym, float
+*v);</P>
+<P STYLE="margin-bottom: 0in">void dyGet2dv(dyt obj, char *sym,
+double *v);</P>
+<P STYLE="margin-bottom: 0in">void dyGet3dv(dyt obj, char *sym,
+double *v);</P>
+<P STYLE="margin-bottom: 0in">void dyGet4dv(dyt obj, char *sym,
+double *v);</P>
+<P STYLE="margin-bottom: 0in">char *dyGets(dyt obj, char *sym);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Get the value of an object slot
+converted to the given type.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dySet(dyt obj, char *sym, dyt val);</P>
+<P STYLE="margin-bottom: 0in">Set an object slot.</P>
+<P STYLE="margin-bottom: 0in">This may recurse along the delegate
+chain to locate the slot.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dySeti(dyt obj, char *sym, int
+val);</P>
+<P STYLE="margin-bottom: 0in">void dySetl(dyt obj, char *sym, s64
+val);</P>
+<P STYLE="margin-bottom: 0in">void dySetf(dyt obj, char *sym, double
+val);</P>
+<P STYLE="margin-bottom: 0in">void dySetd(dyt obj, char *sym, double
+val);</P>
+<P STYLE="margin-bottom: 0in">void dySet2f(dyt obj, char *sym, double
+x, double y);</P>
+<P STYLE="margin-bottom: 0in">void dySet3f(dyt obj, char *sym, double
+x, double y, double z);</P>
+<P STYLE="margin-bottom: 0in">void dySet4f(dyt obj, char *sym, double
+x, double y, double z, double w);</P>
+<P STYLE="margin-bottom: 0in">void dySet2fv(dyt obj, char *sym, float
+*v);</P>
+<P STYLE="margin-bottom: 0in">void dySet3fv(dyt obj, char *sym, float
+*v);</P>
+<P STYLE="margin-bottom: 0in">void dySet4fv(dyt obj, char *sym, float
+*v);</P>
+<P STYLE="margin-bottom: 0in">void dySet2dv(dyt obj, char *sym,
+double *v);</P>
+<P STYLE="margin-bottom: 0in">void dySet3dv(dyt obj, char *sym,
+double *v);</P>
+<P STYLE="margin-bottom: 0in">void dySet4dv(dyt obj, char *sym,
+double *v);</P>
+<P STYLE="margin-bottom: 0in">void dySets(dyt obj, char *sym, char
+*val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Set the object slot with the given
+type.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyGetIdx(dyt obj, int idx);</P>
+<P STYLE="margin-bottom: 0in">dyt dySetIdx(dyt obj, int idx, dyt
+val);</P>
+<P STYLE="margin-bottom: 0in">Get/Set the item at a given index (obj
+is an array or an object imitating an array).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyGetKey(dyt obj, dyt key);</P>
+<P STYLE="margin-bottom: 0in">dyt dySetKey(dyt obj, dyt key, dyt
+val);</P>
+<P STYLE="margin-bottom: 0in">Get or set an item with a given key for
+an object supporting non-symbol keys.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyGetDelegate(dyt obj, char *sym);</P>
+<P STYLE="margin-bottom: 0in">void dySetDelegate(dyt obj, char *sym,
+dyt val);</P>
+<P STYLE="margin-bottom: 0in">Get or set an object delegate with a
+certain name.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyGetParent(dyt obj);</P>
+<P STYLE="margin-bottom: 0in">void dySetParent(dyt obj, dyt val);</P>
+<P STYLE="margin-bottom: 0in">Get or set the parent object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dyBindMethod(dyt obj, char *sym,
+dyt mth);</P>
+<P STYLE="margin-bottom: 0in">Bind the method name to a given method
+object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dyDefMethod(dyt obj, char *sym,dyt
+(*fcn)(dyt self, dyt *args, int nargs));</P>
+<P STYLE="margin-bottom: 0in">dyt dyDefMethod0(dyt obj, char *sym,
+dyt (*fcn)(dyt self));</P>
+<P STYLE="margin-bottom: 0in">dyt dyDefMethod1(dyt obj, char *sym,
+dyt (*fcn)(dyt self,dyt));</P>
+<P STYLE="margin-bottom: 0in">dyt dyDefMethod2(dyt obj, char *sym,
+dyt (*fcn)(dyt self,dyt,dyt));</P>
+<P STYLE="margin-bottom: 0in">dyt dyDefMethod3(dyt obj, char *sym,
+dyt (*fcn)(dyt self,dyt,dyt,dyt));</P>
+<P STYLE="margin-bottom: 0in">dyt dyDefMethod4(dyt obj, char *sym,
+dyt (*fcn)(dyt self,dyt,dyt,dyt,dyt));</P>
+<P STYLE="margin-bottom: 0in">dyt dyDefMethod5(dyt obj, char *sym,
+dyt (*fcn)(dyt self,dyt,dyt,dyt,dyt,dyt));</P>
+<P STYLE="margin-bottom: 0in">dyt dyDefMethod6(dyt obj, char *sym,
+dyt (*fcn)(dyt self,dyt,dyt,dyt,dyt,dyt,dyt));</P>
+<P STYLE="margin-bottom: 0in">dyt dyDefMethod7(dyt obj, char *sym,
+dyt (*fcn)(dyt self,dyt,dyt,dyt,dyt,dyt,dyt,dyt));</P>
+<P STYLE="margin-bottom: 0in">dyt dyDefMethod8(dyt obj, char *sym,
+dyt (*fcn)(dyt self,dyt,dyt,dyt,dyt,dyt,dyt,dyt,dyt));</P>
+<P STYLE="margin-bottom: 0in">void dyDefMethodN(dyt obj, char *sym,
+dyt (*fcn)(dyt self,dyt rest));</P>
+<P STYLE="margin-bottom: 0in">dyt dyDefMethod1N(dyt obj, char *sym,
+dyt (*fcn)(dyt self,dyt,dyt rest));</P>
+<P STYLE="margin-bottom: 0in">dyt dyDefMethod2N(dyt obj, char *sym,
+dyt (*fcn)(dyt self,dyt,dyt,dyt rest));</P>
+<P STYLE="margin-bottom: 0in">dyt dyDefMethod3N(dyt obj, char *sym,
+dyt (*fcn)(dyt self,dyt,dyt,dyt,dyt rest));</P>
+<P STYLE="margin-bottom: 0in">dyt dyDefMethod4N(dyt obj, char *sym,
+dyt (*fcn)(dyt self,dyt,dyt,dyt,dyt,dyt rest));</P>
+<P STYLE="margin-bottom: 0in">dyt dyDefMethod5N(dyt obj, char *sym,
+dyt (*fcn)(dyt self,dyt,dyt,dyt,dyt,dyt,dyt rest));</P>
+<P STYLE="margin-bottom: 0in">dyt dyDefMethod6N(dyt obj, char *sym,
+dyt (*fcn)(dyt self,dyt,dyt,dyt,dyt,dyt,dyt,dyt rest));</P>
+<P STYLE="margin-bottom: 0in">dyt dyDefMethod7N(dyt obj, char *sym,
+dyt (*fcn)(dyt self,dyt,dyt,dyt,dyt,dyt,dyt,dyt,dyt rest));</P>
+<P STYLE="margin-bottom: 0in">dyt dyDefMethod8N(dyt obj, char *sym,
+dyt (*fcn)(dyt self,dyt,dyt,dyt,dyt,dyt,dyt,dyt,dyt,dyt rest));</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Create a method object from a function
+pointer and bind it into the object.</P>
+<P STYLE="margin-bottom: 0in">These differ in terms of the number and
+configuration of the arguments, with the N varieties accepting a
+variable number of arguments.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall(dyt obj, char *sym, dyt
+*args, int nargs);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall0(dyt obj, char *sym);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall1(dyt obj, char *sym, dyt a);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall2(dyt obj, char *sym, dyt a,
+dyt b);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall3(dyt obj, char *sym, dyt a,
+dyt b, dyt c);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall4(dyt obj, char *sym, dyt a,
+dyt b, dyt c, dyt d);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall5(dyt obj, char *sym, dyt a,
+dyt b, dyt c, dyt d, dyt e);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall6(dyt obj, char *sym, dyt a,
+dyt b, dyt c, dyt d, dyt e, dyt f);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall7(dyt obj, char *sym,dyt a,
+dyt b, dyt c, dyt d, dyt e, dyt f, dyt g);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall8(dyt obj, char *sym,dyt a,
+dyt b, dyt c, dyt d, dyt e, dyt f, dyt g, dyt h);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCallN(dyt obj, char *sym, dyt
+args);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall1N(dyt obj, char *sym, dyt a,
+dyt args);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall2N(dyt obj, char *sym, dyt a,
+dyt b, dyt args);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall3N(dyt obj, char *sym, dyt a,
+dyt b, dyt c, dyt args);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall4N(dyt obj, char *sym, dyt a,
+dyt b, dyt c, dyt d, dyt args);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall5N(dyt obj, char *sym, dyt a,
+dyt b, dyt c, dyt d, dyt e, dyt args);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall6N(dyt obj, char *sym, dyt a,
+dyt b, dyt c, dyt d, dyt e, dyt f,dyt args);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall7N(dyt obj, char *sym, dyt a,
+dyt b, dyt c, dyt d, dyt e, dyt f,dyt g, dyt args);</P>
+<P STYLE="margin-bottom: 0in">dyt dyCall8N(dyt obj, char *sym, dyt a,
+dyt b, dyt c, dyt d, dyt e, dyt f,dyt g, dyt h, dyt args);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Call a function with a given number of
+dynamically-typed arguments.</P>
+<P STYLE="margin-bottom: 0in">These are similar to those used for
+defining methods.</P>
+<P STYLE="margin-bottom: 0in">Note, however, that this is not
+required to match exactly with the method definition, since this is
+instead used as a means to pass-in arguments, and the method handling
+will itself marshal the arguments into the form needed by the method.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyCallSig(dyt obj, char *sym, char
+*sig, ...);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Used to call a method using a signature
+instead of dynamic types.</P>
+<P STYLE="margin-bottom: 0in">For dynamically typed methods, this is
+primarily a convenience, and the signature specifies the layout of
+the arguments at the caller's end.</P>
+<P STYLE="margin-bottom: 0in">For statically-typed methods (for
+example, those created from statically-typed function pointers and
+signatures), it is needed that there be an exact match in the
+signatures and, consequently, the types passed as arguments.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyLookupMethodSig(dyt obj, char
+*name, char *sig);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">This allows looking up the method
+appropriate to handle a given method call.</P>
+<P STYLE="margin-bottom: 0in">Note that presently overloading is not
+allowed for dynamically-typed methods.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2>Channels</H2>
+<P STYLE="margin-bottom: 0in">Channels are basically an inter-thread
+communication mechanism. Channels allow one thread to put a message
+into a channel, and another thread to retrieve the message. The
+original idea for this mechanism came from Rob Pike and the Plan9
+project.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Channels are generally synchronous,
+where getting an item from a channel will stall until the item is
+available, and putting an item into a channel will stall until the
+other end gets it. Send has different behavior in that it will not
+stall and wait for the other end.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The channel itself is untyped, and as a
+result one should only put in the kind of item the other side expects
+to get (dyt is then explicit as, in this API, dyt is a type in its
+own right).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">GetP and PutP check if the operation
+can be performed without stalling (IOW: if there is someone waiting
+on the other end).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt chnNew();</P>
+<P STYLE="margin-bottom: 0in">void chnGetBuf(dyt chan, void *buf, int
+sz);</P>
+<P STYLE="margin-bottom: 0in">void chnPutBuf(dyt chan, void *buf, int
+sz);</P>
+<P STYLE="margin-bottom: 0in">void chnSendBuf(dyt chan, void *buf,
+int sz);</P>
+<P STYLE="margin-bottom: 0in">int chnPollGetP(dyt chan);</P>
+<P STYLE="margin-bottom: 0in">int chnPollPutP(dyt chan);</P>
+<P STYLE="margin-bottom: 0in">int chnGetP(dyt chan);</P>
+<P STYLE="margin-bottom: 0in">int chnPutP(dyt chan);</P>
+<P STYLE="margin-bottom: 0in">int chnGetInt(dyt chan);</P>
+<P STYLE="margin-bottom: 0in">s64 chnGetLong(dyt chan);</P>
+<P STYLE="margin-bottom: 0in">float chnGetFloat(dyt chan);</P>
+<P STYLE="margin-bottom: 0in">double chnGetDouble(dyt chan);</P>
+<P STYLE="margin-bottom: 0in">void *chnGetPtr(dyt chan);</P>
+<P STYLE="margin-bottom: 0in">char *chnGetString(dyt chan);</P>
+<P STYLE="margin-bottom: 0in">dyt chanGetDyt(dyt chan);</P>
+<P STYLE="margin-bottom: 0in">void chnPutInt(dyt chan, int val);</P>
+<P STYLE="margin-bottom: 0in">void chnPutLong(dyt chan, s64 val);</P>
+<P STYLE="margin-bottom: 0in">void chnPutFloat(dyt chan, float val);</P>
+<P STYLE="margin-bottom: 0in">void chnPutDouble(dyt chan, double
+val);</P>
+<P STYLE="margin-bottom: 0in">void chnPutPtr(dyt chan, void *val);</P>
+<P STYLE="margin-bottom: 0in">void chnPutString(dyt chan, char *val);</P>
+<P STYLE="margin-bottom: 0in">void chnPutDyt(dyt chan, dyt val);</P>
+<P STYLE="margin-bottom: 0in">void chnSendInt(dyt chan, int val);</P>
+<P STYLE="margin-bottom: 0in">void chnSendLong(dyt chan, s64 val);</P>
+<P STYLE="margin-bottom: 0in">void chnSendFloat(dyt chan, float val);</P>
+<P STYLE="margin-bottom: 0in">void chnSendDouble(dyt chan, double
+val);</P>
+<P STYLE="margin-bottom: 0in">void chnSendPtr(dyt chan, void *val);</P>
+<P STYLE="margin-bottom: 0in">void chnSendString(dyt chan, char
+*val);</P>
+<P STYLE="margin-bottom: 0in">void chnSendDyt(dyt chan, dyt val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2>VFILE</H2>
+<P STYLE="margin-bottom: 0in">VFILE is a VFS API more or less
+implementing a mix of stdio and POSIX features.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">VFILE *vffopen(char *name, char *mode);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Opens a file.</P>
+<P STYLE="margin-bottom: 0in">Name gives the path VFS path.</P>
+<P STYLE="margin-bottom: 0in">Mode is more or less the same as for
+fopen.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int vfread(void *buf, int s1, int s2,
+VFILE *fd);</P>
+<P STYLE="margin-bottom: 0in">int vfwrite(void *buf, int s1, int s2,
+VFILE *fd);</P>
+<P STYLE="margin-bottom: 0in">int vfgetc(VFILE *fd);</P>
+<P STYLE="margin-bottom: 0in">int vfputc(int c, VFILE *fd);</P>
+<P STYLE="margin-bottom: 0in">int vfflush(VFILE *fd);</P>
+<P STYLE="margin-bottom: 0in">vfoffs_t vfseek(VFILE *fd, vfoffs_t
+pos, int rel);</P>
+<P STYLE="margin-bottom: 0in">vfoffs_t vftell(VFILE *fd);</P>
+<P STYLE="margin-bottom: 0in">int vfeof(VFILE *fd);</P>
+<P STYLE="margin-bottom: 0in">int vfclose(VFILE *fd);</P>
+<P STYLE="margin-bottom: 0in">char *vfgets(char *s, int n, VFILE
+*fd);</P>
+<P STYLE="margin-bottom: 0in">int vfputs(char *str, VFILE *fd);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Perform operations analogous to the
+stdlib equivalents.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int vfioctl(VFILE *fd, int req, void
+*arg);</P>
+<P STYLE="margin-bottom: 0in">int vfioctl2(VFILE *fd, int req, void
+*arg0, void *arg1);</P>
+<P STYLE="margin-bottom: 0in">int vfioctl3(VFILE *fd, int req, void
+*arg0, void *arg1, void *arg2);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Perform IOCTL's on the particular FD's.</P>
+<P STYLE="margin-bottom: 0in">The meaning of the values passed to
+'req' depends on the specifics of the open file.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">VFDIR *vfopendir(char *name);</P>
+<P STYLE="margin-bottom: 0in">void vfclosedir(VFDIR *dir);</P>
+<P STYLE="margin-bottom: 0in">char *vfreaddir(VFDIR *dir);</P>
+<P STYLE="margin-bottom: 0in">void vfrewinddir(VFDIR *dir);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">These calls allow opening directories
+and listing their contents.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Misc Utility</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *vfgenabs(char *base, char *name);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">If name is an absolute path, return
+this, otherwise join together the base and the name and return this.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *vfgetext(char *name);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Take a filename and locate the file
+extension.</P>
+<P STYLE="margin-bottom: 0in">Returns NULL if the file lacks an
+extension.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int vfcmpext(char *str, char *ext);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The str argument is a file extension,
+and ext is a semicolon-separated list of possible file extensions.
+Returns 1 is str is in the list, otherwise it returns 0.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">byte *vf_bufferin(VFILE *fd);</P>
+<P STYLE="margin-bottom: 0in">byte *vf_bufferin_sz(VFILE *fd, int
+*rsz);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Read a file into a buffer and return
+this buffer.</P>
+<P STYLE="margin-bottom: 0in">In the latter case, rsz is used to
+return the size of the file.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int vfstatflags(char *name);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Get Status flags associated with a
+given file name.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void vfprint(VFILE *fd, char *str,
+...);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Print to a VFILE.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int vfDeflateBuffer(byte *obuf, byte
+*ibuf, int osz, int isz);</P>
+<P STYLE="margin-bottom: 0in">int vfDeflateBuffer64(byte *obuf, byte
+*ibuf, int osz, int isz);</P>
+<P STYLE="margin-bottom: 0in">int vfDeflateBufferLvl(byte *obuf, byte
+*ibuf, int osz, int isz, int lvl);</P>
+<P STYLE="margin-bottom: 0in">int vfInflateBuffer(byte *obuf, byte
+*ibuf, int osz, int isz);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Compress or decompress a buffer using
+the deflate algorithm.</P>
+<P STYLE="margin-bottom: 0in">These represent raw deflate streams.</P>
+<P STYLE="margin-bottom: 0in">For these, obuf and ibuf are the output
+and input buffers, and osz and isz are the output and input sizes
+(the output sizes being an indicator of the buffer length).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The return value is either the output
+length, or a negative value in case of error.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">vfDeflateBuffer() compresses using
+default settings.</P>
+<P STYLE="margin-bottom: 0in">vfDeflateBuffer64() compresses using a
+non-standard version of deflate (Deflate64) which uses a larger
+window but is not compatible with all decoders.</P>
+<P STYLE="margin-bottom: 0in">vfDeflateBufferLvl() compresses using
+an adjustable ratio (between 0 and 9, with 0 being fastest and 9
+being best).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void vf_mount(char *src, char *dst,
+char *fs, char **ops);</P>
+<P STYLE="margin-bottom: 0in">void vf_umount(char *name);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Mount or unmount a volume.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Internal</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">See relevant headers...</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void vf_register(VFILE_Interface
+*iface);</P>
+<P STYLE="margin-bottom: 0in">void
+vf_register_fs(VFILE_Mount_Interface *iface);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">These are internal.</P>
+<P STYLE="margin-bottom: 0in">VFILE_Interface gives a set of methods
+for manipulating an open file.</P>
+<P STYLE="margin-bottom: 0in">VFILE_Mount_Interface gives a set of
+methods for managing a mounted volume.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">VFILE *vf_new();</P>
+<P STYLE="margin-bottom: 0in">void vf_destroy(VFILE *fd);</P>
+<P STYLE="margin-bottom: 0in">VFILE_Mount *vf_new_mount();</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Create or destroy contexts.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *vfGetEnv();</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Get a pointer to the VFILE Environment
+Structure.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">VFILE *vfdir_wrapfd(FILE *fd);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Wrap a stdio FILE.</P>
+<H3><BR><BR>
+</H3>
+<H3>DYX: Dynamic XML</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyxAttr *dyxLookupAttr(dyxNode *n, char
+*var);</P>
+<P STYLE="margin-bottom: 0in">dyxAttr *dyxLookupAttrNS(dyxNode *n,
+char *ns, char *var);</P>
+<P STYLE="margin-bottom: 0in">dyxAttr *dyxFetchAttr(dyxNode *n, char
+*var);</P>
+<P STYLE="margin-bottom: 0in">dyxAttr *dyxFetchAttrNS(dyxNode *n,
+char *ns, char *var);</P>
+<P STYLE="margin-bottom: 0in">char *dyxGet(dyxNode *n, char *var);</P>
+<P STYLE="margin-bottom: 0in">int dyxGetInt(dyxNode *n, char *var);</P>
+<P STYLE="margin-bottom: 0in">double dyxGetFloat(dyxNode *n, char
+*var);</P>
+<P STYLE="margin-bottom: 0in">char *dyxGetNS(dyxNode *n, char *ns,
+char *var);</P>
+<P STYLE="margin-bottom: 0in">int dyxGetIntNS(dyxNode *n, char *ns,
+char *var);</P>
+<P STYLE="margin-bottom: 0in">double dyxGetFloatNS(dyxNode *n, char
+*ns, char *var);</P>
+<P STYLE="margin-bottom: 0in">void dyxSet(dyxNode *n, char *var, char
+*val);</P>
+<P STYLE="margin-bottom: 0in">void dyxSetInt(dyxNode *n, char *var,
+int val);</P>
+<P STYLE="margin-bottom: 0in">void dyxSetFloat(dyxNode *n, char *var,
+double val);</P>
+<P STYLE="margin-bottom: 0in">void dyxSetNS(dyxNode *n, char *ns,
+char *var, char *val);</P>
+<P STYLE="margin-bottom: 0in">void dyxSetIntNS(dyxNode *n, char *ns,
+char *var, int val);</P>
+<P STYLE="margin-bottom: 0in">void dyxSetFloatNS(dyxNode *n, char
+*ns, char *var, double val);</P>
+<P STYLE="margin-bottom: 0in">char *dyxNSURI(dyxNode *n, char *ns);</P>
+<P STYLE="margin-bottom: 0in">char *dyxURINS(dyxNode *n, char *uri);</P>
+<P STYLE="margin-bottom: 0in">char *dyxGetURI(dyxNode *n, char *uri,
+char *var);</P>
+<P STYLE="margin-bottom: 0in">int dyxGetIntURI(dyxNode *n, char *uri,
+char *var);</P>
+<P STYLE="margin-bottom: 0in">double dyxGetFloatURI(dyxNode *n, char
+*uri, char *var);</P>
+<P STYLE="margin-bottom: 0in">void dyxSetURI(dyxNode *n, char *uri,
+char *var, char *val);</P>
+<P STYLE="margin-bottom: 0in">void dyxSetIntURI(dyxNode *n, char
+*uri, char *var, int val);</P>
+<P STYLE="margin-bottom: 0in">void dyxSetFloatURI(dyxNode *n, char
+*uri, char *var, double val);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxNew(char *tag);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxNewNS(char *ns, char *tag);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxNewText(char *text);</P>
+<P STYLE="margin-bottom: 0in">void dyxAdd(dyxNode *parent, dyxNode
+*child);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxAddEnd(dyxNode *lst,
+dyxNode *n);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxNew1(char *tag, dyxNode
+*a);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxNew2(char *tag, dyxNode *a,
+dyxNode *b);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxNew3(char *tag, dyxNode *a,
+dyxNode *b, dyxNode *c);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxNew4(char *tag, dyxNode *a,
+dyxNode *b, dyxNode *c, dyxNode *d);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxNew1NS(char *ns, char *tag,
+dyxNode *a);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxNew2NS(char *ns, char *tag,
+dyxNode *a, dyxNode *b);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxNew3NS(char *ns, char *tag,
+dyxNode *a, dyxNode *b, dyxNode *c);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxNew4NS(char *ns, char
+*tag,dyxNode *a, dyxNode *b, dyxNode *c, dyxNode *d);</P>
+<P STYLE="margin-bottom: 0in">int dyxNodeP(dyxNode *n);</P>
+<P STYLE="margin-bottom: 0in">int dyxTextP(dyxNode *n);</P>
+<P STYLE="margin-bottom: 0in">int dyxLeafP(dyxNode *n);</P>
+<P STYLE="margin-bottom: 0in">int dyxChildP(dyxNode *n);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxNext(dyxNode *n);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxPrev(dyxNode *n);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxParent(dyxNode *n);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxChild(dyxNode *n);</P>
+<P STYLE="margin-bottom: 0in">char *dyxNS(dyxNode *n);</P>
+<P STYLE="margin-bottom: 0in">char *dyxURI(dyxNode *n);</P>
+<P STYLE="margin-bottom: 0in">char *dyxTag(dyxNode *n);</P>
+<P STYLE="margin-bottom: 0in">char *dyxText(dyxNode *n);</P>
+<P STYLE="margin-bottom: 0in">void dyxSetTag(dyxNode *n, char *s);</P>
+<P STYLE="margin-bottom: 0in">int dyxTagIsP(dyxNode *n, char *str);</P>
+<P STYLE="margin-bottom: 0in">int dyxAttrIsP(dyxNode *n, char *var,
+char *val);</P>
+<P STYLE="margin-bottom: 0in">int dyxTagAttrIsP(dyxNode *n, char
+*tag, char *var, char *val);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxFindNextTag(dyxNode *last,
+char *tag);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxFindNextAttr(dyxNode *last,
+char *var, char *val);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxFindNextTagAttr(dyxNode
+*last,char *tag, char *var, char *val);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxFindTag(dyxNode *parent,
+char *tag);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxFindAttr(dyxNode *parent,
+char *var, char *val);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxFindTagAttr(dyxNode
+*parent, char *tag, char *var, char *val);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxFetch(dyxNode *parent, char
+*tag);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxClone(dyxNode *n);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxCloneList(dyxNode *n);</P>
+<P STYLE="margin-bottom: 0in">void dyxUnlink(dyxNode *n);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>DYX: Parse</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dyxParseEatWhite(dysReadStream
+strm);</P>
+<P STYLE="margin-bottom: 0in">int dyxParseSpecialP(dysReadStream
+strm);</P>
+<P STYLE="margin-bottom: 0in">int dyxParseContSpecialP(dysReadStream
+strm);</P>
+<P STYLE="margin-bottom: 0in">char *dyxParseToken(dysReadStream strm,
+int *ty);</P>
+<P STYLE="margin-bottom: 0in">char *dyxPeekToken(dysReadStream strm,
+int *ty);</P>
+<P STYLE="margin-bottom: 0in">char *dyxParseText(dysReadStream strm);</P>
+<P STYLE="margin-bottom: 0in">dyxAttr *dyxParseOpts(dysReadStream
+strm);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxParseTag(dysReadStream
+strm, int *rgrp);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxParseExprR(dysReadStream
+strm, int *rgrp);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxParseExpr(dysReadStream
+strm);</P>
+<P STYLE="margin-bottom: 0in">dyxNode *dyxParseExprStr(char *str);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>DYX: Print</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dyxPrintBuf(dyxNode *node, int
+ind,void (*pb)(void *p, char *b), void *ob);</P>
+<P STYLE="margin-bottom: 0in">void dyxPrintStrm(dysPrintStream strm,
+dyxNode *node);</P>
+<P STYLE="margin-bottom: 0in">void dyxDumpFD(FILE *fd, dyxNode
+*node);</P>
+<P STYLE="margin-bottom: 0in">void dyxPrintFD(FILE *fd, dyxNode
+*node);</P>
+<P STYLE="margin-bottom: 0in">void dyxDumpVF(VFILE *fd, dyxNode
+*node);</P>
+<P STYLE="margin-bottom: 0in">void dyxPrintVF(VFILE *fd, dyxNode
+*node);</P>
+<P STYLE="margin-bottom: 0in">char *dyxDumpStr(char *buf, dyxNode
+*node);</P>
+<P STYLE="margin-bottom: 0in">char *dyxPrintStr(char *buf, dyxNode
+*node);</P>
+<P STYLE="margin-bottom: 0in">void dyxPrint(dyxNode *node);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2>DYLL: Dynamic Low-Level</H2>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>DYLL: Function Pointers</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyRawFunc(char *sig, void *fcn);</P>
+<P STYLE="margin-bottom: 0in">dyt dyRawClose(char *sig, void *fcn,
+void *data);</P>
+<P STYLE="margin-bottom: 0in">dyt dyRawMethod(char *sig, void *fcn);</P>
+<P STYLE="margin-bottom: 0in">dyt dyRawMethodData(char *sig, void
+*fcn, void *data);</P>
+<P STYLE="margin-bottom: 0in">dyt dyRawStaticMethod(char *sig, void
+*fcn);</P>
+<P STYLE="margin-bottom: 0in">dyt dyRawStaticMethodData(char *sig,
+void *fcn, void *data);</P>
+<P STYLE="margin-bottom: 0in">char *dyllGenSym();</P>
+<P STYLE="margin-bottom: 0in">dyt dyRawFunc(char *sig, void *fcn);</P>
+<P STYLE="margin-bottom: 0in">dyt dyRawClose(char *sig, void *fcn,
+void *data);</P>
+<P STYLE="margin-bottom: 0in">dyt dyRawMethod(char *sig, void *fcn);</P>
+<P STYLE="margin-bottom: 0in">dyt dyRawMethodData(char *sig, void
+*fcn, void *data);</P>
+<P STYLE="margin-bottom: 0in">int dyRawFuncP(dyt obj);</P>
+<P STYLE="margin-bottom: 0in">void *dyllApplyCallSig(BGBGC_RawFunc
+*inf, void *buf);</P>
+<P STYLE="margin-bottom: 0in">void *dyllApplyRawFuncD(BGBGC_RawFunc
+*inf, dyt obj, dyt *args, int nargs);</P>
+<P STYLE="margin-bottom: 0in">void *dyllApplyRawFuncV(BGBGC_RawFunc
+*inf, dyt obj, char *sig, va_list lst);</P>
+<P STYLE="margin-bottom: 0in">void *dyllApplyRawFuncU(BGBGC_RawFunc
+*inf, dyt obj, char *sig, void **args);</P>
+<P STYLE="margin-bottom: 0in">void
+*dyllApplyObjRawFuncV(BGBGC_RawFunc *inf,dycObject obj, char *sig,
+va_list lst);</P>
+<P STYLE="margin-bottom: 0in">void
+*dyllApplyObjRawFuncU(BGBGC_RawFunc *inf,dycObject obj, char *sig,
+void **args);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>DYLL: Signature String Facilities</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dyllSigQuickSize(char *sig);</P>
+<P STYLE="margin-bottom: 0in">int dyllSigAlignSize(char *sig);</P>
+<P STYLE="margin-bottom: 0in">char *dyllSigSizeAlign(char *sig, int
+*rsz, int *ral);</P>
+<P STYLE="margin-bottom: 0in">char *dyllSigNext(char *sig);</P>
+<P STYLE="margin-bottom: 0in">char *dyllSigRet(char *sig);</P>
+<P STYLE="margin-bottom: 0in">s64 dyllSigGetPtrS64(char *sig, void
+*ptr);</P>
+<P STYLE="margin-bottom: 0in">double dyllSigGetPtrDouble(char *sig,
+void *ptr);</P>
+<P STYLE="margin-bottom: 0in">void dyllSigSetPtrS64(char *sig, void
+*ptr, s64 val);</P>
+<P STYLE="margin-bottom: 0in">void dyllSigSetPtrDouble(char *sig,
+void *ptr, double val);</P>
+<P STYLE="margin-bottom: 0in">int dyllCheckCallArg(char *fsig, char
+*sig);</P>
+<P STYLE="margin-bottom: 0in">int dyllCheckCallSig(char *fsig, char
+*sig);</P>
+<P STYLE="margin-bottom: 0in">dyt dyllGetVarSig(void *p, char *sig);</P>
+<P STYLE="margin-bottom: 0in">void dyllSetVarSig(void *var, char
+*sig, dyt val);</P>
+<P STYLE="margin-bottom: 0in">int dyllUnpackArgsSigArray(char *sig,
+va_list lst, dyt *arr);</P>
+<P STYLE="margin-bottom: 0in">int dyllUnpackUArgsSigArray(char *sig,
+void **args, dyt *arr);</P>
+<P STYLE="margin-bottom: 0in">int dyllUnpackArgsSigUArgs(char *sig,
+va_list lst, void **arr);</P>
+<P STYLE="margin-bottom: 0in">int dyllGetSigUArgsSize(char *sig);</P>
+<P STYLE="margin-bottom: 0in">int dyllRepackBufSigArray(char *sig,
+char **esig, byte *buf, dyt *arr, int nargs);</P>
+<P STYLE="margin-bottom: 0in">int dyllRepackBufSigArray(char *sig,
+char **esig, byte *buf, dyt *arr, int nargs);</P>
+<P STYLE="margin-bottom: 0in">dyt dyllExtractVariantBufferSig(char
+*esig, byte *buf);</P>
+<P STYLE="margin-bottom: 0in">s64 dyllExtractLongBufferSig(char
+*esig, byte *buf);</P>
+<P STYLE="margin-bottom: 0in">double dyllExtractRealBufferSig(char
+*esig, byte *buf);</P>
+<P STYLE="margin-bottom: 0in">int dyllRepackBufSigArgs(char *dsig,
+char **esig, byte *buf,char *ssig, va_list lst);</P>
+<P STYLE="margin-bottom: 0in">int dyllRepackBufSigUArgs(char *dsig,
+char **esig, byte *buf,char *ssig, void **args);</P>
+<P STYLE="margin-bottom: 0in">int dyllRepackBufSigV(char *sig, byte
+*buf, va_list lst);</P>
+<P STYLE="margin-bottom: 0in">int dyllRepackBufSigU(char *sig, byte
+*buf, void **args);</P>
+<P STYLE="margin-bottom: 0in">int dyllRepackBufSigArgs(char *dsig,
+char **esig, byte *buf,char *ssig, va_list lst);</P>
+<P STYLE="margin-bottom: 0in">int dyllRepackBufSigUArgs(char *dsig,
+char **esig, byte *buf,char *ssig, void **args);</P>
+<P STYLE="margin-bottom: 0in">int dyllRepackBufSigV(char *sig, byte
+*buf, va_list lst);</P>
+<P STYLE="margin-bottom: 0in">int dyllRepackBufSigU(char *sig, byte
+*buf, void **args);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>DYLL: Address and ASM Facilities</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BGBGC_InitDyLL();</P>
+<P STYLE="margin-bottom: 0in">void *dyllGetAddr(char *sym);</P>
+<P STYLE="margin-bottom: 0in">char *dyllGetAddrName(void *ptr);</P>
+<P STYLE="margin-bottom: 0in">void dyllSetAddr(char *sym, void *ptr);</P>
+<P STYLE="margin-bottom: 0in">void *dyllGetPtr(char *sym);</P>
+<P STYLE="margin-bottom: 0in">void dyllSetPtr(char *sym, void *v);</P>
+<P STYLE="margin-bottom: 0in">int dyllGetInt(char *sym);</P>
+<P STYLE="margin-bottom: 0in">void dyllSetInt(char *sym, int v);</P>
+<P STYLE="margin-bottom: 0in">s64 dyllGetLong(char *sym);</P>
+<P STYLE="margin-bottom: 0in">void dyllSetLong(char *sym, s64 v);</P>
+<P STYLE="margin-bottom: 0in">float dyllGetFloat(char *sym);</P>
+<P STYLE="margin-bottom: 0in">void dyllSetFloat(char *sym, float v);</P>
+<P STYLE="margin-bottom: 0in">double dyllGetDouble(char *sym);</P>
+<P STYLE="margin-bottom: 0in">void dyllSetDouble(char *sym, double
+v);</P>
+<P STYLE="margin-bottom: 0in">dyt dyllGetDynamic(char *sym);</P>
+<P STYLE="margin-bottom: 0in">void dyllSetDynamic(char *sym, dyt
+val);</P>
+<P STYLE="margin-bottom: 0in">dyt dyllNewEnv(dyt super);</P>
+<P STYLE="margin-bottom: 0in">void dyllEnvBindAddr(dyt env, char
+*name, void *addr);</P>
+<P STYLE="margin-bottom: 0in">void dyllEnvBindAddrSig(dyt env, char
+*name, char *sig, void *addr);</P>
+<P STYLE="margin-bottom: 0in">void dyllEnvSetAddr(dyt env, char
+*name, void *addr);</P>
+<P STYLE="margin-bottom: 0in">void *dyllEnvGetAddr(dyt env, char
+*name);</P>
+<P STYLE="margin-bottom: 0in">char *dyllEnvGetSig(dyt env, char
+*name);</P>
+<P STYLE="margin-bottom: 0in">void *dyllEnvAllocVar(dyt env, char
+*name, char *sig);</P>
+<P STYLE="margin-bottom: 0in">dyt dyllThunkEnv(dyt fcn);</P>
+<P STYLE="margin-bottom: 0in">void dyllThunkBindAddr(dyt fcn, char
+*name, void *addr);</P>
+<P STYLE="margin-bottom: 0in">void dyllThunkBindAddrSig(dyt fcn, char
+*name, char *sig, void *addr);</P>
+<P STYLE="margin-bottom: 0in">void dyllThunkSetAddr(dyt fcn, char
+*name, void *addr);</P>
+<P STYLE="margin-bottom: 0in">void *dyllThunkGetAddr(dyt fcn, char
+*name);</P>
+<P STYLE="margin-bottom: 0in">char *dyllThunkGetSig(dyt fcn, char
+*name);</P>
+<P STYLE="margin-bottom: 0in">dyt dyllAsmThunk(char *buf);</P>
+<P STYLE="margin-bottom: 0in">dyt dyllAsmThunkEnv(char *buf, dyt
+env);</P>
+<P STYLE="margin-bottom: 0in">dyt dyllAsmThunkSuperEnv(char *buf, dyt
+senv);</P>
+<P STYLE="margin-bottom: 0in">dyt dyllAsmThunkInline(char *buf);</P>
+<P STYLE="margin-bottom: 0in">dyt dyllAsmThunkInlineEnv(char *buf,
+dyt env);</P>
+<P STYLE="margin-bottom: 0in">dyt dyllAsmThunkInlineSuperEnv(char
+*buf, dyt senv);</P>
+<P STYLE="margin-bottom: 0in">void dyllAsmBegin();</P>
+<P STYLE="margin-bottom: 0in">void *dyllAsmEnd();</P>
+<P STYLE="margin-bottom: 0in">void dyllAsmBeginThunkInline();</P>
+<P STYLE="margin-bottom: 0in">void *dyllAsmEndThunkInline();</P>
+<P STYLE="margin-bottom: 0in">void dyllAsmPuts(char *str);</P>
+<P STYLE="margin-bottom: 0in">void dyllAsmPrintv(char *str, va_list
+lst);</P>
+<P STYLE="margin-bottom: 0in">void dyllAsmPrint(char *str, ...);</P>
+<P STYLE="margin-bottom: 0in">int dyllAsmRegisterLinkMeta(char
+*name,void *(*fcn)(char *sym, char *name, char **args));</P>
+<P STYLE="margin-bottom: 0in">int dyllAsmRegisterLinkNotify(char
+*name,void (*fcn)(char *sym, char *name, char **args, void *ptr));</P>
+<P STYLE="margin-bottom: 0in">char *dyllComposeLinkMetaName(char
+*name, char **args);</P>
+<P STYLE="margin-bottom: 0in">char *dyllComposeLinkNotifyName(char
+*name, char **args);</P>
+<P STYLE="margin-bottom: 0in">char *dyllComposeLinkMetaName0(char
+*name);</P>
+<P STYLE="margin-bottom: 0in">char *dyllComposeLinkMetaName1(char
+*name, char *ar0);</P>
+<P STYLE="margin-bottom: 0in">char *dyllComposeLinkMetaName2(char
+*name, char *ar0, char *ar1);</P>
+<P STYLE="margin-bottom: 0in">char *dyllComposeLinkMetaName3(char
+*name, char *ar0, char *ar1, char *ar2);</P>
+<P STYLE="margin-bottom: 0in">char *dyllComposeLinkMetaName4(char
+*name,char *ar0, char *ar1, char *ar2, char *ar3);</P>
+<P STYLE="margin-bottom: 0in">char *dyllGetAddrSig(void *fcn);</P>
+<P STYLE="margin-bottom: 0in">void *dyllApplyPtrV(void *fcn, va_list
+lst);</P>
+<P STYLE="margin-bottom: 0in">void *dyllApplyPtrU(void *fcn, void
+**args);</P>
+<P STYLE="margin-bottom: 0in">int dyllApplyPtrVi(void *fcn, va_list
+lst);</P>
+<P STYLE="margin-bottom: 0in">s64 dyllApplyPtrVl(void *fcn, va_list
+lst);</P>
+<P STYLE="margin-bottom: 0in">float dyllApplyPtrVf(void *fcn, va_list
+lst);</P>
+<P STYLE="margin-bottom: 0in">double dyllApplyPtrVd(void *fcn,
+va_list lst);</P>
+<P STYLE="margin-bottom: 0in">void *dyllApplyPtrVp(void *fcn, va_list
+lst);</P>
+<P STYLE="margin-bottom: 0in">void *dyllApplyPtrObjV(void *fcn, void
+*obj, va_list lst);</P>
+<P STYLE="margin-bottom: 0in">void *dyllApplyPtrObjU(void *fcn, void
+*obj, void **args);</P>
+<P STYLE="margin-bottom: 0in">void *dyllApplyPtrSigV(void *fcn, char
+*sig, va_list lst);</P>
+<P STYLE="margin-bottom: 0in">void *dyllApplyPtrSigU(void *fcn, char
+*sig, void **args);</P>
+<P STYLE="margin-bottom: 0in">int dyllApplyPtrSigVi(void *fcn, char
+*sig, va_list lst);</P>
+<P STYLE="margin-bottom: 0in">s64 dyllApplyPtrSigVl(void *fcn, char
+*sig, va_list lst);</P>
+<P STYLE="margin-bottom: 0in">float dyllApplyPtrSigVf(void *fcn, char
+*sig, va_list lst);</P>
+<P STYLE="margin-bottom: 0in">double dyllApplyPtrSigVd(void *fcn,
+char *sig, va_list lst);</P>
+<P STYLE="margin-bottom: 0in">void *dyllApplyPtrSigVp(void *fcn, char
+*sig, va_list lst);</P>
+<P STYLE="margin-bottom: 0in">void *dyllApplyPtrSigObjV(void *fcn,
+char *sig,void *obj, va_list lst);</P>
+<P STYLE="margin-bottom: 0in">void *dyllApplyPtrSigObjU(void *fcn,
+char *sig,void *obj, void **args);</P>
+<P STYLE="margin-bottom: 0in">void *dyllWrapClosure(void *fcn, void
+*data, char *sig);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>DYLL: Metadata Database</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dyllMetaInit();</P>
+<P STYLE="margin-bottom: 0in">void dyllMetaCommit();</P>
+<P STYLE="margin-bottom: 0in">void dyllMetaBindKey(char *key, char
+*val);</P>
+<P STYLE="margin-bottom: 0in">char *dyllMetaLookupKey(char *key);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>DYLL: Exception Handling</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dyllBeginUnwind();</P>
+<P STYLE="margin-bottom: 0in">void dyllEndUnwind(dyt ctx);</P>
+<P STYLE="margin-bottom: 0in">void dyllUnwindNext(dyt ctx);</P>
+<P STYLE="margin-bottom: 0in">dyt dyllUnwindObj(dyt ctx);</P>
+<P STYLE="margin-bottom: 0in">void dyllDoUnwind(dyt obj);</P>
+<P STYLE="margin-bottom: 0in">void dyllThrowObj(dyt obj);</P>
+<P STYLE="margin-bottom: 0in">void dyllThrowName(char *str);</P>
+<P STYLE="margin-bottom: 0in">void dyllThrowClass(char *str);</P>
+<P STYLE="margin-bottom: 0in">void dyllThrow(char *str);</P>
+<P STYLE="margin-bottom: 0in">int dyllCatchP(dyt ctx, char *str);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2>DYC: Class/Instance OO Facilities</H2>
+<H3>Overview</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">General info about the Class/Instance
+system.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Primary goals for this system:</P>
+<P STYLE="margin-bottom: 0in">Effectively implement a class/instance
+system;</P>
+<P STYLE="margin-bottom: 0in">Performance is a goal, and wherever
+possible the system should try to have good performance;</P>
+<P STYLE="margin-bottom: 0in">It should represent a reasonably
+general feature and be sufficiently capable for use in VMs.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H4>Features:</H4>
+<P STYLE="margin-bottom: 0in">Class/Instance;</P>
+<P STYLE="margin-bottom: 0in">Emphasis on Single Inheritence;</P>
+<P STYLE="margin-bottom: 0in">Inferfaces;</P>
+<P STYLE="margin-bottom: 0in">Opaque API;</P>
+<P STYLE="margin-bottom: 0in">Anonymous classes;</P>
+<P STYLE="margin-bottom: 0in">...</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Incomplete:</P>
+<P STYLE="margin-bottom: 0in">Multiple Inheritence;</P>
+<P STYLE="margin-bottom: 0in">...</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Structure:</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H4>Classes:</H4>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dycClass, represents classes, contains
+much of the core machinery of the object system. Classes may link to
+and make use of superclasses, and an internal versioning system is
+used to try to handle structural alterations to classes.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Interfaces will also be represented via
+dycClass, and in many ways an interface is like a class. However, it
+is not valid to try to create an instance of an interface, nor can an
+interface contain usable slots or methods.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">At present, interface lookups (for both
+slots and methods) are performed by the use of specialized
+hash-tables (in general, the use of hash tables is straightforwards,
+flexible, and reasonably efficient). The approach used is a variation
+of a lookup hash.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H4>Slots:</H4>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dycSlot is internally contained within
+dycClass, and stores info needed for identifying and retrieving
+slots. Slots may be inherited from superclass, and so a slot which is
+valid in a superclass is typically the same slot that would be
+returned by a subclass (an exception is when the slot is shadowed by
+another slot with the same name).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Multiple 'types' are supported
+reflecting different ways of storing or accessing the contents.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">A few slot types:</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Static, the slot's payload is managed
+by the slot itself, and so the same value is shared between all
+instances and with any derived classes.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Direct, this is the default case for
+slots, where in this case the slot refers directly to the value in an
+object instance.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Indirect, this is similar to direct,
+but is used when multiple versions of a class may be in use (for
+example, as in the case of dynamically modified classes), where the
+slot is referred to via a table associated with the appropriate class
+version.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Interface, in this case, the slot does
+not directly refer to the data. Interface Slots are typically defined
+within interfaces, and provide a means to more efficiently access the
+contents of different unrelated class types. An interface slot is
+used with an instance of an object, and serves to look up the
+appropriate slot for the object and act as if the access had been via
+using the found slot. It is in error to access an interface via an
+interface.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H4>Methods:</H4>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dycMethod is similarly contained within
+dycClass. It contains info needed for identifying a particular method
+and for retrieving and applying the correct function object (defined
+externally to the object system).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Unlike slots, most method types do not
+exist within the object instances. Instead, methods are generally
+accessed via VTables located within the class.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Methods are accessed providing both a
+name and a signature. At present, a method can only be accessed with
+a signature that is an exact match (no soft-matching or coercion is
+done). Multiple methods may exist with the same name but with
+different signatures.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Static methods, unlike static slots,
+are unique to each class. A method being static defines how it is to
+be called, not how it is stored.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Direct and Indirect behave similarly to
+the case with slots, only that they refer to vtables rather than the
+instance payload.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Interface Methods are similar to
+Interface Slots, and likewise are used to call a method with a
+matching name and signature.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Slot Methods are accessed like methods,
+but differ primarily in that, rather than referring to the vtable,
+the method identifies a hidden slot, and it is this slot which holds
+the function to be called.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H4>Objects:</H4>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dycObject holds an object that is an
+instance of a particular class.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Objects hold a reference to the class,
+info about the class version (needed since the class made be
+modified, but objects remain using an older layout), as well as a
+buffer for the object's payload. An object may also hold some info
+related to Multiple Inheritence, or to the use of per-object slots or
+delegation.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">It is also possible to clone an object,
+which will create a new object with the same state as the original
+(including any per-object slots).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H4>Per-Object Slots:</H4>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">It will be possible to add slots that
+exist per-instance.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The idea is that these slots will be
+primarily accessed either dynamically or via interfaces. It is also
+possible to retrieve the slot and method handles from objects,
+however for likely obvious reasons, it will not be able to retrieve
+these slot handles from classes.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H4>Prototype OO (older):</H4>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">In this sense, Prototype-OO will not be
+in a pure sense, but rather as a few extended features for the
+class/instance system:</P>
+<P STYLE="margin-bottom: 0in">An ability to dynamically add slots or
+methods to preexisting objects;</P>
+<P STYLE="margin-bottom: 0in">An ability for one object to delegate
+to another;</P>
+<P STYLE="margin-bottom: 0in">...</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The current idea is that prototype
+features will be primarily accessed via interfaces (thus keeping
+static typing in place).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Likewise, prototype objects will still
+generally have a class from which they are inherited from.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The idea here will be that a &quot;virtual
+class&quot; will exist, which will hold all possible slots and
+methods that may be found in a prototype object (these will be
+structurally equivalent to, but functionally distinct from, their use
+in class/instance objects). Or, alternatively, this is the collection
+of all slot or method signatures that have been seen in the prototype
+system.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">So, to dynamically lookup a slot or
+method for a prototype object will retrieve the slot or method from
+here. Note that it will not be possible to directly interact with
+this class, and in fact no class may actually exist in this case.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Each slot or method will have its own
+ID number, and it will be this number that is used for retrieving the
+slot or method from the object (the representation of prototype
+objects will thus be that of an ID/value list/hash).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">A few special hash tables may be used
+for speeding up all this as well.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>DYC: Class And Object Facilities</H3>
+<P STYLE="margin-bottom: 0in">int dycObjectP(dyt obj);</P>
+<P STYLE="margin-bottom: 0in">int dycClassP(dyt obj);</P>
+<P STYLE="margin-bottom: 0in">int dycSlotP(dyt obj);</P>
+<P STYLE="margin-bottom: 0in">int dycMethodP(dyt obj);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Return nonzero value if obj is the
+correct type of object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycBeginClass(char *name, char
+*super);</P>
+<P STYLE="margin-bottom: 0in">dycClass dycEndClass();</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Begin and end a class declaration.</P>
+<P STYLE="margin-bottom: 0in">Super identifies the superclass, or may
+be NULL (indicating no superclass).</P>
+<P STYLE="margin-bottom: 0in">If name is NULL, then the class will be
+anonymous.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The return value from 'dycEndClass()'
+will be the handle of the created class.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycBeginClassAnon(dycClass super);</P>
+<P STYLE="margin-bottom: 0in">dycClass dycEndClassAnon();</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Also creates an anonymous class, but
+gives the superclass as a class handle (allowing the use of other
+anonymous classes as superclasses).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSlotBasic(char *name, char
+*sig);</P>
+<P STYLE="margin-bottom: 0in">void dycSlotStatic(char *name, char
+*sig);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Declare a new slot.</P>
+<P STYLE="margin-bottom: 0in">Basic slots reserve space in the
+class-instance, and have a value which is independent for each class
+instance.</P>
+<P STYLE="margin-bottom: 0in">Static slots share the value between
+all instances of the class, and also with any subclasses.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSlotStatici(char *name, char
+*sig, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSlotStaticl(char *name, char
+*sig, s64 val);</P>
+<P STYLE="margin-bottom: 0in">void dycSlotStaticf(char *name, char
+*sig, double val);</P>
+<P STYLE="margin-bottom: 0in">void dycSlotStaticd(char *name, char
+*sig, double val);</P>
+<P STYLE="margin-bottom: 0in">void dycSlotStaticU(char *name, char
+*sig, void *val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Declare a static slot and set the
+initial value.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSlotInit(char *name, char
+*sig);</P>
+<P STYLE="margin-bottom: 0in">void dycSlotIniti(char *name, char
+*sig, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSlotInitl(char *name, char
+*sig, s64 val);</P>
+<P STYLE="margin-bottom: 0in">void dycSlotInitf(char *name, char
+*sig, double val);</P>
+<P STYLE="margin-bottom: 0in">void dycSlotInitd(char *name, char
+*sig, double val);</P>
+<P STYLE="margin-bottom: 0in">void dycSlotInitU(char *name, char
+*sig, void *val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Declare an initialized slot.</P>
+<P STYLE="margin-bottom: 0in">Initialized slots hold their values in
+the class, and are unique to each class. When an object is created
+from the class, the values stored in the init slot are copied into
+the object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSlotDelegate(char *name, char
+*cname);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Add a delegate to an object. A delegate
+is a special kind of slot which holds object references. When some
+kinds of operations are performed, an access may be directed through
+a delegate.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSlotStaticDelegate(char *name,
+char *cname);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycMethodBasic(char *name, char
+*sig);</P>
+<P STYLE="margin-bottom: 0in">void dycMethodStatic(char *name, char
+*sig);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Declare a method in an abstract sense
+(creates the method, but does not provide a body). When called, a
+basic method recieves</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycMethodFunc(char *name, char
+*sig, dyt fcn);</P>
+<P STYLE="margin-bottom: 0in">void dycMethodStaticFunc(char *name,
+char *sig, dyt fcn);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Declare a method and give the method
+body to use. The fcn argument needs to be an object of an appropriate
+type.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycMethodCFunc(char *name, char
+*sig, void *fcn);</P>
+<P STYLE="margin-bottom: 0in">void dycMethodCFuncData(char *name,
+char *sig, void *fcn, void *data);</P>
+<P STYLE="margin-bottom: 0in">void dycMethodCSelf(char *name, char
+*sig, void *fcn);</P>
+<P STYLE="margin-bottom: 0in">void dycMethodCSelfData(char *name,
+char *sig, void *fcn, void *data);</P>
+<P STYLE="margin-bottom: 0in">void dycMethodStaticCFunc(char *name,
+char *sig, void *fcn);</P>
+<P STYLE="margin-bottom: 0in">void dycMethodStaticCFuncData(char
+*name, char *sig, void *fcn, void *data);</P>
+<P STYLE="margin-bottom: 0in">void dycMethodStaticCSelf(char *name,
+char *sig, void *fcn);</P>
+<P STYLE="margin-bottom: 0in">void dycMethodStaticCSelfData(char
+*name, char *sig, void *fcn, void *data);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Declare a method and provide a C
+function (as a void pointer).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">'Func' recieves its arguments as-is.</P>
+<P STYLE="margin-bottom: 0in">'FuncData' has data passed as the first
+argument.</P>
+<P STYLE="margin-bottom: 0in">'Self' has the object passed as the
+first argument.</P>
+<P STYLE="margin-bottom: 0in">'SelfData' has the object as the first
+argument and data as the second.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">'StaticCSelf' and 'StaticCSelfData' are
+as above, except that the class is passed rather than the object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSlotMethod(char *name, char
+*sig);</P>
+<P STYLE="margin-bottom: 0in">void dycStaticSlotMethod(char *name,
+char *sig);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Declare a slot method.</P>
+<P STYLE="margin-bottom: 0in">A slot method behaves between that of a
+method and a slot.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Namely:</P>
+<P STYLE="margin-bottom: 0in">It may be called like a method, and may
+only hold method objects;</P>
+<P STYLE="margin-bottom: 0in">It is unique to each instance, and so
+may be used for modifiable per-instance methods (the method is stored
+in a slot, rather than in a vtable).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycClassInterface(char *name);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Declares that the class being declared
+implements a given interface.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycBeginIface(char *name, char
+*super);</P>
+<P STYLE="margin-bottom: 0in">dycClass dycEndIface();</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Begin and end an interface declaration.</P>
+<P STYLE="margin-bottom: 0in">Super gives the super-interface, and
+may give multiple super-interfaces separated by spaces.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycClassSuper(char *name);</P>
+<P STYLE="margin-bottom: 0in">void dycIfaceSuper(char *name);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Provides an alternate way to give
+super-interfaces. If these is used, the super argument to
+BeginClass/BeginIface is to be NULL. These will differ from passing a
+string in that these will always create a Multiple-Inheritence case,
+even if only used once.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycIfaceMethod(char *name, char
+*sig);</P>
+<P STYLE="margin-bottom: 0in">void dycIfaceSlot(char *name, char
+*sig);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Declares an interface method or slot.</P>
+<P STYLE="margin-bottom: 0in">A method or slot declared in an
+interface may be used in place of a class-specific method or slot
+when accessing an object which is an instance of a class implementing
+the interface.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycBeginStruct(char *name);</P>
+<P STYLE="margin-bottom: 0in">dycClass dycEndStruct();</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dycClass dycGetClass(char *name);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Lookup the class for a given classname.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dycObject dycAlloc(dycClass inf);</P>
+<P STYLE="margin-bottom: 0in">dycObject dycAllocClass(char *name);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Allocate a new instance of the class.</P>
+<P STYLE="margin-bottom: 0in">This sets up initial storage and may
+initialize slots, but does not call the constructor.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dycObject dycNewClass(char *name);</P>
+<P STYLE="margin-bottom: 0in">dycObject dycNewInitClass(char *name,
+char *sig, ...);</P>
+<P STYLE="margin-bottom: 0in">dycObject dycNewInitClassV(char *name,
+char *sig, va_list args);</P>
+<P STYLE="margin-bottom: 0in">dycObject dycNewInitClassU(char *name,
+char *sig, void **args);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Creates a new instance of a class and
+calls the constructor.</P>
+<P STYLE="margin-bottom: 0in">Sig is to be an exact match to one of
+the appropriate constructors for the class.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">All constructors are to have a return
+type of 'v' (void).</P>
+<P STYLE="margin-bottom: 0in">In the case of 'dycNewClass()', the sig
+is '()v'.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dycObject dycNew(dycClass inf);</P>
+<P STYLE="margin-bottom: 0in">dycObject dycNewInit(dycClass inf, char
+*sig, ...);</P>
+<P STYLE="margin-bottom: 0in">dycObject dycNewInitV(dycClass inf,
+char *sig, va_list args);</P>
+<P STYLE="margin-bottom: 0in">dycObject dycNewInitU(dycClass inf,
+char *sig, void **args);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">As above, a new instance of the class
+is created and the constructor is called.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycSubclassP(dycClass info,
+dycClass super);</P>
+<P STYLE="margin-bottom: 0in">int dycSubclassOfP(char *name, char
+*super);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Check if info is or is a subclass of
+super.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycInstanceP(dycObject obj,
+dycClass inf);</P>
+<P STYLE="margin-bottom: 0in">int dycInstanceOfP(dycObject obj, char
+*name);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Check if obj is an instance of inf or
+an instance of a subclass of inf.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dycClass dycGetObjClass(dycObject obj);</P>
+<P STYLE="margin-bottom: 0in">dycClass dycGetClassSuper(dycClass
+inf);</P>
+<P STYLE="margin-bottom: 0in">char *dycGetClassName(dycClass inf);</P>
+<P STYLE="margin-bottom: 0in">char *dycGetObjClassName(dycObject
+obj);</P>
+<P STYLE="margin-bottom: 0in">dycClassV dycGetClassVersion(dycClass
+inf);</P>
+<P STYLE="margin-bottom: 0in">int dycGetStructSize(dycClassV vinf);</P>
+<P STYLE="margin-bottom: 0in">dycClass dycGetVersionClass(dycClassV
+vinf);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *dycGetSlotName(dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">char *dycGetSlotSig(dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">dycClass dycGetSlotClass(dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *dycGetMethodName(dycMethod idx);</P>
+<P STYLE="margin-bottom: 0in">char *dycGetMethodSig(dycMethod idx);</P>
+<P STYLE="margin-bottom: 0in">dycClass dycGetMethodClass(dycMethod
+idx);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Not hard to figure out...</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *dycGetStructPtr(dycClassV vinf,
+void *obj, dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">void *dycPtrStructSlot(dycClassV vinf,
+void *obj, char *name);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dycSlot dycIdxSlot(dycClass info, char
+*name);</P>
+<P STYLE="margin-bottom: 0in">dycSlot dycIdxObjSlot(dycObject obj,
+char *name);</P>
+<P STYLE="margin-bottom: 0in">dycMethod dycIdxMethod(dycClass inf,
+char *name, char *sig);</P>
+<P STYLE="margin-bottom: 0in">dycMethod dycIdxObjMethod(dycObject
+obj, char *name, char *sig);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *dycGetSlotPtr(dycObject obj,
+dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">void *dycGetInitPtr(dycClass inf,
+dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">void *dycGetStaticPtr(dycClass inf,
+dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">void *dycPtrSlot(dycObject obj, char
+*name);</P>
+<P STYLE="margin-bottom: 0in">void *dycPtrStaticSlot(dycClass info,
+char *name);</P>
+<P STYLE="margin-bottom: 0in">void *dycPtrInitSlot(dycClass info,
+char *name);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dycLookupMethodSig(dycObject obj,
+char *name, char *sig);</P>
+<P STYLE="margin-bottom: 0in">dyt dycGetMethodFunc(dycClass inf,
+dycMethod idx);</P>
+<P STYLE="margin-bottom: 0in">dyt dycGetObjMethodFunc(dycObject obj,
+dycMethod idx);</P>
+<P STYLE="margin-bottom: 0in">void dycSetMethodFunc(dycClass inf,
+dycMethod idx, dyt fcn);</P>
+<P STYLE="margin-bottom: 0in">void dycSetObjMethodFunc(dycObject obj,
+dycMethod idx, dyt fcn);</P>
+<P STYLE="margin-bottom: 0in">dycSlot dycAddObjSlot(dycObject obj,
+char *name, char *sig);</P>
+<P STYLE="margin-bottom: 0in">dycMethod dycAddObjMethod(dycObject
+obj, char *name, char *sig);</P>
+<P STYLE="margin-bottom: 0in">dycObject dycCloneObject(dycObject
+obj);</P>
+<P STYLE="margin-bottom: 0in">dycObject dycGetObjDelegate(dycObject
+obj, char *name);</P>
+<P STYLE="margin-bottom: 0in">void dycSetObjDelegate(dycObject obj,
+char *name, dycObject obj1);</P>
+<P STYLE="margin-bottom: 0in">dycSlot *dycEnumSlotArray(dycClass
+inf);</P>
+<P STYLE="margin-bottom: 0in">dycMethod *dycEnumMethodArray(dycClass
+inf);</P>
+<P STYLE="margin-bottom: 0in">dycSlot *dycEnumClassSlotArray(char
+*name);</P>
+<P STYLE="margin-bottom: 0in">dycMethod *dycEnumClassMethodArray(char
+*name);</P>
+<P STYLE="margin-bottom: 0in">dycObject dycAllocClass(char *name);</P>
+<P STYLE="margin-bottom: 0in">void *dycPtrClassSlot(char *cname, char
+*sname);</P>
+<P STYLE="margin-bottom: 0in">dycSlot dycIdxClassSlot(char *cname,
+char *sname);</P>
+<P STYLE="margin-bottom: 0in">dycMethod dycIdxClassMethod(char
+*cname, char *name, char *sig);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Need to sort out...</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dycGetSlot(dycObject obj, char
+*name);</P>
+<P STYLE="margin-bottom: 0in">dyt dycGetSlotr(dycObject obj, char
+*name);</P>
+<P STYLE="margin-bottom: 0in">void *dycGetSlotp(dycObject obj, char
+*name);</P>
+<P STYLE="margin-bottom: 0in">int dycGetSlotsb(dycObject obj, char
+*name);</P>
+<P STYLE="margin-bottom: 0in">int dycGetSlotub(dycObject obj, char
+*name);</P>
+<P STYLE="margin-bottom: 0in">int dycGetSlotss(dycObject obj, char
+*name);</P>
+<P STYLE="margin-bottom: 0in">int dycGetSlotus(dycObject obj, char
+*name);</P>
+<P STYLE="margin-bottom: 0in">int dycGetSloti(dycObject obj, char
+*name);</P>
+<P STYLE="margin-bottom: 0in">s64 dycGetSlotl(dycObject obj, char
+*name);</P>
+<P STYLE="margin-bottom: 0in">float dycGetSlotf(dycObject obj, char
+*name);</P>
+<P STYLE="margin-bottom: 0in">double dycGetSlotd(dycObject obj, char
+*name);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Get the value of a slot which is looked
+up by name.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The suffix gives the type, and is to be
+compatible with the slot in question (it is undefined what happens if
+there is a mismatch).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Suffix:</P>
+<P STYLE="margin-bottom: 0in">	(none), tries to access the slot using
+dynamic types;</P>
+<P STYLE="margin-bottom: 0in">	r, reference (generic);</P>
+<P STYLE="margin-bottom: 0in">	p, pointer (generic);</P>
+<P STYLE="margin-bottom: 0in">	sb, signed byte;</P>
+<P STYLE="margin-bottom: 0in">	ub, unsigned byte;</P>
+<P STYLE="margin-bottom: 0in">	ss, signed short;</P>
+<P STYLE="margin-bottom: 0in">	us, unsigned short;</P>
+<P STYLE="margin-bottom: 0in">	i, integer (32-bit);</P>
+<P STYLE="margin-bottom: 0in">	l, long (64-bit);</P>
+<P STYLE="margin-bottom: 0in">	f, float;</P>
+<P STYLE="margin-bottom: 0in">	d, double.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note that this is not the convention
+used in the signature strings.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycSetSlot(dycObject obj, char
+*name, dyt val);</P>
+<P STYLE="margin-bottom: 0in">int dycSetSlotr(dycObject obj, char
+*name, dyt val);</P>
+<P STYLE="margin-bottom: 0in">int dycSetSlotp(dycObject obj, char
+*name, void *val);</P>
+<P STYLE="margin-bottom: 0in">int dycSetSlotsb(dycObject obj, char
+*name, int val);</P>
+<P STYLE="margin-bottom: 0in">int dycSetSlotub(dycObject obj, char
+*name, int val);</P>
+<P STYLE="margin-bottom: 0in">int dycSetSlotss(dycObject obj, char
+*name, int val);</P>
+<P STYLE="margin-bottom: 0in">int dycSetSlotus(dycObject obj, char
+*name, int val);</P>
+<P STYLE="margin-bottom: 0in">int dycSetSloti(dycObject obj, char
+*name, int val);</P>
+<P STYLE="margin-bottom: 0in">int dycSetSlotl(dycObject obj, char
+*name, s64 val);</P>
+<P STYLE="margin-bottom: 0in">int dycSetSlotf(dycObject obj, char
+*name, float val);</P>
+<P STYLE="margin-bottom: 0in">int dycSetSlotd(dycObject obj, char
+*name, double val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Assign the value in the slot,
+referencing by name.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycGetsb(dycObject obj, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetub(dycObject obj, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetss(dycObject obj, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetus(dycObject obj, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGeti(dycObject obj, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">s64 dycGetl(dycObject obj, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">float dycGetf(dycObject obj, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">double dycGetd(dycObject obj, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">dyt dycGetr(dycObject obj, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">void *dycGetp(dycObject obj, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Get the value in the slot, accessed via
+the slot index.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSetsb(dycObject obj, dycSlot
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetub(dycObject obj, dycSlot
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetss(dycObject obj, dycSlot
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetus(dycObject obj, dycSlot
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSeti(dycObject obj, dycSlot
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetl(dycObject obj, dycSlot
+idx, s64 val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetf(dycObject obj, dycSlot
+idx, float val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetd(dycObject obj, dycSlot
+idx, double val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetr(dycObject obj, dycSlot
+idx, dyt val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetp(dycObject obj, dycSlot
+idx, void *val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Set the value in the slot, accessed via
+the slot index.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycGetStaticsb(dycClass inf,
+dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetStaticub(dycClass inf,
+dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetStaticss(dycClass inf,
+dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetStaticus(dycClass inf,
+dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetStatici(dycClass inf, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">s64 dycGetStaticl(dycClass inf, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">float dycGetStaticf(dycClass inf,
+dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">double dycGetStaticd(dycClass inf,
+dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">dyt dycGetStaticr(dycClass inf, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">void *dycGetStaticp(dycClass inf,
+dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Get the value in the static slot,
+accessed via the slot index.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSetStaticsb(dycClass inf,
+dycSlot idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStaticub(dycClass inf,
+dycSlot idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStaticss(dycClass inf,
+dycSlot idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStaticus(dycClass inf,
+dycSlot idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStatici(dycClass inf,
+dycSlot idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStaticl(dycClass inf,
+dycSlot idx, s64 val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStaticf(dycClass inf,
+dycSlot idx, float val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStaticd(dycClass inf,
+dycSlot idx, double val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStaticr(dycClass inf,
+dycSlot idx, dyt val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStaticp(dycClass inf,
+dycSlot idx, void *val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Set the value in the static slot,
+accessed via the slot index.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycGetInitsb(dycClass inf, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetInitub(dycClass inf, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetInitss(dycClass inf, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetInitus(dycClass inf, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetIniti(dycClass inf, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">s64 dycGetInitl(dycClass inf, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">float dycGetInitf(dycClass inf, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">double dycGetInitd(dycClass inf,
+dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">dyt dycGetInitr(dycClass inf, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in">void *dycGetInitp(dycClass inf, dycSlot
+idx);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Get the value in the init slot,
+accessed via the slot index.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSetInitsb(dycClass inf, dycSlot
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetInitub(dycClass inf, dycSlot
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetInitss(dycClass inf, dycSlot
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetInitus(dycClass inf, dycSlot
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetIniti(dycClass inf, dycSlot
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetInitl(dycClass inf, dycSlot
+idx, s64 val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetInitf(dycClass inf, dycSlot
+idx, float val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetInitd(dycClass inf, dycSlot
+idx, double val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetInitr(dycClass inf, dycSlot
+idx, dyt val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetInitp(dycClass inf, dycSlot
+idx, void *val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Set the value in the init slot,
+accessed via the slot index.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycGetStructsb(dycClassV vinf, void
+*obj, dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetStructub(dycClassV vinf, void
+*obj, dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetStructss(dycClassV vinf, void
+*obj, dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetStructus(dycClassV vinf, void
+*obj, dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetStructi(dycClassV vinf, void
+*obj, dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">s64 dycGetStructl(dycClassV vinf, void
+*obj, dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">float dycGetStructf(dycClassV vinf,
+void *obj, dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">double dycGetStructd(dycClassV vinf,
+void *obj, dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">dyt dycGetStructr(dycClassV vinf, void
+*obj, dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in">void *dycGetStructp(dycClassV vinf,
+void *obj, dycSlot idx);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Get the value in a struct slot,
+accessed via the slot index.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSetStructsb(dycClassV vinf,
+void *obj, dycSlot idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStructub(dycClassV vinf,
+void *obj, dycSlot idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStructss(dycClassV vinf,
+void *obj, dycSlot idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStructus(dycClassV vinf,
+void *obj, dycSlot idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStructi(dycClassV vinf, void
+*obj, dycSlot idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStructl(dycClassV vinf, void
+*obj, dycSlot idx, s64 val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStructf(dycClassV vinf, void
+*obj, dycSlot idx, float val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStructd(dycClassV vinf, void
+*obj, dycSlot idx, double val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStructr(dycClassV vinf, void
+*obj, dycSlot idx, dyt val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetStructp(dycClassV vinf, void
+*obj, dycSlot idx, void *val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Set the value in a struct slot,
+accessed via the slot index.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *dycCallSigU(dycObject obj, char
+*name, char *sig, void **args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallSigV(dycObject obj, char
+*name, char *sig, va_list args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallSig(dycObject obj, char
+*name, char *sig, ...);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Calls a method dynamically looking up
+the method.</P>
+<P STYLE="margin-bottom: 0in">The return value is a pointer to a
+temporary buffer holding the return value for the method.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dycCallSigVr(dycObject obj, char
+*name, char *sig, va_list lst);</P>
+<P STYLE="margin-bottom: 0in">int dycCallSigVi(dycObject obj, char
+*name, char *sig, va_list lst);</P>
+<P STYLE="margin-bottom: 0in">s64 dycCallSigVl(dycObject obj, char
+*name, char *sig, va_list lst);</P>
+<P STYLE="margin-bottom: 0in">float dycCallSigVf(dycObject obj, char
+*name, char *sig, va_list lst);</P>
+<P STYLE="margin-bottom: 0in">double dycCallSigVd(dycObject obj, char
+*name, char *sig, va_list lst);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dycCallSigUr(dycObject obj, char
+*name, char *sig, void **args);</P>
+<P STYLE="margin-bottom: 0in">int dycCallSigUi(dycObject obj, char
+*name, char *sig, void **args);</P>
+<P STYLE="margin-bottom: 0in">s64 dycCallSigUl(dycObject obj, char
+*name, char *sig, void **args);</P>
+<P STYLE="margin-bottom: 0in">float dycCallSigUf(dycObject obj, char
+*name, char *sig, void **args);</P>
+<P STYLE="margin-bottom: 0in">double dycCallSigUd(dycObject obj, char
+*name, char *sig, void **args);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycCallSigi(dycObject obj, char
+*name, char *sig, ...);</P>
+<P STYLE="margin-bottom: 0in">s64 dycCallSigl(dycObject obj, char
+*name, char *sig, ...);</P>
+<P STYLE="margin-bottom: 0in">float dycCallSigf(dycObject obj, char
+*name, char *sig, ...);</P>
+<P STYLE="margin-bottom: 0in">double dycCallSigd(dycObject obj, char
+*name, char *sig, ...);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Calls a method dynamically looking up
+the method.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *dycCallU(dycObject obj, dycMethod
+mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallV(dycObject obj, dycMethod
+mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCall(dycObject obj, dycMethod
+mth, ...);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Calls a method given a method handle.</P>
+<P STYLE="margin-bottom: 0in">The return value is a pointer to a
+temporary buffer holding the return value for the method.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycCallUi(dycObject obj, dycMethod
+mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">s64 dycCallUl(dycObject obj, dycMethod
+mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">float dycCallUf(dycObject obj,
+dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">double dycCallUd(dycObject obj,
+dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">dyt dycCallUr(dycObject obj, dycMethod
+mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallUp(dycObject obj,
+dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">void dycCallUv(dycObject obj, dycMethod
+mth, void **args);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycCallVi(dycObject obj, dycMethod
+mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">s64 dycCallVl(dycObject obj, dycMethod
+mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">float dycCallVf(dycObject obj,
+dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">double dycCallVd(dycObject obj,
+dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">dyt dycCallVr(dycObject obj, dycMethod
+mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallVp(dycObject obj,
+dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">void dycCallVv(dycObject obj, dycMethod
+mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycCalli(dycObject obj, dycMethod
+mth, ...);</P>
+<P STYLE="margin-bottom: 0in">s64 dycCalll(dycObject obj, dycMethod
+mth, ...);</P>
+<P STYLE="margin-bottom: 0in">float dycCallf(dycObject obj, dycMethod
+mth, ...);</P>
+<P STYLE="margin-bottom: 0in">double dycCalld(dycObject obj,
+dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">dyt dycCallr(dycObject obj, dycMethod
+mth, ...);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallp(dycObject obj, dycMethod
+mth, ...);</P>
+<P STYLE="margin-bottom: 0in">void dycCallv(dycObject obj, dycMethod
+mth, ...);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Calls a method given a method handle.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *dycCallStaticU(dycClass inf,
+dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallStaticV(dycClass inf,
+dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallStatic(dycClass inf,
+dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Calls a static method given a method
+handle.</P>
+<P STYLE="margin-bottom: 0in">The return value is a pointer to a
+temporary buffer holding the return value for the method.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycCallStaticUi(dycClass inf,
+dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">s64 dycCallStaticUl(dycClass inf,
+dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">float dycCallStaticUf(dycClass inf,
+dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">double dycCallStaticUd(dycClass inf,
+dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">dyt dycCallStaticUr(dycClass inf,
+dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallStaticUp(dycClass inf,
+dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">void dycCallStaticUv(dycClass inf,
+dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycCallStaticVi(dycClass inf,
+dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">s64 dycCallStaticVl(dycClass inf,
+dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">float dycCallStaticVf(dycClass inf,
+dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">double dycCallStaticVd(dycClass inf,
+dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">dyt dycCallStaticVr(dycClass inf,
+dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallStaticVp(dycClass inf,
+dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">void dycCallStaticVv(dycClass inf,
+dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycCallStatici(dycClass inf,
+dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">s64 dycCallStaticl(dycClass inf,
+dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">float dycCallStaticf(dycClass inf,
+dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">double dycCallStaticd(dycClass inf,
+dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">dyt dycCallStaticr(dycClass inf,
+dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallStaticp(dycClass inf,
+dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">void dycCallStaticv(dycClass inf,
+dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Calls a static method given a method
+handle.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *dycCallAsU(dycObject obj,
+dycClass inf, dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallAsV(dycObject obj,
+dycClass inf, dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallAs(dycObject obj, dycClass
+inf, dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Calls a method given a method handle
+as-if obj were an instance of inf.</P>
+<P STYLE="margin-bottom: 0in">The return value is a pointer to a
+temporary buffer holding the return value for the method.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycCallAsUi(dycObject obj, dycClass
+inf, dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">s64 dycCallAsUl(dycObject obj, dycClass
+inf, dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">float dycCallAsUf(dycObject obj,
+dycClass inf, dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">double dycCallAsUd(dycObject obj,
+dycClass inf, dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">dyt dycCallAsUr(dycObject obj, dycClass
+inf, dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallAsUp(dycObject obj,
+dycClass inf, dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">void dycCallAsUv(dycObject obj,
+dycClass inf, dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycCallAsVi(dycObject obj, dycClass
+inf, dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">s64 dycCallAsVl(dycObject obj, dycClass
+inf, dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">float dycCallAsVf(dycObject obj,
+dycClass inf, dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">double dycCallAsVd(dycObject obj,
+dycClass inf, dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">dyt dycCallAsVr(dycObject obj, dycClass
+inf, dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallAsVp(dycObject obj,
+dycClass inf, dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">void dycCallAsVv(dycObject obj,
+dycClass inf, dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycCallAsi(dycObject obj, dycClass
+inf, dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">s64 dycCallAsl(dycObject obj, dycClass
+inf, dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">float dycCallAsf(dycObject obj,
+dycClass inf, dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">double dycCallAsd(dycObject obj,
+dycClass inf, dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">dyt dycCallAsr(dycObject obj, dycClass
+inf, dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallAsp(dycObject obj,
+dycClass inf, dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">void dycCallAsv(dycObject obj, dycClass
+inf, dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Calls a method given a method handle
+as-if obj were an instance of inf.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *dycCallStructU(void *obj,
+dycClassV vinf, dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallStructV(void *obj,
+dycClassV vinf, dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallStruct(void *obj,
+dycClassV vinf, dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">int dycCallStructUi(void *obj,
+dycClassV vinf, dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">s64 dycCallStructUl(void *obj,
+dycClassV vinf, dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">float dycCallStructUf(void *obj,
+dycClassV vinf, dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">double dycCallStructUd(void *obj,
+dycClassV vinf, dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">dyt dycCallStructUr(void *obj,
+dycClassV vinf, dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallStructUp(void *obj,
+dycClassV vinf, dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">void dycCallStructUv(void *obj,
+dycClassV vinf, dycMethod mth, void **args);</P>
+<P STYLE="margin-bottom: 0in">int dycCallStructVi(void *obj,
+dycClassV vinf, dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">s64 dycCallStructVl(void *obj,
+dycClassV vinf, dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">float dycCallStructVf(void *obj,
+dycClassV vinf, dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">double dycCallStructVd(void *obj,
+dycClassV vinf, dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">dyt dycCallStructVr(void *obj,
+dycClassV vinf, dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallStructVp(void *obj,
+dycClassV vinf, dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">void dycCallStructVv(void *obj,
+dycClassV vinf, dycMethod mth, va_list args);</P>
+<P STYLE="margin-bottom: 0in">int dycCallStructi(void *obj, dycClassV
+vinf, dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">s64 dycCallStructl(void *obj, dycClassV
+vinf, dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">float dycCallStructf(void *obj,
+dycClassV vinf, dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">double dycCallStructd(void *obj,
+dycClassV vinf, dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">dyt dycCallStructr(void *obj, dycClassV
+vinf, dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">void *dycCallStructp(void *obj,
+dycClassV vinf, dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in">void dycCallStructv(void *obj,
+dycClassV vinf, dycMethod mth, ...);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3><BR><BR>
+</H3>
+<H3>DYC: Array-Related Facilities</H3>
+<P STYLE="margin-bottom: 0in">New API for array handling.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Many functions will use a type suffix,
+where the suffix is one of:</P>
+<P STYLE="margin-bottom: 0in">sb, type is a signed byte;</P>
+<P STYLE="margin-bottom: 0in">ub, type is an unsigned byte;</P>
+<P STYLE="margin-bottom: 0in">ss, type is a signed short;</P>
+<P STYLE="margin-bottom: 0in">us, type is an unsigned short;</P>
+<P STYLE="margin-bottom: 0in">i, type is int;</P>
+<P STYLE="margin-bottom: 0in">l, type is long (64 bits);</P>
+<P STYLE="margin-bottom: 0in">f, type is float;</P>
+<P STYLE="margin-bottom: 0in">d, type is double;</P>
+<P STYLE="margin-bottom: 0in">r, type is a dynamically typed
+reference;</P>
+<P STYLE="margin-bottom: 0in">p, type is a raw pointer.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">These refer to the basic physical
+representation, not to the entire type, and so these may be used with
+functions that actually have different types as per the signatures,
+but which represent their data in these ways.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dycArray dycNewArray(char *sig, int
+cnt);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Create a new 1D array with a given
+element type and a given number of elements.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycArrayP(dyt p);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Returns non-zero if p is an array.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycArraySigP(dyt p, char *sig);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Returns non-zero if p is an array with
+a given type signature.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *dycArrayV(dycArray arr);</P>
+<P STYLE="margin-bottom: 0in">int dycArraySz(dycArray arr);</P>
+<P STYLE="margin-bottom: 0in">char *dycArraySig(dycArray arr);</P>
+<P STYLE="margin-bottom: 0in">int dycArrayStep(dycArray arr);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Get certain properties from an array.</P>
+<P STYLE="margin-bottom: 0in">V returns a pointer to the array's
+payload;</P>
+<P STYLE="margin-bottom: 0in">Sz returns the number of items in the
+array.</P>
+<P STYLE="margin-bottom: 0in">Sig returns the type signature.</P>
+<P STYLE="margin-bottom: 0in">Step returns the given item size
+(derived from signature).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *dycArrayIdxPtr(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Returns a pointer to a given index
+within the array.</P>
+<P STYLE="margin-bottom: 0in">Returns NULL if the index is not within
+the array bounds.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *dycArrayIdxPtrBC(dycArray arr,
+int idx);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Similar to the prior form, but rather
+than returning NULL, this form will throw a BoundsCheck exception.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycGetArraysb(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArrayub(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArrayss(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArrayus(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArrayi(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">s64 dycGetArrayl(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">float dycGetArrayf(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">double dycGetArrayd(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">dyt dycGetArrayr(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">void *dycGetArrayp(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSetArraysb(dycArray arr, int
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayub(dycArray arr, int
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayss(dycArray arr, int
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayus(dycArray arr, int
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayi(dycArray arr, int
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayl(dycArray arr, int
+idx, s64 val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayf(dycArray arr, int
+idx, float val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayd(dycArray arr, int
+idx, double val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayr(dycArray arr, int
+idx, dyt val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayp(dycArray arr, int
+idx, void *val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Get or Set a given array element. The
+type is required to match with the type defined in the array, and idx
+is required to be within the array bounds. Otherwise, the behavior is
+undefined.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycGetArraySsb(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArraySub(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArraySss(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArraySus(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArraySi(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">s64 dycGetArraySl(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">float dycGetArraySf(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">double dycGetArraySd(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">dyt dycGetArraySr(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in">void *dycGetArraySp(dycArray arr, int
+idx);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSetArraySsb(dycArray arr, int
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArraySub(dycArray arr, int
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArraySss(dycArray arr, int
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArraySus(dycArray arr, int
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArraySi(dycArray arr, int
+idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArraySl(dycArray arr, int
+idx, s64 val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArraySf(dycArray arr, int
+idx, float val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArraySd(dycArray arr, int
+idx, double val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArraySr(dycArray arr, int
+idx, dyt val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArraySp(dycArray arr, int
+idx, void *val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">These are similar to the above, but
+differ primarily in that they apply appropriate bounds checks, and
+will throw a BoundsCheck exception if the access is not safe.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dycArray dycNewArrayM(char *sig, int
+ord, int *sz);</P>
+<P STYLE="margin-bottom: 0in">dycArray dycNewArrayM2(char *sig, int
+s0, int s1);</P>
+<P STYLE="margin-bottom: 0in">dycArray dycNewArrayM3(char *sig, int
+s0, int s1, int s2);</P>
+<P STYLE="margin-bottom: 0in">dycArray dycNewArrayM4(char *sig, int
+s0, int s1, int s2, int s3);</P>
+<P STYLE="margin-bottom: 0in">...</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Creates a multi-array (a set of nested
+arrays), where ord is the number of dimensions (currently allowed
+values are between 2 and 9). The sz argument gives the size along
+each dimension.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note that 'sig' refers to the final
+leaf type, and not to the array as a whole.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dycArrayN dycNewArrayN(char *sig, int
+ord, int *sz);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Creates a square array, where ord is
+the number of dimensions (currently allowed values are between 2 and
+9). The sz argument gives the size along each dimension.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycArrayNP(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dycArrayNSigP(dyt p, char *sig);</P>
+<P STYLE="margin-bottom: 0in">int dycArrayNSigOrdP(dyt p, char *sig,
+int ord);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Check that the array is a square array
+with the given properties.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *dycArrayNV(dycArrayN arr);</P>
+<P STYLE="margin-bottom: 0in">int *dycArrayNSz(dycArrayN arr);</P>
+<P STYLE="margin-bottom: 0in">int dycArrayNCnt(dycArrayN arr);</P>
+<P STYLE="margin-bottom: 0in">int dycArrayNOrd(dycArrayN arr);</P>
+<P STYLE="margin-bottom: 0in">char *dycArrayNSig(dycArrayN arr);</P>
+<P STYLE="margin-bottom: 0in">int dycArrayNStep(dycArrayN arr);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Get certain properties from a square
+array.</P>
+<P STYLE="margin-bottom: 0in">V returns a pointer to the array's
+payload;</P>
+<P STYLE="margin-bottom: 0in">Sz returns the number of items in the
+array (for each dimension).</P>
+<P STYLE="margin-bottom: 0in">Cnt returns the total number of items
+(for all dimensions).</P>
+<P STYLE="margin-bottom: 0in">Ord returns the order of the array.</P>
+<P STYLE="margin-bottom: 0in">Sig returns the type signature.</P>
+<P STYLE="margin-bottom: 0in">Step returns the given item size
+(derived from signature).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *dycArrayNIdxPtr(dycArrayN arr,
+int *idx)</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Returns a pointer to the given index in
+a square array.</P>
+<P STYLE="margin-bottom: 0in">Will return NULL if idx is outside the
+array's bounds.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *dycArrayNIdxPtrBC(dycArrayN arr,
+int *idx)</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Returns a pointer to the given index in
+a square array.</P>
+<P STYLE="margin-bottom: 0in">Will throw BoundsCheck if idx is
+outside the array's bounds.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycGetArrayNsb(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArrayNub(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArrayNss(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArrayNus(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArrayNi(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in">s64 dycGetArrayNl(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in">float dycGetArrayNf(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in">double dycGetArrayNd(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in">dyt dycGetArrayNr(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in">void *dycGetArrayNp(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNsb(dycArrayN arr, int
+*idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNub(dycArrayN arr, int
+*idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNss(dycArrayN arr, int
+*idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNus(dycArrayN arr, int
+*idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNi(dycArrayN arr, int
+*idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNl(dycArrayN arr, int
+*idx, s64 val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNf(dycArrayN arr, int
+*idx, float val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNd(dycArrayN arr, int
+*idx, double val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNr(dycArrayN arr, int
+*idx, dyt val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNp(dycArrayN arr, int
+*idx, void *val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Get or Set the given item in a square
+array.</P>
+<P STYLE="margin-bottom: 0in">Like with flat arrays, these do not
+apply safety checks.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycGetArrayNSsb(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArrayNSub(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArrayNSss(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArrayNSus(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArrayNSi(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in">s64 dycGetArrayNSl(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in">float dycGetArrayNSf(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in">double dycGetArrayNSd(dycArrayN arr,
+int *idx);</P>
+<P STYLE="margin-bottom: 0in">dyt dycGetArrayNSr(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in">void *dycGetArrayNSp(dycArrayN arr, int
+*idx);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNSsb(dycArrayN arr, int
+*idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNSub(dycArrayN arr, int
+*idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNSss(dycArrayN arr, int
+*idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNSus(dycArrayN arr, int
+*idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNSi(dycArrayN arr, int
+*idx, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNSl(dycArrayN arr, int
+*idx, s64 val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNSf(dycArrayN arr, int
+*idx, float val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNSd(dycArrayN arr, int
+*idx, double val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNSr(dycArrayN arr, int
+*idx, dyt val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArrayNSp(dycArrayN arr, int
+*idx, void *val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Likewise, but with bounds checking.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *dycArray2IdxPtr(dycArrayN arr,
+int y, int x);</P>
+<P STYLE="margin-bottom: 0in">void *dycArray2IdxPtrBC(dycArrayN arr,
+int y, int x);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray2sb(dycArrayN arr, int
+y, int x);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray2ub(dycArrayN arr, int
+y, int x);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray2ss(dycArrayN arr, int
+y, int x);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray2us(dycArrayN arr, int
+y, int x);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray2i(dycArrayN arr, int y,
+int x);</P>
+<P STYLE="margin-bottom: 0in">s64 dycGetArray2l(dycArrayN arr, int y,
+int x);</P>
+<P STYLE="margin-bottom: 0in">float dycGetArray2f(dycArrayN arr, int
+y, int x);</P>
+<P STYLE="margin-bottom: 0in">double dycGetArray2d(dycArrayN arr, int
+y, int x);</P>
+<P STYLE="margin-bottom: 0in">dyt dycGetArray2r(dycArrayN arr, int y,
+int x);</P>
+<P STYLE="margin-bottom: 0in">void *dycGetArray2p(dycArrayN arr, int
+y, int x);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2sb(dycArrayN arr, int
+y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2ub(dycArrayN arr, int
+y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2ss(dycArrayN arr, int
+y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2us(dycArrayN arr, int
+y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2i(dycArrayN arr, int
+y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2l(dycArrayN arr, int
+y, int x, s64 val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2f(dycArrayN arr, int
+y, int x, float val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2d(dycArrayN arr, int
+y, int x, double val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2r(dycArrayN arr, int
+y, int x, dyt val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2p(dycArrayN arr, int
+y, int x, void *val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray2Ssb(dycArrayN arr, int
+y, int x);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray2Sub(dycArrayN arr, int
+y, int x);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray2Sss(dycArrayN arr, int
+y, int x);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray2Sus(dycArrayN arr, int
+y, int x);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray2Si(dycArrayN arr, int
+y, int x);</P>
+<P STYLE="margin-bottom: 0in">s64 dycGetArray2Sl(dycArrayN arr, int
+y, int x);</P>
+<P STYLE="margin-bottom: 0in">float dycGetArray2Sf(dycArrayN arr, int
+y, int x);</P>
+<P STYLE="margin-bottom: 0in">double dycGetArray2Sd(dycArrayN arr,
+int y, int x);</P>
+<P STYLE="margin-bottom: 0in">dyt dycGetArray2Sr(dycArrayN arr, int
+y, int x);</P>
+<P STYLE="margin-bottom: 0in">void *dycGetArray2Sp(dycArrayN arr, int
+y, int x);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2Ssb(dycArrayN arr, int
+y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2Sub(dycArrayN arr, int
+y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2Sss(dycArrayN arr, int
+y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2Sus(dycArrayN arr, int
+y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2Si(dycArrayN arr, int
+y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2Sl(dycArrayN arr, int
+y, int x, s64 val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2Sf(dycArrayN arr, int
+y, int x, float val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2Sd(dycArrayN arr, int
+y, int x, double val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2Sr(dycArrayN arr, int
+y, int x, dyt val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray2Sp(dycArrayN arr, int
+y, int x, void *val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Access a square array, as before, but
+these are specialized for 2D square arrays.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *dycArray3IdxPtr(dycArrayN arr,
+int z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in">void *dycArray3IdxPtrBC(dycArrayN arr,
+int z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray3sb(dycArrayN arr, int
+z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray3ub(dycArrayN arr, int
+z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray3ss(dycArrayN arr, int
+z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray3us(dycArrayN arr, int
+z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray3i(dycArrayN arr, int z,
+int y, int x);</P>
+<P STYLE="margin-bottom: 0in">s64 dycGetArray3l(dycArrayN arr, int z,
+int y, int x);</P>
+<P STYLE="margin-bottom: 0in">float dycGetArray3f(dycArrayN arr, int
+z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in">double dycGetArray3d(dycArrayN arr, int
+z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in">dyt dycGetArray3r(dycArrayN arr, int z,
+int y, int x);</P>
+<P STYLE="margin-bottom: 0in">void *dycGetArray3p(dycArrayN arr, int
+z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3sb(dycArrayN arr, int
+z, int y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3ub(dycArrayN arr, int
+z, int y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3ss(dycArrayN arr, int
+z, int y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3us(dycArrayN arr, int
+z, int y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3i(dycArrayN arr, int
+z, int y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3l(dycArrayN arr, int
+z, int y, int x, s64 val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3f(dycArrayN arr, int
+z, int y, int x, float val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3d(dycArrayN arr, int
+z, int y, int x, double val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3r(dycArrayN arr, int
+z, int y, int x, dyt val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3p(dycArrayN arr, int
+z, int y, int x, void *val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray3Ssb(dycArrayN arr, int
+z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray3Sub(dycArrayN arr, int
+z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray3Sss(dycArrayN arr, int
+z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray3Sus(dycArrayN arr, int
+z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in">int dycGetArray3Si(dycArrayN arr, int
+z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in">s64 dycGetArray3Sl(dycArrayN arr, int
+z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in">float dycGetArray3Sf(dycArrayN arr, int
+z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in">double dycGetArray3Sd(dycArrayN arr,
+int z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in">dyt dycGetArray3Sr(dycArrayN arr, int
+z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in">void *dycGetArray3Sp(dycArrayN arr, int
+z, int y, int x);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3Ssb(dycArrayN arr, int
+z, int y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3Sub(dycArrayN arr, int
+z, int y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3Sss(dycArrayN arr, int
+z, int y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3Sus(dycArrayN arr, int
+z, int y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3Si(dycArrayN arr, int
+z, int y, int x, int val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3Sl(dycArrayN arr, int
+z, int y, int x, s64 val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3Sf(dycArrayN arr, int
+z, int y, int x, float val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3Sd(dycArrayN arr, int
+z, int y, int x, double val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3Sr(dycArrayN arr, int
+z, int y, int x, dyt val);</P>
+<P STYLE="margin-bottom: 0in">void dycSetArray3Sp(dycArrayN arr, int
+z, int y, int x, void *val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Access a square array, as before, but
+these are specialized for 3D square arrays.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>DYC: Misc Facilities</H3>
+<P STYLE="margin-bottom: 0in">int BGBDYC_SlotHashUsed();</P>
+<P STYLE="margin-bottom: 0in">int BGBDYC_MinfHashUsed();</P>
+<P STYLE="margin-bottom: 0in">int BGBDYC_SlotHashSize();</P>
+<P STYLE="margin-bottom: 0in">int BGBDYC_MinfHashSize();</P>
+<P STYLE="margin-bottom: 0in">int BGBDYC_DumpSlotHash();</P>
+<P STYLE="margin-bottom: 0in">int BGBDYC_DumpMinfHash();</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *dycJniGetEnv();</P>
+<P STYLE="margin-bottom: 0in">void *dycJniGetJavaVM();</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2>DTY: Types Related Operations</H2>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>DTY: Quaternion Operations</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">quat dtyQuatSgn(quat q);</P>
+<P STYLE="margin-bottom: 0in">float dtyQuatArg(quat q);</P>
+<P STYLE="margin-bottom: 0in">quat dtyQuatLn(quat q);</P>
+<P STYLE="margin-bottom: 0in">quat dtyQuatExp(quat q);</P>
+<P STYLE="margin-bottom: 0in">quat dtyQuatSin(quat q);</P>
+<P STYLE="margin-bottom: 0in">quat dtyQuatCos(quat q);</P>
+<P STYLE="margin-bottom: 0in">quat dtyQuatTan(quat q);</P>
+<P STYLE="margin-bottom: 0in">quat dtyQuatCot(quat q);</P>
+<P STYLE="margin-bottom: 0in">quat dtyQuatSinh(quat q);</P>
+<P STYLE="margin-bottom: 0in">quat dtyQuatCosh(quat q);</P>
+<P STYLE="margin-bottom: 0in">quat dtyQuatTanh(quat q);</P>
+<P STYLE="margin-bottom: 0in">quat dtyQuatCoth(quat q);</P>
+<P STYLE="margin-bottom: 0in">quat dtyQuatASin(quat q);</P>
+<P STYLE="margin-bottom: 0in">quat dtyQuatACos(quat q);</P>
+<P STYLE="margin-bottom: 0in">quat dtyQuatATan(quat q);</P>
+<P STYLE="margin-bottom: 0in">quat dtyQuatACot(quat q);</P>
+<P STYLE="margin-bottom: 0in">Quaternion math functions.</P>
+<P STYLE="margin-bottom: 0in">Note: Most of these are implemented
+using Taylor series', and as a result are not particularly fast.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">quat dtyExpRealQuat(float b, quat x);</P>
+<P STYLE="margin-bottom: 0in">quat dtyExpQuatReal(quat p, float q);</P>
+<P STYLE="margin-bottom: 0in">quat dtyQuatExpQuatQuat(quat p, quat
+q);</P>
+<P STYLE="margin-bottom: 0in">Quaternion exponents.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">vec3 dtyQuatSlerp(vec3 v0, vec3 v1,
+float t);</P>
+<P STYLE="margin-bottom: 0in">vec3 dtyVec3ArcPolate(vec3 v0, vec3 v1,
+float t);</P>
+<P STYLE="margin-bottom: 0in">quat dtyQuatArcPolate(quat q0, quat q1,
+float t);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Quaternion interpolation.</P>
+<P STYLE="margin-bottom: 0in">Slerp is Spherical Lerp, and is
+implemented in the proper (slow) form.</P>
+<P STYLE="margin-bottom: 0in">ArcPolate is a custom fast
+interpolation algorithm but is only really good for unit quaternions.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>DTY: Matrix Operations</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">mat2 dtyMat2vf(float *v);</P>
+<P STYLE="margin-bottom: 0in">mat3 dtyMat3vf(float *v);</P>
+<P STYLE="margin-bottom: 0in">mat4 dtyMat4vf(float *v);</P>
+<P STYLE="margin-bottom: 0in">mat2 dtyMat2f(float a, float b, float
+c, float d);</P>
+<P STYLE="margin-bottom: 0in">mat3 dtyMat3f(float a, float b, float
+c, float d, float e, float f, float g, float h, float i);</P>
+<P STYLE="margin-bottom: 0in">mat4 dtyMat4f(float a, float b, float
+c, float d, float e, float f, float g, float h, float i, float j,
+float k, float l, float m, float n, float o, float p);</P>
+<P STYLE="margin-bottom: 0in">mat2 dtyMat2Add(mat2 a, mat2 b);</P>
+<P STYLE="margin-bottom: 0in">mat2 dtyMat2Sub(mat2 a, mat2 b);</P>
+<P STYLE="margin-bottom: 0in">mat2 dtyMat2Mul(mat2 a, mat2 b);</P>
+<P STYLE="margin-bottom: 0in">mat3 dtyMat3Add(mat3 a, mat3 b);</P>
+<P STYLE="margin-bottom: 0in">mat3 dtyMat3Sub(mat3 a, mat3 b);</P>
+<P STYLE="margin-bottom: 0in">mat3 dtyMat3Mul(mat3 a, mat3 b);</P>
+<P STYLE="margin-bottom: 0in">mat4 dtyMat4Add(mat4 a, mat4 b);</P>
+<P STYLE="margin-bottom: 0in">mat4 dtyMat4Sub(mat4 a, mat4 b);</P>
+<P STYLE="margin-bottom: 0in">mat4 dtyMat4Mul(mat4 a, mat4 b);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Wide References</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt dwWrapWRef(iv128_t ptr);</P>
+<P STYLE="margin-bottom: 0in">iv128_t dwUnwrapWRef(dyt p);</P>
+<P STYLE="margin-bottom: 0in">u64 dwGetWRefSeg(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dwrefp(dyt p);</P>
+<P STYLE="margin-bottom: 0in">char *dwgettype(dyt p);</P>
+<P STYLE="margin-bottom: 0in">int dwtypep(dyt p, char *ty);</P>
+<P STYLE="margin-bottom: 0in">dyt dwtalloc(u64 seg, char *ty, u64
+sz);</P>
+<P STYLE="margin-bottom: 0in">int dwfree(dyt ptr);</P>
+<P STYLE="margin-bottom: 0in">int dwmemcpy(dyt dst, dyt src, int sz);</P>
+<P STYLE="margin-bottom: 0in">int dwreadmem(void *buf, int sz, dyt
+ptr, int disp);</P>
+<P STYLE="margin-bottom: 0in">int dwwritemem(void *buf, int sz, dyt
+ptr, int disp);</P>
+<P STYLE="margin-bottom: 0in">int dwgetc(dyt ptr, int disp);</P>
+<P STYLE="margin-bottom: 0in">int dwgetb(dyt ptr, int disp);</P>
+<P STYLE="margin-bottom: 0in">int dwgetw(dyt ptr, int disp);</P>
+<P STYLE="margin-bottom: 0in">int dwgeth(dyt ptr, int disp);</P>
+<P STYLE="margin-bottom: 0in">u32 dwgetdw(dyt ptr, int disp);</P>
+<P STYLE="margin-bottom: 0in">s32 dwgeti(dyt ptr, int disp);</P>
+<P STYLE="margin-bottom: 0in">u64 dwgetq(dyt ptr, int disp);</P>
+<P STYLE="margin-bottom: 0in">s64 dwgetl(dyt ptr, int disp);</P>
+<P STYLE="margin-bottom: 0in">float dwgetf(dyt ptr, int disp);</P>
+<P STYLE="margin-bottom: 0in">double dwgetd(dyt ptr, int disp);</P>
+<P STYLE="margin-bottom: 0in">iv128_t dwgetdq(dyt ptr, int disp);</P>
+<P STYLE="margin-bottom: 0in">int dwputc(dyt ptr, int disp, char v);</P>
+<P STYLE="margin-bottom: 0in">int dwputb(dyt ptr, int disp, byte v);</P>
+<P STYLE="margin-bottom: 0in">int dwputw(dyt ptr, int disp, u16 v);</P>
+<P STYLE="margin-bottom: 0in">int dwputh(dyt ptr, int disp, s16 v);</P>
+<P STYLE="margin-bottom: 0in">int dwputdw(dyt ptr, int disp, u32 v);</P>
+<P STYLE="margin-bottom: 0in">int dwputi(dyt ptr, int disp, s32 v);</P>
+<P STYLE="margin-bottom: 0in">int dwputq(dyt ptr, int disp, u64 v);</P>
+<P STYLE="margin-bottom: 0in">int dwputl(dyt ptr, int disp, s64 v);</P>
+<P STYLE="margin-bottom: 0in">int dwputf(dyt ptr, int disp, float v);</P>
+<P STYLE="margin-bottom: 0in">int dwputd(dyt ptr, int disp, double
+v);</P>
+<P STYLE="margin-bottom: 0in">int dwputdq(dyt ptr, int disp, iv128_t
+v);</P>
+<P STYLE="margin-bottom: 0in">dyt dwgetp(dyt ptr, int disp);</P>
+<P STYLE="margin-bottom: 0in">int dwputp(dyt ptr, int disp, dyt p);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>String-Based Arithmetic</H3>
+<P STYLE="margin-bottom: 0in">These do operations directly on ASCII
+strings, producing new strings.</P>
+<P STYLE="margin-bottom: 0in">The produced strings use strdup, and
+hence need to be freed.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *dysShl(char *s, int v);</P>
+<P STYLE="margin-bottom: 0in">char *dysShr(char *s, int v);</P>
+<P STYLE="margin-bottom: 0in">char *dysShl10(char *s, int v);</P>
+<P STYLE="margin-bottom: 0in">char *dysShr10(char *s, int v);</P>
+<P STYLE="margin-bottom: 0in">char *dysShr10F(char *s, int v);</P>
+<P STYLE="margin-bottom: 0in">int dysCmp(char *s0, char *s1);</P>
+<P STYLE="margin-bottom: 0in">char *dysAdd(char *s0, char *s1);</P>
+<P STYLE="margin-bottom: 0in">char *dysSub(char *s0, char *s1);</P>
+<P STYLE="margin-bottom: 0in">char *dysMul(char *s0, char *s1);</P>
+<P STYLE="margin-bottom: 0in">char *dysDiv(char *s0, char *s1);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3><BR><BR>
+</H3>
+<H3>Random Number Generator</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">u64 bgbrng_rdtsc();</P>
+<P STYLE="margin-bottom: 0in">Read the time-stamp-counter. This gives
+the CPU time in clock cycles.</P>
+<P STYLE="margin-bottom: 0in">Note that this will jump around some on
+multi-core or multi-processor systems.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">u32 bgbrng_genvalue();</P>
+<P STYLE="margin-bottom: 0in">u64 bgbrng_genvalue64();</P>
+<P STYLE="margin-bottom: 0in">These generate a 32 or 64-bit random
+value.</P>
+<P STYLE="margin-bottom: 0in">These use a 1024 bit internal state
+which is saved/restored (and is randomized at load based on the CPU
+time), and periodically re-adjusted by adding in the current CPU time
+(used as an entropy source).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">u32 bgbrng_genvalue_fast();</P>
+<P STYLE="margin-bottom: 0in">This uses an internal PRNG which is
+occasionally re-seeded.</P>
+<P STYLE="margin-bottom: 0in">This is better for generating chains of
+random numbers, but the period is not very large (a 64 bit state and
+a 32-bit prime) and hence this is not a good choice for generating
+unique values.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int bgbrng_rand(iv128_t *a);</P>
+<P STYLE="margin-bottom: 0in">Generating a pseudo-random number using
+a 128-bit state.</P>
+<P STYLE="margin-bottom: 0in">The basic algorithm here is to multiply
+the state with a 96-bit prime, and then returning the high 32 bits.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">double bgbrng_randf();</P>
+<P STYLE="margin-bottom: 0in">This returns a random number between 0
+and 1.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">double bgbrng_randg();</P>
+<P STYLE="margin-bottom: 0in">This returns a random number between -1
+and 1.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">float bgbrng_ssqrt(float f);</P>
+<P STYLE="margin-bottom: 0in">Signed Square Root. Values y&gt;0 are
+real, and y&lt;0 are imaginary.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">float bgbrng_ssqr(float f);</P>
+<P STYLE="margin-bottom: 0in">Signed Square. This undoes the effects
+of ssqrt.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">float bgbrng_nfrand();</P>
+<P STYLE="margin-bottom: 0in">Same as randf.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">float bgbrng_sfrand();</P>
+<P STYLE="margin-bottom: 0in">Same as randg.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">float bgbrng_sqrrand();</P>
+<P STYLE="margin-bottom: 0in">Square Rand, this produces a value
+between 0 and 1 which is squared, causing a half-bell-curve bias
+towards 0.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">float bgbrng_ssqrrand();</P>
+<P STYLE="margin-bottom: 0in">Signed Square Rand, produces a value
+between -1 and 1 but using ssqr, thus producing a bell-curve
+distribution.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">float bgbrng_logrand();</P>
+<P STYLE="margin-bottom: 0in">Produce a value between 0 and 1 with a
+logarithmic distribution.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Large Integer Arithmetic</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">iv128_t atoxl_iv(char *str);</P>
+<P STYLE="margin-bottom: 0in">char *xltoa_iv(iv128_t val);</P>
+<P STYLE="margin-bottom: 0in">Convert 128 bit integers to/from
+strings.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void iv128_zero(iv128_t *val);</P>
+<P STYLE="margin-bottom: 0in">void iv256_zero(iv256_t *val);</P>
+<P STYLE="margin-bottom: 0in">Zero a 128-bit or 256-bit value.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">iv128_t iv128_neg(iv128_t val);</P>
+<P STYLE="margin-bottom: 0in">Negate 128-bit integer.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">iv128_t iv128_shl(iv128_t a, int b);</P>
+<P STYLE="margin-bottom: 0in">iv128_t iv128_shr(iv128_t a, int b);</P>
+<P STYLE="margin-bottom: 0in">iv128_t iv128_sar(iv128_t a, int b);</P>
+<P STYLE="margin-bottom: 0in">iv128_t iv128_rol(iv128_t a, int b);</P>
+<P STYLE="margin-bottom: 0in">iv128_t iv128_ror(iv128_t a, int b);</P>
+<P STYLE="margin-bottom: 0in">Shift or rotate 128-bit integers.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int iv128_cmp_eq(iv128_t a, iv128_t b);</P>
+<P STYLE="margin-bottom: 0in">int iv128_cmp_g(iv128_t a, iv128_t b);</P>
+<P STYLE="margin-bottom: 0in">int iv128_cmp_ge(iv128_t a, iv128_t b);</P>
+<P STYLE="margin-bottom: 0in">int iv128_cmp_l(iv128_t a, iv128_t b);</P>
+<P STYLE="margin-bottom: 0in">int iv128_cmp_le(iv128_t a, iv128_t b);</P>
+<P STYLE="margin-bottom: 0in">Compare 128-bit integers.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">iv128_t iv128_add(iv128_t a, iv128_t
+b);</P>
+<P STYLE="margin-bottom: 0in">iv128_t iv128_sub(iv128_t a, iv128_t
+b);</P>
+<P STYLE="margin-bottom: 0in">Add or subtract 128 bit integers.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">iv128_t iv128_mul(iv128_t a, iv128_t
+b);</P>
+<P STYLE="margin-bottom: 0in">iv128_t iv128_mulh(iv128_t a, iv128_t
+b);</P>
+<P STYLE="margin-bottom: 0in">Multiply 128-bit integers, producing a
+low or high result.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">iv256_t iv128_mulw(iv128_t a, iv128_t
+b);</P>
+<P STYLE="margin-bottom: 0in">Multiply 128-bit integers, producing a
+256-bit result (unsigned multiply).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">iv128_t iv128_udiv(iv128_t a, iv128_t
+b);</P>
+<P STYLE="margin-bottom: 0in">Unsigned division of 128 bit integers.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">iv128_t iv128_div(iv128_t a, iv128_t
+b);</P>
+<P STYLE="margin-bottom: 0in">Signed division of 128-bit integers.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">iv128_t iv128_umod(iv128_t a, iv128_t
+b);</P>
+<P STYLE="margin-bottom: 0in">iv128_t iv128_mod(iv128_t a, iv128_t
+b);</P>
+<P STYLE="margin-bottom: 0in">Unsigned or signed modulo of 128-bit
+integers.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">iv256_t iv256_neg(iv256_t val);</P>
+<P STYLE="margin-bottom: 0in">iv256_t iv256_shl(iv256_t a, int b);</P>
+<P STYLE="margin-bottom: 0in">iv256_t iv256_shr(iv256_t a, int b);</P>
+<P STYLE="margin-bottom: 0in">int iv256_cmp_eq(iv256_t a, iv256_t b);</P>
+<P STYLE="margin-bottom: 0in">int iv256_cmp_g(iv256_t a, iv256_t b);</P>
+<P STYLE="margin-bottom: 0in">int iv256_cmp_ge(iv256_t a, iv256_t b);</P>
+<P STYLE="margin-bottom: 0in">int iv256_cmp_l(iv256_t a, iv256_t b);</P>
+<P STYLE="margin-bottom: 0in">int iv256_cmp_le(iv256_t a, iv256_t b);</P>
+<P STYLE="margin-bottom: 0in">iv256_t iv256_add(iv256_t a, iv256_t
+b);</P>
+<P STYLE="margin-bottom: 0in">iv256_t iv256_sub(iv256_t a, iv256_t
+b);</P>
+<P STYLE="margin-bottom: 0in">A few 256-bit integer ops.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2>BGAL</H2>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">bgalMember *bgalBreed(bgalMember *obja,
+bgalMember *objb);</P>
+<P STYLE="margin-bottom: 0in">double bgalTest(bgalMember *obj, void
+*data);</P>
+<P STYLE="margin-bottom: 0in">void bgalStepTest(bgalContext *ctx,
+void *data);</P>
+<P STYLE="margin-bottom: 0in">void bgalStepSelect(bgalContext *ctx);</P>
+<P STYLE="margin-bottom: 0in">void bgalStepBreed(bgalContext *ctx);</P>
+<P STYLE="margin-bottom: 0in">void bgalStepStatus(bgalContext *ctx);</P>
+<P STYLE="margin-bottom: 0in">void bgalStep(bgalContext *ctx);</P>
+<P STYLE="margin-bottom: 0in">void bgalSetup(bgalContext *ctx, void
+*data);</P>
+<P STYLE="margin-bottom: 0in">void bgalEvolve(bgalContext *ctx, void
+*data);</P>
+<P STYLE="margin-bottom: 0in">bgalMember *bgalAllocMember(bgalContext
+*ctx);</P>
+<P STYLE="margin-bottom: 0in">void bgalFreeMember(bgalMember *obj);</P>
+<P STYLE="margin-bottom: 0in">void bgalSterilize(bgalContext *ctx);</P>
+<P STYLE="margin-bottom: 0in">bgalMember *bgalPickMember(bgalContext
+*ctx, bgalMember *skip);</P>
+<P STYLE="margin-bottom: 0in">void bgalAddData(bgalContext *ctx, void
+*data);</P>
+<P STYLE="margin-bottom: 0in">bgalMember
+*bgal_alloc_default(bgalContext *ctx);</P>
+<P STYLE="margin-bottom: 0in">bgalContext *bgalNewGenCtx(int n_gen,
+int sz_pop, int n_keep);</P>
+<P STYLE="margin-bottom: 0in">bgalContext *bgalNewGenMinCtx(int
+sz_vec, int n_gen, int sz_pop, int n_keep);</P>
+<P STYLE="margin-bottom: 0in">bgalContext *bgalNewGenMaxCtx(int
+sz_vec, int n_gen, int sz_pop, int n_keep);</P>
+<P STYLE="margin-bottom: 0in">bgalContext *bgalNewGenBitsMinCtx(int
+sz_bits,int n_gen, int sz_pop, int n_keep);</P>
+<P STYLE="margin-bottom: 0in">bgalContext *bgalNewGenBitsMaxCtx(int
+sz_bits,int n_gen, int sz_pop, int n_keep);</P>
+<P STYLE="margin-bottom: 0in">bgalContext *bgalNewGenProgMinCtx(int
+sz_vec, int sz_bits, int sz_prog,int n_gen, int sz_pop, int n_keep);</P>
+<P STYLE="margin-bottom: 0in">bgalContext *bgalNewGenProgMaxCtx(int
+sz_vec, int sz_bits, int sz_prog,int n_gen, int sz_pop, int n_keep);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BGAL_Gray(int i);</P>
+<P STYLE="margin-bottom: 0in">int BGAL_UnGray(int i);</P>
+<P STYLE="margin-bottom: 0in">int bgalEval(bgalMember *obj, float
+*iv, int ni, float *ov, int *rno);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>BGAL: Neuron</H3>
+<P STYLE="margin-bottom: 0in">bgalNeuronType
+*bgalLookupNeuronType(char *name);</P>
+<P STYLE="margin-bottom: 0in">bgalNeuronType *bgalGetNeuronType(char
+*name);</P>
+<P STYLE="margin-bottom: 0in">bgalNeuron *bgalAllocNeuron(char
+*type);</P>
+<P STYLE="margin-bottom: 0in">bgalNeuronLink
+*bgalLookupNeuronLink(bgalNeuron *from, bgalNeuron *to);</P>
+<P STYLE="margin-bottom: 0in">bgalNeuronLink
+*bgalLinkNeurons(bgalNeuron *src, bgalNeuron *dst);</P>
+<P STYLE="margin-bottom: 0in">void bgalNeuronFire(bgalNeuron *node);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+</BODY>
+</HTML>

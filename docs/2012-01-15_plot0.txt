@@ -1,0 +1,133 @@
+The story takes place on an alien planet.
+
+The Squids are attacking. They are a race of large cybernetic Squid aliens. They formed (long ago, in an alternate timeline) as a result of a smaller non-sentient species ("squid monkeys", which resembled octopusses with monkey faces, and climbed around on trees) comming in contact with "mettalloid" (brought by humans, which is a material composed partly of raw building materials and molecules for energy storage, as well as self-replicating nano-machines).
+
+The material's use by humans was primarily industrial, essentially for building self-repairing "intelligent" materials. They have both the ability to understand and repair existing structures, as well as some amount of memory, programability, and distributed processing ability. It is also capable of building (as needed) structures for things like processing, memory storage, and for transferring both information and energy.
+
+As particles, they are built both from organic and inorganic materials, are able to synthesize complex molecules from base matter, and are divided into large numbers of (highly redundant) special-purose particles (some focusing primarily on synthesis or assembly, and others on information storage or processing).
+
+At the macro-scale, metalloid may appear either liquid or solid, but at the micro-structure, tends to form into something resembling a crystaline lattice structure. It is able to disolve and reform this structure at will, and thus shape-shift from one solid shape to another, but tends to avoid this due to considerable computational and energy costs of doing so.
+
+Initially, the program driving the metalloid originated as traditional software encoded into complex organic molecules. However, due to "living" on its own (integrated with generation after generation of squid) has itself began to mutate and become increasingly integrated with the squid biology. 
+
+They also spread along the germ-line in a matter similar to that of organelles (core nodes duplicate along with cells, and reside within cells), but may subsequently replicate and cross the cell boundary, building extracellular structures.
+
+
+All this has resulted in them gaining a significant increase in size, as well as gaining a vaguely human-like intelligence, and a more robotic appearance.
+
+However, they have more animal-like motivations, and their gained intelligence is roughly that of a more simplistic animal-like intelligence augmented with that of machine intelligence.
+
+They have superior mental raw performance to that of humans (faster response times and ability to process large volumes of information), but lower general intelligence. They are thus also fairly rigid and dogmatic and are slow to adapt to changing situations.
+
+Physically, they are now more like arthropods, with their internal structures (muscles, organs, brains, ...) encased inside a metalic exoskeleton (fused with what would have originally been their skin).
+
+They are cybernetic, but they grow this way. Their biological and cybernetic aspects are finely integrated, and their brains are bio-mechanical neural nets (combining neurons and nanomachines, and some elements of traditional solid-state electronics).
+
+
+Origins
+
+A human colonization ship left from Earth with a then experimental FTL drive headed towards a distant potentially inhabitable planet (within the habitable zone for the parent star, confirmed to have a similar gravity to Earth and an atmospheric pressure similar to that on Earth at high altitudes, a similar day length, and an abundance of water and similar). The planet was assumed to be lifeless, and also contained an atmosphere composed largely of hydrocarbons (CO2 and methane), with trace levels of nitrogen, oxygen, argon, and other gasses.
+
+The trip took a long time (decades), and much of the crew was held in stasis during this time. Along the way, a problem developed in the FTL drive, and what crew were awake at the time proceeded to address the problem. Unknown to the crew was that the disruption had split the ship into multiple universes, as well as placing it into the distant past.
+
+Upon arrival, most events proceeded similarly between the universes: Most arrived at the planet in question, finding it as expected. Some found it as expected, a lifeless planet covered with hydrocarbons, whereas some others found a more easily habitable world with indiginous life-forms.
+
+Despite the planet having moved greatly in time and space, the disruption in the FTL drive also followed the spatial curves back to where the planet was at that time in the past.
+
+Upon arrival, there was no communication with Earth, as both time and distance had rendered communication impossible (nor was it possible for the computer to locate where Earth was, given a seemingly unrecognizable star-map at the destination). Even if they could, there would have been no one on Earth to talk to (Because it would have been all Jurastic and stuff).
+
+
+Humans then landed on the planet and followed their initially established plan, establishing both initial base colonies, and deploying metalloid into the environment to begin the terraformation process. The metalloid began processes both on large and small scales, both to help spread and foster organisms native from Earth (plants, small animals, and microbes, many augmented to support the harsh environment), and also to build large tower-like structures needed to terraform the planet on the macro scale (altering both the pressure and composition of the atmosphere to be a form more suitible for that of normal human and animal life).
+
+In versions of the planet where life existed, contact between the native organisms and the spreading metalloid was often fatal. Most proto-squids died as well (often being eaten from the inside out as the metalloid regarded them as raw materials), but some had survived in an often mutilated state (physically mutilated and often partially transformed into metal or with other metallic outgrowths).
+
+Some fewer remained viable, and after a large number of generations were becoming a rather different species.
+
+
+Rise Of The Squids
+
+Centuries later, the world was lush and green, and humans were exploring the planet and establishing towns and cities. In the process of this, humans ran across the squid-monkeys (as a khaki-laden explorer hacks along through jungle-like vegetation with a machete, stumbling upon a rather strange sight). They were initially regarded as a zoological curiousity, assumed to be some sort of combined critter resulting from a glitch in the terraformation process (mullusc and simian DNA having somehow been recombined). Further investigation revealed that they were something quite different.
+
+They were also found to be intelligent, and humans began using them as test subjects, and subjecting them to experiments involving teaching them language, exposing them to schooling and large amounts of information, and so on.
+
+Eventually, they began to emerge as a race in their own right, and soon enough began to (initially peacefully) rule over the humans on their own planet.
+
+
+Over a thousand years later, they had themselves become a space-faring species, and had began terraforming planets in their own image. Unlike human style terraformation, however, most of these planets remained dull and lifeless, many becomming dark city planets often exposed to the vaccuum of space or with minimal low-pressure atmospheres. Neither they nor what remained of the humans in their culture (by this point often more resembling large mecha and having largely bio-assimilated with the Squids, and differing mostly in their retention of a bipedal form), had any particular need for an atmosphere.
+
+
+The War
+
+This is an alternate universe, where the Squids had never been encountered, and in-fact much less time had elapsed since the initial colonization. The planet was still being actively terraformed, and humans had began to emerge from their initial colonies not long before. Humans had first landed around 175 years ago, and began colonizing the surface about 50 years prior.
+
+A small number of Squids (aboard a single experimental ship) had crossed the boundary between universes. They note the presence of humans on the planet, and compromise the planets environmental systems in order to try to take the planet for themselves.
+
+
+The war has been going on for several years now, as humans battle the invading Squids.
+
+Squids sometimes abduct humans and use them in building large mecha ("templates"), which are shoddily cloned in "mass produced" varieties. These mass-produced mecha can't exist entirely independently of the templates, and there is a limit to the number of clones which can exist (they create mental intereference with each other and with the original, and past a certain limit the "core consciousness" of the template will collapse, essentially destroying the mind of the template and rendering all clone mecha inoperable).
+
+The Squids have not yet developed any sort of passable AI technology (what AI they do have is used in building the clone-mecha). In the templates, the humans are partially digitized, and their minds integrated into the electronic systems. Their minds are partially mirrored in all of the clones, with the original kept operating as a sort of loosely-synchronized bio-mechanical master copy.
+
+The mecha in this case are bio-mechanical, combining both human and Squid biology with that of metalloid.
+
+
+The Squids have also caused critical damage to many terraforming and environmental maintenence systems, rendering much of the planet uninhabitable to unaided humans. The air is toxic and often mildly corrosive, and has a strong reddish color.
+
+Most of what remains of the human population is confined indoors and in many older structures from times before the outside environment was habitable.
+
+
+As a result of this, the human population has begun building their own large-mecha cyborgs (large robots with cybernetically augmented humans piloting them from within the torso) in an attempt to battle the Squids' mecha forces.
+
+Humans are, however, gradually losing this war.
+
+
+John, and Kassandra / Alice
+
+John is the main protagonist. He belives himself to be human, albeit he is initially dazed with a state of partial amnesia. He remembers fragments of once living life as a human, but has little idea how he got into his present situation. He resembles a large mecha, and has a similar configuration and markings to those of the human forces.
+
+He awakens in a battle-field, as forces are engaged in batter. The squid-built mecha attack him, and he starts fighting back. The Squid forces fall easily, and he is left faced with other human mecha. They don't recognize his unit, but given his appearance and apparent disorientation assume that he probably got hit too hard and wandered over from another part of the front.
+
+Upon arriving back at their town, they have a doctor-type person look at him. The doctor is an ordinary human with a pilotable mecha, less severely augmented than the soldiers (he only has basic neural interface augments), and with a mecha much less suited for combat. He can enter/exit his mecha at will, via a cockpit which opens from the torso.
+
+The doctor is confused by his mecha, and can't seem to get a reading on his vitals (the sensors return strange readings which the doctor dismisses as "obviously incorrect"), but John seems to be feeling better and his suit seems to be in otherwise reasonable condition.
+
+There is word of another attack nearby, and John and the other soldiers decide to go and take care of it. They find another lone suit being attacked by Squid mecha, this suit attacking chaotitically.
+
+They battle off the Squids again, who again easily retreat. This mecha seems to be female, not only with a feminine voice but also a feminine chasis design. She identifies herself as Alice, but like John similarly has little idea what is going on or why she is there.
+
+The doctor looks at her as well, observing a similar issue: No readable vitals, and is at a loss as he has never seen such a mech configuration before.
+
+He has little idea where either John or Alice have come from, but doesn't rule out the possibility that people from elsewhere on the planet could have built them as some sort of "advanced" units.
+
+Alice's mecha differs from John's in that it is a transforming mecha. She has both a human-like and a tank-like form. However, in her tank form, she adopts a different name and persona. She is known as Kassandra in her tank form and has a much harded personality (vs Alice which is more ditzy and cutesy). Both of her personas hold some dislike of the other, but they cooperate for sake of their continued mutual existence.
+
+
+In any case, they don't seem hostile and don't show any obvious signs of being Squid units. They have a similar construction to the other human soldier-type units, with a primarily mechanical frame and a sealed/self-contained pilot pod (vs the bio-mechanical mecha typically used by the Squids).
+
+The doctor doesn't want to remove and/or examine the pilots without good reason, as this requires largely dismantling the mecha (removing layers of protective armor plate, ...), as well as putting the pilots at great risk. 
+
+In these mecha, the pilots are heavily augmented, rigged up with life-support systems, and placed inside a sterile fluid-filled tube. Exposing them to the outside environment puts them at increased risk of both medical complications as well as exposure to pathogens (the sterilized environment having the cost of often leaving the pilots in an immune-compromised state, nevermind that they have to again be re-sterilized as part of re-sealing them, which is itself a complicated process).
+
+
+Possibility A:
+Actually, in this case, had the doctor actually opened up their pods, it would have been revealed than John and Alice are not infact human-piloted mecha, but infact the pods contain bio-mechanical cores (similar to that of minature human-formed versions of the Squid mecha templates, which in turn resemble humans, but they are more blue-gray).
+
+Possibility B:
+They are infact located within crystaline photonic cores (combining holography with optical circuitry). This could be itself experimental Squid technology. Possibly the cores are themselves warped in space-time, and are themselves much larger internally (the core is actually itself the size of a large mecha, but compressed down into a glowing sphere roughly the size of a soccer ball or similar). Optical interfacing is then used because optics cross the spatial warp, whereas ordinary matter does not.
+
+Stupidness Issue: Why would such an advanced core be needed, when if it were really so advanced it could surely represent the contents of a human mind in much less space than a biological brain? Granted, a photonic core the size of a golf-ball (in normal space) would be more advanced, but would be less "fancy", nor have any compelling reason to be contained in "trailer space".
+
+Alternatively: They are not seperate cores, nor do they represent individual personalities, but are infact both linked to a shared view into cyberspace (Seems implausible).
+
+
+Their personalities are actually those of digital humans who originated in cyberspace, and then were transferred into constructed bio-mechanical bodies, and then placed within larger mecha based on designs reverse-engineered from captured human units.
+
+However, given neither John nor Alice knows this, and both believe themselves to be human, they side with the humans.
+
+
+Previously:
+Kassandra was John's wife when both were still living in cyberspace (Assuming they came from the Squids' version of cyberspace, and the continuity is kept from "Actor", this would make them, what, 2k-3k years old? They might only be a few centuries if they were captured from the colonists).
+
+Probably they were captured, maybe they didn't exist in the Squids' timeline?
+

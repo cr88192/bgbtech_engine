@@ -1,0 +1,61 @@
+package bsvm.io;
+
+public class File extends Object
+{
+public static String pathSeparator = "/";
+public static char pathSeparatorChar = '/';
+public static String separator = ";";
+public static char separatorChar = ';';
+
+public File(File dir, String name)
+	{}
+public File(String path)
+	{}
+public File(String path, String name)
+	{}
+
+public boolean canRead()
+	{ return false; }
+public boolean canWrite()
+	{ return false; }
+public boolean delete()
+	{ return false; }
+public boolean equals(Object obj)
+	{ return false; }
+public boolean exists()
+	{ return false; }
+public String getAbsolutePath()
+	{ return null; }
+public String getName()
+	{ return null; }
+public String getParent()
+	{ return null; }
+public String getPath()
+	{ return null; }
+public int hashCode()
+	{ return 0; }
+public boolean isAbsolute()
+	{ return false; }
+public boolean isDirectory()
+	{ return false; }
+public boolean isFile()
+	{ return false; }
+public long lastModified()
+	{ return 0; }
+public long length()
+	{ return 0; }
+public String[] list()
+	{ return null; }
+public String[] list(FilenameFilter filter)
+	{ return null; }
+public boolean mkdir()
+	{ return false; }
+public boolean mkdirs()
+	{ return false; }
+public boolean renameTo(File dest)
+	{ return false; }
+public String toString()
+	{ return null; }
+
+}
+

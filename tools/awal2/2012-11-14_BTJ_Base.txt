@@ -1,0 +1,267 @@
+== JPEG ==
+
+JPEG is a format specified by the ITU-T.81 document, for which I will assume some basic familiarity here.
+
+[http://en.wikipedia.org/wiki/JPEG JPEG on Wikipedia]
+
+
+== BGBTech JPEG Extensions ==
+
+These extensions allow several features to be added to the JPEG format, including:
+* Alpha Blending;
+* Normal Maps;
+* Bump Maps;
+* Luma Maps.
+
+
+This format is backwards compatible with normal JPEG, although the extended features will not be available in implementations which don't have support for these extensions.
+
+The main purpose for this at present is to allow higher-component images in cases where it is not readily possible to load this data from multiple files.
+
+
+These are facilitated via the APP11 and APP12 markers.
+ FF,APP11, xx,xx, <tag: ASCIIZ>, <args:ASCIIZ[]>
+ FF,APP12, xx,xx, <tag: FOURCC>, <data:byte[]>
+
+Where xx,xx will give the length of the marker in big-endian ordering. This will include itself and all data following, but will omit the FF or APP markers.
+
+The APP11 marker will generally give a tag name as an ASCIIZ string, and generally give the arguments as 1 or more strings.
+
+The APP12 marker will generally give a data payload identified via a FOURCC.
+Payload may be split over multiple adjacent markers if it does not fit within a single marker.
+
+
+APP11: "AlphaColor"
+* Argument: "red green blue alpha"
+** Gives the transparency color for "simple" transparency, where any pixel sufficiently close to the alpha color (defined by the alpha value, which represents the "color distance") will be regarded as transparent.
+
+
+APP11: "CompLayer"
+* Argument: Component Layer Name
+** Identifies the start of an embedded sub-image giving a component layer.
+*** Each layer is encoded as a sub-image using an LDAT tag.
+*** The images themselves use the typical YUV / YCbCr colorspace and 4:2:0 (or 4:4:4) downsampling.
+*** Sub-Images will have the same resolution as the parent image.
+*** The Sub-images need not be "complete", and may reuse parts from the parent image.
+** "RGB": RGB Base Image, not generally used (the base image is the main image in the file).
+** "Alpha": Monochrome Alpha layer, encodes the alpha channel as an image (not used with "DASe").
+** "XYZ": Gives the Normal Map, although stored in XZY ordering (R=X, G=Z, B=Y).
+** "SpRGB": Specular RGB components.
+** "DASe": Depth, Alpha, Specular Exponent
+** "LuRGB": Luma RGB
+
+
+APP11: "TagLayer"
+* Argument: Tag Layer Name
+** Identifies the start of a tag-layer, which contains 0 or more component layers.
+** A Tag-Layer is more of an equivalent of a traditional layer in a graphics program.
+*** All component layers within a given tag-layer will have the same resolution.
+
+
+APP12: "LDAT"
+* Gives "Layer Data", as an encoded sub-image.
+* Directly follows the "CompLayer" marker.
+* The sub image is broken into 64kB chunks, and spread over 1 or more LDAT markers.
+* When reading a sub-image, all directly adjacent LDAT markers are appended prior to decoding the sub-image.
+* The data within the markers is escape coded using the FF->FF,00 mapping.
+
+
+Example Image Layout:
+ SOI
+ [APP0: JFIF]
+ DHT/DQT/SOF0/SOS: Base Image
+ [Component Layers]
+ EOI
+
+With Component Layers taking the form:
+ APP11, "CompLayer", "..."
+ APP12, LDAT segment
+ APP12, LDAT segment
+ ...
+ APP11, "CompLayer", "..."
+ APP12, LDAT segment
+ ...
+
+
+Sub-Images may omit both Huffman and Quantization tables, and will reuse those from the parent.
+
+Note that it is all or none, namely that either all sub-images omit these tables, or all include them. Note that in the case of MJPEG, a similar rule applies, namely that if the prior image contains sub-images which define new tables, then the new frame will be required to define its own tables.
+
+This is to allow for naive codecs which will simply read the new tables as replacing the old ones, as well as those which may or may-not decode sub-images.
+
+Example Coded Sub-Image:
+ SOI
+ SOF0
+ SOS
+ ... Huffman coded DCT blocks ...
+ EOI
+
+
+=== Normal Maps ===
+
+Internally, a normal map will be represented as XYZD (X,Y,Z,Depth), despite being split up and having Y and Z swapped for storage.
+
+The XYZ pixels will represent values in the range of -1 to 1, so for example, the RGB value of 128,128,255 would encode the normal value 0,0,1. Normal values are stored in texture-space, with X=right, Y=up, and Z pointing out of the image (towards the viewer).
+
+Depth values range from 0 to 1 (255), with 0 as the lowest point, and 1 as the highest point (along the Z axis). The scale factors are not currently specified here, but are defined as part of the texture definition.
+
+Possible:
+APP11, "DepthScaleBias", "scale bias"
+
+
+=== Specular Map ===
+
+These will give the specular component pixels for each location.
+Specular is used as part of the lighting model to calculate the reflected color at a given pixel.
+Specular Exponent represents a scale factor for the Specular Exponent (multiplied with the specular exponent for the texture definition).
+
+
+=== Luma RGB ===
+
+This is an image representing the light emission from a surface.
+Presently, this is a simple glow value.
+
+Potentially, later it may make sense to support an emission intensity value, which could be used for materials which emit light into the environment.
+
+Possible:
+APP11, "LumaIntensity", "value"
+
+[[BGBTech Lighting Model]]
+
+== Further Extensions ==
+
+=== Lossless ===
+
+ APP9, "JPSERM"
+   Marker indicates the user of SERMs RDCT.
+   The RDCT transform will use a fraction value of 13 bits.
+ 
+ APP12, "ORCT"
+   Marker for the ORCT colorspace.
+ 
+ APP12, "BCST"
+   version:word    //BCST version
+   transform:byte  //colorspace transform
+   bpp:byte        //bits-per-pixel
+   flags:dword     //encoder flags
+
+ Transform: 0=YCbCr, 1=ORCT, 2=RGB, 3=YCCT
+ Flags: 1=RDCT
+ 
+ ORCT
+   Y=(R+2G+B)/4
+     Y=G+(B+R-2*G)/4;
+   U=B-G
+   V=R-G
+
+
+=== Tagged Layers ===
+
+ APP11, "TagLayer", "layername"
+
+Will define a "tagged layer", which basically means that any component layers which directly follow this marker will be part of the named layer. All component layers within a tag-layer are required to have the same resolution, but tag layers are not required to have the same resolution as other tag layers (nor necessarily the same resolution as the base-image).
+
+so:
+ SOI
+ base-image...
+ [Component Layers] //component layers for base image
+ APP11, "TagLayer", "MyLayer"
+ [Component Layers] //component layers for "MyLayer"
+ APP11, "TagLayer", "MyLayer2"
+ [Component Layers] //component layers for "MyLayer2"
+ EOI
+
+=== ShaderInfo ===
+
+ APP11, "ShaderInfo", "text..."
+
+Defines a glob of text used to define the texture or "shader" contents.
+The text comprises a line-oriented text format [[BGBTech Shader]].
+
+
+=== Marker Length Hack ===
+
+For the APPn and JPGn markers, if the 16-bit length is 0, then the marker will encode a 32-bit length. If the length is 1, it will encode a 64-bit length.
+
+ FF,APP12,00,00, xx,xx,xx,xx <tag:FOURCC>
+ 
+ FF,APP12,00,01, xx,xx,xx,xx,xx,xx,xx,xx <tag:FOURCC>
+
+
+=== JPGn as Must-Understand ===
+
+Interpret the JPGn markers as essentially a Must-Understand analogue of an APPn marker.
+
+If an unknown APPn marker is encountered, the marker is ignored.
+
+If an unknown JPGn market is encountered, the image is rejected.
+
+JPGn markers may then be used for extensions which may otherwise break the ability to decode the image.
+
+
+JPG11 and JPG12 will then be defined as equivalent to the APP11 and APP12 markers.
+
+ FF,JPG11, <length:word>, <tag:ASCIZ>, <data:byte[]>
+ FF,JPG12, <length:word>, <tag:FOURCC>, <data:byte[]>
+
+
+Note:
+
+For the most part, this usage should not conflict with the use of these markers by the JPEG standard (for example, JPG0-JPG6 in T.84, which are used directly without any further magic-value checks).
+
+
+The main concern is if some future version of JPEG uses JPG11 and JPG12 without some form of additional magic-value checks. The most likely option here would be to attempt to check if it is a known magic, otherwise try to interpret it however appropriate, and failing this, handle it as an unknown marker.
+
+== Video Extensions ==
+
+ JPG12,"DVFH"
+   Frame-Type:byte  //0=I-Frame / Raw-Image, 1=P-Frame
+   Delta-Type:byte  //0=None, 1=Differential YUV (P-Frame only)
+   Layer-ID:word    //Layer ID Number
+ 
+ JPG12,"SOMV"
+   Huff-Tab:byte    //Huffman Table
+   MV-Type:byte     //Motion-Vector Type, 0=None, 1=Default
+   <motion vector data>
+ 
+ Motion Vectors (type=1):
+   Huffman coded values: ZcBc
+   Zc = zero count
+   Bc = bit-count 
+
+The motion vectors are encoded per-macroblock (MCU), and will be coded as first all X offsets in a differentially-coded form, followed by all Y offsets in a differentially-coded form. These offsets will be encoded in pixels.
+
+If a P-Frame does not encode motion vectors, then the current P-Frame pixels will be identity-mapped to the equivalent I-Frame pixels.
+
+
+=== Layer ID ===
+
+Note that the Layer-ID will be used to identify the I-Frame in use (there may be multiple I-Frames in-use at a given time, each representing a different component layer).
+
+If an I-Frame does not define a given table (DQT or DHT), the table will be reused from the base-image.
+
+An I-Frame is basically a base-image.
+The main purpose of the DVFH header for an I-Frame is to define the Layer-ID.
+Valid I-Frame Layer-IDs are 1 or greater.
+
+
+=== P-Frame Images ===
+
+A P-Frame layer will be special, and may only appear in a P-Frame image.
+It will not be allowed to define both I-Frame and P-Frame layers in the same image.
+
+If a P-Frame does not define a given table, it will be reused from the matching layer in the I-Frame.
+
+P-Frame images may not define any new structural elements (new layers, ShaderInfo, ...), and may or may not define a base-image. Any layers defined in a P-Frame will be required to have the same Layer-ID as the matching layer in the I-Frame.
+
+ SOI
+ [Optional Base Image]
+ [P-Frame Layers]
+ EOI
+
+
+== Side Notes ==
+
+Note: [[BGBTech Video]]
+
+[[BGBTech BTJ Image Format]]

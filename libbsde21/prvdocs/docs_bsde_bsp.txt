@@ -1,0 +1,67 @@
+Attempt:
+Come up with ideas for representing BSPs (and other compound structures) to BSDE. These will not likely serve as the internal representation, but primarily as a means of passing data.
+
+Thought:
+The data will be passed as a short array (presumably in either machine order or little-endian), and will consist of a number of tags mixed with data.
+If the data is stored externally, it is to be in little endian regardless of the machine order.
+
+Constants will match those used in other calls.
+Many structures will be represented in terms of begin/end pairs, typically with a single tag indicating the beginning of the type, and the other representing the end.
+
+Some types will likely encode a little extra, eg, vertices may also encode the numeric type and size.
+
+Numbers requiring multiple shorts will be presented in the same order as the data's byte order.
+
+Basic types
+BSDE_BYTE
+BSDE_UNSIGNED_BYTE
+BSDE_SHORT
+BSDE_UNSIGNED_SHORT
+BSDE_INT
+BSDE_UNSIGNED_INT
+BSDE_FLOAT
+BSDE_DOUBLE
+
+"Oddball" types
+BSDE_HFLOAT			16 bit float
+BSDE_BYTE_NORMAL		-127..127 mapped in -1..1 range
+BSDE_SHORT_NORMAL		-32767..32767 mapped into -1..1 range
+BSDE_INT_NORMAL		-2147483647..2147483647 -> -1..1 range
+
+BYTE and UNSIGNED_BYTE will occupy a full short when individual, but will be packed bytewise when treated as a vector, with the vector padded to a short boundary.
+
+One of these values as a tag will encode a single value of that type.
+BYTE, UNSIGNED_BYTE, SHORT, UNSIGNED_SHORT, INT, and UNSIGNED_INT may have context dependent values (eg: being mapped to 0..1 or -1..1).
+
+HFLOAT	1 sign, 5 exponent (bias 15), 10 mantissa
+FLOAT		1 sign, 8 exponent (bias 127), 23 mantissa
+DOUBLE	1 sign, 11 exponent (bias 1023), 52 mantissa
+
+BSDE_<2|3|4>_<BYTES|SHORTS|INTS|FLOATS|DOUBLES|HFLOATS>
+Will encode a vector of the requisite type.
+
+
+BSDE_VERTEX <vector>
+BSDE_NORMAL <vector>
+BSDE_NORMAL4 <vector3> <number>
+
+BSDE_END
+	End whatever was last began.
+
+BSDE_BEGIN_FACE [<NORMAL>] <VERTEX> END
+	Begin a new face, followed by a normal and vertices.
+
+BSDE_BEGIN_BSPLEAF <FACE*> END
+
+BSDE_BEGIN_BSPNODE <NORMAL> <NODE|LEAF:front> <NODE|LEAF:back> END
+
+
+Alternative Thought:
+The whole serialized representation concept is skipped over, instead opting for a mass of function calls (which may serve to internally build said array-based representation).
+
+Likewise, a specialized state machine could also be used.
+
+bsdeBegin(type);
+bsdeEnd();
+
+The toplevel begin/end pair will be special in that it will define roughly what is being created, and the end will serve as a trigger to create whatever. The toplevel end may return a handle for the created object.

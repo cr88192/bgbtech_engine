@@ -1,0 +1,9 @@
+$sprite 8
+$spr_frame 0  24 24  48 48  sprites/planet/planet0_2.png
+$spr_frame 1  24 24  48 48  sprites/planet/planet_exp1.png
+$spr_frame 2  24 24  48 48  sprites/planet/planet_exp1_1.png
+$spr_frame 3  24 24  48 48  sprites/planet/planet_exp2.png
+$spr_frame 4  24 24  48 48  sprites/planet/planet_exp2_1.png
+$spr_frame 5  24 24  48 48  sprites/planet/planet_exp3.png
+$spr_frame 6  24 24  48 48  sprites/planet/planet_exp3_1.png
+$spr_frame 7  24 24  48 48  sprites/planet/planet_exp3_2.png

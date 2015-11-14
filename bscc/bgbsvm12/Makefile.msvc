@@ -1,0 +1,27 @@
+BUILD=.
+MKSUF=.msvc
+LIBSUF=.lib
+DLLSUF=.dll
+EXESUF=.exe
+OBJSUF=.obj
+BINSUF=.exe
+DLLPF=
+
+CC_OUTEXE=cl /Fe
+CC_OUTDLL=cl /LD /Fe
+CC_OUTOBJ=cl /c /Fo
+CC_OUTTOOL=cl /Fe
+
+BGBMETA=../bgbmeta$(EXE)
+BGBMETA_EXW=$(BGBMETA) /Fw
+BMETA_CFLAGS=/Iinclude /I../include
+
+CFLAGS=/Iinclude /I../include /Z7
+DLL_CFLAGS=$(CFLAGS) /DBGBSVM_DLL
+LDFLAGS=bgbsvm.lib ../bgbgc.lib ../bgbdy.lib ../bgbasm.lib
+DLL_LDFLAGS=../bgbgc.lib ../bgbdy.lib ../bgbasm.lib
+
+BS_SRCS = $(shell find bssrc)
+
+include Makefile.inc
+

@@ -1,0 +1,14 @@
+native import C;
+
+printf("BGBScript Tile2D Start\n");
+
+native package C.tile2d.main
+{
+	public function BT2D_ScriptInit():void
+	{
+		printf("BT2D_ScriptInit: Called\n");
+	}
+}
+
+extern import tile2d.EntityBase;
+extern import tile2d.MonsterBase;

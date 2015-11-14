@@ -1,0 +1,3425 @@
+[BCCX_Add]
+  _=func
+  sig=(PXBCCX_Node_s;PXBCCX_Node_s;)v
+[BCCX_AddEnd]
+  _=func
+  sig=(PXBCCX_Node_s;PXBCCX_Node_s;)PXBCCX_Node_s;
+[BCCX_AddEnd2]
+  _=func
+  sig=(PXBCCX_Node_s;PPXBCCX_Node_s;PXBCCX_Node_s;)PXBCCX_Node_s;
+[BCCX_Attr]
+  _=type
+  sig=XBCCX_Attr_s;
+[BCCX_AttrIsP]
+  _=func
+  sig=(PXBCCX_Node_s;PcPc)i
+[BCCX_Attr_s]
+  _=struct
+  field.0=next
+  field.1=ns
+  field.2=var
+  field.3=val
+  flags=0
+  [BCCX_Attr_s/next]
+    _=field
+    flags=0
+    sig=PXBCCX_Attr_s;
+  [BCCX_Attr_s/ns]
+    _=field
+    flags=0
+    sig=Pc
+  [BCCX_Attr_s/val]
+    _=field
+    flags=0
+    sig=Pc
+  [BCCX_Attr_s/var]
+    _=field
+    flags=0
+    sig=Pc
+[BCCX_Child]
+  _=func
+  sig=(PXBCCX_Node_s;)PXBCCX_Node_s;
+[BCCX_ChildP]
+  _=func
+  sig=(PXBCCX_Node_s;)i
+[BCCX_Clone]
+  _=func
+  sig=(PXBCCX_Node_s;)PXBCCX_Node_s;
+[BCCX_CloneList]
+  _=func
+  sig=(PXBCCX_Node_s;)PXBCCX_Node_s;
+[BCCX_DumpFD]
+  _=func
+  sig=(PX_iobuf;PXBCCX_Node_s;)v
+[BCCX_DumpStr]
+  _=func
+  sig=(PcPXBCCX_Node_s;)Pc
+[BCCX_Fetch]
+  _=func
+  sig=(PXBCCX_Node_s;Pc)PXBCCX_Node_s;
+[BCCX_FetchAttr]
+  _=func
+  sig=(PXBCCX_Node_s;Pc)PXBCCX_Attr_s;
+[BCCX_FetchAttrNS]
+  _=func
+  sig=(PXBCCX_Node_s;PcPc)PXBCCX_Attr_s;
+[BCCX_FindAttr]
+  _=func
+  sig=(PXBCCX_Node_s;PcPc)PXBCCX_Node_s;
+[BCCX_FindNextAttr]
+  _=func
+  sig=(PXBCCX_Node_s;PcPc)PXBCCX_Node_s;
+[BCCX_FindNextTag]
+  _=func
+  sig=(PXBCCX_Node_s;Pc)PXBCCX_Node_s;
+[BCCX_FindNextTagAttr]
+  _=func
+  sig=(PXBCCX_Node_s;PcPcPc)PXBCCX_Node_s;
+[BCCX_FindTag]
+  _=func
+  sig=(PXBCCX_Node_s;Pc)PXBCCX_Node_s;
+[BCCX_FindTagAttr]
+  _=func
+  sig=(PXBCCX_Node_s;PcPcPc)PXBCCX_Node_s;
+[BCCX_Get]
+  _=func
+  sig=(PXBCCX_Node_s;Pc)Pc
+[BCCX_GetFloat]
+  _=func
+  sig=(PXBCCX_Node_s;Pc)d
+[BCCX_GetFloatNS]
+  _=func
+  sig=(PXBCCX_Node_s;PcPc)d
+[BCCX_GetFloatURI]
+  _=func
+  sig=(PXBCCX_Node_s;PcPc)d
+[BCCX_GetInt]
+  _=func
+  sig=(PXBCCX_Node_s;Pc)i
+[BCCX_GetIntNS]
+  _=func
+  sig=(PXBCCX_Node_s;PcPc)i
+[BCCX_GetIntURI]
+  _=func
+  sig=(PXBCCX_Node_s;PcPc)i
+[BCCX_GetNS]
+  _=func
+  sig=(PXBCCX_Node_s;PcPc)Pc
+[BCCX_GetURI]
+  _=func
+  sig=(PXBCCX_Node_s;PcPc)Pc
+[BCCX_LeafP]
+  _=func
+  sig=(PXBCCX_Node_s;)i
+[BCCX_LookupAttr]
+  _=func
+  sig=(PXBCCX_Node_s;Pc)PXBCCX_Attr_s;
+[BCCX_LookupAttrNS]
+  _=func
+  sig=(PXBCCX_Node_s;PcPc)PXBCCX_Attr_s;
+[BCCX_NS]
+  _=func
+  sig=(PXBCCX_Node_s;)Pc
+[BCCX_NSURI]
+  _=func
+  sig=(PXBCCX_Node_s;Pc)Pc
+[BCCX_New]
+  _=func
+  sig=(Pc)PXBCCX_Node_s;
+[BCCX_New1]
+  _=func
+  sig=(PcPXBCCX_Node_s;)PXBCCX_Node_s;
+[BCCX_New1NS]
+  _=func
+  sig=(PcPcPXBCCX_Node_s;)PXBCCX_Node_s;
+[BCCX_New2]
+  _=func
+  sig=(PcPXBCCX_Node_s;PXBCCX_Node_s;)PXBCCX_Node_s;
+[BCCX_New2NS]
+  _=func
+  sig=(PcPcPXBCCX_Node_s;PXBCCX_Node_s;)PXBCCX_Node_s;
+[BCCX_New3]
+  _=func
+  sig=(PcPXBCCX_Node_s;PXBCCX_Node_s;PXBCCX_Node_s;)PXBCCX_Node_s;
+[BCCX_New3NS]
+  _=func
+  sig=(PcPcPXBCCX_Node_s;PXBCCX_Node_s;PXBCCX_Node_s;)PXBCCX_Node_s;
+[BCCX_New4]
+  _=func
+  sig=(PcPXBCCX_Node_s;PXBCCX_Node_s;PXBCCX_Node_s;PXBCCX_Node_s;)PXBCCX_Node_s;
+[BCCX_New4NS]
+  _=func
+  sig=(PcPcPXBCCX_Node_s;PXBCCX_Node_s;PXBCCX_Node_s;PXBCCX_Node_s;)PXBCCX_Node_s;
+[BCCX_NewNS]
+  _=func
+  sig=(PcPc)PXBCCX_Node_s;
+[BCCX_NewText]
+  _=func
+  sig=(Pc)PXBCCX_Node_s;
+[BCCX_Next]
+  _=func
+  sig=(PXBCCX_Node_s;)PXBCCX_Node_s;
+[BCCX_Node]
+  _=type
+  sig=XBCCX_Node_s;
+[BCCX_NodeP]
+  _=func
+  sig=(PXBCCX_Node_s;)i
+[BCCX_Node_s]
+  _=struct
+  field.0=next
+  field.1=prev
+  field.2=up
+  field.3=down
+  field.4=attr
+  field.5=ns
+  field.6=tag
+  field.7=text
+  flags=0
+  [BCCX_Node_s/attr]
+    _=field
+    flags=0
+    sig=PXBCCX_Attr_s;
+  [BCCX_Node_s/down]
+    _=field
+    flags=0
+    sig=PXBCCX_Node_s;
+  [BCCX_Node_s/next]
+    _=field
+    flags=0
+    sig=PXBCCX_Node_s;
+  [BCCX_Node_s/ns]
+    _=field
+    flags=0
+    sig=Pc
+  [BCCX_Node_s/prev]
+    _=field
+    flags=0
+    sig=PXBCCX_Node_s;
+  [BCCX_Node_s/tag]
+    _=field
+    flags=0
+    sig=Pc
+  [BCCX_Node_s/text]
+    _=field
+    flags=0
+    sig=Pc
+  [BCCX_Node_s/up]
+    _=field
+    flags=0
+    sig=PXBCCX_Node_s;
+[BCCX_Parent]
+  _=func
+  sig=(PXBCCX_Node_s;)PXBCCX_Node_s;
+[BCCX_Prev]
+  _=func
+  sig=(PXBCCX_Node_s;)PXBCCX_Node_s;
+[BCCX_Print]
+  _=func
+  sig=(PXBCCX_Node_s;)v
+[BCCX_PrintBuf]
+  _=func
+  sig=(PXBCCX_Node_s;iPXHSGAF5B4E2E;Pv)v
+[BCCX_PrintFD]
+  _=func
+  sig=(PX_iobuf;PXBCCX_Node_s;)v
+[BCCX_PrintStr]
+  _=func
+  sig=(PcPXBCCX_Node_s;)Pc
+[BCCX_PrintStream]
+  _=type
+  sig=PXBCCX_PrintStream_s;
+[BCCX_PrintStream_s]
+  _=struct
+  field.0=sarr
+  field.1=marr
+  field.2=n_sarr
+  field.3=n_marr
+  field.4=buf
+  field.5=prints_f
+  field.6=ind
+  flags=0
+  [BCCX_PrintStream_s/buf]
+    _=field
+    flags=0
+    sig=Pv
+  [BCCX_PrintStream_s/ind]
+    _=field
+    flags=0
+    sig=i
+  [BCCX_PrintStream_s/marr]
+    _=field
+    flags=0
+    sig=PXBCCX_Node_s;
+  [BCCX_PrintStream_s/n_marr]
+    _=field
+    flags=0
+    sig=i
+  [BCCX_PrintStream_s/n_sarr]
+    _=field
+    flags=0
+    sig=i
+  [BCCX_PrintStream_s/prints_f]
+    _=field
+    flags=0
+    sig=PXHSGAF5B4E2E;
+  [BCCX_PrintStream_s/sarr]
+    _=field
+    flags=0
+    sig=PXBCCX_Node_s;
+[BCCX_PrintText]
+  _=func
+  sig=(PcPc)Pc
+[BCCX_ReadPos]
+  _=type
+  sig=Pv
+[BCCX_ReadStream]
+  _=type
+  sig=PXBCCX_ReadStream_s;
+[BCCX_ReadStream_s]
+  _=struct
+  field.0=data
+  field.1=get_pos_f
+  field.2=set_pos_f
+  field.3=peek_char_f
+  field.4=read_char_f
+  field.5=peek_idx_f
+  flags=0
+  [BCCX_ReadStream_s/data]
+    _=field
+    flags=0
+    sig=Pv
+  [BCCX_ReadStream_s/get_pos_f]
+    _=field
+    flags=0
+    sig=PXHSG02E6C4A2;
+  [BCCX_ReadStream_s/peek_char_f]
+    _=field
+    flags=0
+    sig=PXHSG02E6C495;
+  [BCCX_ReadStream_s/peek_idx_f]
+    _=field
+    flags=0
+    sig=PXHSG708B26D4;
+  [BCCX_ReadStream_s/read_char_f]
+    _=field
+    flags=0
+    sig=PXHSG02E6C495;
+  [BCCX_ReadStream_s/set_pos_f]
+    _=field
+    flags=0
+    sig=PXHSGD20DB1C8;
+[BCCX_Set]
+  _=func
+  sig=(PXBCCX_Node_s;PcPc)v
+[BCCX_SetFloat]
+  _=func
+  sig=(PXBCCX_Node_s;Pcd)v
+[BCCX_SetFloatNS]
+  _=func
+  sig=(PXBCCX_Node_s;PcPcd)v
+[BCCX_SetFloatURI]
+  _=func
+  sig=(PXBCCX_Node_s;PcPcd)v
+[BCCX_SetInt]
+  _=func
+  sig=(PXBCCX_Node_s;Pci)v
+[BCCX_SetIntNS]
+  _=func
+  sig=(PXBCCX_Node_s;PcPci)v
+[BCCX_SetIntURI]
+  _=func
+  sig=(PXBCCX_Node_s;PcPci)v
+[BCCX_SetNS]
+  _=func
+  sig=(PXBCCX_Node_s;PcPcPc)v
+[BCCX_SetTag]
+  _=func
+  sig=(PXBCCX_Node_s;Pc)v
+[BCCX_SetURI]
+  _=func
+  sig=(PXBCCX_Node_s;PcPcPc)v
+[BCCX_Tag]
+  _=func
+  sig=(PXBCCX_Node_s;)Pc
+[BCCX_TagAttrIsP]
+  _=func
+  sig=(PXBCCX_Node_s;PcPcPc)i
+[BCCX_TagIsP]
+  _=func
+  sig=(PXBCCX_Node_s;Pc)i
+[BCCX_Text]
+  _=func
+  sig=(PXBCCX_Node_s;)Pc
+[BCCX_TextP]
+  _=func
+  sig=(PXBCCX_Node_s;)i
+[BCCX_URI]
+  _=func
+  sig=(PXBCCX_Node_s;)Pc
+[BCCX_URINS]
+  _=func
+  sig=(PXBCCX_Node_s;Pc)Pc
+[BCCX_Unlink]
+  _=func
+  sig=(PXBCCX_Node_s;)v
+[BGBCC_BindFieldInfo]
+  _=func
+  sig=(PXHTXE1B14385;PcPcPcPc)i
+[BGBCC_BindFieldInfoI]
+  _=func
+  sig=(PXHTXE1B14385;PcPcPci)i
+[BGBCC_BindFieldSig]
+  _=func
+  sig=(PXHTXE1B14385;PcPcPc)i
+[BGBCC_BindSig]
+  _=func
+  sig=(PXHTXE1B14385;PcPc)i
+[BGBCC_BindStructInfo]
+  _=func
+  sig=(PXHTXE1B14385;PcPcPc)i
+[BGBCC_BindStructInfoI]
+  _=func
+  sig=(PXHTXE1B14385;PcPci)i
+[BGBCC_BindStructInfoIdx]
+  _=func
+  sig=(PXHTXE1B14385;PcPciPc)i
+[BGBCC_BindStructSig]
+  _=func
+  sig=(PXHTXE1B14385;PcPc)i
+[BGBCC_BindTypeSig]
+  _=func
+  sig=(PXHTXE1B14385;PcPc)i
+[BGBCC_BoolExpr]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)i
+[BGBCC_CIfy]
+  _=func
+  sig=(Pc)Pc
+[BGBCC_CleanupAll]
+  _=func
+  sig=()v
+[BGBCC_CompileArgsList]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_CompileAssign]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_CompileBlock]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;PcPXBCCX_Node_s;PXBCCX_Node_s;)PXBCCX_Node_s;
+[BGBCC_CompileBreak]
+  _=func
+  sig=(PXHTXE1B14385;)v
+[BGBCC_CompileBreakFalse]
+  _=func
+  sig=(PXHTXE1B14385;)v
+[BGBCC_CompileBreakTrue]
+  _=func
+  sig=(PXHTXE1B14385;)v
+[BGBCC_CompileContinue]
+  _=func
+  sig=(PXHTXE1B14385;)v
+[BGBCC_CompileContinueFalse]
+  _=func
+  sig=(PXHTXE1B14385;)v
+[BGBCC_CompileContinueTrue]
+  _=func
+  sig=(PXHTXE1B14385;)v
+[BGBCC_CompileEnum]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_CompileExpr]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_CompileExprList]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_CompileExprListReverse]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_CompileExprT]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_CompileExprTail]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_CompileForm]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_CompileFuncall]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_CompileJCF]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;Pc)v
+[BGBCC_CompileJCO]
+  _=func
+  sig=(PXHTXE1B14385;PcPXBCCX_Node_s;PXBCCX_Node_s;Pc)v
+[BGBCC_CompileJCT]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;Pc)v
+[BGBCC_CompileJmp]
+  _=func
+  sig=(PXHTXE1B14385;Pc)v
+[BGBCC_CompileJmpCond]
+  _=func
+  sig=(PXHTXE1B14385;PcPc)v
+[BGBCC_CompileJmpFalse]
+  _=func
+  sig=(PXHTXE1B14385;Pc)v
+[BGBCC_CompileJmpTrue]
+  _=func
+  sig=(PXHTXE1B14385;Pc)v
+[BGBCC_CompileModule]
+  _=func
+  sig=(PcPXBCCX_Node_s;)Pc
+[BGBCC_CompileProto]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;PcPXBCCX_Node_s;)PXBCCX_Node_s;
+[BGBCC_CompileSProto]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)PXBCCX_Node_s;
+[BGBCC_CompileStatement]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_CompileStruct]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_CompileStructs]
+  _=func
+  sig=(PXHTXE1B14385;)v
+[BGBCC_CompileSwitch]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)i
+[BGBCC_CompileTopStatement]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_CompileTypedef]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_CompileUnion]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_CompileVarStatement]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_EmitLabel]
+  _=func
+  sig=(PXHTXE1B14385;Pc)v
+[BGBCC_EmitSigProto]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;PcPXBCCX_Node_s;)v
+[BGBCC_EmitTopArray]
+  _=func
+  sig=(PXHTXE1B14385;PcPXBCCX_Node_s;PXBCCX_Node_s;)v
+[BGBCC_EmitTopVar]
+  _=func
+  sig=(PXHTXE1B14385;PcPXBCCX_Node_s;PXBCCX_Node_s;)v
+[BGBCC_EmitVar]
+  _=func
+  sig=(PXHTXE1B14385;PcPXBCCX_Node_s;PXBCCX_Node_s;)v
+[BGBCC_EmitVar2]
+  _=func
+  sig=(PXHTXE1B14385;PcPXBCCX_Node_s;PXBCCX_Node_s;)v
+[BGBCC_EmitVarValue]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_EmitVarValueR]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)v
+[BGBCC_Error]
+  _=func
+  sig=(Pcz)v
+[BGBCC_GenProtoSig]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;PXBCCX_Node_s;)Pc
+[BGBCC_GenSym]
+  _=func
+  sig=()Pc
+[BGBCC_GenSym2]
+  _=func
+  sig=()Pc
+[BGBCC_GuessCloseBlock]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)i
+[BGBCC_GuessCloseExpr]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)i
+[BGBCC_GuessCloseForm]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)i
+[BGBCC_InferExpr]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)PXBCCX_Node_s;
+[BGBCC_InferExprClean]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;Pi)PXBCCX_Node_s;
+[BGBCC_InferForm]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)PXBCCX_Node_s;
+[BGBCC_InferIsDoubleP]
+  _=func
+  sig=(PXBCCX_Node_s;)i
+[BGBCC_InferIsFloatP]
+  _=func
+  sig=(PXBCCX_Node_s;)i
+[BGBCC_InferIsInt]
+  _=func
+  sig=(PXBCCX_Node_s;)PXBCCX_Node_s;
+[BGBCC_InferIsIntP]
+  _=func
+  sig=(PXBCCX_Node_s;)i
+[BGBCC_InferIsLong]
+  _=func
+  sig=(PXBCCX_Node_s;)PXBCCX_Node_s;
+[BGBCC_InferIsLongP]
+  _=func
+  sig=(PXBCCX_Node_s;)i
+[BGBCC_InferIsNum]
+  _=func
+  sig=(PXBCCX_Node_s;)PXBCCX_Node_s;
+[BGBCC_InferIsNumP]
+  _=func
+  sig=(PXBCCX_Node_s;)i
+[BGBCC_InferTypeBase]
+  _=func
+  sig=(PXBCCX_Node_s;)PXBCCX_Node_s;
+[BGBCC_Init]
+  _=func
+  sig=()i
+[BGBCC_InitEnv]
+  _=func
+  sig=(PPc)i
+[BGBCC_IsBinaryP]
+  _=func
+  sig=(PXBCCX_Node_s;Pc)i
+[BGBCC_IsExpr]
+  _=func
+  sig=(PXBCCX_Node_s;)i
+[BGBCC_IsIntP]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)i
+[BGBCC_IsRealP]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)i
+[BGBCC_IsUnaryP]
+  _=func
+  sig=(PXBCCX_Node_s;Pc)i
+[BGBCC_LoadCMeta]
+  _=func
+  sig=(Pc)i
+[BGBCC_ReduceExpr]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)PXBCCX_Node_s;
+[BGBCC_ReduceForm]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)PXBCCX_Node_s;
+[BGBCC_State]
+  _=type
+  sig=XHTXE1B14385;
+[BGBCC_StoreTextFile]
+  _=func
+  sig=(PcPc)i
+[BGBCC_VarTypeString]
+  _=func
+  sig=(PXHTXE1B14385;PXBCCX_Node_s;)Pc
+[BGBCC_Warn]
+  _=func
+  sig=(Pcz)v
+[BGBCC_WrapInt]
+  _=func
+  sig=(i)PXBCCX_Node_s;
+[BGBCC_WrapReal]
+  _=func
+  sig=(d)PXBCCX_Node_s;
+[BGBCP_AddBlockStatement]
+  _=func
+  sig=(PcPXHSG064D31C4;)i
+[BGBCP_AddExpression]
+  _=func
+  sig=(PcPXHSG064D31C4;)i
+[BGBCP_AddStatement]
+  _=func
+  sig=(PcPXHSG064D31C4;)i
+[BGBCP_ArgDefinition]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_BinaryExpr]
+  _=func
+  sig=(PcPXBCCX_Node_s;PXBCCX_Node_s;)PXBCCX_Node_s;
+[BGBCP_Block]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_BlockStatement]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_BlockStatement2]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_BlockStatementInner]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_CalcLinenum]
+  _=func
+  sig=(Pc)i
+[BGBCP_CheckTypeName]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)i
+[BGBCP_DefClassC]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_DefClassJ]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_DefName]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_DefName2]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_DefType]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_DefTypeC]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_DefTypeFlag]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)i
+[BGBCP_DefTypeJ]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_Definition]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_EatSemicolon]
+  _=func
+  sig=(Pc)Pc
+[BGBCP_EatWhite]
+  _=func
+  sig=(Pc)Pc
+[BGBCP_EatWhiteOnly]
+  _=func
+  sig=(Pc)Pc
+[BGBCP_EmitChar]
+  _=func
+  sig=(PPci)i
+[BGBCP_EnumVarsList]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_Error]
+  _=func
+  sig=(PcPcz)v
+[BGBCP_Expression]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_Expression2]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionAS]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionBitAnd]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionBitOr]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionBitXor]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionCast]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionComma]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionECmp]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionEquals]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionExp]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionLit]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionLop]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionLop2]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionMD]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionPostfix]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionRCmp]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionSHLR]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionTCond]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_ExpressionUnary]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_FunArgs]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_FunVarsList]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_GenArgs]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_GetEnum]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)PXBCCX_Node_s;
+[BGBCP_GetFilename]
+  _=func
+  sig=()Pc
+[BGBCP_GetLastFileName]
+  _=func
+  sig=()Pc
+[BGBCP_GetLastLineNumber]
+  _=func
+  sig=()i
+[BGBCP_GetLinenum]
+  _=func
+  sig=()i
+[BGBCP_GetStruct]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)PXBCCX_Node_s;
+[BGBCP_GetStructJ]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pci)PXBCCX_Node_s;
+[BGBCP_GetUnion]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)PXBCCX_Node_s;
+[BGBCP_HandleTypedef]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PXBCCX_Node_s;)i
+[BGBCP_IsLineBreak]
+  _=func
+  sig=(Pc)i
+[BGBCP_IsWhiteOnly]
+  _=func
+  sig=(Pc)i
+[BGBCP_LookupSig]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)Pc
+[BGBCP_LookupStruct]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)PXBCCX_Node_s;
+[BGBCP_LookupStructI]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)PXBCCX_Node_s;
+[BGBCP_LookupType]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)PXBCCX_Node_s;
+[BGBCP_LookupTypeI]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)PXBCCX_Node_s;
+[BGBCP_LookupTypeSig]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)Pc
+[BGBCP_ModuleBuffer]
+  _=func
+  sig=(PcPcPc)PXBCCX_Node_s;
+[BGBCP_NameChar]
+  _=func
+  sig=(i)i
+[BGBCP_NameInitChar]
+  _=func
+  sig=(i)i
+[BGBCP_Number]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)PXBCCX_Node_s;
+[BGBCP_OpChar]
+  _=func
+  sig=(i)i
+[BGBCP_ParseBlockStatementName]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PcPPc)PXBCCX_Node_s;
+[BGBCP_ParseChar]
+  _=func
+  sig=(PPc)i
+[BGBCP_ParseExpressionName]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PcPPc)PXBCCX_Node_s;
+[BGBCP_ParseItem]
+  _=type
+  sig=XBGBCP_ParseItem_s;
+[BGBCP_ParseItem_s]
+  _=struct
+  field.0=next
+  field.1=name
+  field.2=func
+  flags=0
+  [BGBCP_ParseItem_s/func]
+    _=field
+    flags=0
+    sig=PXHSG064D31C4;
+  [BGBCP_ParseItem_s/name]
+    _=field
+    flags=0
+    sig=Pc
+  [BGBCP_ParseItem_s/next]
+    _=field
+    flags=0
+    sig=PXBGBCP_ParseItem_s;
+[BGBCP_ParseState]
+  _=type
+  sig=XBGBCP_ParseState_s;
+[BGBCP_ParseState_s]
+  _=struct
+  field.0=flags
+  field.1=lang
+  field.2=structs
+  field.3=types
+  field.4=ppdef
+  field.5=cur_ns
+  field.6=cur_nsi
+  flags=0
+  [BGBCP_ParseState_s/cur_ns]
+    _=field
+    flags=0
+    sig=Pc
+  [BGBCP_ParseState_s/cur_nsi]
+    _=field
+    flags=0
+    sig=PPc
+  [BGBCP_ParseState_s/flags]
+    _=field
+    flags=0
+    sig=i
+  [BGBCP_ParseState_s/lang]
+    _=field
+    flags=0
+    sig=i
+  [BGBCP_ParseState_s/ppdef]
+    _=field
+    flags=0
+    sig=PXBGBPP_Def_s;64
+  [BGBCP_ParseState_s/structs]
+    _=field
+    flags=0
+    sig=PXBCCX_Node_s;
+  [BGBCP_ParseState_s/types]
+    _=field
+    flags=0
+    sig=PXBCCX_Node_s;
+[BGBCP_ParseStatementName]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PcPPc)PXBCCX_Node_s;
+[BGBCP_PeekChar]
+  _=func
+  sig=(PPc)i
+[BGBCP_PopLinenum]
+  _=func
+  sig=()i
+[BGBCP_PushLinenum]
+  _=func
+  sig=()i
+[BGBCP_SetLinenum]
+  _=func
+  sig=(PcPci)i
+[BGBCP_SkimLinenum]
+  _=func
+  sig=(PcPPcPi)i
+[BGBCP_Statement]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)PXBCCX_Node_s;
+[BGBCP_Token]
+  _=func
+  sig=(PcPcPi)Pc
+[BGBCP_TokenGen]
+  _=func
+  sig=(PcPcPi)Pc
+[BGBCP_VarDefinition]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPcPXBCCX_Node_s;)PXBCCX_Node_s;
+[BGBCP_VarsList]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPcPXBCCX_Node_s;)PXBCCX_Node_s;
+[BGBCP_Warn]
+  _=func
+  sig=(PcPcz)v
+[BGBDYC_MetaLeaf]
+  _=type
+  sig=XBGBDYC_MetaLeaf_s;
+[BGBDYC_MetaLeaf_s]
+  _=struct
+  field.0=next
+  field.1=key
+  field.2=val
+  field.3=pf
+  field.4=idx
+  flags=0
+  [BGBDYC_MetaLeaf_s/idx]
+    _=field
+    flags=131072
+    sig=h
+  [BGBDYC_MetaLeaf_s/key]
+    _=field
+    flags=0
+    sig=Pc
+  [BGBDYC_MetaLeaf_s/next]
+    _=field
+    flags=0
+    sig=PXBGBDYC_MetaLeaf_s;
+  [BGBDYC_MetaLeaf_s/pf]
+    _=field
+    flags=131072
+    sig=h
+  [BGBDYC_MetaLeaf_s/val]
+    _=field
+    flags=0
+    sig=Pc
+[BGBDYC_MetaNode]
+  _=type
+  sig=XBGBDYC_MetaNode_s;
+[BGBDYC_MetaNode_s]
+  _=struct
+  field.0=next
+  field.1=first
+  field.2=leaf
+  field.3=name
+  flags=0
+  [BGBDYC_MetaNode_s/first]
+    _=field
+    flags=0
+    sig=PXBGBDYC_MetaNode_s;
+  [BGBDYC_MetaNode_s/leaf]
+    _=field
+    flags=0
+    sig=PXBGBDYC_MetaLeaf_s;
+  [BGBDYC_MetaNode_s/name]
+    _=field
+    flags=0
+    sig=Pc
+  [BGBDYC_MetaNode_s/next]
+    _=field
+    flags=0
+    sig=PXBGBDYC_MetaNode_s;
+[BGBPP_AddDefine]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PcPc)v
+[BGBPP_AddDefineArgs]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PcPPcPc)v
+[BGBPP_AddIncludePathBack]
+  _=func
+  sig=(Pc)i
+[BGBPP_AddIncludePathFront]
+  _=func
+  sig=(Pc)i
+[BGBPP_AddStaticDefine]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PcPc)v
+[BGBPP_AddStaticDefineArgs]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PcPPcPc)v
+[BGBPP_Buffer]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)v
+[BGBPP_CleanupDefines]
+  _=func
+  sig=(PXBGBCP_ParseState_s;)v
+[BGBPP_Def]
+  _=type
+  sig=XBGBPP_Def_s;
+[BGBPP_Def_s]
+  _=struct
+  field.0=next
+  field.1=name
+  field.2=value
+  field.3=args
+  flags=0
+  [BGBPP_Def_s/args]
+    _=field
+    flags=0
+    sig=PPc
+  [BGBPP_Def_s/name]
+    _=field
+    flags=0
+    sig=Pc
+  [BGBPP_Def_s/next]
+    _=field
+    flags=0
+    sig=PXBGBPP_Def_s;
+  [BGBPP_Def_s/value]
+    _=field
+    flags=0
+    sig=Pc
+[BGBPP_DeleteDefine]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)v
+[BGBPP_Directive]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)v
+[BGBPP_Directive2]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)v
+[BGBPP_EmitChar]
+  _=func
+  sig=(PPci)i
+[BGBPP_EmitCharString]
+  _=func
+  sig=(PcPc)Pc
+[BGBPP_EmitString]
+  _=func
+  sig=(PcPc)Pc
+[BGBPP_Expand]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPcPPcPc)i
+[BGBPP_Filter]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PcPc)i
+[BGBPP_Include]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)v
+[BGBPP_Line]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)i
+[BGBPP_LineDigraph]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)i
+[BGBPP_LinePostFilter]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)i
+[BGBPP_LoadInclude]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PcPi)Pc
+[BGBPP_LookupDefine]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)PXBGBPP_Def_s;
+[BGBPP_ParseArg]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PcPc)Pc
+[BGBPP_ParseChar]
+  _=func
+  sig=(PPc)i
+[BGBPP_ParseLine]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PcPc)Pc
+[BGBPP_PrintName]
+  _=func
+  sig=(PcPc)Pc
+[BGBPP_PrintToken]
+  _=func
+  sig=(PcPci)Pc
+[BGBPP_Trigraphs]
+  _=func
+  sig=(PXBGBCP_ParseState_s;Pc)v
+[DYLL_MetaPath_BindKey]
+  _=func
+  sig=(PcPc)v
+[DYLL_MetaPath_GetNode]
+  _=func
+  sig=(Pc)PXBGBDYC_MetaNode_s;
+[DYLL_MetaPath_GetNodeLeaf]
+  _=func
+  sig=(PXBGBDYC_MetaNode_s;Pc)PXBGBDYC_MetaLeaf_s;
+[DYLL_MetaPath_GetNodeR]
+  _=func
+  sig=(PXBGBDYC_MetaNode_s;Pc)PXBGBDYC_MetaNode_s;
+[DYLL_MetaPath_LoadDB]
+  _=func
+  sig=(Pc)v
+[DYLL_MetaPath_LookupKey]
+  _=func
+  sig=(Pc)Pc
+[DYLL_MetaPath_LookupNode]
+  _=func
+  sig=(Pc)PXBGBDYC_MetaNode_s;
+[DYLL_MetaPath_LookupNodeLeaf]
+  _=func
+  sig=(PXBGBDYC_MetaNode_s;Pc)PXBGBDYC_MetaLeaf_s;
+[DYLL_MetaPath_LookupNodeR]
+  _=func
+  sig=(PXBGBDYC_MetaNode_s;Pc)PXBGBDYC_MetaNode_s;
+[DYLL_MetaPath_SaveDB]
+  _=func
+  sig=(Pc)v
+[DYLL_MetaPath_SaveNode]
+  _=func
+  sig=(PX_iobuf;PXBGBDYC_MetaNode_s;Pci)v
+[DYLL_MetaPath_SplitKey]
+  _=func
+  sig=(PcPcPc)v
+[FILE]
+  _=type
+  sig=X_iobuf;
+[HSG0009ECE8]
+  _=func
+  sig=()i
+[HSG0009ECF5]
+  _=func
+  sig=()v
+[HSG02E6C495]
+  _=func
+  sig=(PXBCCX_ReadStream_s;)i
+[HSG02E6C4A2]
+  _=func
+  sig=(PXBCCX_ReadStream_s;)v
+[HSG064D31C4]
+  _=func
+  sig=(PXBGBCP_ParseState_s;PPc)XBCCX_Node_s;
+[HSG52F8095A]
+  _=func
+  sig=(PvPvPv)i
+[HSG708B26D4]
+  _=func
+  sig=(PXBCCX_ReadStream_s;i)i
+[HSGAF5B4E2E]
+  _=func
+  sig=(PvPc)v
+[HSGAF5FFB34]
+  _=func
+  sig=(PvPv)i
+[HSGB91CB661]
+  _=func
+  sig=(PtPtPtjj)v
+[HSGD20DB1C8]
+  _=func
+  sig=(PXBCCX_ReadStream_s;Pv)v
+[HTX0B4BF21C]
+  _=struct
+  field.0=x
+  flags=0
+  [HTX0B4BF21C/x]
+    _=field
+    flags=0
+    sig=d
+[HTX2D7DBC5F]
+  _=struct
+  field.0=ld12
+  flags=0
+  [HTX2D7DBC5F/ld12]
+    _=field
+    flags=131072
+    sig=h12
+[HTX340E0F5D]
+  _=struct
+  field.0=f
+  flags=0
+  [HTX340E0F5D/f]
+    _=field
+    flags=0
+    sig=f
+[HTXA57571C6]
+  _=struct
+  field.0=locale
+  field.1=wlocale
+  field.2=refcount
+  field.3=wrefcount
+  flags=0
+  [HTXA57571C6/locale]
+    _=field
+    flags=0
+    sig=Pc
+  [HTXA57571C6/refcount]
+    _=field
+    flags=0
+    sig=Pi
+  [HTXA57571C6/wlocale]
+    _=field
+    flags=131072
+    sig=Pt
+  [HTXA57571C6/wrefcount]
+    _=field
+    flags=0
+    sig=Pi
+[HTXBDC3B4DC]
+  _=struct
+  field.0=x
+  flags=0
+  [HTXBDC3B4DC/x]
+    _=field
+    flags=0
+    sig=d
+[HTXDD7477AA]
+  _=struct
+  field.0=ld
+  flags=0
+  [HTXDD7477AA/ld]
+    _=field
+    flags=131072
+    sig=h10
+[HTXE1B14385]
+  _=struct
+  field.0=lvl
+  field.1=olvl
+  field.10=lbl_name
+  field.11=lbl_dest
+  field.12=n_goto
+  field.13=n_lbl
+  field.14=contstack
+  field.15=breakstack
+  field.16=contstackpos
+  field.17=breakstackpos
+  field.18=ip
+  field.19=ips
+  field.2=cap
+  field.20=ipe
+  field.21=types
+  field.22=structs
+  field.23=cur_ns
+  field.24=cur_struct
+  field.25=cur_idx
+  field.3=tail
+  field.4=i_cx_p
+  field.5=i_cap
+  field.6=cf_n
+  field.7=cf_ty
+  field.8=goto_name
+  field.9=goto_dest
+  flags=0
+  [HTXE1B14385/breakstack]
+    _=field
+    flags=0
+    sig=PPc
+  [HTXE1B14385/breakstackpos]
+    _=field
+    flags=0
+    sig=i
+  [HTXE1B14385/cap]
+    _=field
+    flags=0
+    sig=i
+  [HTXE1B14385/cf_n]
+    _=field
+    flags=0
+    sig=Pc
+  [HTXE1B14385/cf_ty]
+    _=field
+    flags=0
+    sig=PXBCCX_Node_s;
+  [HTXE1B14385/contstack]
+    _=field
+    flags=0
+    sig=PPc
+  [HTXE1B14385/contstackpos]
+    _=field
+    flags=0
+    sig=i
+  [HTXE1B14385/cur_idx]
+    _=field
+    flags=0
+    sig=i
+  [HTXE1B14385/cur_ns]
+    _=field
+    flags=0
+    sig=Pc
+  [HTXE1B14385/cur_struct]
+    _=field
+    flags=0
+    sig=Pc
+  [HTXE1B14385/goto_dest]
+    _=field
+    flags=131072
+    sig=PPh
+  [HTXE1B14385/goto_name]
+    _=field
+    flags=0
+    sig=PPc
+  [HTXE1B14385/i_cap]
+    _=field
+    flags=0
+    sig=i
+  [HTXE1B14385/i_cx_p]
+    _=field
+    flags=0
+    sig=i
+  [HTXE1B14385/ip]
+    _=field
+    flags=0
+    sig=Pc
+  [HTXE1B14385/ipe]
+    _=field
+    flags=0
+    sig=Pc
+  [HTXE1B14385/ips]
+    _=field
+    flags=0
+    sig=Pc
+  [HTXE1B14385/lbl_dest]
+    _=field
+    flags=131072
+    sig=PPh
+  [HTXE1B14385/lbl_name]
+    _=field
+    flags=0
+    sig=PPc
+  [HTXE1B14385/lvl]
+    _=field
+    flags=0
+    sig=i
+  [HTXE1B14385/n_goto]
+    _=field
+    flags=0
+    sig=i
+  [HTXE1B14385/n_lbl]
+    _=field
+    flags=0
+    sig=i
+  [HTXE1B14385/olvl]
+    _=field
+    flags=0
+    sig=i
+  [HTXE1B14385/structs]
+    _=field
+    flags=0
+    sig=PXBCCX_Node_s;
+  [HTXE1B14385/tail]
+    _=field
+    flags=0
+    sig=i
+  [HTXE1B14385/types]
+    _=field
+    flags=0
+    sig=PXBCCX_Node_s;
+[LC_ID]
+  _=type
+  sig=XtagLC_ID;
+[LPLC_ID]
+  _=type
+  sig=PXtagLC_ID;
+[_CRT_DOUBLE]
+  _=type
+  sig=XHTXBDC3B4DC;
+[_CRT_FLOAT]
+  _=type
+  sig=XHTX340E0F5D;
+[_LDBL12]
+  _=type
+  sig=XHTX2D7DBC5F;
+[_LDOUBLE]
+  _=type
+  sig=XHTXDD7477AA;
+[_LONGDOUBLE]
+  _=type
+  sig=XHTX0B4BF21C;
+[___mb_cur_max_func]
+  _=func
+  sig=()i
+[___mb_cur_max_l_func]
+  _=func
+  sig=(PXlocaleinfo_struct;)i
+[__argc]
+  _=func
+  sig=i
+[__argv]
+  _=func
+  sig=PPc
+[__doserrno]
+  _=func
+  sig=()Pm
+[__iob_func]
+  _=func
+  sig=()PX_iobuf;
+[__lc_time_data]
+  _=struct
+  flags=0
+[__mb_cur_max]
+  _=func
+  sig=i
+[__swprintf_l]
+  _=func
+  sig=(PtPtPXlocaleinfo_struct;z)i
+[__sys_errlist]
+  _=func
+  sig=()PPc
+[__sys_nerr]
+  _=func
+  sig=()Pi
+[__time32_t]
+  _=type
+  sig=l
+[__time64_t]
+  _=type
+  sig=Uint64;
+[__vswprintf_l]
+  _=func
+  sig=(PtPtPXlocaleinfo_struct;Pc)i
+[__wargv]
+  _=func
+  sig=PPt
+[__wcserror]
+  _=func
+  sig=(Pt)Pt
+[__wcserror_s]
+  _=func
+  sig=(PtjPt)i
+[_abs64]
+  _=func
+  sig=(Uint64;)Uint64;
+[_aligned_free]
+  _=func
+  sig=(Pv)v
+[_aligned_malloc]
+  _=func
+  sig=(jj)Pv
+[_aligned_msize]
+  _=func
+  sig=(Pvjj)j
+[_aligned_offset_malloc]
+  _=func
+  sig=(jjj)Pv
+[_aligned_offset_realloc]
+  _=func
+  sig=(Pvjjj)Pv
+[_aligned_offset_recalloc]
+  _=func
+  sig=(Pvjjjj)Pv
+[_aligned_realloc]
+  _=func
+  sig=(Pvjj)Pv
+[_aligned_recalloc]
+  _=func
+  sig=(Pvjjj)Pv
+[_atodbl]
+  _=func
+  sig=(PXHTXBDC3B4DC;Pc)i
+[_atodbl_l]
+  _=func
+  sig=(PXHTXBDC3B4DC;PcPXlocaleinfo_struct;)i
+[_atof_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;)d
+[_atoflt]
+  _=func
+  sig=(PXHTX340E0F5D;Pc)i
+[_atoflt_l]
+  _=func
+  sig=(PXHTX340E0F5D;PcPXlocaleinfo_struct;)i
+[_atoi64]
+  _=func
+  sig=(Pc)Uint64;
+[_atoi64_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;)Uint64;
+[_atoi_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;)i
+[_atol_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;)l
+[_atoldbl]
+  _=func
+  sig=(PXHTXDD7477AA;Pc)i
+[_atoldbl_l]
+  _=func
+  sig=(PXHTXDD7477AA;PcPXlocaleinfo_struct;)i
+[_beep]
+  _=func
+  sig=(jj)v
+[_byteswap_uint64]
+  _=func
+  sig=(Uint64;)Uint64;
+[_byteswap_ulong]
+  _=func
+  sig=(m)m
+[_byteswap_ushort]
+  _=func
+  sig=(t)t
+[_div_t]
+  _=struct
+  field.0=quot
+  field.1=rem
+  flags=0
+  [_div_t/quot]
+    _=field
+    flags=0
+    sig=i
+  [_div_t/rem]
+    _=field
+    flags=0
+    sig=i
+[_dupenv_s]
+  _=func
+  sig=(PPcPjPc)i
+[_ecvt]
+  _=func
+  sig=(diPiPi)Pc
+[_ecvt_s]
+  _=func
+  sig=(PcjdiPiPi)i
+[_environ]
+  _=func
+  sig=PPc
+[_errno]
+  _=func
+  sig=()Pi
+[_exit]
+  _=func
+  sig=(i)v
+[_fclose_nolock]
+  _=func
+  sig=(PX_iobuf;)i
+[_fcloseall]
+  _=func
+  sig=()i
+[_fcvt]
+  _=func
+  sig=(diPiPi)Pc
+[_fcvt_s]
+  _=func
+  sig=(PcjdiPiPi)i
+[_fdopen]
+  _=func
+  sig=(iPc)PX_iobuf;
+[_fflush_nolock]
+  _=func
+  sig=(PX_iobuf;)i
+[_fgetchar]
+  _=func
+  sig=()i
+[_fgetwc_nolock]
+  _=func
+  sig=(PX_iobuf;)t
+[_fgetwchar]
+  _=func
+  sig=()t
+[_filbuf]
+  _=func
+  sig=(PX_iobuf;)i
+[_fileno]
+  _=func
+  sig=(PX_iobuf;)i
+[_flsbuf]
+  _=func
+  sig=(iPX_iobuf;)i
+[_flushall]
+  _=func
+  sig=()i
+[_fmode]
+  _=func
+  sig=i
+[_fprintf_l]
+  _=func
+  sig=(PX_iobuf;PcPXlocaleinfo_struct;z)i
+[_fprintf_p]
+  _=func
+  sig=(PX_iobuf;Pcz)i
+[_fprintf_p_l]
+  _=func
+  sig=(PX_iobuf;PcPXlocaleinfo_struct;z)i
+[_fprintf_s_l]
+  _=func
+  sig=(PX_iobuf;PcPXlocaleinfo_struct;z)i
+[_fputchar]
+  _=func
+  sig=(i)i
+[_fputwc_nolock]
+  _=func
+  sig=(tPX_iobuf;)t
+[_fputwchar]
+  _=func
+  sig=(t)t
+[_fread_nolock]
+  _=func
+  sig=(PvjjPX_iobuf;)j
+[_fread_nolock_s]
+  _=func
+  sig=(PvjjjPX_iobuf;)j
+[_fscanf_l]
+  _=func
+  sig=(PX_iobuf;PcPXlocaleinfo_struct;z)i
+[_fscanf_s_l]
+  _=func
+  sig=(PX_iobuf;PcPXlocaleinfo_struct;z)i
+[_fseek_nolock]
+  _=func
+  sig=(PX_iobuf;li)i
+[_fseeki64]
+  _=func
+  sig=(PX_iobuf;Uint64;i)i
+[_fseeki64_nolock]
+  _=func
+  sig=(PX_iobuf;Uint64;i)i
+[_fsopen]
+  _=func
+  sig=(PcPci)PX_iobuf;
+[_ftell_nolock]
+  _=func
+  sig=(PX_iobuf;)l
+[_ftelli64]
+  _=func
+  sig=(PX_iobuf;)Uint64;
+[_ftelli64_nolock]
+  _=func
+  sig=(PX_iobuf;)Uint64;
+[_fullpath]
+  _=func
+  sig=(PcPcj)Pc
+[_fwprintf_l]
+  _=func
+  sig=(PX_iobuf;PtPXlocaleinfo_struct;z)i
+[_fwprintf_p]
+  _=func
+  sig=(PX_iobuf;Ptz)i
+[_fwprintf_p_l]
+  _=func
+  sig=(PX_iobuf;PtPXlocaleinfo_struct;z)i
+[_fwprintf_s_l]
+  _=func
+  sig=(PX_iobuf;PtPXlocaleinfo_struct;z)i
+[_fwrite_nolock]
+  _=func
+  sig=(PvjjPX_iobuf;)j
+[_fwscanf_l]
+  _=func
+  sig=(PX_iobuf;PtPXlocaleinfo_struct;z)i
+[_fwscanf_s_l]
+  _=func
+  sig=(PX_iobuf;PtPXlocaleinfo_struct;z)i
+[_gcvt]
+  _=func
+  sig=(diPc)Pc
+[_gcvt_s]
+  _=func
+  sig=(Pcjdi)i
+[_get_doserrno]
+  _=func
+  sig=(Pm)i
+[_get_errno]
+  _=func
+  sig=(Pi)i
+[_get_fmode]
+  _=func
+  sig=(Pi)i
+[_get_invalid_parameter_handler]
+  _=func
+  sig=()PXHSGB91CB661;
+[_get_output_format]
+  _=func
+  sig=()j
+[_get_pgmptr]
+  _=func
+  sig=(PPc)i
+[_get_printf_count_output]
+  _=func
+  sig=()i
+[_get_purecall_handler]
+  _=func
+  sig=()PXHSG0009ECF5;
+[_get_wpgmptr]
+  _=func
+  sig=(PPt)i
+[_getmaxstdio]
+  _=func
+  sig=()i
+[_getw]
+  _=func
+  sig=(PX_iobuf;)i
+[_getws]
+  _=func
+  sig=(Pt)Pt
+[_getws_s]
+  _=func
+  sig=(Ptj)Pt
+[_i64toa]
+  _=func
+  sig=(Uint64;Pci)Pc
+[_i64toa_s]
+  _=func
+  sig=(Uint64;Pcji)i
+[_i64tow]
+  _=func
+  sig=(Uint64;Pti)Pt
+[_i64tow_s]
+  _=func
+  sig=(Uint64;Ptji)i
+[_invalid_parameter_handler]
+  _=type
+  sig=PXHSGB91CB661;
+[_iobuf]
+  _=struct
+  field.0=_ptr
+  field.1=_cnt
+  field.2=_base
+  field.3=_flag
+  field.4=_file
+  field.5=_charbuf
+  field.6=_bufsiz
+  field.7=_tmpfname
+  flags=0
+  [_iobuf/_base]
+    _=field
+    flags=0
+    sig=Pc
+  [_iobuf/_bufsiz]
+    _=field
+    flags=0
+    sig=i
+  [_iobuf/_charbuf]
+    _=field
+    flags=0
+    sig=i
+  [_iobuf/_cnt]
+    _=field
+    flags=0
+    sig=i
+  [_iobuf/_file]
+    _=field
+    flags=0
+    sig=i
+  [_iobuf/_flag]
+    _=field
+    flags=0
+    sig=i
+  [_iobuf/_ptr]
+    _=field
+    flags=0
+    sig=Pc
+  [_iobuf/_tmpfname]
+    _=field
+    flags=0
+    sig=Pc
+[_itoa]
+  _=func
+  sig=(iPci)Pc
+[_itoa_s]
+  _=func
+  sig=(iPcji)i
+[_itow]
+  _=func
+  sig=(iPti)Pt
+[_itow_s]
+  _=func
+  sig=(iPtji)i
+[_ldiv_t]
+  _=struct
+  field.0=quot
+  field.1=rem
+  flags=0
+  [_ldiv_t/quot]
+    _=field
+    flags=0
+    sig=l
+  [_ldiv_t/rem]
+    _=field
+    flags=0
+    sig=l
+[_locale_t]
+  _=type
+  sig=PXlocaleinfo_struct;
+[_locale_tstruct]
+  _=type
+  sig=Xlocaleinfo_struct;
+[_lrotl]
+  _=func
+  sig=(mi)m
+[_lrotr]
+  _=func
+  sig=(mi)m
+[_ltoa]
+  _=func
+  sig=(lPci)Pc
+[_ltoa_s]
+  _=func
+  sig=(lPcji)i
+[_ltow]
+  _=func
+  sig=(lPti)Pt
+[_ltow_s]
+  _=func
+  sig=(lPtji)i
+[_makepath]
+  _=func
+  sig=(PcPcPcPcPc)v
+[_makepath_s]
+  _=func
+  sig=(PcjPcPcPcPc)i
+[_mblen_l]
+  _=func
+  sig=(PcjPXlocaleinfo_struct;)i
+[_mbstowcs_l]
+  _=func
+  sig=(PtPcjPXlocaleinfo_struct;)j
+[_mbstowcs_s_l]
+  _=func
+  sig=(PjPtjPcjPXlocaleinfo_struct;)i
+[_mbstrlen]
+  _=func
+  sig=(Pc)j
+[_mbstrlen_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;)j
+[_mbstrnlen]
+  _=func
+  sig=(Pcj)j
+[_mbstrnlen_l]
+  _=func
+  sig=(PcjPXlocaleinfo_struct;)j
+[_mbtowc_l]
+  _=func
+  sig=(PtPcjPXlocaleinfo_struct;)i
+[_memccpy]
+  _=func
+  sig=(PvPvij)Pv
+[_memicmp]
+  _=func
+  sig=(PvPvj)i
+[_memicmp_l]
+  _=func
+  sig=(PvPvjPXlocaleinfo_struct;)i
+[_onexit]
+  _=func
+  sig=(PXHSG0009ECE8;)PXHSG0009ECE8;
+[_onexit_t]
+  _=type
+  sig=PXHSG0009ECE8;
+[_pclose]
+  _=func
+  sig=(PX_iobuf;)i
+[_pgmptr]
+  _=func
+  sig=Pc
+[_popen]
+  _=func
+  sig=(PcPc)PX_iobuf;
+[_printf_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;z)i
+[_printf_p]
+  _=func
+  sig=(Pcz)i
+[_printf_p_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;z)i
+[_printf_s_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;z)i
+[_purecall_handler]
+  _=type
+  sig=PXHSG0009ECF5;
+[_putenv]
+  _=func
+  sig=(Pc)i
+[_putenv_s]
+  _=func
+  sig=(PcPc)i
+[_putw]
+  _=func
+  sig=(iPX_iobuf;)i
+[_putws]
+  _=func
+  sig=(Pt)i
+[_recalloc]
+  _=func
+  sig=(Pvjj)Pv
+[_rmtmp]
+  _=func
+  sig=()i
+[_rotl]
+  _=func
+  sig=(ji)j
+[_rotl64]
+  _=func
+  sig=(Uint64;i)Uint64;
+[_rotr]
+  _=func
+  sig=(ji)j
+[_rotr64]
+  _=func
+  sig=(Uint64;i)Uint64;
+[_scanf_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;z)i
+[_scanf_s_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;z)i
+[_scprintf]
+  _=func
+  sig=(Pcz)i
+[_scprintf_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;z)i
+[_scprintf_p]
+  _=func
+  sig=(Pcz)i
+[_scprintf_p_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;z)i
+[_scwprintf]
+  _=func
+  sig=(Ptz)i
+[_scwprintf_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;z)i
+[_scwprintf_p]
+  _=func
+  sig=(Ptz)i
+[_scwprintf_p_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;z)i
+[_searchenv]
+  _=func
+  sig=(PcPcPc)v
+[_searchenv_s]
+  _=func
+  sig=(PcPcPcj)i
+[_set_abort_behavior]
+  _=func
+  sig=(jj)j
+[_set_doserrno]
+  _=func
+  sig=(m)i
+[_set_errno]
+  _=func
+  sig=(i)i
+[_set_error_mode]
+  _=func
+  sig=(i)i
+[_set_fmode]
+  _=func
+  sig=(i)i
+[_set_invalid_parameter_handler]
+  _=func
+  sig=(PXHSGB91CB661;)PXHSGB91CB661;
+[_set_output_format]
+  _=func
+  sig=(j)j
+[_set_printf_count_output]
+  _=func
+  sig=(i)i
+[_set_purecall_handler]
+  _=func
+  sig=(PXHSG0009ECF5;)PXHSG0009ECF5;
+[_seterrormode]
+  _=func
+  sig=(i)v
+[_setmaxstdio]
+  _=func
+  sig=(i)i
+[_sleep]
+  _=func
+  sig=(m)v
+[_snprintf]
+  _=func
+  sig=(PcjPcz)i
+[_snprintf_c]
+  _=func
+  sig=(PcjPcz)i
+[_snprintf_c_l]
+  _=func
+  sig=(PcjPcPXlocaleinfo_struct;z)i
+[_snprintf_l]
+  _=func
+  sig=(PcjPcPXlocaleinfo_struct;z)i
+[_snprintf_s]
+  _=func
+  sig=(PcjjPcz)i
+[_snprintf_s_l]
+  _=func
+  sig=(PcjjPcPXlocaleinfo_struct;z)i
+[_snscanf]
+  _=func
+  sig=(PcjPcz)i
+[_snscanf_l]
+  _=func
+  sig=(PcjPcPXlocaleinfo_struct;z)i
+[_snscanf_s]
+  _=func
+  sig=(PcjPcz)i
+[_snscanf_s_l]
+  _=func
+  sig=(PcjPcPXlocaleinfo_struct;z)i
+[_snwprintf]
+  _=func
+  sig=(PtjPtz)i
+[_snwprintf_l]
+  _=func
+  sig=(PtjPtPXlocaleinfo_struct;z)i
+[_snwprintf_s]
+  _=func
+  sig=(PtjjPtz)i
+[_snwprintf_s_l]
+  _=func
+  sig=(PtjjPtPXlocaleinfo_struct;z)i
+[_snwscanf]
+  _=func
+  sig=(PtjPtz)i
+[_snwscanf_l]
+  _=func
+  sig=(PtjPtPXlocaleinfo_struct;z)i
+[_snwscanf_s]
+  _=func
+  sig=(PtjPtz)i
+[_snwscanf_s_l]
+  _=func
+  sig=(PtjPtPXlocaleinfo_struct;z)i
+[_splitpath]
+  _=func
+  sig=(PcPcPcPcPc)v
+[_splitpath_s]
+  _=func
+  sig=(PcPcjPcjPcjPcj)i
+[_sprintf_l]
+  _=func
+  sig=(PcPcPXlocaleinfo_struct;z)i
+[_sprintf_p]
+  _=func
+  sig=(PcjPcz)i
+[_sprintf_p_l]
+  _=func
+  sig=(PcjPcPXlocaleinfo_struct;z)i
+[_sprintf_s_l]
+  _=func
+  sig=(PcjPcPXlocaleinfo_struct;z)i
+[_sscanf_l]
+  _=func
+  sig=(PcPcPXlocaleinfo_struct;z)i
+[_sscanf_s_l]
+  _=func
+  sig=(PcPcPXlocaleinfo_struct;z)i
+[_strcmpi]
+  _=func
+  sig=(PcPc)i
+[_strcoll_l]
+  _=func
+  sig=(PcPcPXlocaleinfo_struct;)i
+[_strdup]
+  _=func
+  sig=(Pc)Pc
+[_strerror]
+  _=func
+  sig=(Pc)Pc
+[_strerror_s]
+  _=func
+  sig=(PcjPc)i
+[_stricmp]
+  _=func
+  sig=(PcPc)i
+[_stricmp_l]
+  _=func
+  sig=(PcPcPXlocaleinfo_struct;)i
+[_stricoll]
+  _=func
+  sig=(PcPc)i
+[_stricoll_l]
+  _=func
+  sig=(PcPcPXlocaleinfo_struct;)i
+[_strlwr]
+  _=func
+  sig=(Pc)Pc
+[_strlwr_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;)Pc
+[_strlwr_s]
+  _=func
+  sig=(Pcj)i
+[_strlwr_s_l]
+  _=func
+  sig=(PcjPXlocaleinfo_struct;)i
+[_strncoll]
+  _=func
+  sig=(PcPcj)i
+[_strncoll_l]
+  _=func
+  sig=(PcPcjPXlocaleinfo_struct;)i
+[_strnicmp]
+  _=func
+  sig=(PcPcj)i
+[_strnicmp_l]
+  _=func
+  sig=(PcPcjPXlocaleinfo_struct;)i
+[_strnicoll]
+  _=func
+  sig=(PcPcj)i
+[_strnicoll_l]
+  _=func
+  sig=(PcPcjPXlocaleinfo_struct;)i
+[_strnset]
+  _=func
+  sig=(Pcij)Pc
+[_strnset_s]
+  _=func
+  sig=(Pcjij)i
+[_strrev]
+  _=func
+  sig=(Pc)Pc
+[_strset]
+  _=func
+  sig=(Pci)Pc
+[_strset_s]
+  _=func
+  sig=(Pcji)i
+[_strtod_l]
+  _=func
+  sig=(PcPPcPXlocaleinfo_struct;)d
+[_strtoi64]
+  _=func
+  sig=(PcPPci)Uint64;
+[_strtoi64_l]
+  _=func
+  sig=(PcPPciPXlocaleinfo_struct;)Uint64;
+[_strtol_l]
+  _=func
+  sig=(PcPPciPXlocaleinfo_struct;)l
+[_strtoui64]
+  _=func
+  sig=(PcPPci)Uint64;
+[_strtoui64_l]
+  _=func
+  sig=(PcPPciPXlocaleinfo_struct;)Uint64;
+[_strtoul_l]
+  _=func
+  sig=(PcPPciPXlocaleinfo_struct;)m
+[_strupr]
+  _=func
+  sig=(Pc)Pc
+[_strupr_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;)Pc
+[_strupr_s]
+  _=func
+  sig=(Pcj)i
+[_strupr_s_l]
+  _=func
+  sig=(PcjPXlocaleinfo_struct;)i
+[_strxfrm_l]
+  _=func
+  sig=(PcPcjPXlocaleinfo_struct;)j
+[_swab]
+  _=func
+  sig=(PcPci)v
+[_swprintf]
+  _=func
+  sig=(PtPtz)i
+[_swprintf_c]
+  _=func
+  sig=(PtjPtz)i
+[_swprintf_c_l]
+  _=func
+  sig=(PtjPtPXlocaleinfo_struct;z)i
+[_swprintf_p]
+  _=func
+  sig=(PtjPtz)i
+[_swprintf_p_l]
+  _=func
+  sig=(PtjPtPXlocaleinfo_struct;z)i
+[_swprintf_s_l]
+  _=func
+  sig=(PtjPtPXlocaleinfo_struct;z)i
+[_swscanf_l]
+  _=func
+  sig=(PtPtPXlocaleinfo_struct;z)i
+[_swscanf_s_l]
+  _=func
+  sig=(PtPtPXlocaleinfo_struct;z)i
+[_tempnam]
+  _=func
+  sig=(PcPc)Pc
+[_ui64toa]
+  _=func
+  sig=(Uint64;Pci)Pc
+[_ui64toa_s]
+  _=func
+  sig=(Uint64;Pcji)i
+[_ui64tow]
+  _=func
+  sig=(Uint64;Pti)Pt
+[_ui64tow_s]
+  _=func
+  sig=(Uint64;Ptji)i
+[_ultoa]
+  _=func
+  sig=(mPci)Pc
+[_ultoa_s]
+  _=func
+  sig=(mPcji)i
+[_ultow]
+  _=func
+  sig=(mPti)Pt
+[_ultow_s]
+  _=func
+  sig=(mPtji)i
+[_ungetc_nolock]
+  _=func
+  sig=(iPX_iobuf;)i
+[_ungetwc_nolock]
+  _=func
+  sig=(tPX_iobuf;)t
+[_unlink]
+  _=func
+  sig=(Pc)i
+[_vfprintf_l]
+  _=func
+  sig=(PX_iobuf;PcPXlocaleinfo_struct;Pc)i
+[_vfprintf_p]
+  _=func
+  sig=(PX_iobuf;PcPc)i
+[_vfprintf_p_l]
+  _=func
+  sig=(PX_iobuf;PcPXlocaleinfo_struct;Pc)i
+[_vfprintf_s_l]
+  _=func
+  sig=(PX_iobuf;PcPXlocaleinfo_struct;Pc)i
+[_vfwprintf_l]
+  _=func
+  sig=(PX_iobuf;PtPXlocaleinfo_struct;Pc)i
+[_vfwprintf_p]
+  _=func
+  sig=(PX_iobuf;PtPc)i
+[_vfwprintf_p_l]
+  _=func
+  sig=(PX_iobuf;PtPXlocaleinfo_struct;Pc)i
+[_vfwprintf_s_l]
+  _=func
+  sig=(PX_iobuf;PtPXlocaleinfo_struct;Pc)i
+[_vprintf_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;Pc)i
+[_vprintf_p]
+  _=func
+  sig=(PcPc)i
+[_vprintf_p_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;Pc)i
+[_vprintf_s_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;Pc)i
+[_vscprintf]
+  _=func
+  sig=(PcPc)i
+[_vscprintf_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;Pc)i
+[_vscprintf_p]
+  _=func
+  sig=(PcPc)i
+[_vscprintf_p_l]
+  _=func
+  sig=(PcPXlocaleinfo_struct;Pc)i
+[_vscwprintf]
+  _=func
+  sig=(PtPc)i
+[_vscwprintf_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;Pc)i
+[_vscwprintf_p]
+  _=func
+  sig=(PtPc)i
+[_vscwprintf_p_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;Pc)i
+[_vsnprintf]
+  _=func
+  sig=(PcjPcPc)i
+[_vsnprintf_c]
+  _=func
+  sig=(PcjPcPc)i
+[_vsnprintf_c_l]
+  _=func
+  sig=(PcjPcPXlocaleinfo_struct;Pc)i
+[_vsnprintf_l]
+  _=func
+  sig=(PcjPcPXlocaleinfo_struct;Pc)i
+[_vsnprintf_s]
+  _=func
+  sig=(PcjjPcPc)i
+[_vsnprintf_s_l]
+  _=func
+  sig=(PcjjPcPXlocaleinfo_struct;Pc)i
+[_vsnwprintf]
+  _=func
+  sig=(PtjPtPc)i
+[_vsnwprintf_l]
+  _=func
+  sig=(PtjPtPXlocaleinfo_struct;Pc)i
+[_vsnwprintf_s]
+  _=func
+  sig=(PtjjPtPc)i
+[_vsnwprintf_s_l]
+  _=func
+  sig=(PtjjPtPXlocaleinfo_struct;Pc)i
+[_vsprintf_l]
+  _=func
+  sig=(PcPcPXlocaleinfo_struct;Pc)i
+[_vsprintf_p]
+  _=func
+  sig=(PcjPcPc)i
+[_vsprintf_p_l]
+  _=func
+  sig=(PcjPcPXlocaleinfo_struct;Pc)i
+[_vsprintf_s_l]
+  _=func
+  sig=(PcjPcPXlocaleinfo_struct;Pc)i
+[_vswprintf]
+  _=func
+  sig=(PtPtPc)i
+[_vswprintf_c]
+  _=func
+  sig=(PtjPtPc)i
+[_vswprintf_c_l]
+  _=func
+  sig=(PtjPtPXlocaleinfo_struct;Pc)i
+[_vswprintf_p]
+  _=func
+  sig=(PtjPtPc)i
+[_vswprintf_p_l]
+  _=func
+  sig=(PtjPtPXlocaleinfo_struct;Pc)i
+[_vswprintf_s_l]
+  _=func
+  sig=(PtjPtPXlocaleinfo_struct;Pc)i
+[_vwprintf_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;Pc)i
+[_vwprintf_p]
+  _=func
+  sig=(PtPc)i
+[_vwprintf_p_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;Pc)i
+[_vwprintf_s_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;Pc)i
+[_wcscoll_l]
+  _=func
+  sig=(PtPtPXlocaleinfo_struct;)i
+[_wcsdup]
+  _=func
+  sig=(Pt)Pt
+[_wcserror]
+  _=func
+  sig=(i)Pt
+[_wcserror_s]
+  _=func
+  sig=(Ptji)i
+[_wcsicmp]
+  _=func
+  sig=(PtPt)i
+[_wcsicmp_l]
+  _=func
+  sig=(PtPtPXlocaleinfo_struct;)i
+[_wcsicoll]
+  _=func
+  sig=(PtPt)i
+[_wcsicoll_l]
+  _=func
+  sig=(PtPtPXlocaleinfo_struct;)i
+[_wcslwr]
+  _=func
+  sig=(Pt)Pt
+[_wcslwr_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;)Pt
+[_wcslwr_s]
+  _=func
+  sig=(Ptj)i
+[_wcslwr_s_l]
+  _=func
+  sig=(PtjPXlocaleinfo_struct;)i
+[_wcsncoll]
+  _=func
+  sig=(PtPtj)i
+[_wcsncoll_l]
+  _=func
+  sig=(PtPtjPXlocaleinfo_struct;)i
+[_wcsnicmp]
+  _=func
+  sig=(PtPtj)i
+[_wcsnicmp_l]
+  _=func
+  sig=(PtPtjPXlocaleinfo_struct;)i
+[_wcsnicoll]
+  _=func
+  sig=(PtPtj)i
+[_wcsnicoll_l]
+  _=func
+  sig=(PtPtjPXlocaleinfo_struct;)i
+[_wcsnset]
+  _=func
+  sig=(Pttj)Pt
+[_wcsnset_s]
+  _=func
+  sig=(Ptjtj)i
+[_wcsrev]
+  _=func
+  sig=(Pt)Pt
+[_wcsset]
+  _=func
+  sig=(Ptt)Pt
+[_wcsset_s]
+  _=func
+  sig=(Ptjt)i
+[_wcstod_l]
+  _=func
+  sig=(PtPPtPXlocaleinfo_struct;)d
+[_wcstoi64]
+  _=func
+  sig=(PtPPti)Uint64;
+[_wcstoi64_l]
+  _=func
+  sig=(PtPPtiPXlocaleinfo_struct;)Uint64;
+[_wcstol_l]
+  _=func
+  sig=(PtPPtiPXlocaleinfo_struct;)l
+[_wcstombs_l]
+  _=func
+  sig=(PcPtjPXlocaleinfo_struct;)j
+[_wcstombs_s_l]
+  _=func
+  sig=(PjPcjPtjPXlocaleinfo_struct;)i
+[_wcstoui64]
+  _=func
+  sig=(PtPPti)Uint64;
+[_wcstoui64_l]
+  _=func
+  sig=(PtPPtiPXlocaleinfo_struct;)Uint64;
+[_wcstoul_l]
+  _=func
+  sig=(PtPPtiPXlocaleinfo_struct;)m
+[_wcsupr]
+  _=func
+  sig=(Pt)Pt
+[_wcsupr_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;)Pt
+[_wcsupr_s]
+  _=func
+  sig=(Ptj)i
+[_wcsupr_s_l]
+  _=func
+  sig=(PtjPXlocaleinfo_struct;)i
+[_wcsxfrm_l]
+  _=func
+  sig=(PtPtjPXlocaleinfo_struct;)j
+[_wctomb_l]
+  _=func
+  sig=(PctPXlocaleinfo_struct;)i
+[_wctomb_s_l]
+  _=func
+  sig=(PiPcjtPXlocaleinfo_struct;)i
+[_wdupenv_s]
+  _=func
+  sig=(PPtPjPt)i
+[_wenviron]
+  _=func
+  sig=PPt
+[_wfdopen]
+  _=func
+  sig=(iPt)PX_iobuf;
+[_wfopen]
+  _=func
+  sig=(PtPt)PX_iobuf;
+[_wfopen_s]
+  _=func
+  sig=(PPX_iobuf;PtPt)i
+[_wfreopen]
+  _=func
+  sig=(PtPtPX_iobuf;)PX_iobuf;
+[_wfreopen_s]
+  _=func
+  sig=(PPX_iobuf;PtPtPX_iobuf;)i
+[_wfsopen]
+  _=func
+  sig=(PtPti)PX_iobuf;
+[_wfullpath]
+  _=func
+  sig=(PtPtj)Pt
+[_wgetenv]
+  _=func
+  sig=(Pt)Pt
+[_wgetenv_s]
+  _=func
+  sig=(PjPtjPt)i
+[_wmakepath]
+  _=func
+  sig=(PtPtPtPtPt)v
+[_wmakepath_s]
+  _=func
+  sig=(PtjPtPtPtPt)i
+[_wperror]
+  _=func
+  sig=(Pt)v
+[_wpgmptr]
+  _=func
+  sig=Pt
+[_wpopen]
+  _=func
+  sig=(PtPt)PX_iobuf;
+[_wprintf_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;z)i
+[_wprintf_p]
+  _=func
+  sig=(Ptz)i
+[_wprintf_p_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;z)i
+[_wprintf_s_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;z)i
+[_wputenv]
+  _=func
+  sig=(Pt)i
+[_wputenv_s]
+  _=func
+  sig=(PtPt)i
+[_wremove]
+  _=func
+  sig=(Pt)i
+[_wscanf_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;z)i
+[_wscanf_s_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;z)i
+[_wsearchenv]
+  _=func
+  sig=(PtPtPt)v
+[_wsearchenv_s]
+  _=func
+  sig=(PtPtPtj)i
+[_wsplitpath]
+  _=func
+  sig=(PtPtPtPtPt)v
+[_wsplitpath_s]
+  _=func
+  sig=(PtPtjPtjPtjPtj)i
+[_wsystem]
+  _=func
+  sig=(Pt)i
+[_wtempnam]
+  _=func
+  sig=(PtPt)Pt
+[_wtmpnam]
+  _=func
+  sig=(Pt)Pt
+[_wtmpnam_s]
+  _=func
+  sig=(Ptj)i
+[_wtof]
+  _=func
+  sig=(Pt)d
+[_wtof_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;)d
+[_wtoi]
+  _=func
+  sig=(Pt)i
+[_wtoi64]
+  _=func
+  sig=(Pt)Uint64;
+[_wtoi64_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;)Uint64;
+[_wtoi_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;)i
+[_wtol]
+  _=func
+  sig=(Pt)l
+[_wtol_l]
+  _=func
+  sig=(PtPXlocaleinfo_struct;)l
+[abort]
+  _=func
+  sig=()v
+[abs]
+  _=func
+  sig=(i)i
+[atexit]
+  _=func
+  sig=(PXHSG0009ECF5;)i
+[atof]
+  _=func
+  sig=(Pc)d
+[atoi]
+  _=func
+  sig=(Pc)i
+[atol]
+  _=func
+  sig=(Pc)l
+[bgbcc_free]
+  _=func
+  sig=(Pv)v
+[bgbcc_loadfile]
+  _=func
+  sig=(PcPi)Pc
+[bgbcc_malloc]
+  _=func
+  sig=(i)Pv
+[bgbcc_print]
+  _=func
+  sig=(PXHTXE1B14385;Pcz)v
+[bgbcc_puts]
+  _=func
+  sig=(PXHTXE1B14385;Pc)v
+[bgbcc_ralloc]
+  _=func
+  sig=(i)Pv
+[bgbcc_rstradd]
+  _=func
+  sig=(PcPc)Pc
+[bgbcc_rstradd2]
+  _=func
+  sig=(PcPcPc)Pc
+[bgbcc_rstradd3]
+  _=func
+  sig=(PcPcPcPc)Pc
+[bgbcc_rstrdup]
+  _=func
+  sig=(Pc)Pc
+[bgbcc_split]
+  _=func
+  sig=(Pc)PPc
+[bgbcc_strdup]
+  _=func
+  sig=(Pc)Pc
+[bgbcc_strdup_i]
+  _=func
+  sig=(Pc)i
+[bgbcc_strtab_i]
+  _=func
+  sig=(i)Pc
+[bgbcc_tmalloc]
+  _=func
+  sig=(Pci)Pv
+[bsearch]
+  _=func
+  sig=(PvPvjjPXHSGAF5FFB34;)Pv
+[bsearch_s]
+  _=func
+  sig=(PvPvjjPXHSG52F8095A;Pv)Pv
+[byte]
+  _=type
+  sig=h
+[calloc]
+  _=func
+  sig=(jj)Pv
+[ccAddInclude]
+  _=func
+  sig=(Pc)v
+[ccAddLibrary]
+  _=func
+  sig=(Pc)v
+[ccAddSource]
+  _=func
+  sig=(Pc)v
+[clearerr]
+  _=func
+  sig=(PX_iobuf;)v
+[clearerr_s]
+  _=func
+  sig=(PX_iobuf;)i
+[div]
+  _=func
+  sig=(ii)X_div_t;
+[div_t]
+  _=type
+  sig=X_div_t;
+[dyllMetaBindKey]
+  _=func
+  sig=(PcPc)v
+[dyllMetaCommit]
+  _=func
+  sig=()v
+[dyllMetaInit]
+  _=func
+  sig=()v
+[dyllMetaLookupKey]
+  _=func
+  sig=(Pc)Pc
+[errcode]
+  _=type
+  sig=i
+[errno_t]
+  _=type
+  sig=i
+[exit]
+  _=func
+  sig=(i)v
+[fclose]
+  _=func
+  sig=(PX_iobuf;)i
+[feof]
+  _=func
+  sig=(PX_iobuf;)i
+[ferror]
+  _=func
+  sig=(PX_iobuf;)i
+[fflush]
+  _=func
+  sig=(PX_iobuf;)i
+[fgetc]
+  _=func
+  sig=(PX_iobuf;)i
+[fgetpos]
+  _=func
+  sig=(PX_iobuf;Px)i
+[fgets]
+  _=func
+  sig=(PciPX_iobuf;)Pc
+[fgetwc]
+  _=func
+  sig=(PX_iobuf;)t
+[fgetws]
+  _=func
+  sig=(PtiPX_iobuf;)Pt
+[fopen]
+  _=func
+  sig=(PcPc)PX_iobuf;
+[fopen_s]
+  _=func
+  sig=(PPX_iobuf;PcPc)i
+[fpos_t]
+  _=type
+  sig=x
+[fprintf]
+  _=func
+  sig=(PX_iobuf;Pcz)i
+[fprintf_s]
+  _=func
+  sig=(PX_iobuf;Pcz)i
+[fputc]
+  _=func
+  sig=(iPX_iobuf;)i
+[fputs]
+  _=func
+  sig=(PcPX_iobuf;)i
+[fputwc]
+  _=func
+  sig=(tPX_iobuf;)t
+[fputws]
+  _=func
+  sig=(PtPX_iobuf;)i
+[fread]
+  _=func
+  sig=(PvjjPX_iobuf;)j
+[fread_s]
+  _=func
+  sig=(PvjjjPX_iobuf;)j
+[free]
+  _=func
+  sig=(Pv)v
+[freopen]
+  _=func
+  sig=(PcPcPX_iobuf;)PX_iobuf;
+[freopen_s]
+  _=func
+  sig=(PPX_iobuf;PcPcPX_iobuf;)i
+[fscanf]
+  _=func
+  sig=(PX_iobuf;Pcz)i
+[fscanf_s]
+  _=func
+  sig=(PX_iobuf;Pcz)i
+[fseek]
+  _=func
+  sig=(PX_iobuf;li)i
+[fsetpos]
+  _=func
+  sig=(PX_iobuf;Px)i
+[ftell]
+  _=func
+  sig=(PX_iobuf;)l
+[fwprintf]
+  _=func
+  sig=(PX_iobuf;Ptz)i
+[fwprintf_s]
+  _=func
+  sig=(PX_iobuf;Ptz)i
+[fwrite]
+  _=func
+  sig=(PvjjPX_iobuf;)j
+[fwscanf]
+  _=func
+  sig=(PX_iobuf;Ptz)i
+[fwscanf_s]
+  _=func
+  sig=(PX_iobuf;Ptz)i
+[getc]
+  _=func
+  sig=(PX_iobuf;)i
+[getchar]
+  _=func
+  sig=()i
+[getenv]
+  _=func
+  sig=(Pc)Pc
+[getenv_s]
+  _=func
+  sig=(PjPcjPc)i
+[gets]
+  _=func
+  sig=(Pc)Pc
+[gets_s]
+  _=func
+  sig=(Pcj)Pc
+[getwc]
+  _=func
+  sig=(PX_iobuf;)t
+[getwchar]
+  _=func
+  sig=()t
+[intptr_t]
+  _=type
+  sig=i
+[labs]
+  _=func
+  sig=(l)l
+[lconv]
+  _=struct
+  flags=0
+[ldiv]
+  _=func
+  sig=(ll)X_ldiv_t;
+[ldiv_t]
+  _=type
+  sig=X_ldiv_t;
+[localeinfo_struct]
+  _=struct
+  field.0=locinfo
+  field.1=mbcinfo
+  flags=0
+  [localeinfo_struct/locinfo]
+    _=field
+    flags=0
+    sig=PXthreadlocaleinfostruct;
+  [localeinfo_struct/mbcinfo]
+    _=field
+    flags=0
+    sig=PXthreadmbcinfostruct;
+[main]
+  _=func
+  sig=(iPc0PPc)i
+[malloc]
+  _=func
+  sig=(j)Pv
+[mblen]
+  _=func
+  sig=(Pcj)i
+[mbstowcs]
+  _=func
+  sig=(PtPcj)j
+[mbstowcs_s]
+  _=func
+  sig=(PjPtjPcj)i
+[mbtowc]
+  _=func
+  sig=(PtPcj)i
+[memchr]
+  _=func
+  sig=(Pvij)Pv
+[memcmp]
+  _=func
+  sig=(PvPvj)i
+[memcpy]
+  _=func
+  sig=(PvPvj)Pv
+[memcpy_s]
+  _=func
+  sig=(PvjPvj)i
+[memmove]
+  _=func
+  sig=(PvPvj)Pv
+[memmove_s]
+  _=func
+  sig=(PvjPvj)i
+[memset]
+  _=func
+  sig=(Pvij)Pv
+[perror]
+  _=func
+  sig=(Pc)v
+[printf]
+  _=func
+  sig=(Pcz)i
+[printf_s]
+  _=func
+  sig=(Pcz)i
+[pthreadlocinfo]
+  _=type
+  sig=PXthreadlocaleinfostruct;
+[pthreadmbcinfo]
+  _=type
+  sig=PXthreadmbcinfostruct;
+[ptrdiff_t]
+  _=type
+  sig=i
+[putc]
+  _=func
+  sig=(iPX_iobuf;)i
+[putchar]
+  _=func
+  sig=(i)i
+[puts]
+  _=func
+  sig=(Pc)i
+[putwc]
+  _=func
+  sig=(tPX_iobuf;)t
+[putwchar]
+  _=func
+  sig=(t)t
+[qsort]
+  _=func
+  sig=(PvjjPXHSGAF5FFB34;)v
+[qsort_s]
+  _=func
+  sig=(PvjjPXHSG52F8095A;Pv)v
+[rand]
+  _=func
+  sig=()i
+[realloc]
+  _=func
+  sig=(Pvj)Pv
+[remove]
+  _=func
+  sig=(Pc)i
+[rename]
+  _=func
+  sig=(PcPc)i
+[rewind]
+  _=func
+  sig=(PX_iobuf;)v
+[rsize_t]
+  _=type
+  sig=j
+[s16]
+  _=type
+  sig=s
+[s32]
+  _=type
+  sig=i
+[s64]
+  _=type
+  sig=x
+[scanf]
+  _=func
+  sig=(Pcz)i
+[scanf_s]
+  _=func
+  sig=(Pcz)i
+[setbuf]
+  _=func
+  sig=(PX_iobuf;Pc)v
+[setvbuf]
+  _=func
+  sig=(PX_iobuf;Pcij)i
+[size_t]
+  _=type
+  sig=j
+[sprintf]
+  _=func
+  sig=(PcPcz)i
+[sprintf_s]
+  _=func
+  sig=(PcjPcz)i
+[srand]
+  _=func
+  sig=(j)v
+[sscanf]
+  _=func
+  sig=(PcPcz)i
+[sscanf_s]
+  _=func
+  sig=(PcPcz)i
+[strcat]
+  _=func
+  sig=(PcPc)Pc
+[strcat_s]
+  _=func
+  sig=(PcjPc)i
+[strchr]
+  _=func
+  sig=(Pci)Pc
+[strcmp]
+  _=func
+  sig=(PcPc)i
+[strcoll]
+  _=func
+  sig=(PcPc)i
+[strcpy]
+  _=func
+  sig=(PcPc)Pc
+[strcpy_s]
+  _=func
+  sig=(PcjPc)i
+[strcspn]
+  _=func
+  sig=(PcPc)j
+[strerror]
+  _=func
+  sig=(i)Pc
+[strerror_s]
+  _=func
+  sig=(Pcji)i
+[strlen]
+  _=func
+  sig=(Pc)j
+[strncat]
+  _=func
+  sig=(PcPcj)Pc
+[strncat_s]
+  _=func
+  sig=(PcjPcj)i
+[strncmp]
+  _=func
+  sig=(PcPcj)i
+[strncpy]
+  _=func
+  sig=(PcPcj)Pc
+[strncpy_s]
+  _=func
+  sig=(PcjPcj)i
+[strnlen]
+  _=func
+  sig=(Pcj)j
+[strpbrk]
+  _=func
+  sig=(PcPc)Pc
+[strrchr]
+  _=func
+  sig=(Pci)Pc
+[strspn]
+  _=func
+  sig=(PcPc)j
+[strstr]
+  _=func
+  sig=(PcPc)Pc
+[strtod]
+  _=func
+  sig=(PcPPc)d
+[strtok]
+  _=func
+  sig=(PcPc)Pc
+[strtok_s]
+  _=func
+  sig=(PcPcPPc)Pc
+[strtol]
+  _=func
+  sig=(PcPPci)l
+[strtoul]
+  _=func
+  sig=(PcPPci)m
+[strxfrm]
+  _=func
+  sig=(PcPcj)j
+[swprintf_s]
+  _=func
+  sig=(PtjPtz)i
+[swscanf]
+  _=func
+  sig=(PtPtz)i
+[swscanf_s]
+  _=func
+  sig=(PtPtz)i
+[system]
+  _=func
+  sig=(Pc)i
+[tagLC_ID]
+  _=struct
+  field.0=wLanguage
+  field.1=wCountry
+  field.2=wCodePage
+  flags=0
+  [tagLC_ID/wCodePage]
+    _=field
+    flags=131072
+    sig=t
+  [tagLC_ID/wCountry]
+    _=field
+    flags=131072
+    sig=t
+  [tagLC_ID/wLanguage]
+    _=field
+    flags=131072
+    sig=t
+[threadlocaleinfostruct]
+  _=struct
+  field.0=refcount
+  field.1=lc_codepage
+  field.10=lconv_mon_refcount
+  field.11=lconv
+  field.12=ctype1_refcount
+  field.13=ctype1
+  field.14=pctype
+  field.15=pclmap
+  field.16=pcumap
+  field.17=lc_time_curr
+  field.2=lc_collate_cp
+  field.3=lc_handle
+  field.4=lc_id
+  field.5=lc_category
+  field.6=lc_clike
+  field.7=mb_cur_max
+  field.8=lconv_intl_refcount
+  field.9=lconv_num_refcount
+  flags=0
+  [threadlocaleinfostruct/ctype1]
+    _=field
+    flags=131072
+    sig=Pt
+  [threadlocaleinfostruct/ctype1_refcount]
+    _=field
+    flags=0
+    sig=Pi
+  [threadlocaleinfostruct/lc_category]
+    _=field
+    flags=0
+    sig=XHTXA57571C6;6
+  [threadlocaleinfostruct/lc_clike]
+    _=field
+    flags=0
+    sig=i
+  [threadlocaleinfostruct/lc_codepage]
+    _=field
+    flags=131072
+    sig=j
+  [threadlocaleinfostruct/lc_collate_cp]
+    _=field
+    flags=131072
+    sig=j
+  [threadlocaleinfostruct/lc_handle]
+    _=field
+    flags=131072
+    sig=m6
+  [threadlocaleinfostruct/lc_id]
+    _=field
+    flags=0
+    sig=XtagLC_ID;6
+  [threadlocaleinfostruct/lc_time_curr]
+    _=field
+    flags=0
+    sig=PX__lc_time_data;
+  [threadlocaleinfostruct/lconv]
+    _=field
+    flags=0
+    sig=PXlconv;
+  [threadlocaleinfostruct/lconv_intl_refcount]
+    _=field
+    flags=0
+    sig=Pi
+  [threadlocaleinfostruct/lconv_mon_refcount]
+    _=field
+    flags=0
+    sig=Pi
+  [threadlocaleinfostruct/lconv_num_refcount]
+    _=field
+    flags=0
+    sig=Pi
+  [threadlocaleinfostruct/mb_cur_max]
+    _=field
+    flags=0
+    sig=i
+  [threadlocaleinfostruct/pclmap]
+    _=field
+    flags=655360
+    sig=Ph
+  [threadlocaleinfostruct/pctype]
+    _=field
+    flags=655360
+    sig=Pt
+  [threadlocaleinfostruct/pcumap]
+    _=field
+    flags=655360
+    sig=Ph
+  [threadlocaleinfostruct/refcount]
+    _=field
+    flags=0
+    sig=i
+[threadlocinfo]
+  _=type
+  sig=Xthreadlocaleinfostruct;
+[threadmbcinfostruct]
+  _=struct
+  flags=0
+[time_t]
+  _=type
+  sig=Uint64;
+[tmpfile]
+  _=func
+  sig=()PX_iobuf;
+[tmpfile_s]
+  _=func
+  sig=(PPX_iobuf;)i
+[tmpnam]
+  _=func
+  sig=(Pc)Pc
+[tmpnam_s]
+  _=func
+  sig=(Pcj)i
+[u16]
+  _=type
+  sig=t
+[u32]
+  _=type
+  sig=j
+[u64]
+  _=type
+  sig=y
+[uintptr_t]
+  _=type
+  sig=j
+[ungetc]
+  _=func
+  sig=(iPX_iobuf;)i
+[ungetwc]
+  _=func
+  sig=(tPX_iobuf;)t
+[va_list]
+  _=type
+  sig=Pc
+[vfprintf]
+  _=func
+  sig=(PX_iobuf;PcPc)i
+[vfprintf_s]
+  _=func
+  sig=(PX_iobuf;PcPc)i
+[vfwprintf]
+  _=func
+  sig=(PX_iobuf;PtPc)i
+[vfwprintf_s]
+  _=func
+  sig=(PX_iobuf;PtPc)i
+[vprintf]
+  _=func
+  sig=(PcPc)i
+[vprintf_s]
+  _=func
+  sig=(PcPc)i
+[vsnprintf]
+  _=func
+  sig=(PcjPcPc)i
+[vsnprintf_s]
+  _=func
+  sig=(PcjjPcPc)i
+[vsprintf]
+  _=func
+  sig=(PcPcPc)i
+[vsprintf_s]
+  _=func
+  sig=(PcjPcPc)i
+[vswprintf_s]
+  _=func
+  sig=(PtjPtPc)i
+[vwprintf]
+  _=func
+  sig=(PtPc)i
+[vwprintf_s]
+  _=func
+  sig=(PtPc)i
+[wchar_t]
+  _=type
+  sig=t
+[wcscat]
+  _=func
+  sig=(PtPt)Pt
+[wcscat_s]
+  _=func
+  sig=(PtjPt)i
+[wcschr]
+  _=func
+  sig=(Ptt)Pt
+[wcscmp]
+  _=func
+  sig=(PtPt)i
+[wcscoll]
+  _=func
+  sig=(PtPt)i
+[wcscpy]
+  _=func
+  sig=(PtPt)Pt
+[wcscpy_s]
+  _=func
+  sig=(PtjPt)i
+[wcscspn]
+  _=func
+  sig=(PtPt)j
+[wcslen]
+  _=func
+  sig=(Pt)j
+[wcsncat]
+  _=func
+  sig=(PtPtj)Pt
+[wcsncat_s]
+  _=func
+  sig=(PtjPtj)i
+[wcsncmp]
+  _=func
+  sig=(PtPtj)i
+[wcsncpy]
+  _=func
+  sig=(PtPtj)Pt
+[wcsncpy_s]
+  _=func
+  sig=(PtjPtj)i
+[wcsnlen]
+  _=func
+  sig=(Ptj)j
+[wcspbrk]
+  _=func
+  sig=(PtPt)Pt
+[wcsrchr]
+  _=func
+  sig=(Ptt)Pt
+[wcsspn]
+  _=func
+  sig=(PtPt)j
+[wcsstr]
+  _=func
+  sig=(PtPt)Pt
+[wcstod]
+  _=func
+  sig=(PtPPt)d
+[wcstok]
+  _=func
+  sig=(PtPt)Pt
+[wcstok_s]
+  _=func
+  sig=(PtPtPPt)Pt
+[wcstol]
+  _=func
+  sig=(PtPPti)l
+[wcstombs]
+  _=func
+  sig=(PcPtj)j
+[wcstombs_s]
+  _=func
+  sig=(PjPcjPtj)i
+[wcstoul]
+  _=func
+  sig=(PtPPti)m
+[wcsxfrm]
+  _=func
+  sig=(PtPtj)j
+[wctomb]
+  _=func
+  sig=(Pct)i
+[wctomb_s]
+  _=func
+  sig=(PiPcjt)i
+[wctype_t]
+  _=type
+  sig=t
+[wint_t]
+  _=type
+  sig=t
+[wprintf]
+  _=func
+  sig=(Ptz)i
+[wprintf_s]
+  _=func
+  sig=(Ptz)i
+[wscanf]
+  _=func
+  sig=(Ptz)i
+[wscanf_s]
+  _=func
+  sig=(Ptz)i

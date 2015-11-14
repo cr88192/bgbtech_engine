@@ -1,0 +1,11 @@
+package bsvm.util;
+
+public class EmptyStackException extends Exception
+{
+private static final long serialVersionUID = 5084686378493302095L;
+
+public EmptyStackException()
+	{ super(); }
+public EmptyStackException(String s)
+	{ super(s); }
+}

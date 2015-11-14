@@ -1,0 +1,22 @@
+{
+ "classname" "worldspawn"
+ "sky" "sky06"
+}
+{
+ "classname" "info_player_start"
+ "origin" "0 0 4096"
+ "angle" "360"
+}
+{
+ "classname" "random_terrain"
+ "terrain_type" "acid"
+// "origin" "16 -188 -2280"
+// "boxsize" "16 16 1"
+}
+{
+ "classname" "light_sunrel"
+ "origin" "0 0 2048"
+ "light" "10000"
+// "_color" "1 0.66 0.33"
+ "_color" "1 0.80 0.64"
+}

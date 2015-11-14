@@ -1,0 +1,115 @@
+CFLAGS = /Iinclude /I../include /DLIBBMID_C
+CFLAGS_DLL = /Iinclude /I../include /DLIBBMID_C /DBGBMID_DLL /O2 /Zi \
+	/arch:SSE2 /MP \
+	../libvecmath.lib ../bgbdy.lib ../bgbgc.lib winmm.lib
+CFLAGS_APP = /Iinclude /I../include libbgbmid.lib /Zi \
+	../libvecmath.lib ../bgbdy.lib ../bgbgc.lib winmm.lib
+
+BMID_SRCS = \
+	base/bm_util.c \
+	base/bm_wave.c \
+	base/bm_patch.c \
+	base/bm_synth.c \
+	base/bm_stream.c \
+	base/bm_mix.c \
+	base/bm_voxenv.c \
+	base/bm_file.c \
+	base/bm_api.c \
+	\
+	base/bm_codec.c \
+	base/bmac_adpcm.c \
+	\
+	base/snd_stub.c \
+	base/snd_win2.c \
+	base/sys_generic.c \
+	\
+	base/bm_rec_stt.c \
+	base/snd_rec_win.c \
+	base/bmsr/bmsr_match.c \
+	\
+	base/bm_btac_filter3.c \
+	base/bm_btac_filter4.c \
+	base/bm_btac_filter5.c \
+	base/bm_btac_sample.c \
+	base/bm_pack.c \
+	\
+	base/btac2_common.c \
+	base/btac2_encode.c \
+	base/btac2_decode.c \
+	base/btac2_dct.c \
+	\
+	base/mpglib/layer1.c \
+	base/mpglib/layer2.c \
+	base/mpglib/common.c \
+	base/mpglib/dct64_i386.c \
+	base/mpglib/decode_i386.c \
+	base/mpglib/layer3.c \
+	base/mpglib/tabinit.c \
+	base/mpglib/interface.c \
+	\
+	base/tts/tts_lpcfir.c \
+	base/tts/bsg_bitstream.c \
+	base/tts/bsg_bsgen.c \
+	base/tts/bsg_lexitem.c \
+	base/tts/bsg_samp.c \
+	base/tts/bsg_wavez.c \
+
+#	base/tts/bsg_pack.c \
+
+BMID_OBJS = $(BMID_SRCS:.c=.obj)
+
+all: includes libs apps
+
+%.obj: %.c
+	cl $(CFLAGS) /c /Fo$@ $<
+
+autohead.exe: autohead.c
+	cl /Feautohead.exe autohead.c
+
+include/bgbmid_auto.h: autohead.exe $(BMID_SRCS)
+	autohead.exe -api BMID_API $(BMID_SRCS) > include/bgbmid_auto.h
+
+# libbgbmid.lib: $(BMID_OBJS)
+#	lib /out:libbgbmid.lib $(BMID_OBJS)
+
+libbgbmid.dll: include/bgbmid_auto.h $(BMID_SRCS)
+	cl /LD /Felibbgbmid.dll $(BMID_SRCS) $(CFLAGS_DLL)
+
+dmid2.exe: dmid2.c libbgbmid.dll
+	cl /Iinclude/ /Fedmid2.exe dmid2.c $(CFLAGS_APP)
+
+mid2asc.exe: mid2asc.c libbgbmid.dll
+	cl /Iinclude/ /Femid2asc.exe mid2asc.c $(CFLAGS_APP)
+
+asc2mid.exe: asc2mid.c libbgbmid.dll
+	cl /Iinclude/ /Feasc2mid.exe asc2mid.c $(CFLAGS_APP)
+
+tfmid.exe: tfmid0.c libbgbmid.dll
+	cl /Iinclude/ /Fetfmid.exe tfmid0.c $(CFLAGS_APP)
+
+btac0.exe: btac0.c libbgbmid.dll
+	cl /Iinclude/ /Febtac0.exe btac0.c $(CFLAGS_APP)
+
+bmpack0.exe: bmpack0.c libbgbmid.dll
+	cl /Iinclude/ /Febmpack0.exe bmpack0.c $(CFLAGS_APP)
+
+bmtts0.exe: bmtts0.c libbgbmid.dll
+	cl /Iinclude/ /Febmtts0.exe bmtts0.c $(CFLAGS_APP)
+
+bsgen3.exe: bsgen3.c libbgbmid.dll
+	cl /Iinclude/ /Febsgen3.exe bsgen3.c $(CFLAGS_APP)
+
+bm_filt1bpp.exe: bm_filt1bpp.c libbgbmid.dll
+	cl /Iinclude/ /Febm_filt1bpp.exe bm_filt1bpp.c $(CFLAGS_APP)
+
+bm_bsg1bpp.exe: bm_bsg1bpp.c libbgbmid.dll
+	cl /Iinclude/ /Febm_bsg1bpp.exe bm_bsg1bpp.c $(CFLAGS_APP)
+
+clean:
+
+includes:
+libs: libbgbmid.dll
+apps: dmid2.exe mid2asc.exe asc2mid.exe tfmid.exe btac0.exe \
+	bmpack0.exe bmtts0.exe bsgen3.exe \
+	bm_filt1bpp.exe bm_bsg1bpp.exe
+

@@ -1,0 +1,14 @@
+$sprite 13
+$spr_frame 0  64 64  128 128  sprites/s_explo2_0.pcx
+$spr_frame 1  64 64  128 128  sprites/s_explo2_1.pcx
+$spr_frame 2  64 64  128 128  sprites/s_explo2_2.pcx
+$spr_frame 3  64 64  128 128  sprites/s_explo2_3.pcx
+$spr_frame 4  64 64  128 128  sprites/s_explo2_4.pcx
+$spr_frame 5  64 64  128 128  sprites/s_explo2_5.pcx
+$spr_frame 6  64 64  128 128  sprites/s_explo2_6.pcx
+$spr_frame 7  64 64  128 128  sprites/s_explo2_7.pcx
+$spr_frame 8  64 64  128 128  sprites/s_explo2_8.pcx
+$spr_frame 9  64 64  128 128  sprites/s_explo2_9.pcx
+$spr_frame 10  64 64  128 128  sprites/s_explo2_10.pcx
+$spr_frame 11  64 64  128 128  sprites/s_explo2_11.pcx
+$spr_frame 12  64 64  128 128  sprites/s_explo2_12.pcx

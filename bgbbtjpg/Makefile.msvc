@@ -1,0 +1,47 @@
+BUILD=.
+MKSUF=.msvc
+LIBSUF=.lib
+DLLSUF=.dll
+EXESUF=.exe
+OBJSUF=.obj
+BINSUF=.exe
+DLLPF=
+
+CC_OUTEXE=cl /Fe
+CC_OUTDLL=cl /LD /Fe
+CC_OUTOBJ=cl /c /Fo
+CC_OUTTOOL=cl /Fe
+
+ARCH=$(shell autohead.exe -idarch)
+
+# CFLAGS=/Iinclude /I../include /Z7 /arch:SSE2
+# CFLAGS=/Iinclude /I../include /O2 /Ox /arch:SSE2
+CFLAGS=/Iinclude /I../include /O2 /Zi /arch:SSE2
+DLL_CFLAGS=$(CFLAGS) /DBGBBTJ_DLL
+LDFLAGS=bgbbtjpg.lib ../bgbdy.lib ../bgbgc.lib ../bgbasm.lib ../zpack.lib
+DLL_LDFLAGS=../bgbdy.lib ../bgbgc.lib ../bgbasm.lib ../zpack.lib \
+	../libbgbmid.lib vfw32.lib
+
+DLL_CFLAGS_VFWDRV=$(CFLAGS) /DBGBBTJ_DLL /DBGBBTJ_VFWDRV /DBGBBTJ_DRV
+DLL_LDFLAGS_VFWDRV=winmm.lib user32.lib driverproc.def
+
+DLL_CFLAGS_VLCDRV=$(CFLAGS) \
+	/Ivlc_sdk/include \
+	/Ivlc_sdk/include/vlc \
+	/Ivlc_sdk/include/vlc/plugins \
+	/DBGBBTJ_DLL /DBGBBTJ_VLCDRV /DBGBBTJ_DRV /D__PLUGIN__
+DLL_LDFLAGS_VLCDRV=winmm.lib user32.lib \
+	vlc_sdk/lib/libvlc.lib vlc_sdk/lib/libvlccore.lib
+
+TGT_LIBS= \
+	$(DLLPF)bgbtjvfw$(DLLSUF)
+
+#	libbgbtjvlc_plugin$(DLLSUF)
+
+DRV_LIBS= \
+	$(DLLPF)bgbtjvfw$(ARCH)$(DLLSUF)
+
+#	libbgbtjvlc_plugin$(ARCH)$(DLLSUF)
+
+include Makefile.inc
+

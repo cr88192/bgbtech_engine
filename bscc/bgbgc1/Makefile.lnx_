@@ -1,0 +1,53 @@
+ARCH_CFLAGS=
+CFLAGS=-g -pg -Iinclude -I../include -Werror-implicit-function-declaration $(ARCH_CFLAGS)
+# CFLAGS=-O3 -Iinclude -Werror-implicit-function-declaration $(ARCH_CFLAGS)
+EXE=.bin
+
+LDFLAGS = -L. -lbgbgc -L.. -lbgbasm -lzpack -lm -ldl -lpthread
+
+#	base/memory2_2.o \
+
+OBJS=\
+	base/int128.o \
+	base/th_api.o \
+	base/th_queue.o \
+	\
+	base/mm_lobj.o \
+	base/mm_cell.o \
+	base/mm_cons.o \
+	base/mm_gc.o \
+	base/mm_space.o \
+	base/objtype.o \
+	\
+	base/bgbgc_api.o
+
+SRCS=$(OBJS:.o=.c)
+
+DEP_HDRS=\
+	include/bgbgc_auto.h
+
+all: libs apps
+
+FORCE:
+
+libs: libbgbgc.a
+apps: gctst0$(EXE)
+
+includes: $(DEP_HDRS)
+
+include/bgbgc_auto.h: autohead$(EXE) $(SRCS)
+	./autohead$(EXE) $(SRCS) > include/bgbgc_auto.h
+
+libbgbgc.a: $(DEP_HDRS) $(OBJS)
+	ar -cr libbgbgc.a $(OBJS)
+
+autohead$(EXE): autohead.c
+	$(CC) -o autohead$(EXE) autohead.c
+
+
+gctst0$(EXE): gctst0.c $(DEP_HDRS) $(OBJS)
+	$(CC) -o gctst0$(EXE) gctst0.c $(CFLAGS) $(LDFLAGS)
+
+clean:
+	rm -rf $(shell find -name \*.a)
+	rm -rf $(shell find -name \*.o)

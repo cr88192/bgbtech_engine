@@ -1,0 +1,307 @@
+RPNIL ByteCode
+(Idea Spec)
+
+Basic Idea:
+Bytecode does not use statically defined opcodes, rather, opcodes will index an "opcode" table which will name and identify the encoding for the opcode in question;
+The format will be based on tables, which may also be defined flexibly;
+The container format will store a collection of named lumps.
+
+Multi-byte numbers will be interpreted in Big-Endian ordering.
+
+
+VLI (32-bit):
+Bytes					Value
+00..7F				00000000..0000007F
+80 00..BF FF			00000080..00003FFF
+C0 0000..DF FFFF			00004000..001FFFFF
+E0 000000..EF FFFFFF		00200000..0FFFFFFF
+F0 00000000..F0 FFFFFFFF	10000000..FFFFFFFF
+
+VLI (64-bit):
+F1 00000000..F7 FFFFFFFF		000001'00000000..000007'FFFFFFFF
+F8 0000000000..FB FFFFFFFFFF		000008'00000000..0003FF'FFFFFFFF
+FC 000000000000..FD FFFFFFFFFFFF	000400'00000000..01FFFF'FFFFFFFF
+
+FE 00000000000000..FE FFFFFF'FFFFFFFF	00020000'00000000..00FFFFFF'FFFFFFFF
+FF 0000000000000000..FF 7FFFFFFF'FFFFFFFF	01000000'00000000..7FFFFFFF'FFFFFFFF
+FF80 00000000'00000000..FF80 FFFFFFFF'FFFFFFFF	80000000'00000000..FFFFFFFF'FFFFFFFF
+
+Overlong encodings are possible, but should not be used without a good reason. This scheme need not be arbitrarily limited to 32 bits, and actually extends cleanly to 64 or 128 bits, and beyond (albeit past 64 bits and multiple length prefix bytes are needed).
+
+
+VLI: Generic VLI, arbitrary size;
+VLI16/32/64/128: VLI with a given value-size limit.
+
+SVLI:
+Also coded as a VLI, but may include sign.
+Typically, an SVLI will fold the sign to the LSB, with a pattern of:
+0=0, 1=-1, 2=1, 3=-2, 4=2, ...
+
+
+TRice:
+TRice, or "Transposed Rice", will store a value in the low-order bits of an integer. A TRice value will be assigned an N=value, which will tell how many bits follow the prefix. The prefix will begin in the LSB, and will consist of 0+ 1s terminated by a 0. The value-bits following the prefix will not be transposed.
+
+The value of the integer will then be located above the TRice code.
+
+TRice code of N=3:
+0000=0, 0010=1, 0100=2, 0110=3,
+1000=4, ..., 1110=7,
+00001=8, 00101=9, ...
+000011=16, 001011=17, ...
+
+TRice will be qualified further:
+TRiceX_Y will be an X bit integer with N=Y;
+VTRice_Y will be a VLI with N=Y.
+
+
+
+
+Names:
+
+NAME will be a special type of DWORD, and will encode a FOURCC value. Unlike other multi-byte numbers, for sake of semantics, it will be encoded in big-endian.
+
+Name values < 0x20000000 will encode indices into the strings table;
+Name values >= 0x20000000 will be FOURCC values or short strings.
+
+Notes:
+Ordinary FOURCC values may not include any characters less than ' ' (0x20), or greater than '~' (0x7E). However, a FOURCC may contain 0x00 characters when encoding a short string, provided this is not the first character, and no non-zero values follow.
+
+For example, 0x61000000 will encode the string "a", and 0x0000003D will refer to whatever character is at offset 0x3D in the strings table.
+
+The reason for using big-endian ordering is that otherwise it would be ambiguous between a short string and a string-table reference.
+
+STRS and SIGS will be essentially the same as name, but will imply their use (string or signature).
+
+VNAME, VSTRS, and VSIGS will be VLI-coded string indices.
+
+
+Signatures:
+
+See Metadata Spec.
+
+Extensions to Signatures:
+Aa, -, VLI ArgIndex(Code)
+Ab, BLOB(Table), VBLOB(Code)
+Ac,,
+Ad,,
+Ae,,
+Af,,
+Ag, GUID(Table), VGUID(Code)
+Ah,,
+Ai, DWORD(Table), SVLI32(Code)
+Aj,,
+Ak,,
+Al, -, VLI LocalIndex(Code)
+Am, Memref (Code)
+An, NAME(Table), VNAME(Code)
+Ao, OWORD(Table), SVLI128(Code)
+Ap,,
+Aq,,
+Ar, SIGS(Table), VSIG(Code)
+As, STRS(Table), VSTRS(Code)
+At, TREF(Table), VTREF(Code)
+Au,-,-
+Aw, WORD(Table), SVLI16(Code)
+Ax, QWORD(Table), SVLI64(Code)
+Ay,,
+Az,,
+
+
+Table References:
+
+TableRefs (TREF) will be defined in relation to the Tables table.
+
+TREF=0 will be a special NULL value (rather than a reference to the Tables table).
+
+TREF16 values will be encoded as TRice16_3;
+TREF32 values will be encoded as TRice32_3;
+TREF64 values will be encoded as TRice64_3.
+
+VTREF will be a VLI-coded TREF (used in bytecode), and will be encoded as VTRice_3.
+
+
+Structures and Tables:
+
+RBC_Header 
+{
+FOURCC magic0;	//first magic number "RBC0"
+DWORD offs_dir;	//offset of directory
+WORD sz_dir;	//size of directory (entries)
+WORD hash;		//hash for the header
+FOURCC magic1;	//second magic "0CBR"
+}
+
+Notes:
+The reason for there being 2 magics and a hash is so that the possibility of a false match can be more easily ruled out if bytecode objects are embedded in another file.
+
+All offsets (for lumps/...) will be relative to the start of this header.
+
+
+RBC_DirEnt
+{
+NAME name;		//Name or FOURCC
+BYTE enc;		//lump encoding, 0=raw, 8=Deflate, 9=Deflate64
+BYTE _resv;		//reserved
+WORD flags;		//lump flags
+DWORD offset;	//offset of lump
+DWORD size;		//(compressed) size of lump
+}
+
+Name values of 0 will encode unused lumps.
+
+Flags:
+0001: Must Understand
+0002: Safe To Copy
+000C: Ref Bits: 0=32/def, 1=64, 2=16, 3=VLI/resv
+0010: Enc Size (dSize>(4*cSize))
+
+Ref-Bits will allow indicating non-default reference sizes within tables.
+This will effect: NAME, STRS, SIGS, BLOB, CODE, TREF, LSTS, ...
+
+Possible:
+If 64-bit, all of these types will expand to 64-bits. NAME and similar may store up to 8 chars. This may be used as a means to avoid overflow.
+
+If 16-bit, these will be compacted to 16 bits. NAME and similar will only point into the strings table. This may be used if all references are small.
+
+Also Possible:
+No 16-bit refs.
+
+
+Enc: 1=MP, 2=LZSS
+Consider mini-packing. MP would be a very simplistic compressor, where a bitmap is used to indicate whether or not a byte is 0.
+
+Each bitmap bit would use 0=zero, 1=non-zero, and would apply to 7 data bytes (bit 7 always being 0 for plain MP bytes).
+If bit 7 is set:
+	0x80: Reserved
+	0x81: RLE Run (0x81, Len, Val).
+	0x82.0x87: Reserved
+	0x88..0xBF: RLE Run of 0s (8..63 bytes)
+	0xC3..0xFF: LZ Run (3..63 bytes, 16-bit offset)
+
+
+Lumps:
+'STRS': "Strings"
+Main strings table, where each string is encoded in UTF-8 and terminated by a 0 value. Each string will be identified by its offset in this table.
+String 0 is special and is a 0-length string, whose value may be interpreted as NULL or as an empty string. String 1 is also a special 0-length string, whose value will be interpreted as an empty string.
+
+'BLOB': "Blobs"
+Encodes chunks of data, which will generally be prefixed by a size (VLI). Blobs 0 and 1 will be 0-length and follow a similar rule to strings.
+
+
+'TBLS': "Tables"
+RBC_Table
+{
+NAME name;		//lump name for table
+STRS fields;	//fields list
+SIGS sig;		//table layout (signature string)
+STRS flags;		//table-specific flags
+}
+
+Fields will be an index into the strings table, and will give a list of field names separated by ';'.
+Sig will be a signature string, and will encode the layout of a table row (sig will be NULL for unstructured tables or non-tables).
+
+Entry 0 in this table will be special, where in this case this table will define its own layout.
+
+The other tables are to be defined here. Any table which is unused may be absent from this list.
+
+
+
+'OPCD': "OpcodeDef"
+RBC_OpcodeDef
+{
+NAME name;		//name of opcode
+SIGS args;		//encodes any opcode arguments
+STRS sfis;		//may encode any stack-flow info
+LSTS attr;		//attributes
+}
+
+Name is used by the VM to know which opcode is in question for the VM. Opcodes are thus identified symbolically, rather than by having a fixed number and encoding.
+Args encodes any opcodes which are directly following, or may be NULL if no arguments are used by this opcodes. This is a signature string, and any arguments are positional rather than named.
+
+Sfis encodes any stack transitions, and takes the form '<sig>=<sig>'. A value of "=" means that this opcode does not effect the stack, and a value of NULL means that the transition is unspecified or is too complex to be encoded. Sfis is mostly intended to be of use to naive tools.
+
+Opcodes Entry 0 will be special, and should have a name "EOB". It will have neither args nor stackflow.
+
+
+
+'CODE': "Code"
+
+This encodes bytecoded blocks.
+Each opcode will be a VLI index into the OpcodeDef table.
+
+Within bytecode, opcode 0 will be reserved as an "end of block" marker, similar to the 0 byte in ASCII strings. In will not be valid to jump past this marker, and if control flow reaches it, it should be treated appropriately (in a function, this will be like a function without a return value).
+
+Like with Strings, offsets 0 and 1 are special and should have 0 opcodes. Only valid opcodes are allowed within the main body of this lump, although trailing garbage "may" be allowed following another 0-length block, which would be interpreted as an "end of lump" marker.
+
+
+'LSTS': "Lists"
+
+This lump will be an array of TREF entries, with the array being divided into "lists" each terminated by 0. Like with Strings or Code, entries 0 and 1 are reserved 0-length lists.
+
+Note that TREF's into "Lists" are valid, in which case the index identifies the list start.
+
+
+'METH': "Methods"
+RBC_Method
+{
+NAME name;		//function or method name
+SIGS sig;		//method signature
+SIGS vars;		//space for local variables
+STRS flags;		//flags string
+CODE code;		//bytecode
+LSTS attr;		//any applied attributes
+}
+
+Defines an executable method.
+Name gives the local (unqualified) name, and sig the method signature.
+Vars gives the local variables list, which will be a signature defining the number and types of local variables.
+
+Attr will contain applied attributes (such as MetaKey and MetaNode entries), which may define additional attributes.
+
+A method may be contained within a MetaNode, which will serve as its qualifying scope.
+
+The use of arg.# and var.# attributes (MetaKey) may give names for these variables. VARS entries may allow further describing the variable in question.
+
+Note:
+The main signature and vars sig don't encode the names of the variables, only their respective types. Within bytecode these will be accessed via index.
+
+
+'VARS': "Variables"
+RBC_Var
+{
+NAME name;		//variable name
+SIGS sig;		//variable sig
+TREF value;		//variable value
+STRS flags;		//flags string
+LSTS attr;		//applied attributes
+}
+
+'LITV': "LiteralValues"
+RBC_LitVal
+{
+SIGS sig;		//signature for value
+TREF data;		//data for value
+}
+
+'MTKY': "MetaKey"
+RBC_MetaKey
+{
+NAME var;		//name of var/value pair
+TREF val;		//value of var/value pair
+}
+
+'MTND': "MetaNode"
+RBC_MetaNode
+{
+NAME name;		//node name
+LSTS keys;		//var/value indices and items
+LSTS child;		//child nodes
+}
+
+MetaNodes and MetaKeys will represent a similar structure as in the metadata spec, but in this IL may directly contain items.
+
+Namespaces and Classes will be, as such, specified via meta-nodes.
+
+'GUID': "GUID"
+Array of GUIDs...
+

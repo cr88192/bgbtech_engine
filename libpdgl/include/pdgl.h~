@@ -1,0 +1,85 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+#include <GL/GL.h>
+#include <GL/GLext.h>
+
+#include <pdlib.h>
+#include <libvecmath.h>
+
+#ifndef M_PI
+#define M_PI		3.1415926535897932384626433832795
+#endif
+
+#ifndef PDGL_H
+#define PDGL_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define PDGL_FONT_BOLD		1
+#define PDGL_FONT_ITALIC	2
+#define PDGL_FONT_UNDERLINE	4
+#define PDGL_FONT_OVERLINE	8
+#define PDGL_FONT_STRIKEOUT	16
+#define PDGL_FONT_BLINK		32
+
+#include <pdgl/keys.h>
+#include <pdgl/sound.h>
+
+#include <pdgl/pdgl_avi.h>
+
+#include <pdgl/auto.h>
+#include <pdgl/tyauto.h>
+
+
+
+extern char **pdgl_argv;
+extern int pdgl_argc;
+extern int pdgl_xs, pdgl_ys;
+extern int pdgl_time, pdgl_dt;			//total and delta time (ms)
+extern ushort *pdgl_keybuf;			//keys for a given frame
+extern int pdgl_mx, pdgl_my, pdgl_mb;		//mouse pos
+extern int pdgl_lmx, pdgl_lmy, pdgl_lmb;	//last most pos
+extern int pdgl_dmx, pdgl_dmy;			//mouse pos delta
+extern int pdgl_omx, pdgl_omy;			//last non-clicking mouse pos
+extern float pdgl_dt_f;				//delta-time (float seconds)
+extern int pdgl_maxhz;				//max framerate
+
+
+extern int main_doshot;
+extern int main_kill;
+
+extern float cam_org[3];
+extern float cam_ang[3];
+extern float cam_rot[9];
+
+extern float cam_speed;
+extern float cam_width;
+extern int cam_constrain;	//constrain orientation
+extern int cam_ortho;
+
+extern float cam_lorg[3];
+extern float cam_lang[3];
+extern float cam_lrot[9];
+
+extern float cam_rt[3];
+extern float cam_fw[3];
+extern float cam_up[3];
+
+extern float cam_morg[3];
+extern float cam_mdir[3];
+extern float cam_mend[3];
+
+extern float cam_lmorg[3];
+extern float cam_lmdir[3];
+extern float cam_lmend[3];
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

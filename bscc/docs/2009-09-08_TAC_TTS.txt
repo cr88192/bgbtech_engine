@@ -1,0 +1,25 @@
+goal:
+Standalone TAC/SSA, and Tagged Type System
+
+TAC/SSA:
+
+opcode:type dst, srca, srcb
+call dst, func, args*
+callz func, args*
+
+
+TTS:
+Will be a rework/adaptation of the RPNIL/SXIL internal type system, combined with generic precise-MM like facilities;
+This system will primarily focus on facilities useful to implement a compiler, rather than those which would be useful in a dynamic VM, even as such, there may be some overlap.
+
+TTS will use a unified handle system, which will be implemented as tagged values with the low 4 bits for the tag.
+
+TTSVal
+Value<28>:Tag<4>
+
+Tags 12-15 will expand an additional 4 bits.
+
+Value<24>:TagB<4>:TagA<4>
+
+Allowing 64 types: Tag=((TagA-12)<<4)|TagB.
+Tags 0-11 will be reserved.

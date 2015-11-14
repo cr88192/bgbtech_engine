@@ -1,0 +1,277 @@
+General
+
+Apart from labels, most tokens are not case sensitive.
+
+
+General
+
+/* C-style comment */
+// line comment
+; also a line comment
+mov eax, 6	;terminal comment (needs preceding whitespace)
+
+Multiple instructions may be globbed on a single line in the following ways:
+	A semicolon absent as a space, as in:
+		push ebp; mov ebp, esp
+	A vertical bar, as in:
+		push ebp | mov ebp, esp
+
+This will not necissarily apply at present to any special forms, which may have their own parsing behavior.
+
+
+Numbers
+
+'0x'[('0'..'9')|('A'..'F')|('a'..'f')]+				Hexadecimal
+'0'['0'..'7']+								Octal
+('1'..'9')['0'..'9']*							Decimal Int
+
+('0'..'9')[('0'..'9')|('A'..'F')|('a'..'f')]+('h'|'H')	Hexadecimal
+('0'..'1')+('b'|'B')							Binary
+
+
+Strings
+
+Strings are represented similarly to C style.
+
+\xXX		Character, 0-255
+\uXXXX	Character, 0-65535
+\UXXXXXXXX	Character, 0-0x10FFFF
+
+
+Preprocessor
+
+A C-style preprocessor will be used.
+#define FOO 3
+#ifdef FOO
+...
+#else
+...
+#endif
+
+And so on...
+
+__x86__, __x86_64__
+These will identify the specific target arch (for arch-specific conditional compilation).
+
+
+Labels
+
+<name>':'
+Normal Label.
+
+<name> when followed by an operation in which a label is implied, such as db, dw, dd, or dq.
+
+'.'<name>':'
+Creates a label relative to the last normal label. This will be handled by forming a composite label such that in "foo: .bar:", the later label is treated as "foo.bar:".
+
+Labels will be treated as case sensitive.
+
+$<name>, when used in an oprand, gives an offset relative to a base Rather than the absolute address. This is a feature intended for PIC code (note: This is not used for x86-64 RIP-relative addressing).
+
+RIP-relative addresses are the default on x86-64.
+mov ecx, [foo]	;will refer to foo using rip-relative addressing
+
+@<name>, will be used to indicate absolute addressing.
+mov ecx, [@foo]	;refer to foo via an absolute address
+
+Absolute addresses will be the default for addresses given as immediates.
+
+mov ecx, [0x410]	;get the value at the address 0x410
+
+RIP-relative addressing can be specified as such:
+mov ecx, [rip-0x1f2c]	;refer to a value 0x1f2c bytes backwards
+
+
+
+Indirect Names
+
+'G.'<name>
+This is a special way of accessing names, and will indicate that the reference is indirect (for example, via a GOT or proxy or similar), rather than directly to the name in question.
+
+mov eax, [G.foo]	;loads a pointer to foo, rather than foo itself
+...
+foo dd 0
+
+This allows speeding up dynamic relinking, and will be the only allowed way to use dynamically relinking with garbage-collectable thunks.
+
+
+Definitions
+
+db, dw, dd, dq: emit 1 or more values seperated by commas, where db emits bytes, dw words, dd doublewords, and dq quadwords.
+db and dw may also accept strings, where each character in the string is encoded as a value.
+
+dd/dq may accept float values, which will be encoded in the traditional IEEE forms.
+
+resb, resw, resd, resq: fill space with some number of 0s of the respective size.
+
+<name> equ <value>
+Defines an assembler constant, where at present value may only be an integer.
+
+
+Directives
+
+.a16		Specify 16-bit assembler.
+.a32		Specify 32-bit assembler.
+.a64		Specify 64-bit assembler.
+
+.text		Direct output to text segment.
+.data		Direct output to data segment.
+
+
+section .text	Direct output to text
+section .data	Direct output to data
+section .bss	Direct output to bss (currently data)
+
+bits 16/32/64	Similar to .a16/.a32/.a64
+use16/32/64		Likewise
+
+These later forms may be wrapped in square braces, as in:
+[section .text]
+[bits 32]
+
+
+Special Forms
+
+getip <reg>
+Special form used to get the current EIP value (via a call and a pop). This value will be adjusted to point to the following instruction.
+
+getbase <reg>
+Special form used to compute the base address and load it into the register. This works similar to the above, but adds to this by adjusting the value to point to the chosen address.
+
+This can be combined with the $<name> form of labels for use in PIC code.
+
+getbase ecx
+...
+mov eax, [ecx+$str]
+push eax
+call printf
+pop edx
+
+
+setbase <name>
+Set the base used for computing relative addresses. By default the base is set to the IP at the start of the current assembly or file.
+
+Note that this name needs to be defined prior to using this special form.
+
+
+Register Naming
+
+x86-16/32:
+
+Base Regs (classic):
+Byte:		al	cl	dl	bl	ah	ch	dh	bh
+Word:		ax	cx	dx	bx	sp	bp	si	di
+DWord:	eax	ecx	edx	ebx	esp	ebp	esi	edi
+
+Base Regs (alternative):
+Byte:		r0b	r1b	r2b	r3b	r0h	r1h	r2h	r3h
+Word:		r0w	r1w	r2w	r3w	r4w	r5w	r6w	r7w
+DWord:	r0d	r1d	r2d	r3d	r4d	r5d	r6d	r7d
+
+Base Regs (alternative 2):
+Byte:		rb0	rb1	rb2	rb3	rh0	rh1	rh2	rh3
+Word:		rw0	rw1	rw2	rw3	rw4	rw5	rw6	rw7
+DWord:	rd0	rd1	rd2	rd3	rd4	rd5	rd6	rd7
+
+x86-64:
+
+Base Regs (classic):
+Byte:		al	cl	dl	bl	spl	bpl	sil	dil
+Word:		ax	cx	dx	bx	sp	bp	si	di
+DWord:	eax	ecx	edx	ebx	esp	ebp	esi	edi
+QWord:	rax	rcx	rdx	rbx	rsp	rbp	rsi	rdi
+
+Base Regs (alternative):
+Byte:		r0b	r1b	r2b	r3b	r4b	r5b	r6b	r7b
+Word:		r0w	r1w	r2w	r3w	r4w	r5w	r6w	r7w
+DWord:	r0d	r1d	r2d	r3d	r4d	r5d	r6d	r7d
+QWord:	r0	r1	r2	r3	r4	r5	r6	r7
+
+Base Regs (alternative 2):
+Byte:		rb0	rb1	rb2	rb3	rb4	rb5	rb6	rb7
+Word:		rw0	rw1	rw2	rw3	rw4	rw5	rw6	rw7
+DWord:	rd0	rd1	rd2	rd3	rd4	rd5	rd6	rd7
+QWord:	rq0	rq1	rq2	rq3	rq4	rq5	rq6	rq7
+
+Extended GPRs:
+Byte:		r8b	r9b	r10b	r11b	r12b	r13b	r14b	r15b
+Word:		r8w	r9w	r10w	r11w	r12w	r13w	r14w	r15w
+DWord:	r8d	r9d	r10d	r11d	r12d	r13d	r14d	r15d
+QWord:	r8	r9	r10	r11	r12	r13	r14	r15
+
+Extended GPRs (alternative):
+Byte:		rb8	rb9	rb10	rb11	rb12	rb13	rb14	rb15
+Word:		rw8	rw9	rw10	rw11	rw12	rw13	rw14	rw15
+DWord:	rd8	rd9	rd10	rd11	rd12	rd13	rd14	rd15
+QWord:	rq8	rq9	rq10	rq11	rq12	rq13	rq14	rq15
+
+
+As for: ah/spl, ch/bpl, dh/sil, bh/dil.
+Which is used is based on the absence or presence of a REX prefix, as otherwise the registers are encoded the same.
+
+As such, accessing spl/bpl/sil/dil will make an opcode that looks the same as the ah/ch/dh/bh form, apart from the addition of a dummy rex prefix.
+
+
+Extended GPRs (deprecated):
+Byte:		el	fl	gl	hl	il	jl	kl	ll
+Word:		ex	fx	gx	hx	ix	jx	kx	lx
+DWord:	eex	efx	egx	ehx	eix	ejx	ekx	elx
+QWord:	rex	rfx	rgx	rhx	rix	rjx	rkx	rlx
+
+Albeit, alternative possibilities exist in this latter case (an ijklmnop progression, or mimicking irregularities of the latter 4 base regs). As such, this convention will be viewed as deprecated and may be removed.
+
+
+Opcodes
+
+Opcodes will be similar to as in many other assemblers (NASM and friends in particular).
+
+reg
+imm
+label
+mem
+	'[' [<sreg>':'] (<reg|label|addr|const> | (<label> '+' <reg>))
+		['+'<reg>['*'<scale>]] ['+'<label|disp|const>] ']'
+
+A size override may be provided between an opcode and the first argument, which may be used when choosing which particular version of the opcode to encode.
+
+short		Jumps, 8-bit offset
+near16	Jumps, 16-bit offset
+near32	Jumps, 32-bit offset
+
+byte		8-bit value.
+word		16-bit value.
+dword		32-bit value.
+qword		64-bit value.
+
+In the case of jumps/calls/... to a label, the default encoding chosen is based on the current arch.
+
+At present, an immediate given as a real will be assumed to be a float (it is treated as an dword encoding the float). Likewise, in this case it will generate an implicit 'dword'.
+
+Using 'qword' will cause it to be treated as a double (only valid if the opcode can accept a 64 bit immediate).
+
+mov [foo], 2.7178			;store a float into foo
+mov dword [foo], 2.7178		;equivalent ('dword' is implied above).
+mov ecx, 3.14159265359		;likewise...
+mov cx, 3.14159265359		;invalid...
+
+
+Special Cases
+
+inc/dec reg
+
+Increment or decrement a register.
+In other assemblers, these would simply be part of inc/dec, however, in x86-64, these forms have been overloaded as the REX prefixes (and thus these forms are invalid in x86-64).
+
+'inc reg16/32' and 'dec reg16/32' will be internally renamed on x86-32, and will produce a less efficient form of the instruction on x86-64.
+
+
+movsx and movzx
+
+movsx r32, rm16
+movsx r64, rm32
+and:
+movzx r32, rm16
+movzx r64, rm32
+
+Have been renamed to movsxw and movzxw since the size of memory oprands is not known, and it wasn't really possible to distinguish them from the 8-bit forms.
+

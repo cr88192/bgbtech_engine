@@ -1,0 +1,135 @@
+JXBC (1):
+
+A statically typed bytecode.
+
+Structure:
+Frame based, first N spots are for arguments, rest for locals and temporaries. A stack is also used for intermediate expressions for passing arguments to called functions.
+
+Frame:
+0, this/class
+1: Arg 0
+2: Arg 1
+...
+N: Arg N-1
+N+1: Var 0
+...
+
+Base Type, Subtype:
+	Int (int32)
+		byte/sbyte
+		short/ushort
+		int/uint
+	Long (int64)
+	Pointer (Reference, Pointer-sized int)
+		Pointer (raw, untyped)
+		Reference (dynamically typed)
+	Float (float32)
+	Double (float64)
+	Variable (variable-width blob)
+	Wide (128-bit values, int/float/vector)
+		int128/uint128
+		float128
+
+These will be the base types. Most operations will work in terms of these.
+
+All types will take a single spot either on the stack or in locals.
+
+Rationale:
+Having types require a variable number of spots is awkward and creates a partial dependency on the arch which has these sizes.
+
+It is unlikely that any (slight) possible performance gains are worthwhile enough to justify the added inconvinience.
+
+Possible implementation options are instead to pad out types to a common width, or to use an indirect means to access wider types (such as a pointer to the data).
+
+Opcodes will be typed with a suffix which identifies the intended type of operation. Implicit conversion between subtypes is allowed, however 'conv' operations are needed between different base-types. It is not required that a value of one basetype may be accessed as another basetype, and a verifier may choose to reject code which does so.
+
+Operations may not exist for a subtype if the operation is not notably distinct from the subtype.
+
+Locals will have an assigned list of types. This will be a signature string listing all locals beyond the end of the args list. The base-type for a variable will depend on its signature type.
+
+Opcodes:
+// 0x00..0xBF: Single Byte Opcodes
+// 0xC0..0xDF: Dual Byte Opcodes
+
+Opcodes and Indices are VLI values.
+Literal Integers are SVLI.
+
+
+
+[add/sub/mul/div].[i/l/r/f/d/wi/wf]
+[cmp].[i/l/r/f/d/wi/wf]
+[and/or/xor].[i/l/r/wi]
+
+[add/sub].[pi/pl]
+
+ld.[i/l/p/f/d/w]	<idx>		;load from local variable
+	-- x
+st.[i/l/p/f/d/w]	<idx>		;store to local variable
+	x --
+ldc.[i/l/p/f/d/w] <idx>		;load constant
+	-- x
+ldc.ik <val>			;load integer constant
+
+
+Packaging:
+COFF or PE/COFF will be used as a container format, with XCall mangling being used for any exported symbol names. A modifier will be used to indicate that a function is bytecoded, and the header will serve to identify the exact bytecode in use (to allow further changes and extensions to this format, or to allow alternate bytecode formats).
+
+RPTR: Relative Pointer (32-bit)
+RSPTR: Relative Short Pointer (16 bit)
+Relative pointers are relative to themselves, and 0=NULL (this would otherwise point to themselves)
+
+
+Functions will be lists of chunks.
+
+Chunk {
+TWOCC tag;		//magic for chunk
+RSPTR next;		//next chunk
+//data...
+}
+
+With a list generally terminated by a NULL chunk (tag==0x0000, next==NULL).
+
+A special "overflow chunk" will be supported:
+OverflowChunk {
+TWOCC tag;		//'OV'
+RSPTR next;		//next chunk
+FOURCC tag1;	//aux chunk tag
+DWORD size;		//data size
+RPTR data;		//pointer to data
+}
+
+
+Note that some information about a function will be stored in the metadata database, which will be needed to be able to correctly process functions.
+
+In addition to a function having a signature (also included in the mangled name), it will also have a 'locals_sig' key which may identify the types of locals (locals will directly follow arguments).
+
+
+BytecodeChunk
+{
+TWOCC tag;		//'BC'
+RSPTR next;		//next chunk
+FOURCC bctag;	//bytecode type tag ('JXBC')
+RPTR code;		//pointer to code
+RPTR lit;		//pointer to literal table data
+}
+
+Code is terminated by a NULL opcode (literal opcode 0).
+
+The literal table data is a NULL-terminated list of RPTRs to literals.
+
+Literal
+{
+TWOCC tag;
+//data...
+}
+
+Tags:
+'F4': Float32
+'F8': Float64
+'FW': Float128
+'I4': Int32
+'I8': Int64
+'IW': Int128
+'SG': Signature (Type Only)
+'SN': Signature Name (unmangled QName+Sig)
+'ST': String

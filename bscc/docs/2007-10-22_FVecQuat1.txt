@@ -1,0 +1,125 @@
+Primary Change:
+The specified interface is being replaced (by one much closer to GLSL).
+
+Header:
+#include <vecnf.h>
+
+Types: vec2, vec3, vec4, quat
+
+vec3 v;
+v=vec3(1,0,0);
+
+Macros:
+	vec2(x,y)
+	vec3(x,y,z)
+	vec4(x,y,z,w)
+	quat(w,x,y,z)
+
+Special Builtins:
+	dot(a,b)		Dot Product
+	cross(a,b)		Cross Product
+	distance(a,b)	Distance from A to B
+	length(a)		Vector Length
+	normalize(a)	Normalized Vector
+
+Example Builtins(N={2/3/4}):
+	vNdot(a,b)		Dot Product
+	vNcross(a,b)	Cross Product
+
+	vNlen(a)		Vector Length
+	vNnorm(a)		Normalized Vector
+	vNscale(a,f)	Scale Vector
+	vNdist(a,b)		Distance from A to B
+
+	vNadd(a,b)		(Ax,Ay,Az)+(Bx,By,Bz)=(Ax+Bx,Ay+By,Az+Bz)
+	vNsub(a,b)		(Ax,Ay,Az)-(Bx,By,Bz)=(Ax-Bx,Ay-By,Az-Bz)
+	vNmul(a,b)		(Ax,Ay,Az)*(Bx,By,Bz)=(Ax*Bx,Ay*By,Az*Bz)
+	vNdiv(a,b)		(Ax,Ay,Az)/(Bx,By,Bz)=(Ax/Bx,Ay/By,Az/Bz)
+
+	vNneg(a)		(-Ax,-Ay,-Az)
+
+	vNlerp(a,b,f)	(a+(b-a)*f)
+	vNnlerp(a,b,f)	vNnorm(a+(b-a)*f)
+
+	qmul(a,b)		quaternion product (grassman)
+	qdiv(a,b)		a*(b^-1)
+	qrdiv(a,b)		(b^-1)*a
+	qneg(a)		(-Ax,-Ay,-Az,-Aw)
+	qconj(a)		conjugate, (-Ax,-Ay,-Az,Aw)
+	qrcp(a)		a^-1, (-Ax/(A^A),-Ay/(A^A),-Az/(A^A),Aw/(A^A))
+
+	qlerp(a,b,f)	(a+(b-a)*f)
+	qnlerp(a,b,f)	qnorm(a+(b-a)*f)
+
+	v2cross(a,b)	AxBy-AyBx
+	v3cross(a,b)	(AyBz-AzBy,AzBx-AxBz,AxBy-AyBx)
+	v4cross(a,b)	(AyBz-AzBy,AzBx-AxBz,AxBy-AyBx,0)
+	qcross(a,b)		(AyBz-AzBy,AzBx-AxBz,AxBy-AyBx,0)
+
+	qrot3(a,b)		q2v3f(qmul(qmul(a, v3f2q(b)), qconj(a)))
+	qrot4(a,b)		q2v4f(qmul(qmul(a, v4f2q(b)), qconj(a)))
+	qaxis(a,th)		quat rotation th (radians) around axis a
+
+Operations:
+I will define that the operations used on vectors be geometric.
+
+Considering: I relocate some operations such that it avoids conflict with the array-processing view of vectors.
+
+A+B: vector/quat addition
+A-B: vector/quat subtraction
+
+A*B: vector per-element multiply
+A/B: vector per-element divide
+A*B: quaternion product
+A/B: quaternion division (A*(B^-1))
+
+A^B: vector/quat dot product
+A%B: vector/quat cross product
+
+-A: negate vector/quaternion
+~A: quaternion conjugate
+
+
+FVecs will have implicit members, and these will be called:
+x,y,z, and w (spatial);
+i,j,k, and l (quats);
+r,g,b, and a (colors);
+s,t,u, and v (tex-coords).
+
+These various name sets will be more or less synonomous, though they should not be mixed. It will be invalid to access components beyond the size of the type (for example, w in a vec3, or z or w in a vec2).
+
+Likewise, it will be possible to specify multiple components and thus extract a new vector from an old one.
+
+v.xy, v.xz, v.zyx, v.xyxy, ...
+
+v=vec3(3,4,5)
+v.xy => vec2(3,4)
+v.xz => vec2(3,5)
+v.zx => vec2(5,3)
+v.zyx => vec3(5,4,3)
+v.xyxy => vec4(3,4,3,4)
+...
+
+
+
+Possible Future Extension: Matrices
+
+mat2, mat3, mat4: fixed size (square) matrices.
+mat<x>_<y>: other-sized matrix
+
+Matrices will have coords identified by 2 letters:
+i,j,k,l, m,n,o,p, q,r,s,t (row);
+x,y,z,w, a,b,c,d, e,f,g,h (column).
+
+m=
+[ix iy iz iw]
+[jx jy jz jw]
+[kx ky kz kw]
+[lx ly lz lw]
+
+For a matrix m:
+m.ix, or m.xi, will both refer to the same element (scalar);
+m.i, or m.x, will extract vectors (horizontal and vertical);
+m.jxy, or m.yij, will extract vectors (more specific);
+m.jy_lw, will allow extracting a subset of a matrix (solid block);
+m.ik_yw, will allow extracting a subset of a matrix (specific rows and cols).

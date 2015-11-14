@@ -1,0 +1,29 @@
+BUILD=.
+DLLPF=lib
+
+MKSUF=.cyg
+LIBSUF=.a
+DLLSUF=.so2
+EXESUF=.elf2
+OBJSUF=.o
+BINSUF=.bin2
+
+CC_OUTEXE=gcc -o 
+CC_OUTDLL=gcc -shared -o 
+CC_OUTOBJ=gcc -c -o 
+CC_OUTTOOL=gcc -o 
+
+BGBMETA=../bgbmeta$(BINSUF)
+BGBMETA_EXW=$(BGBMETA) /Fw
+BMETA_CFLAGS=/Iinclude /I../include
+
+CFLAGS=-Iinclude -I../include -g -j 8
+DLL_CFLAGS=$(CFLAGS) -DBGBBTJ_DLL -DBGBBTJ_NODY
+LDFLAGS=-g -lbgbbtjpg -L. -L.. -DBGBBTJ_NODY -lm \
+	-Wl,-rpath,"$$ORIGIN"
+
+DLL_LDFLAGS=-g -O3 -L.. -lm -fPIC \
+	-Wl,-rpath,"$$ORIGIN"
+
+include Makefile.inc
+

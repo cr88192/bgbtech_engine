@@ -1,0 +1,33 @@
+A B   E F   AE+BG AF+BH
+C D * G H = CE+DG CF+DH
+
+  [a b | e f]     [a b | e f]     [AaBa+AbBc AaBb+AbBd | AeBe+AfBg AeBf+AfBh]
+  [c d | g h]     [c d | g h]     [AcBa+AdBc AcBb+AdBd | AgBe+AhBg AgBf+AhBh]
+A [----+----] * B [----+----] = C [--------------------+--------------------]
+  [i j | m n]     [i j | m n]     [AiBi+AjBk AiBj+AjBl | AmBm+AnBo AmBn+AnBp]
+  [k l | o p]     [k l | o p]     [AkBi+AlBk AkBj+AlBl | AoBm+ApBo AoBn+ApBp]
+
+
+
+  [a b | e f]     [a b | e f]     [AaBa+AbBc+AeBi+AfBk AaBb+AbBd+AeBj+AfBl | AeBe+AfBg AeBf+AfBh+...]
+  [c d | g h]     [c d | g h]     [AcBa+AdBc+AgBi+AhBk AcBb+AdBd+AgBj+AhBl | AgBe+AhBg AgBf+AhBh+...]
+A [----+----] * B [----+----] = C [----------------------------------------+------------------------]
+  [i j | m n]     [i j | m n]     [AiBi+AjBk+AmBi+AnBk AiBj+AjBl+AmBj+AnBl | AmBm+AnBo AmBn+AnBp+...]
+  [k l | o p]     [k l | o p]     [AkBi+AlBk+AoBi+ApBk AkBj+AlBl+AoBj+ApBl | AoBm+ApBo AoBn+ApBp+...]
+
+C
+
+c[i][j][k][l]=sum(m)sum(n)a[i,m,k,n]*b[m,j,n,l]
+
+
+thought:
+multiply only exists for even orders.
+
+order-0, scalars
+order-1, vectors
+order-2, matrixes
+order-3, cubes
+order-4, hypercubes
+
+
+turn out these are tensors...

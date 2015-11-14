@@ -1,0 +1,80 @@
+Idea:
+
+XCall is a calling convention for x86-64, and may be used in place of the SysV or Win64 conventions. Its purpose is to simplify code generation in some cases (such as when writing a compiler).
+
+
+Convention:
+
+Arguments are passed on the stack in right-to-left order, with each argument taking up 1 or more spots on the stack depending on the size of the object;
+Items are to be aligned on natural boundaries, which for 128 bit types (int128, float128, vec3/4, quat, ...), is 16 bytes;
+The stack at the call point is required to be aligned on a 16-byte boundary.
+
+So, Like SysV, stack alignment is required, but unlike SysV, all arguments are to be passed on the stack, and not in registers.
+
+
+The addition of the 128-bit alignment rule is new, but will help with the performance of SSE vectors passed on on the stack.
+
+
+As another way of viewing it, imagine that pushing certain types may involve pushing a special "dummy" item, and that this item can be safely discared when retrieving meaningful values. In the case of a function call, it can be determined that pushing arguments would cause an uneven stack alignment, and so a dummy value is pushed prior to the arguments in order to correct the alignment (beyond this, it is up to the compiler).
+
+Note: Assuming that pushing types onto the stack will cause them to automatically align as needed, it is still necessary to align prior to pushing arguments, as otherwise it could cause a "non-deterministic" stack layout at the call site.
+
+Another possible option (if left-to-right evaluation is desired), would be to pre-allocate space for the arguments, and then as each is evaluated it is moved into its assigned spot, and when all arguments are evaluated then the call is performed.
+
+As another rule (for increased compatibility with Win64), RSP may be required to be kept in proper 16-byte alignment and below any of the working data of the function (XCall will not assume the presence of a "Red Zone").
+
+
+Register Usage:
+
+The registers RAX, RCX, RDX, R8, R9, R10, R11 are caller-save registers, and may be freely used in a called function. A caller can't safely assume that these registers will be retained across a function call.
+
+The registers RBX, RBP, R12, R13, R14, and R15 are callee save registers. A caller may be assume that the values are preserved across a call, and a callee is required to preserve their values prior to use and restore their values prior to returning.
+
+The registers RSI and RDI are debated, and should be treated as caller-save by the caller, and as callee save by the callee. An exception to this rule is that they may be treated as caller-save if the calling convention is known to be SysV, and as callee save if it is known to be Win64.
+
+RBP is is to be used as the frame pointer (technically, this rule will be similar to Win64's epilogue requirement, only that RBP is reserved specifically for this purpose if a frame pointer is used).
+
+So:
+<function>:
+[push reg]*
+[mov rbp, rsp]
+...
+(mov rsp, rbp) | (lea rsp, [rbp+<const>]) | (add rsp, <const>)
+[pop reg]*
+ret
+
+The reason for this is to simplify the task of function unwinding.
+
+
+
+Function Naming:
+
+XCall will make use of name mangling for all names. This will simplify the autogeneration of stubs when linking against existing code which may be compiled to use a different calling convention (the mangled name will serve to tell the stub generator how the stack frame is layed out in order so that it can re-package the arguments as needed).
+
+The function name will include a prefix:
+'_XC_' is used for ordinary functions and for calls to a function which accepts a fixed number of arguments;
+'_XV_' is used when calling vararg functions, and also for the call-target of such a call (this symbol will be either an alias or a jump to the actual function implementing the vararg function, or a conversion stub if an inter-convention call is taking place, however this will never be the proper name of the vararg function in question).
+
+This prefix will be followed by a mangled version of the name and signature string.
+
+Note: Include section on Signature Strings if needed.
+
+
+The name and signature will be mangled by replacing certain characters with escape sequences:
+'_' with '_1';
+';' with '_2';
+'[' with '_3';
+'(' with '_4';
+')' with '_5'.
+
+Alphanumeric characters are embedded unchanged.
+'_9xx' encodes a character in the range of 1 to 127 (ASCII range);
+'_0xxxx' encodes a character outside this range (Unicode space).
+
+
+Note that it is the case with ordinary function calls that the mangled name used by the caller and reciever are required to be equivalent.
+
+The signature in this case will represent the arguments being accepted by the reciever, and not the types of values on the stack from the POV of the caller (It is reasonable that the types not match exactly between them, for example, as the result of a cast or implicit type conversion).
+
+In the case of Vararg functions, the signature will represent the values passed on the stack from the POV of the caller, and so the same target function may be called by any number of possible names (It is then the responsibility of the linker to locate the correct call-target for a given name and signature).
+

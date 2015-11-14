@@ -1,0 +1,266 @@
+BGBMDF: BGB MetaData Format
+
+Idea: This will be a "generic" format for the representation of MetaData for bytecode and native code. The format will be designed such that it can be embedded into other formats and used with some variation in layout. The format will not be a purely structural format (Pure TLV), but will make use of pointers and indirect references.
+
+BGBMDF will also assume use in reusable linkable or position-independent chunks (internal pointers may then exist, but are local and relative, rather than being absolute references into memory, or assuming being confined to an interchange format). As such, it should be possible for metadata to be combined with conventional linkers, ...
+
+Metadata can be in-memory compressed by storing offsets in a relative form, thus allowing both reduced storage space, and also independence from central table structures.
+
+
+Variable Length Integers
+
+Variable Length Integers (or VLI's) will come in 2 forms:
+Signed (SVLI) and Unsigned (UVLI).
+
+
+UVLI:
+0-127				0xxxxxxx
+128-16383			10xxxxxx xxxxxxxx
+16384-2097151		110xxxxx xxxxxxxx xxxxxxxx
+2097152-268435455		1110xxxx xxxxxxxx xxxxxxxx xxxxxxxx
+268435456-34359738367	11110xxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
+34359738368-(2^42-1)	111110xx xxxxxxxx(*5)
+
+0 - (2^7-1)			0xxxxxxx
+2^7 - (2^14-1)		10xxxxxx xxxxxxxx
+2^14 - (2^21-1)		110xxxxx xxxxxxxx xxxxxxxx
+2^21 - (2^28-1)		1110xxxx xxxxxxxx xxxxxxxx xxxxxxxx
+2^28 - (2^35-1)		11110xxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
+2^35 - (2^42-1)		111110xx xxxxxxxx(*5)
+2^42 - (2^49-1)		1111110x xxxxxxxx(*6)
+2^49 - (2^56-1)		11111110 xxxxxxxx(*7)
+2^56 - (2^63-1)		11111111 0xxxxxxx xxxxxxxx(*7)
+2^63 - (2^70-1)		11111111 10xxxxxx xxxxxxxx(*8)
+2^70 - (2^77-1)		11111111 110xxxxx xxxxxxxx(*9)
+2^77 - (2^84-1)		11111111 1110xxxx xxxxxxxx(*10)
+2^84 - (2^91-1)		11111111 11110xxx xxxxxxxx(*11)
+2^91 - (2^98-1)		11111111 111110xx xxxxxxxx(*12)
+2^98 - (2^105-1)		11111111 1111110x xxxxxxxx(*13)
+2^105 - (2^112-1)		11111111 11111110 xxxxxxxx(*14)
+2^112 - (2^119-1)		11111111 11111111 0xxxxxxx xxxxxxxx(*14)
+2^119 - (2^126-1)		11111111 11111111 10xxxxxx xxxxxxxx(*15)
+2^126 - (2^133-1)		11111111 11111111 110xxxxx xxxxxxxx(*16)
+...
+
+
+SVLI will be the same as UVLI, but will have the sign rotated to the LSB.
+
+j=(i<0)?(((-i)<<1)-1):(i<<1);
+
+Thus: 0, -1, 1, -2, 2, -3, 3, ...
+
+or: 63 -> 0x7E, -64 -> 0x7F
+
+SVLI will be used for encoding pointers, where here I will use ~ to indicate a pointer encoded in such a manner. The token '~*' will indicate a compressed pointer to a physical pointer encoded in a PtrsMeta block.
+
+The pointer will be encoded as the distance between the start of the pointer and the destination. The special value 0 will encode a NULL value (rather than a pointer to the pointer).
+
+
+Tag Structure
+
+Meta {
+uvli tag, sz;	//?, ?
+byte data[sz];
+}
+
+Generic Metadata block. Tag indicates the type of the metadata block, and sz gives the size of the payload.
+
+
+Tag values may be designated by range.
+
+Local Tags will only have a particular meaning within a particular owner tag, but can't be assumed to have a globally-defined meaning.
+
+Global Tags will have a globally-defined meaning.
+
+Ignorable Tags may be ignored if the code which encounters them does not know what they mean.
+
+Must Understand Tags, will have a meaning that needs to be understood for correct processing, and so a failure to understand the tag if encountered is to be counted as an error condition.
+
+Encountering any tags in an unknown range is to be counted as an error condition (possibly indicating corrupted or undecodable input).
+
+
+Tag Groups
+
+1-95 (2-byte)
+Will be designated as 'Local, Must Understand'
+
+96-127 (2-byte)
+Will be designated as 'Global, Must Understand'
+This range will be used primarily for built-in structural tags.
+
+128-4095 (2-byte)
+Will be designated as 'Local, Ignorable'
+
+4096-8191 (2-byte)
+Will be designated as 'Local, Must Understand'
+
+8192-16383 (2-byte)
+Reserved
+
+16384-65535 (3-byte, C0XXXX)
+Reserved
+
+65536-131071 (C1XXXX)
+Will be designated as 'Global, Ignorable'
+
+131072-196607 (C2XXXX)
+Will be designated as 'Global, Must Understand'
+
+4294967296-8589934591 (F1XXXXXXXX)
+Will be 'Global, Ignorable'
+
+8589934592-12884901887 (F2XXXXXXXX)
+Will be 'Global, Must Understand'
+
+
+Tag Definitions
+
+NullMeta {
+uvli tag, sz;	//0, 0
+}
+
+A group of metadata tags will be terminated by NullMeta.
+
+
+GroupMeta {
+uvli tag, sz;	//96, ?
+uvli gtag;		//group tag
+//gtag specific...
+}
+
+Will define a tag group, where gtag identifies the group type, and any following data will be considered as a special purpose gtag-specific header. This will be followed by more tags, and terminated by a NullMeta.
+
+
+ListMeta {
+uvli tag, sz;	//97, ?
+uvli ltag;		//list tag
+Meta item[];
+}
+
+Will define a list of metadata tags, differing from GroupMeta primarily in that the tags will be contained internally (AKA: physically contained within the tag) rather than as a list of tags following the group.
+
+
+ItemsMeta {
+uvli tag, sz;	//98, ?
+uvli ltag;		//list tag
+Meta ~item[];
+}
+
+Will define a list of metadata tags, however this will contain relative pointers to the tags.
+
+
+
+
+JunkMeta {
+uvli tag, sz;	//99, ?
+byte data[sz];
+}
+
+Junk space (ignorable meaningless data).
+
+
+MetaMagic {
+// u64 magic;	//'XFRAMEMD' (0x444D454D41524658)
+uvli magic;	//'\xFEBGBMDF0', 0x3046444D424742FE, or
+//FE4247424D444630
+uvli sz;
+uvli gtag;
+}
+
+MetaMagic serves to point out the start of a glob of metadata. It is to be 8-byte aligned. This will be followed by a list of Metadata blocks, and terminated with a NullMeta.
+
+OTOH, could return to initial idea:
+Raw 64-bit magic:
+A1 B1 6D EF A0 A2 5F 0F
+
+Different Meta chunk types then use a different initial magic.
+That or a pair-magic is used:
+
+FF FE 42 47 42 4D 44 46		//A
+A1 B1 6D EF A0 A2 5F 0F		//B
+
+Where A is constant, and B is a unique value (likely initially random).
+This is followed by any tags and is terminated by a NullMeta.
+
+
+
+StringsMeta {
+uvli tag, sz;	//1
+byte data[sz];
+}
+
+Encodes a glob of strings. Each string in the glob is NULL-terminated, and strings are encoded using UTF-8.
+
+
+PtrsMeta {
+uvli tag, sz;	//2
+uvli _pad;		//used to align to a sizeof(void *) boundary
+void *addr[];
+}
+
+PtrsMeta will reflect a pointer array stored in the metadata. This is used because it would ask too much for the linker to be able to figure out how to relocate compressed pointers (the pointer is encoded directly).
+
+
+VarMeta {
+uvli tag, sz;	//3
+uvli flags;
+char ~name;
+char ~sig;
+}
+
+EnvMeta {
+uvli tag, sz;	//4
+uvli flags;
+EnvMeta ~next;
+VarMeta ~var[];
+}
+
+EnvMeta contains an array of VarMeta's, and is terminated with a NULL.
+Physically, within a given Env the data for each meta-entry is assumed to be packed end to end (like in a structure, ...).
+
+FuncMeta {
+uvli tag, sz;	//5
+void ~*ip;		//rIP addr
+uvli flags;		//flags
+char ~name;		//name
+char ~sig;		//signature
+EnvMeta ~env;	//info about env (opaque)
+EnvMeta ~args;	//info about args (opaque)
+}
+
+Metadata about a function.
+
+These metadata structures will be produced by the compiler.
+
+(signature strings defined elsewhere...)
+
+SlotMeta {
+uvli tag, sz;	//6
+uvli flags;
+char ~name;
+char ~sig;
+void ~init;		//pointer to initializer (type depends on sig)
+svli ~offs;		//slot offset (-1 means N/A)
+}
+
+SlotsMeta {
+uvli tag, sz;	//7
+uvli flags;
+SlotMeta ~func[];
+}
+
+MethodsMeta {
+uvli tag, sz;	//8
+uvli flags;
+FuncMeta ~func[];
+}
+
+ClassMeta {
+uvli tag, sz;		//9
+uvli type;			//1=class, 2=struct, 3=union
+uvli flags;			//flags
+char ~name;			//name (fully qualified)
+SlotsMeta ~slot;		//class slots
+MethodsMeta ~meth;	//class methods
+}
+

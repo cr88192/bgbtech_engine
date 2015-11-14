@@ -1,0 +1,26 @@
+Trivial thoughts for ragdoll.
+
+Use same interface as for building bsps.
+
+bsdeAttrI(int var, int val);
+bsdeAttrF(int var, double val);
+bsdeAttrIV(int var, int *val, int num);
+bsdeAttrFV(int var, float *val, int num);
+bsdeAttrDV(int var, double *val, int num);
+
+
+bsdeBegin(BSDE_SOLID_RAGDOLL);
+
+bsdeBegin(BSDE_BONE);
+bsdeAttrI(BSDE_BONE_ID, 1);
+bsdeAttrI(BSDE_BONE_PARENT, -1);
+bsdeAttrFV(BSDE_ORIGIN, org, 3);
+bsdeAttrFV(BSDE_ROTATION_MATRIX, rot, 9);
+bsdeAttrFV(BSDE_MINS, mins, 3);
+bsdeAttrFV(BSDE_MAXS, maxs, 3);
+...
+bsdeEnd();
+
+...
+
+bsdeEnd();

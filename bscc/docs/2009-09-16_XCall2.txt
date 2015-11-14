@@ -1,0 +1,146 @@
+XCall-2
+
+Ideas:
+Same name mangling scheme as before;
+Cannonical calling convention is Win64 (including on Linux);
+Use PE/COFF as a library format;
+...
+
+
+
+Consider alternate EH mechanism:
+Prologue
+...
+Epilogue
+NOP [EHInfo]	//x86-64, NOP [rip+addr]
+
+0F 1F 28 xx xx xx xx 	//([rip+disp] on x86-64, [addr] on x86)
+
+F8 0F 82 xx xx xx xx	//alternate (PIC, x86)
+clc; jc addr
+
+
+eg, x86:
+<--
+foo:
+push ebp
+push esi
+push edi
+lea ebp, [esp+8]
+...
+lea esp, [ebp-8]	;begin x86-style epilogue
+pop edi
+pop esi
+pop ebp
+ret
+nop [EH__foo]	;point to EHInfo lumps
+-->
+
+
+It may be noted that xBP, as well as the offset for the 'lea' in the epilogue, will serve a different purpose than in Win64 SEH.
+
+xBP will then serve as a frame-pointer register similar to in cdecl, and will point to the saved xBP, which is to be located just below the return address (this is an added restriction over Win64 SEH, and intended mostly for call-frames which may contain cdecl or SysV functions, but should not be assumed to be necessarily the case in all call frames).
+
+Registers will then be saved below xBP, and the offset for the 'lea' will serve to adjust for the size of the saved registers.
+
+As in Win64, it will also be allowed to omit the use of xBP (or another frame pointer), but this will not be advised for 32-bit x86 (since cdecl traditionally assumes the use of EBP chaining).
+
+
+Note:
+Prologues and Epilogues follow specific rules, but I will not define them here. MSDN and others describe them (I am borrowing their format as a basis), but also allowing them to be adapted for 32-bit x86 as well.
+
+The idea will be to attempt to allow "dual conformance" in this case.
+
+
+
+EHInfo will be a collection of 'Info' lumps:
+
+struct Info_s {
+byte magic[3];		//identifies info type
+byte sz;			//identifies info size
+};
+
+Terminated by a NullInfo lump:
+struct NullInfo_s {
+byte magic[3];		//0
+byte sz;			//4
+};
+
+
+but, here, EHInfo:
+struct EHInfo_s {
+byte magic[3];		//'EHI'
+byte sz;			//20
+
+PREL32 try_start;		//start of try block
+PREL32 try_end;		//end of try block
+PREL32 catch_hdlr;	//jump target for handler
+PREL32 catch_info;	//info about the exception to catch
+};
+
+Note: if catch_info is NULL, then this is basically an 'any' handler.
+
+CatchInfo will point to an info lump, currently a 'NameInfo':
+
+struct NameInfo_s {
+byte magic[3];		//'SNI'
+byte sz;			//8
+PREL32 str;
+};
+
+Where str is a UTF-8 string naming the exception or exception class.
+
+Reason: It may eventually make sense to allow exceptions for other types.
+
+Prior to invoking the handler, the frame will be unwound to that of the original containing function, and the handler will be jumped to. The exception object will be contained in RCX or ECX.
+
+
+Note:
+This as such does not allow non-unwinding / resumable exceptions, which may also have uses, but it does greatly simplify the EH mechanism. Instead, a separate handler mechanism may be added for this case.
+This mechanism is instead mostly intended to model the try/catch EH model of many HLL's.
+
+I figured it better to have a little more complexity in the dispatcher, rather than offloading this complexity to the handlers themselves (which in SEH are responsible for such things as exception matching, as well as for checking and setting a number of condition codes, ...). This will allow the handlers to be simpler and cheaper.
+
+
+
+Also present will be UnwindInfo:
+struct UnwindInfo_s {
+byte magic[3];		//'EHU'
+byte sz;			//16
+
+PREL32 fcn_start;		//start of function
+PREL32 fcn_end;		//end of function
+PREL32 unwind_addr;	//call target for unwind
+};
+
+This will differ from an exception in that it will simply allow a function to unwind itself gracefully. This may point to an unwind handler, or may be NULL (In which case, the epilogue will be used). This lump will be required.
+
+No arguments will be passed to unwind handlers, and this will be called within the (currently unwound) frame for the function.
+
+However, the unwinder will be called, rather than jumped to, and so it will be the handler's responsibility to return control via this address.
+
+<--
+eg:
+foo__unwind:
+...
+clean up stuff...
+...
+pop edx
+lea esp, [ebp-8]
+pop edi
+pop esi
+pop ebp
+jmp edx
+-->
+
+This would avoid having to patch the return address or somehow trap ret.
+
+The unwind_addr may then be NULL, which will indicate to unwind via the epilogue, rather than via a custom handler.
+
+
+
+'PREL32' are basically base-relative pointers (they are relative to their own address), where 0 gives a NULL value (otherwise, it would be the pointer pointing to itself).
+
+Note:
+Win64 SEH typically uses image-relative relocs instead, but my issue with these is that they would require locating the 'image', whereas for relative pointers, it is only needed to know the address of the pointer.
+

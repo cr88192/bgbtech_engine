@@ -1,0 +1,7 @@
+$flags voxel touchpain
+$material sludge
+
+// $vox_mins 4 4 4
+// $vox_maxs 28 28 28
+
+$vox_RandomThink BTGE_Voxel_RandomThink_Cactus

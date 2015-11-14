@@ -1,0 +1,45 @@
+Idea:
+A means by which to convert Java ByteCode to C in a more effective, and closer to standalone manner.
+
+
+Method:
+The production of a header which includes a structural definition of a class, as well as a structural definition of the VTable;
+as well as a C source file containing an implementation of the class methods, a structural implementation of the VTable, and a set of definitions related to the object layout.
+
+struct JXC_ClassInfo_s {
+char *name;			//class name
+JXC_VTable *vtable;
+JXC_ClassInfo *super;
+};
+
+struct JXC_VTable_s {
+JXC_ClassInfo *class_info;
+void *method[1];
+}
+
+foo/Bar
+
+_JXC_foo_1Bar__vt {
+&_JXC_foo_1Bar__ci,			//class info
+&_JXC_foo_1Bar_1Bar__vm,		//virtual method
+&_JXC_foo_1Bar_1baz__vm,		//virtual method
+};
+
+
+Objects would mostly be raw buffers with a vtable pointer.
+Offsets will be pre-calculated at compile time (or, possibly, a "field offset table" could be used).
+
+struct JXC_ClassInfo_s {
+char *name;			//class name
+JXC_VTable *vtable;
+JXC_ClassInfo *super;
+
+int *field_offset;	//field offset table
+int *method_offset;	//method offset table
+};
+
+however, precomputed offsets are likely better...
+
+
+could recursively find all loaded classes, and do batch conversion.
+

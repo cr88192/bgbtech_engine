@@ -1,0 +1,137 @@
+CFLAGS=/Iinclude /Z7
+LDFLAGS=/Fm /Z7
+
+OBJS_FRONT = \
+	front/basm_api.obj \
+	front/basm_rand.obj \
+	front/basm_callsig.obj \
+	front/basm_vfs.obj \
+	front/basm_xcall.obj \
+	front/basm_xc_sysv.obj \
+	front/basm_xc_w64.obj \
+	front/basm_xmeta.obj \
+	front/basm_unwind.obj \
+	front/basm_preproc.obj
+
+OBJS_ASM = \
+	asm/basm_core.obj \
+	asm/basm_parse.obj \
+	asm/basm_insns.obj \
+	asm/basm_disasm.obj \
+	asm/basm_coff.obj
+
+OBJS_LINK = \
+	link/link_context.obj \
+	link/link_core.obj \
+	link/link_thunk.obj \
+	link/link_lnx.obj \
+	link/link_w32.obj \
+	link/link_vfs.obj \
+	link/bldr_coff.obj \
+	link/bldr_elf.obj
+
+OBJS_ASMX = \
+	asmx/basmx_core.obj
+
+SRCS_FRONT=$(OBJS_FRONT:.obj=.c)
+SRCS_ASM=$(OBJS_ASM:.obj=.c)
+SRCS_LINK=$(OBJS_LINK:.obj=.c)
+SRCS_ASMX=$(OBJS_ASMX:.obj=.c)
+
+OBJS = \
+	$(OBJS_FRONT)	\
+	$(OBJS_ASM)	\
+	$(OBJS_LINK)	\
+	$(OBJS_ASMX)	\
+
+SRCS = \
+	$(SRCS_FRONT)	\
+	$(SRCS_ASM)	\
+	$(SRCS_LINK)	\
+	$(SRCS_ASMX)	\
+
+
+DEP_HDRS=\
+	include/bgbasm_x86ops.h \
+	include/bgbasm_auto_front.h \
+	include/bgbasm_auto_asm.h \
+	include/bgbasm_auto_link.h \
+	include/bgbasm_auto2_asm.h \
+	include/bgbasm_autoi_front.h \
+	include/bgbasm_autoi_asm.h \
+	include/bgbasm_autoi_link.h \
+	\
+	include/bgbasm_auto_asmx.h \
+	include/bgbasm_autoi_asmx.h \
+
+all: libs apps
+
+FORCE:
+
+# bgbasm.lib
+
+libs: bgbasm.dll 
+apps: basmtst.exe basmtst2.exe basmtst3.exe
+
+includes: $(DEP_HDRS)
+
+include/bgbasm_auto_front.h: autohead.exe $(SRCS_FRONT)
+	./autohead -apionly BASM_API $(SRCS_FRONT) > include/bgbasm_auto_front.h
+include/bgbasm_auto_asm.h: autohead.exe $(SRCS_ASM)
+	./autohead -apionly BASM_API $(SRCS_ASM) > include/bgbasm_auto_asm.h
+include/bgbasm_auto_link.h: autohead.exe $(SRCS_LINK)
+	./autohead -apionly BASM_API $(SRCS_LINK) > include/bgbasm_auto_link.h
+
+include/bgbasm_auto2_asm.h: autohead.exe $(SRCS_ASM)
+	./autohead -apionly BASM2_API $(SRCS_ASM) > include/bgbasm_auto2_asm.h
+
+include/bgbasm_autoi_front.h: autohead.exe $(SRCS_FRONT)
+	./autohead -noapi BASM_API $(SRCS_FRONT) > include/bgbasm_autoi_front.h
+include/bgbasm_autoi_asm.h: autohead.exe $(SRCS_ASM)
+	./autohead -noapi BASM_API $(SRCS_ASM) > include/bgbasm_autoi_asm.h
+include/bgbasm_autoi_link.h: autohead.exe $(SRCS_LINK)
+	./autohead -noapi BASM_API $(SRCS_LINK) > include/bgbasm_autoi_link.h
+
+include/bgbasm_auto_asmx.h: autohead.exe $(SRCS_ASMX)
+	./autohead -apionly BASMX_API $(SRCS_ASMX) > include/bgbasm_auto_asmx.h
+include/bgbasm_autoi_asmx.h: autohead.exe $(SRCS_ASMX)
+	./autohead -noapi BASMX_API $(SRCS_ASMX) > include/bgbasm_autoi_asmx.h
+
+include/bgbasm_x86ops.h: genx86.exe basm_insns.txt
+	./genx86
+
+bgbasm.dll: $(DEP_HDRS) $(SRCS)
+	cl /LD /Febgbasm.dll $(SRCS) /Iinclude /Z7 /DBGBASM_DLL
+
+# bgbasm.dll: $(DEP_HDRS) $(OBJS)
+#	cl /LD /Febgbasm.dll $(OBJS) $(LDFLAGS)
+
+# bgbasm.lib: $(DEP_HDRS) $(OBJS)
+#	lib /out:bgbasm.lib $(OBJS)
+
+autohead.exe: autohead.c
+	cl /Feautohead.exe autohead.c
+
+genx86.exe: gen_x86_3.c
+	cl /Fegenx86.exe gen_x86_3.c /Iinclude
+
+basmtst.exe: basmtst.c $(DEP_HDRS) libs
+	cl /Febasmtst.exe basmtst.c bgbasm.lib $(CFLAGS) $(LDFLAGS)
+
+basmtst2.exe: basmtst2.c $(DEP_HDRS) libs
+	cl /Febasmtst2.exe basmtst2.c bgbasm.lib $(CFLAGS) $(LDFLAGS)
+
+basmtst3.exe: basmtst3.c $(DEP_HDRS) libs
+	cl /Febasmtst3.exe basmtst3.c bgbasm.lib $(CFLAGS) $(LDFLAGS)
+
+%.obj: %.c
+	cl /c /Fo$@ $< $(CFLAGS)
+
+clean:
+#	del /S *.obj
+
+clean2:
+#	del /S *.exe
+#	del /S *.dll
+#	del /S *.lib
+#	del /S *.obj

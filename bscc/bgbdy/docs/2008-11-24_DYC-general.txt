@@ -1,0 +1,106 @@
+General info about the Class/Instance system.
+
+Primary goals for this system:
+Effectively implement a class/instance system;
+Performance is a goal, and wherever possible the system should try to have good performance;
+It should represent a reasonably general feature and be sufficiently capable for use in VMs.
+
+Features:
+Class/Instance;
+Emphasis on Single Inheritence;
+Inferfaces;
+Opaque API;
+Anonymous classes;
+...
+
+Incomplete:
+Multiple Inheritence;
+...
+
+
+Structure:
+
+
+Classes:
+
+dycClass, represents classes, contains much of the core machinery of the object system. Classes may link to and make use of superclasses, and an internal versioning system is used to try to handle structural alterations to classes.
+
+Interfaces will also be represented via dycClass, and in many ways an interface is like a class. However, it is not valid to try to create an instance of an interface, nor can an interface contain usable slots or methods.
+
+At present, interface lookups (for both slots and methods) are performed by the use of specialized hash-tables (in general, the use of hash tables is straightforwards, flexible, and reasonably efficient). The approach used is a variation of a lookup hash.
+
+
+Slots:
+
+dycSlot is internally contained within dycClass, and stores info needed for identifying and retrieving slots. Slots may be inherited from superclass, and so a slot which is valid in a superclass is typically the same slot that would be returned by a subclass (an exception is when the slot is shadowed by another slot with the same name).
+
+Multiple 'types' are supported reflecting different ways of storing or accessing the contents.
+
+
+A few slot types:
+
+Static, the slot's payload is managed by the slot itself, and so the same value is shared between all instances and with any derived classes.
+
+Direct, this is the default case for slots, where in this case the slot refers directly to the value in an object instance.
+
+Indirect, this is similar to direct, but is used when multiple versions of a class may be in use (for example, as in the case of dynamically modified classes), where the slot is referred to via a table associated with the appropriate class version.
+
+Interface, in this case, the slot does not directly refer to the data. Interface Slots are typically defined within interfaces, and provide a means to more efficiently access the contents of different unrelated class types. An interface slot is used with an instance of an object, and serves to look up the appropriate slot for the object and act as if the access had been via using the found slot. It is in error to access an interface via an interface.
+
+
+Methods:
+
+dycMethod is similarly contained within dycClass. It contains info needed for identifying a particular method and for retrieving and applying the correct function object (defined externally to the object system).
+
+Unlike slots, most method types do not exist within the object instances. Instead, methods are generally accessed via VTables located within the class.
+
+Methods are accessed providing both a name and a signature. At present, a method can only be accessed with a signature that is an exact match (no soft-matching or coercion is done). Multiple methods may exist with the same name but with different signatures.
+
+
+Static methods, unlike static slots, are unique to each class. A method being static defines how it is to be called, not how it is stored.
+
+Direct and Indirect behave similarly to the case with slots, only that they refer to vtables rather than the instance payload.
+
+Interface Methods are similar to Interface Slots, and likewise are used to call a method with a matching name and signature.
+
+Slot Methods are accessed like methods, but differ primarily in that, rather than referring to the vtable, the method identifies a hidden slot, and it is this slot which holds the function to be called.
+
+
+Objects:
+
+dycObject holds an object that is an instance of a particular class.
+
+Objects hold a reference to the class, info about the class version (needed since the class made be modified, but objects remain using an older layout), as well as a buffer for the object's payload. An object may also hold some info related to Multiple Inheritence, or to the use of per-object slots or delegation.
+
+It is also possible to clone an object, which will create a new object with the same state as the original (including any per-object slots).
+
+
+Per-Object Slots:
+
+It will be possible to add slots that exist per-instance.
+
+The idea is that these slots will be primarily accessed either dynamically or via interfaces. It is also possible to retrieve the slot and method handles from objects, however for likely obvious reasons, it will not be able to retrieve these slot handles from classes.
+
+
+
+
+Prototype OO (older):
+
+In this sense, Prototype-OO will not be in a pure sense, but rather as a few extended features for the class/instance system:
+An ability to dynamically add slots or methods to existing objects;
+An ability for one object to delegate to another;
+...
+
+The current idea is that prototype features will be primarily accessed via interfaces (thus keeping static typing in place).
+
+Likewise, prototype objects will still generally have a class from which they are inherited from.
+
+
+The idea here will be that a "virtual class" will exist, which will hold all possible slots and methods that may be found in a prototype object (these will be structurally equivalent to, but functionally distinct from, their use in class/instance objects). Or, alternatively, this is the collection of all slot or method signatures that have been seen in the prototype system.
+
+So, to dynamically lookup a slot or method for a prototype object will retrieve the slot or method from here. Note that it will not be possible to directly interact with this class, and infact no class may actually exist in this case.
+
+Each slot or method will have its own ID number, and it will be this number that is used for retrieving the slot or method from the object (the representation of prototype objects will thus be that of an ID/value list/hash).
+
+A few special hash tables may be used for speeding up all this as well.
+

@@ -1,0 +1,1719 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+  <title></title>
+</head>
+<body lang="en-US">
+<h1> BGBASM: BGB Assembler</h1>
+<p> <br>
+<br>
+</p>
+<p> This contains the assembler and linker, where the assembler is a
+good old assembler for x86 and x86-64, supporting an Intel/NASM style
+syntax, and a C-style preprocessor (I needed one and this is what I
+happened to have on-hand...). It is generally the idea that code be
+produced in the form of textual ASM, and assembled with the assembler
+(JIT compilers hand-crafting machine code is IMO both tacky and
+fragile, as well as introducing many other issues).<br>
+<br>
+The assembler supports 2 major styles:<br>
+The creation of top-level modules, which are assumed to be linked into
+the running image, and which share the same space as all the other
+modules (namespaces and similar can be achieved through the use of
+name-mangling);<br>
+The creation of standalone thunks, which are typically linked into
+their own custom chucks of garbage-collected executable memory, and
+which make use of a different approach to external linking (scopes may
+be passed in, and symbols are not required to be kept up to date).<br>
+<br>
+The linker is partly joined with the assembler, but is done as a
+separate stage. The linker mostly functions similarly to a conventional
+linker (takes object modules, links them together), and may accept
+COFF, ELF, and static libraries (GNU-AR and MS Win32/Win64 libraries),
+and also allows exporting code from the assembler into object modules
+(currently COFF), but differs partly in that it allows a few novel
+features (particularly in that it allows other subsystems to hook into
+it for purposes such as fetching or emitting custom symbols, or
+registering handlers such that automatic code generation can take place
+as a means to resolve symbols, as well as including machinery for
+things like gluing together several different calling conventions,
+accessing thread-local-storage, ...).<br>
+<br>
+The linker has primary responsibility over managing the running image
+and keeping track of the symbol table.<br>
+<br>
+It is assumed that if porting to a new arch, the assembler and/or
+linker could be modified or rewritten to support the arch in question.<br>
+<br>
+<br>
+</p>
+<h3> Scopes and Thunks</h3>
+<p> By default, assembly code is linked into what are known as modules,
+which as noted, all share a global top-level environment. This
+environment implicitly also includes all contents pulled in from
+libraries and dynamic libraries (such as DLL or Shared Object), in
+addition to that present in the linked in modules. This can be roughly
+compared with the C top-level.<br>
+</p>
+<p> Modules linked into this top-level environment are managed by the
+dynamic linker, and are at present not garbage collected. The idea then
+is that the top level will used primarily for &#8220;general-purpose&#8221; code,
+such as functions or methods, and not for &#8220;one-off&#8221;
+dynamically-constructed executable objects.<br>
+</p>
+<p> Note that not all modules will be linked immediately, but in some
+cases the linker may delay final linking until a symbol is needed from
+a given module. The reason for doing this would be to help reduce the
+potential risks of a circular dependency during the linking process,
+which could otherwise lead to faulty linking or other link-related
+problems (the idea here is that the modules will be visible to the
+linker prior to needing to resolve their symbols, so that linking
+several modules would cause them to link against the symbols in the
+other modules, rather than resorting to possibly more drastic measures
+to attempt to resolve a symbol which has not yet come into view).<br>
+</p>
+<p> Thunks exist as an alternative means of linking modules, where as
+opposed to being linked into the global top-level and managed
+statically, will be instead linked into a garbage-collected executable
+object.<br>
+</p>
+<p> Thunks will come in 2 different types: normal and inline. A
+'normal' thunk exists in the form of an executable structure. The first
+member of the struct is generally a jump to the entry point, allowing
+it to be called as if it were a function. This type of thunk also keeps
+track of some structural information and as a result, allows for the
+use of multiple sections, as well as an entry point which is not at the
+start of the thunk.<br>
+</p>
+<p> An inline thunk, on the other hand, is simply a glob of
+instructions located in an executable memory object. As a result, the
+entry point needs to be at the start of the thunk, and all contents
+will need to be located within a single section (by convention, this
+will be &#8220;.text&#8221;). The advantage of an inline thunk, however, is that it
+will need less memory.<br>
+</p>
+<p> Scopes are an alternative means for representing binding
+environments, and are used for ASM thunks. Scopes were designed in a
+different way as to be more friendly with the garbage collector. A
+scope essentially represents a local set of bindings, and bindings
+inside a scope are not visible from elsewhere.<br>
+</p>
+<p> Unlike in the global scope, bindings within a scope will not change
+those in already linked thunks. Instead, a thunk will need to use 'G.'
+addressing if it hopes to retain an up-to-date pointer to a variable
+(see section on Indirect Names).<br>
+</p>
+<p> Scopes will be searched recursively, and if a label is not found,
+it will fall back to the global scope.<br>
+</p>
+<p> Note that thunks will also not create global bindings, but will
+instead create bindings within the given scope.</p>
+<h1> Assembly Language Overview (x86 and x86-64)</h1>
+<h2> Assembler Syntax</h2>
+<p> <b>General</b></p>
+<p> Apart from labels, most tokens are not case sensitive.</p>
+<p> /* C-style comment */<br>
+// line comment<br>
+; also a line comment<br>
+mov eax, 6 ;terminal comment (needs preceding whitespace)</p>
+<p> Multiple instructions may be globed on a single line in the
+following ways:</p>
+<p> A semicolon absent a space, as in:<br>
+push ebp; mov ebp, esp<br>
+A vertical bar, as in:<br>
+push ebp | mov ebp, esp<br>
+</p>
+<p>This will not necessarily apply at present to any special forms,
+which may have their own parsing behavior.</p>
+<p> <b>Numbers</b></p>
+<table width="100%" border="1" cellpadding="4" cellspacing="0">
+  <col width="128*"> <col width="128*"> <tbody>
+    <tr valign="top">
+      <td width="50%">
+      <p> '0x'[('0'..'9')|('A'..'F')|('a'..'f')]<sup>+ </sup> </p>
+      </td>
+      <td width="50%">
+      <p> Hexadecimal</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> '0'['0'..'7']<sup>+</sup></p>
+      </td>
+      <td width="50%">
+      <p> Octal</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> ('1'..'9')['0'..'9']<sup>*</sup></p>
+      </td>
+      <td width="50%">
+      <p> Decimal Int</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> <br>
+      </p>
+      </td>
+      <td width="50%">
+      <p> <br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> ('0'..'9')[('0'..'9')|('A'..'F')|('a'..'f')]<sup>+</sup>('h'|'H')</p>
+      </td>
+      <td width="50%">
+      <p> Hexadecimal</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> ('0'..'1')<sup>+</sup>('b'|'B') </p>
+      </td>
+      <td width="50%">
+      <p> Binary</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p> <b>Strings</b></p>
+<p> Strings are represented in the C style.</p>
+<table width="100%" border="1" cellpadding="4" cellspacing="0">
+  <col width="128*"> <col width="128*"> <tbody>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> Escape</p>
+      </td>
+      <td width="50%">
+      <p> Meaning</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> \\ </p>
+      </td>
+      <td width="50%">
+      <p> \</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> \r</p>
+      </td>
+      <td width="50%">
+      <p> Carriage Return</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> \n</p>
+      </td>
+      <td width="50%">
+      <p> Newline</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> \t</p>
+      </td>
+      <td width="50%">
+      <p> Tab</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> \b</p>
+      </td>
+      <td width="50%">
+      <p> Backspace</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> \xHH</p>
+      </td>
+      <td width="50%">
+      <p> Escape ASCII char</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> \uHHHH</p>
+      </td>
+      <td width="50%">
+      <p> Escape Unicode character</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> \UHHHHHHHH</p>
+      </td>
+      <td width="50%">
+      <p> Escape Unicode character (larger range)</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p> <b>Labels</b></p>
+<br>
+&lt;name&gt;':'<br>
+Normal Label.<br>
+<br>
+&lt;name&gt; when followed by an operation in which a label is implied,
+such as db, dw, dd, or dq.<br>
+'.'&lt;name&gt;':'<br>
+Creates a label relative to the last normal label. This will be handled
+by forming a composite label such that in "foo: .bar:", the later label
+is treated as "foo.bar:".<br>
+<br>
+Labels will be treated as case sensitive.<br>
+<br>
+$&lt;name&gt;, when used in an operand, gives an offset relative to a
+base Rather than the absolute address. This is a feature intended for
+PIC code (note: This is not used for x86-64 RIP-relative addressing).<br>
+<br>
+RIP-relative addresses are the default on x86-64.<br>
+<br>
+mov ecx, [foo] ;will refer to foo using rip-relative addressing<br>
+@&lt;name&gt;, will be used to indicate absolute addressing.<br>
+<br>
+mov ecx, [@foo] ;refer to foo via an absolute address<br>
+Absolute addresses will be the default for addresses given as
+immediates.<br>
+<br>
+mov ecx, [0x410] ;get the value at the address 0x410<br>
+RIP-relative addressing can be specified as such:<br>
+mov ecx, [rip-0x1f2c] ;refer to a value 0x1f2c bytes backwards<br>
+<br>
+<h4> Indirect Names</h4>
+'G.'&lt;name&gt;<br>
+This is a special way of accessing names, and will indicate that the
+reference is indirect (for example, via a GOT or proxy or similar),
+rather than directly to the name in question.<br>
+<br>
+<font face="Courier New, monospace"><font size="2">mov eax, [G.foo]
+;loads a pointer to foo, rather than foo itself<br>
+mov eax, [G.foo] ;loads a pointer to foo, rather than foo itself</font></font><font
+ face="Courier New, monospace" size="2">...<br>
+foo dd 0</font><br>
+<br>
+This allows speeding up dynamic relinking (since relinking can be done
+without having to update all references to a given label), and will be
+the only allowed way to use dynamically relinking with
+garbage-collectible thunks (See the section on thunks).ns <br>
+db, dw, dd, dq: emit 1 or more values seperated by commas, where db
+emits bytes, dw words, dd doublewords, and dq quadwords.db and dw may
+also accept strings, where each character in the string is encoded as a
+value. Note that using dw for strings assumes Unicode code-points (db
+assumes ASCII or UTF-8). In the case of string literals, it may be
+needed to manually include the trailing 0, as this will not be inserted
+automatically.<br>
+<br>
+dd/dq may accept float values, which will be encoded in the traditional
+IEEE forms.<br>
+resb, resw, resd, resq: fill space with some number of 0s of the
+respective size.<br>
+<br>
+&lt;name&gt; equ &lt;value&gt;<br>
+Defines an assembler constant, where at present value may only be an
+integer.<br>
+<br>
+<p> <b>Directives</b></p>
+<br>
+<table width="100%" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td>Syntax</td>
+      <td>Description</td>
+    </tr>
+    <tr>
+      <td>[section .text]</td>
+      <td>Direct output to text</td>
+    </tr>
+    <tr>
+      <td>[section .data]</td>
+      <td>Direct output to data</td>
+    </tr>
+    <tr>
+      <td>[section .bss]</td>
+      <td>Direct output to bss (currently .data)</td>
+    </tr>
+    <tr>
+      <td>[bits 16]<br>
+[bits 32]<br>
+[bits 64]<br>
+      </td>
+      <td>Declare the native word-size to emit code for.</td>
+    </tr>
+    <tr>
+      <td>[use16]<br>
+[use32]<br>
+[use64]<br>
+      </td>
+      <td>Likewise</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>extern <span style="font-style: italic;">name</span></td>
+      <td>Import an external name.<br>
+      </td>
+    </tr>
+    <tr>
+      <td>global <span style="font-style: italic;">name</span></td>
+      <td>Export a name.<br>
+      </td>
+    </tr>
+    <tr>
+      <td>align <span style="font-style: italic;">value</span></td>
+      <td>Align output to a given alignment.<br>
+Pads with zeroes for data sections, and nops for text (may use
+multi-byte nop forms).<br>
+      </td>
+    </tr>
+    <tr>
+      <td>align_vli <span style="font-style: italic;">value</span></td>
+      <td>Align output, but this time using VLI values.<br>
+      </td>
+    </tr>
+    <tr>
+      <td>db <span style="font-style: italic;">valuelist</span><br>
+      </td>
+      <td>Emit bytes. Strings are output as UTF8.<br>
+      </td>
+    </tr>
+    <tr>
+      <td>dw <span style="font-style: italic;">valuelist</span></td>
+      <td>Emit words. Strings are output as UTF16.</td>
+    </tr>
+    <tr>
+      <td>dd <span style="font-style: italic;">valuelist</span></td>
+      <td>Emit dwords.<br>
+      </td>
+    </tr>
+    <tr>
+      <td>dq <span style="font-style: italic;">valuelist</span></td>
+      <td>Emit qwords.<br>
+      </td>
+    </tr>
+    <tr>
+      <td>duv <span style="font-style: italic;">valuelist</span></td>
+      <td>Emit UVLI values. References are encoded relative to the byte
+following the VLI.</td>
+    </tr>
+    <tr>
+      <td>dsv <span style="font-style: italic;">valuelist</span></td>
+      <td>Emit SVLI values. References are encoded relative to the base
+VLI's address.<br>
+      </td>
+    </tr>
+    <tr>
+      <td>resb <span style="font-style: italic;">count</span><br>
+      </td>
+      <td>Reserve space for a certain number of bytes.<br>
+      </td>
+    </tr>
+    <tr>
+      <td>resw <span style="font-style: italic;">count</span></td>
+      <td>Reserve space for a certain number of words.</td>
+    </tr>
+    <tr>
+      <td>resd <span style="font-style: italic;">count</span></td>
+      <td>Reserve space for a certain number of dwords.</td>
+    </tr>
+    <tr>
+      <td>resq <span style="font-style: italic;">count</span></td>
+      <td>Reserve space for a certain number of qwords.</td>
+    </tr>
+    <tr>
+      <td>resbto <span style="font-style: italic;">offset</span><br>
+      </td>
+      <td>Reserve bytes to a certain section offset.<br>
+      </td>
+    </tr>
+    <tr>
+      <td>padto <span style="font-style: italic;">offset</span><br>
+      </td>
+      <td>Pad to a certain section offset (may use nop's).<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<b>Special Forms</b><br>
+<br>
+getip &lt;reg&gt;<br>
+Special form used to get the current EIP value (via a call and a pop).
+This value will be adjusted to point to the following instruction.<br>
+<br>
+getbase &lt;reg&gt;<br>
+Special form used to compute the base address and load it into the
+register. This works similar to the above, but adds to this by
+adjusting the value to point to the chosen address.<br>
+<br>
+This can be combined with the $&lt;name&gt;<br>
+form of labels for use in PIC code.<br>
+getbase ecx...<br>
+<br>
+mov eax, [ecx+$str]<br>
+push eax<br>
+call printf<br>
+pop edx<br>
+<br>
+setbase &lt;name&gt;<br>
+Set the base used for computing relative addresses. By default the base
+is set to the IP at the start of the current assembly or file.<br>
+Note that this name needs to be defined prior to using this special
+form.<br>
+<br>
+xmeta &lt;handler&gt; [&lt;args&gt;]<br>
+xnotify &lt;handler&gt; [&lt;args&gt;]<br>
+<br>
+Emit xmeta requests. An xmeta op parses the args and generates a
+mangled name for this request. This mangled name is then called via a
+call instruction.<br>
+<br>
+The xnotify op is similar, except that it produces a slightly different
+name, and emits it as a label.<br>
+<br>
+<p> <b>Register Naming</b></p>
+<p> Base Regs (classic):</p>
+<table style="page-break-inside: avoid;" width="100%" border="1"
+ cellpadding="4" cellspacing="3">
+  <col width="28*"> <tbody>
+    <tr valign="top">
+      <td width="11%">
+      <p> Byte:</p>
+      </td>
+      <td width="11%">
+      <p> al</p>
+      </td>
+      <td width="11%">
+      <p> cl</p>
+      </td>
+      <td width="11%">
+      <p> dl</p>
+      </td>
+      <td width="11%">
+      <p> bl</p>
+      </td>
+      <td width="11%">
+      <p> ah | spl</p>
+      </td>
+      <td width="11%">
+      <p> ch | bpl</p>
+      </td>
+      <td width="11%">
+      <p> dh | sil</p>
+      </td>
+      <td width="11%">
+      <p> bh | dil</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="11%">
+      <p> Word:</p>
+      </td>
+      <td width="11%">
+      <p> ax</p>
+      </td>
+      <td width="11%">
+      <p> cx</p>
+      </td>
+      <td width="11%">
+      <p> dx</p>
+      </td>
+      <td width="11%">
+      <p> bx</p>
+      </td>
+      <td width="11%">
+      <p> sp</p>
+      </td>
+      <td width="11%">
+      <p> bp</p>
+      </td>
+      <td width="11%">
+      <p> si</p>
+      </td>
+      <td width="11%">
+      <p> di</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="11%">
+      <p> DWord:</p>
+      </td>
+      <td width="11%">
+      <p> eax</p>
+      </td>
+      <td width="11%">
+      <p> ecx</p>
+      </td>
+      <td width="11%">
+      <p> edx</p>
+      </td>
+      <td width="11%">
+      <p> ebx</p>
+      </td>
+      <td width="11%">
+      <p> esp</p>
+      </td>
+      <td width="11%">
+      <p> ebp</p>
+      </td>
+      <td width="11%">
+      <p> esi</p>
+      </td>
+      <td width="11%">
+      <p> edi</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="11%">
+      <p> QWord:</p>
+      </td>
+      <td width="11%">
+      <p> rax</p>
+      </td>
+      <td width="11%">
+      <p> rcx</p>
+      </td>
+      <td width="11%">
+      <p> rdx</p>
+      </td>
+      <td width="11%">
+      <p> rbx</p>
+      </td>
+      <td width="11%">
+      <p> rsp</p>
+      </td>
+      <td width="11%">
+      <p> rbp</p>
+      </td>
+      <td width="11%">
+      <p> rsi</p>
+      </td>
+      <td width="11%">
+      <p> rdi</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p> Base Regs (alternative):</p>
+<table style="page-break-inside: avoid;" width="100%" border="1"
+ cellpadding="4" cellspacing="3">
+  <col width="28*"> <col width="28*"> <col width="28*"> <col
+ width="28*"> <col width="28*"> <col width="28*"> <col width="28*"> <col
+ width="28*"> <col width="28*"> <tbody>
+    <tr valign="TOP">
+      <td width="11%">
+      <p> Byte:</p>
+      </td>
+      <td width="11%">
+      <p> r0b</p>
+      </td>
+      <td width="11%">
+      <p> r1b</p>
+      </td>
+      <td width="11%">
+      <p> r2b</p>
+      </td>
+      <td width="11%">
+      <p> r3b</p>
+      </td>
+      <td width="11%">
+      <p> r4b</p>
+      </td>
+      <td width="11%">
+      <p> r5b</p>
+      </td>
+      <td width="11%">
+      <p> r6b</p>
+      </td>
+      <td width="11%">
+      <p> r7b</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="11%">
+      <p> Word:</p>
+      </td>
+      <td width="11%">
+      <p> r0w</p>
+      </td>
+      <td width="11%">
+      <p> r1w</p>
+      </td>
+      <td width="11%">
+      <p> r2w</p>
+      </td>
+      <td width="11%">
+      <p> r3w</p>
+      </td>
+      <td width="11%">
+      <p> r4w</p>
+      </td>
+      <td width="11%">
+      <p> r5w</p>
+      </td>
+      <td width="11%">
+      <p> r6w</p>
+      </td>
+      <td width="11%">
+      <p> r7w</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="11%">
+      <p> DWord:</p>
+      </td>
+      <td width="11%">
+      <p> r0d</p>
+      </td>
+      <td width="11%">
+      <p> r1d</p>
+      </td>
+      <td width="11%">
+      <p> r2d</p>
+      </td>
+      <td width="11%">
+      <p> r3d</p>
+      </td>
+      <td width="11%">
+      <p> r4d</p>
+      </td>
+      <td width="11%">
+      <p> r5d</p>
+      </td>
+      <td width="11%">
+      <p> r6d</p>
+      </td>
+      <td width="11%">
+      <p> r7d</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="11%">
+      <p> QWord:</p>
+      </td>
+      <td width="11%">
+      <p> r0</p>
+      </td>
+      <td width="11%">
+      <p> r1</p>
+      </td>
+      <td width="11%">
+      <p> r2</p>
+      </td>
+      <td width="11%">
+      <p> r3</p>
+      </td>
+      <td width="11%">
+      <p> r4</p>
+      </td>
+      <td width="11%">
+      <p> r5</p>
+      </td>
+      <td width="11%">
+      <p> r6</p>
+      </td>
+      <td width="11%">
+      <p> r7</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p> Extended GPRs:</p>
+<table style="page-break-inside: avoid;" width="100%" border="1"
+ cellpadding="4" cellspacing="3">
+  <col width="28*"> <col width="28*"> <col width="28*"> <col
+ width="28*"> <col width="28*"> <col width="28*"> <col width="28*"> <col
+ width="28*"> <col width="28*"> <tbody>
+    <tr valign="TOP">
+      <td width="11%">
+      <p> Byte:</p>
+      </td>
+      <td width="11%">
+      <p> r8b</p>
+      </td>
+      <td width="11%">
+      <p> r9b</p>
+      </td>
+      <td width="11%">
+      <p> r10b</p>
+      </td>
+      <td width="11%">
+      <p> r11b</p>
+      </td>
+      <td width="11%">
+      <p> r12b</p>
+      </td>
+      <td width="11%">
+      <p> r13b</p>
+      </td>
+      <td width="11%">
+      <p> r14b</p>
+      </td>
+      <td width="11%">
+      <p> r15b</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="11%">
+      <p> Word:</p>
+      </td>
+      <td width="11%">
+      <p> r8w</p>
+      </td>
+      <td width="11%">
+      <p> r9w</p>
+      </td>
+      <td width="11%">
+      <p> r10w</p>
+      </td>
+      <td width="11%">
+      <p> r11w</p>
+      </td>
+      <td width="11%">
+      <p> r12w</p>
+      </td>
+      <td width="11%">
+      <p> r13w</p>
+      </td>
+      <td width="11%">
+      <p> r14w</p>
+      </td>
+      <td width="11%">
+      <p> r15w</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="11%">
+      <p> DWord:</p>
+      </td>
+      <td width="11%">
+      <p> r8d</p>
+      </td>
+      <td width="11%">
+      <p> r9d</p>
+      </td>
+      <td width="11%">
+      <p> r10d</p>
+      </td>
+      <td width="11%">
+      <p> r11d</p>
+      </td>
+      <td width="11%">
+      <p> r12d</p>
+      </td>
+      <td width="11%">
+      <p> r13d</p>
+      </td>
+      <td width="11%">
+      <p> r14d</p>
+      </td>
+      <td width="11%">
+      <p> r15d</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="11%">
+      <p> QWord:</p>
+      </td>
+      <td width="11%">
+      <p> r8</p>
+      </td>
+      <td width="11%">
+      <p> r9</p>
+      </td>
+      <td width="11%">
+      <p> r10</p>
+      </td>
+      <td width="11%">
+      <p> r11</p>
+      </td>
+      <td width="11%">
+      <p> r12</p>
+      </td>
+      <td width="11%">
+      <p> r13</p>
+      </td>
+      <td width="11%">
+      <p> r14</p>
+      </td>
+      <td width="11%">
+      <p> r15</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+As for: ah/spl, ch/bpl, dh/sil, bh/dil.Which is used is based on the
+absence or presence of a REX prefix, as otherwise the registers are
+encoded the same.<br>
+As such, accessing spl/bpl/sil/dil will make an opcode that looks the
+same as the ah/ch/dh/bh form, apart from the addition of a dummy REX
+prefix, and alternatively ah/ch/dh/bh may not be used with an opcode
+which uses REX.<br>
+<br>
+Albeit, alternative possibilities exist in this latter case (an
+ijklmnop progression, or mimicking irregularities of the latter 4 base
+regs). As such, this convention will be viewed as deprecated and may be
+removed.<br>
+<br>
+<p> <b>Opcodes</b></p>
+<br>
+Opcodes will be similar to as in many other assemblers (NASM and
+friends in particular).<br>
+<br>
+reg imm label mem '[' [&lt;sreg&gt;':'] (&lt;reg|label|addr|const&gt; |
+(&lt;label&gt; '+' &lt;reg&gt;)) ['+'&lt;reg&gt;['*'&lt;scale&gt;]]
+['+'&lt;label|disp|const&gt;] ']'<br>
+<br>
+A size override may be provided between an opcode and the first
+argument, which may be used when choosing which particular version of
+the opcode to encode.<br>
+short Jumps, 8-bit offset<br>
+near16 Jumps, 16-bit offset<br>
+near32 Jumps, 32-bit offset<br>
+byte 8-bit value.<br>
+word 16-bit value.<br>
+dword 32-bit value.<br>
+qword 64-bit value.<br>
+oword 128-bit value.<br>
+In the case of jumps/calls/... to a label, the default encoding chosen
+is based on the current arch.<br>
+At present, an immediate given as a real will be assumed to be a float
+(it is treated as an dword encoding the float).Likewise, in this case
+it will generate an implicit 'dword'.<br>
+Using 'qword' will cause it to be treated as a double (only valid if
+the opcode can accept a 64 bit immediate).<br>
+<br>
+mov [foo], 2.7178 ;store a float into foo<br>
+mov dword [foo], 2.7178 ;equivalent ('dword' is implied above).<br>
+mov ecx, 3.14159265359 ;likewise...<br>
+mov cx, 3.14159265359 ;invalid... <br>
+<p> <b>Special Cases</b></p>
+<br>
+inc/dec reg<br>
+Increment or decrement a register.In other assemblers, these would
+simply be part of inc/dec, however, in x86-64, these forms have been
+overloaded as the REX prefixes (and thus these forms are invalid in
+x86-64).<br>
+'inc reg16/32' and 'dec reg16/32' will be internally renamed on x86-32,
+and will produce a less efficient form of the instruction on x86-64.<br>
+<br>
+movsx and movzx<br>
+movsx r32, rm16
+<p> &nbsp;</p>
+movsx r64, rm32and:movzx r32, rm16movzx r64, rm32<br>
+Have been renamed to movsxw and movzxw since the size of memory oprands
+is not known, and it wasn't really possible to distinguish them from
+the 8-bit forms.<br>
+<br>
+<h2> Preprocessor Syntax</h2>
+At present, a preprocessor is present which will accept syntax in 2
+styles:C-style, for example:
+<p> &nbsp;</p>
+#define FOO&#8230;<br>
+#ifdef FOO...<br>
+#endif<br>
+as well as NASM style:<br>
+%define FOO &#8230;<br>
+Note that the syntax for NASM style block macros is not presently
+supported.<br>
+<br>
+Note that '#' or '%' as the first character on a line will signal the
+use of a preprocessor directive. A preprocessor directive will
+terminate at the end of a line, however, \ may be used to break a
+directive onto multiple lines.<br>
+#include &#8220;<i>name</i>&#8221;<br>
+#include &lt;<i>name</i>&gt;<br>
+Include another file.<br>
+<br>
+#define <i>name<br>
+</i>#define <i>name value<br>
+</i>#define <i>name</i>(<i>args</i>) <i>pattern</i><br>
+Define a macro. Note that macros may not be overloaded.A macro may be
+invoked where pattern is inserted in place of the macro invocation, and
+each argument is substituted into the appropriate place in the pattern.<br>
+<br>
+#undef <i>name<br>
+</i>Remove a macro definition.<br>
+#ifdef <i>name<br>
+</i>Begins a block, which is included if name has been defined.<br>
+#ifndef <i>name<br>
+</i>Begins a block, which is included if name has not been defined.<br>
+#if <i>pp-expression<br>
+</i>Begins a block, which is included if pp-expression is true
+(non-zero).<br>
+#else<br>
+Ends the current block and begins a new block which is included if the
+prior block was not included.<br>
+#endif<br>
+Ends the current block.<br>
+Special Defines<br>
+__x86__ or __x86_64__ will be defined to identify which CPU
+architecture is currently in use.<br>
+<br>
+Special Directives<br>
+#macro <i>name</i>(<i>args</i>)<i><br>
+text...<br>
+</i>#endmacro<br>
+Creates a multi-line macro.<br>
+A multi-line macro allows definition of multiple lines, as well as the
+inclusion of preprocessing and delayed-preprocessing directives within
+the body of the macro.<br>
+Note that newlines within the body of the macro will be preserved in
+the expanded output.<br>
+<br>
+#definelocal <i>name<br>
+</i>#definelocal <i>name value<br>
+</i>#definelocal <i>name</i>(<i>args</i>) <i>pattern<br>
+</i>Performs a local define.<br>
+This differs from an ordinary define in that local defines include a
+scope (whereas an ordinary define is global by default), and when the
+scope exits the local define will disappear.<br>
+#assign <i>name</i> <i>pp-expression<br>
+</i>Assign a new value to a prior define. The expression will be
+evaluated prior to being assigned.Note that this will search upwards
+along the scopes, assigning the first define found, and failing finding
+a define will bind at the top level.<br>
+#assignlocal <i>name</i> <i>pp-expression<br>
+</i>Performs a similar task to &#8220;#assign&#8221;, but differs in that it will
+not search parent scopes and will use a local define rather than a
+top-level define.<br>
+<br>
+#define <i>name value<br>
+</i>May be used to replace the value in a prior define.<br>
+<br>
+#enterscope<br>
+#exitscope<br>
+Manually enter or exit a local scope. These are to be paired.<br>
+<br>
+##...<br>
+Allows &#8220;delaying&#8221; a PP directive within a multi-line macro. This
+delayed directive will in turn be evaluated at the time the macro is
+expanded, rather than at the time it is declared.<br>
+Multiple levels of &#8220;#&#8221; may be be used, with each being eaten off at
+each level of expansion (allowing, for example, the creation of macros
+within macros).<br>
+<br>
+<br>
+<h1> BASM API</h1>
+<br>
+<h3> Frontend</h3>
+<br>
+char *BASM_CPUID_String();<br>
+u32 BASM_CPUID_Version();<br>
+u32 BASM_CPUID_Unit();<br>
+u32 BASM_CPUID_Ext();<br>
+u32 BASM_CPUID_Feature();<br>
+Post-initialization, these give basic info about what was returned via
+the CPUID instruction.This can be used, for example, to determine if
+certain features are available.<br>
+<br>
+void *BASM_GetEBP();<br>
+This returns the value of rBP in the caller.<br>
+<br>
+int BASM_GetReturnState(void **regs);<br>
+This gets the register state. The structure and meaning is arch
+specific.<br>
+<br>
+byte *BASM_Win64LocateEpilogue(byte *ip);<br>
+For Win64, locate the following epilogue for a given rIP.<br>
+<br>
+byte *BASM_Win64AdjustEpilogueRSP(byte *ip, byte *sp,BGBASM_RegsBuf
+*regs);<br>
+For Win64, Adjust the contents of regs in accordance with the epilogue
+(used in order to do simulated stack unwinding for backtracing).<br>
+<br>
+int BASM_StackTrace(void **ip, void **bp, int lim);<br>
+This unwinds the stack giving the rIP address and base-pointer at each
+step.The lim argument gives the maximum number of stack frames to
+return.The return value is the number of frames successfully
+back-traced, or -1 on error.<br>
+<br>
+void basm_putc(int c);<br>
+void basm_puts(char *str);<br>
+void basm_vprint(char *str, va_list lst);<br>
+void basm_print(char *str, ...);<br>
+<br>
+Submit ASM code to the current ASM buffer.br/&gt; void
+BASM_RegisterPtr(char *lbl, void *ptr);<br>
+Declare that a given label has a given address.<br>
+<br>
+void *BASM_GetPtr(char *lbl);<br>
+Get the address of a particular label.<br>
+<br>
+char *BASM_GetPtrName(void *ptr);<br>
+Get the label associated with a particular address.<br>
+<br>
+char *BASM_GetLastNamePtr(void *ptr, void **rbp);<br>
+Gets the name of the last label for a given address, as well as the
+base address for said label.<br>
+<br>
+void *BASM_FetchSymPrefix(char *name);<br>
+Get the address of the label with name as its prefix.<br>
+<br>
+char *BASM_FetchSymPrefixName(char *name);<br>
+Get the name of the label with name as its prefix.<br>
+<br>
+void BASM_DumpModule(char *name);<br>
+Dump information about a given loaded module by name.<br>
+<br>
+void *BASM_GetFPtrDummy(char *lbl);<br>
+Get the address of a given label, or if the label is not found, return
+a no-op function pointer.<br>
+<br>
+void BASM_BeginAssembly(char *name);<br>
+Begin a new ASM module with a given name. The name may be NULL, which
+means that the module is unnamed. At this point, basm_print() and
+similar may be used to submit ASM code.<br>
+<br>
+void *BASM_EndAssembly();<br>
+void *BASM_EndAssemblyQuiet();<br>
+void *BASM_EndAssemblyDebug();<br>
+void BASM_EndAssemblyQueue();<br>
+void *BASM_EndAssemblyCache(char *name);<br>
+void BASM_EndAssemblyFile(char *name);<br>
+byte *BASM_EndAssemblyObjBuf(int *rsz);<br>
+byte *BASM_EndAssemblyCacheObjBuf(int *rsz);<br>
+BLNK_Thunk *BASM_EndAssemblyThunk(BLNK_Scope *scope);<br>
+byte *BASM_EndAssemblyThunkInline(BLNK_Scope *scope);<br>
+void BASM_EndAssemblyVirtualHeader();<br>
+Ends the ASM module, where the suffix indicates additional special-case
+behaviors.<br>
+<br>
+<br>
+<table width="100%" border="1" bordercolor="#000000" cellpadding="4"
+ cellspacing="0">
+  <col width="128*"> <col width="128*"> <tbody>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> BASM_EndAssembly()</p>
+      </td>
+      <td width="50%">
+      <p> Ends with default behaviors. Returns the start of the linked
+&#8220;.text&#8221; section.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> BASM_EndAssemblyQuiet()</p>
+      </td>
+      <td width="50%">
+      <p> Ends but doesn't print anything (the default version may be
+allowed to emit debugging messages).</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> BASM_EndAssemblyDebug()</p>
+      </td>
+      <td width="50%">
+      <p> Request printing some debugging messages.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> BASM_EndAssemblyQueue()</p>
+      </td>
+      <td width="50%">
+      <p> Queue module for delayed linking.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> BASM_EndAssemblyCache()</p>
+      </td>
+      <td width="50%">
+      <p> Stores an object module in the file given by name in addition
+to linking it into the running image.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> BASM_EndAssemblyFile()</p>
+      </td>
+      <td width="50%">
+      <p> Stores output into the file given by name (does not link into
+running image).</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> BASM_EndAssemblyObjBuf()</p>
+      </td>
+      <td width="50%">
+      <p> Stores output object module into a returned buffer (does not
+link). The object module is managed by malloc.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> BASM_EndAssemblyCacheObjBuf()</p>
+      </td>
+      <td width="50%">
+      <p> Stores output object module into a returned buffer and link
+into running image. The object module is managed by malloc.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> BASM_EndAssemblyThunk()</p>
+      </td>
+      <td width="50%">
+      <p> Output is linked into a garbage-collected thunk object. For
+info about thunks and scopes, see the section on thunks.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> BASM_EndAssemblyThunkInline()</p>
+      </td>
+      <td width="50%">
+      <p> Output is linked into a garbage collected inline thunk object
+(saves memory by not using a header, and so is raw machine code).</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> BASM_EndAssemblyVirtualHeader()</p>
+      </td>
+      <td width="50%">
+      <p> Output was a virtual preprocessing header. It is sent to the
+preprocessor and can be later included as if it were a header file.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+<br>
+void BASM_FreeAssembly(void *ip);<br>
+Free the ASM module located by the stating rIP address.<br>
+<br>
+char *BASM_GenSym();char *BASM_GenSym2();<br>
+Generate a unique label name. The name is generated via a TRNG and is
+18 digits encoded in base48 with around 96 bits of entropy. Both store
+the name in a temporary memory buffer.<br>
+They differ in that 2 uses an underscore prefix.<br>
+<br>
+int BASM_LoadObjectBuffer(char *name, byte *buf, int sz);<br>
+Load an object module from a buffer and link into the current running
+image.<br>
+<br>
+int BASM_LoadFile(char *name);<br>
+Loads contents from a file and link into the running image.This may
+load object modules, libraries, or textual ASM.<br>
+<br>
+int BASM_AssembleFile(char *iname, char *oname);<br>
+Assemble the contents of the file given by iname and store the
+resultant object module in oname.<br>
+<br>
+int BASM_ProcessEXE(char *name);<br>
+Attempt to load and process the EXE file given by name, which is to
+refer to the current app's main EXE. This may be no-op. Its original
+purpose was to load the symbol table from the main EXE and map it to
+the current process, but fell into uselessness given MSVC does not
+store symbol tables in linked executables, and due to the conversion of
+the project to using DLL files. (This call is deprecated de facto).<br>
+<br>
+void BASM_Init();<br>
+This is the main initialization function for the assembler, and should
+be called prior to doing most other stuff.Note that setting up the GC
+and IO callbacks should be done prior to calling this function, and
+this function should be called prior to using other facilities.<br>
+<br>
+void BASM_CallSig(void *fcn, char *sig, void *buf, void *ret);<br>
+void BASM_CallSigStd(void *fcn, char *sig, void *buf, void *ret);<br>
+These call a function given a function pointer, call signature (see
+Metadata spec), and a buffer holding the args (packed linearly
+according to architecture specific rules). The ret argument holds a
+pointer to the place where the return value will be stored.<br>
+'Std' is specific to Win32, and is used to indicate that the function
+is being called with the stdcall calling convention (the other function
+will perform the call using cdecl).<br>
+<br>
+void BASM_CreateStub(void *buf, void *fcn, void *data, char *sig);<br>
+void *BASM_CreateStubGC(void *fcn, void *data, char *sig);<br>
+These will create a 'closure' stub, which when called will redirect the
+call to the passed in function while adding in data as the first
+argument. Sig gives the baseline signature for the function.<br>
+The former writes the generated stub into the buffer.The latter creates
+a GC'ed thunk which holds the stub.<br>
+<br>
+void *BASM_MakeBufferCallStub(void *fcn, char *sig);<br>
+This call may attempt to create a call-stub, which will allow faster
+calls than via CallSig. It will do so by producing a specially crafted
+chunk of code for moving the arguments from the argument buffer into
+the correct registers and/or stack locations (CallSig, by definition,
+needs to use general purpose signature-handling code).<br>
+The stub will be located in a GC'ed inline thunk, and will have the
+form:void (*)(void *buf);Where buf is the argument buffer, and is also
+used for storing the return value.<br>
+This function may return NULL, indicating that for whatever reason it
+was unable to produce a thunk (such as unhandled arch or type issues),
+and it may instead be needed to use CallSig.<br>
+<br>
+int BASM_UnmangleXCall(char *str, char *buf);<br>
+This will unmangle an XCall symbol name into its canonical form (See
+Metadata spec).<br>
+char **BASM_UnmangleSplit(char *str);This will unmangle an XCall symbol
+containing multiple components (such as a meta-function or
+meta-trigger), and return an array of strings comprising each
+component. These strings will be located in temporary buffers.<br>
+int BASM_MangleXCall(char *str, char *buf);<br>
+Mangle a string from its cannonical form into a mangled form.<br>
+<br>
+int BASM_RegisterLinkMeta(char *name, basm_meta_ft fcn);<br>
+int BASM_RegisterLinkMetaTrigger(char *name, basm_mtrg_ft fcn);<br>
+Register handlers for resolving link meta functions and link meta
+triggers (See Metadata spec).<br>
+<br>
+char *BASM_ComposeLinkMetaName(char *name, char **args);<br>
+char *BASM_ComposeLinkNotifyName(char *name, char **args);<br>
+Compose a symbol name for a link meta function or meta trigger (See
+Metadata spec).Meta is for Meta-Functions, and Notify is for
+Meta-Triggers.<br>
+<br>
+<h3> Jumps and Exceptions</h3>
+<p> int BASM_SaveRegs(BGBASM_RegsBuf *buf);<br>
+Copy the current register state into a register buffer.<br>
+</p>
+<p>void *BASM_SetJmp(BGBASM_JmpBuf *buf);<br>
+Store the present state into a jump buffer. Returns the value used with
+LongJmp or NULL.<br>
+</p>
+<p>void BASM_LongJmp(BGBASM_JmpBuf *buf, void *val);<br>
+Initiate a long jump, and pass a pointer along.<br>
+</p>
+<p>void *BASM_StartUnwind(BGBASM_JmpBuf *buf);<br>
+void BASM_EndUnwind(BGBASM_JmpBuf *buf);<br>
+void *BASM_BeginUnwind(BGBASM_JmpBuf *buf);<br>
+void BASM_DoUnwind(void *val);<br>
+</p>
+<p>These are related to low-level exception handling mechanics. Use
+with caution.<br>
+BeginUnwind / EndUnwind register and unregister an exception-handling
+frame.<br>
+DoUnwind passes along an exception to the last unwind handler, where
+the control passes out of BeginUnwind (it would look as if BeginUnwind
+exited with a pointer, similar to a LongJmp).<br>
+It may in turn use DoUnwind to re-throw the exception.<br>
+<br>
+</p>
+<h3> Misc</h3>
+<p> char *basm_strdup(char *str);<br>
+This function interns the string it is given, and returns a pointer to
+the interned string.<br>
+Note: This was exported mostly as a lot of other code had used it prior
+to converting things into DLL form, but in general using this is
+discouraged.</p>
+<p> byte *BDISASM_PrintOpcode(byte *ip, int *rfl);<br>
+Prints a disassembly of the opcode at a given ip, while also updating
+the decoder state flags and returning the next ip.</p>
+<p> int BDISASM_PrintOpcodes(byte *ip, int fl, int sz);<br>
+Print a disassembly of the opcodes located at ip and for sz bytes. The
+fl argument gives the initial state flags for the decoder.<br>
+</p>
+<p>int BDISASM_HexDump(byte *ip, int sz);<br>
+Do a hex dump of the given memory.</p>
+<h3> Linker</h3>
+<p> int BLNK_CheckPointerImageP(void *p);<br>
+Returns non-zero if the pointer points to a part of the current image.</p>
+<p> void BLNK_AssignSym(char *name, void *ptr);<br>
+Assign a symbol to a particular pointer, may re-link if needed.<br>
+AssignSym may also attempt to create a proxy (in addition to assigning
+a symbol).</p>
+<p> Note: Consider BASM_RegisterPtr() instead.</p>
+<p> <br>
+void BLNK_AddProxyPtr(char *name, void *ptr);<br>
+Create a proxy for a given symbol and bind the proxy to point to the
+given pointer.<br>
+Note: Don't use proxies for variables. Proxies are intended primarily
+to allow dynamic function patching, and may give incorrect behavior if
+used for variables.</p>
+<p> void BLNK_AddProxy(char *name);<br>
+Create a proxy for a given name and bind proxy to prior address
+referenced by name.<br>
+Note as see above.<br>
+</p>
+<p>void BLNK_AddProxyImport(char *name);<br>
+Add a proxy, but use specialized behavior related to DLL imports.<br>
+Note: Don't use without good reason and familiarity with the linker
+internals.<br>
+</p>
+<p>int BLNK_LoadLibrary(char *name);</p>
+<p> Load a library into the current running image.<br>
+<br>
+</p>
+<h3> Thunks</h3>
+<br>
+<br>
+<br>
+BLNK_Scope *BLNK_NewScope(BLNK_Scope *super);<br>
+Create a new empty scope delegating to a parent scope.<br>
+If the parent scope is NULL, then it delegates to the global scope.<br>
+void BLNK_FreeScope(BLNK_Scope *scope); <br>
+<br>
+Destroy a scope.<br>
+<br>
+int BLNK_IndexScopeSym(BLNK_Scope *scope, char *name);<br>
+void BLNK_BindScopeSym(BLNK_Scope *scope, char *name, void *ptr);<br>
+void BLNK_BindScopeSymSig(BLNK_Scope *scope,char *name, char *sig, void
+*ptr);<br>
+void BLNK_AssignScopeSym(BLNK_Scope *scope, char *name, void *ptr);<br>
+void *BLNK_FetchScopeSym(BLNK_Scope *scope, char *name);<br>
+void *BLNK_FetchScopeSym2(BLNK_Scope *scope, char *name);<br>
+char *BLNK_FetchScopeSig(BLNK_Scope *scope, char *name);<br>
+<br>
+More to come...<br>
+<br>
+BLNK_Thunk *BLNK_LinkModuleThunk(BLNK_Object *ctx, BLNK_Scope *scope);<br>
+byte *BLNK_LinkThunkInline(BLNK_Object *ctx, BLNK_Scope *scope);<br>
+BLNK_Thunk *BLNK_LinkModuleThunkObj(BLNK_Scope *scope, void *buf, int
+sz);<br>
+byte *BLNK_LinkModuleThunkInlineObj(BLNK_Scope *scope, void *buf, int
+sz);<br>
+<br>
+These are internal and probably shouldn't be used.These basically link
+an object against a scope and create a thunk, where a Thunk is
+basically a directly executable object (the first part of the Thunk
+structure is a jump to its entry point). The thunk object basically
+keeps track of its scope, and has a few other features, and can support
+multiple sections, ...<br>
+An inline thunk omits the header, and so is basically a raw buffer with
+some code in it.Both types of thunks are allocated via the garbage
+collector.<br>
+<br>
+<h3> Callback Registration</h3>
+void BLNK_SetScanRange(int (*fcn)(void **p, int cnt));<br>
+int BLNK_RegisterLookup(blnk_lookup_ft fcn);<br>
+int BLNK_RegisterNotify(blnk_notify_ft fcn);void BLNK_MarkData();<br>
+<br>
+The above should probably not be used without good reason. Messing with
+them may break stuff...<br>
+SetScanRange() and MarkData() are generally related to integration with
+the garbage collector.RegisterLookup() and RegisterNotify() are in fact
+used elsewhere in BASM and so don't really even belong in the external
+API.<br>
+<br>
+BLNK_GCFuncs_t *BLNK_GetGCFuncs();<br>
+BLNK_IOFuncs_t *BLNK_GetIOFuncs();<br>
+<br>
+These basically get the structures of function pointers used to plug
+the assembler into other subsystems. The idea is that &#8220;some other piece
+of code&#8221; (currently BGBDY / DYLL) gets these structures and shoves in a
+bunch of function pointers to the relevant machinery.<br>
+GCFuncs is basically a structure used to plug the assembler into the
+garbage collector.IOFuncs is basically a structure used to plug the
+assembler into the VFS (or some other facility implementing file IO).<br>
+These structures will generally be used for most memory management, and
+all file IO within the assembler (memory management not done via this
+will generally be that of grabbing chunks of address space from the OS,
+and some current use of malloc).<br>
+These structures should be set up prior to initializing the assembler
+(although, these should not be touched directly if DYLL is in use,
+since DYLL will set these up on its own).<br>
+<h3> Reference Structures</h3>
+These structures are provided here for reference, but the actual
+structures used may be subject to change in the future and without
+warning.<br>
+typedef void *(*basm_meta_ft)(char *sym, char *name, char **args);<br>
+typedef void (*basm_mtrg_ft)(char *sym, char *name, char **args, void
+*ptr);<br>
+The above are for meta-link and meta-trigger handlers.<br>
+<br>
+typedef struct BASM_XMeta_s BASM_XMeta;<br>
+<br>
+struct BASM_XMeta_s {<br>
+BASM_XMeta *next;<br>
+char *name;<br>
+basm_meta_ft mfcn;<br>
+basm_mtrg_ft mtrg;<br>
+char **tmp;<br>
+int ntmp, mtmp;<br>
+};<br>
+This relates to meta-link handlers.<br>
+<br>
+typedef struct {void *seh_next; //next chain (nested unwind)<br>
+void *seh_hdlr; //handler (SEH specific)<br>
+#ifdef WIN64<br>
+void *regs[16+20]; //saved regs (for restore)<br>
+#else<br>
+void *regs[12]; //saved regs (for restore)<br>
+#endifvoid *seh_ehr; //EXCEPTION_RECORD (SEH)<br>
+void *seh_ctx; //CONTEXT (SEH)<br>
+}BGBASM_JmpBuf;<br>
+<br>
+typedef struct {<br>
+#ifdef X86_64<br>
+void *gregs[16]; //@0<br>
+int xregs[16*4]; //@128<br>
+void *spregs[4]; //@384, special (return RIP, return RSP)<br>
+#else<br>
+void *gregs[8]; //@0<br>
+int xregs[8*4]; //@32<br>
+void *spregs[4]; //<br>
+#endif<br>
+}BGBASM_RegsBuf;<br>
+These are used for exceptions and state capture.<br>
+<br>
+typedef struct {int (*scanrange_f)(void **p, int cnt);<br>
+void *(*gcalloc_f)(int sz);<br>
+void *(*gcexec_f)(int sz);<br>
+void *(*gcatomic_f)(int sz);<br>
+void *(*gctalloc_f)(char *ty, int sz);<br>
+void *(*gctexec_f)(char *ty, int sz);<br>
+void *(*gctatomic_f)(char *ty, int sz);<br>
+void (*gcfree_f)(void *p);<br>
+void *(*gcrealloc_f)(void *p, int sz);<br>
+char *(*gcgettype_f)(void *p);<br>
+int (*gcalloctls_f)(char *name, int sz);<br>
+int (*gcgettlstls_f)();<br>
+}BLNK_GCFuncs_t;<br>
+<br>
+typedef struct {<br>
+void *(*fopen_fp)(char *name, char *mode);<br>
+void (*fclose_fp)(void *fd);<br>
+int (*fread_fp)(void *buf, int m, int n, void *fd);<br>
+int (*fwrite_fp)(void *buf, int m, int n, void *fd);<br>
+int (*feof_fp)(void *fd);<br>
+s64 (*ftell_fp)(void *fd);<br>
+int (*fseek_fp)(void *fd, s64 pos, int rel);<br>
+}BLNK_IOFuncs_t;<br>
+<br>
+<p> These are used for callback registration:</p>
+<p> <br>
+</p>
+<table style="page-break-inside: avoid;" width="100%" border="1"
+ cellpadding="4" cellspacing="3">
+  <col width="128*"> <col width="128*"> <tbody>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> int (*scanrange_f)(void **p, int cnt)</p>
+      </td>
+      <td width="50%">
+      <p> Used during the GC pass so that the linker can tell the GC
+which objects it has seen over. Note that the GC is conservative here,
+so not all pointers will refer to valid GC managed objects.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> void *(*gcalloc_f)(int sz)</p>
+      </td>
+      <td width="50%">
+      <p> Allocate a generic untyped memory object from the GC.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> void *(*gcexec_f)(int sz)</p>
+      </td>
+      <td width="50%">
+      <p> Allocate a generic executable memory object from the GC.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> void *(*gcatomic_f)(int sz)</p>
+      </td>
+      <td width="50%">
+      <p> Allocate a generic atomic object from the GC (atomic objects
+are garbage collected, but are assumed not to contain valid references).</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> void *(*gctalloc_f)(char *ty, int sz)</p>
+      </td>
+      <td width="50%">
+      <p> Allocate a typed memory object, where the type is a generic
+string-based name.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> void *(*gctexec_f)(char *ty, int sz)</p>
+      </td>
+      <td width="50%">
+      <p> Allocate a typed executable object.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> void *(*gctatomic_f)(char *ty, int sz)</p>
+      </td>
+      <td width="50%">
+      <p> Allocate a typed atomic object.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> void (*gcfree_f)(void *p)</p>
+      </td>
+      <td width="50%">
+      <p> Free a garbage collected object, assumed valid for all types.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> void *(*gcrealloc_f)(void *p, int sz)</p>
+      </td>
+      <td width="50%">
+      <p> Re-allocate a GC object, where the new object is assumed to
+retain the same properties as the old object.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> char *(*gcgettype_f)(void *p)</p>
+      </td>
+      <td width="50%">
+      <p> Get the type name associated with a GC object (NULL if
+unknown).</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> int (*gcalloctls_f)(char *name, int sz)</p>
+      </td>
+      <td width="50%">
+      <p> Attempt to allocate a TLS variable with a given name and size.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> int (*gcgettlstls_f)()</p>
+      </td>
+      <td width="50%">
+      <p> Get the (OS) TLS variable pointing to the allocatable TLS
+vars.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+File IO follows stdio-like conventions, but does not make assumptions
+regarding the contents of the file pointer. The purpose is to allow
+plugging the assembler into a VFS (Virtual File System).<br>
+<br>
+<table style="page-break-inside: avoid;" width="100%" border="1"
+ cellpadding="4" cellspacing="3">
+  <col width="128*"> <col width="128*"> <tbody>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> void *(*fopen_fp)(char *name, char *mode)</p>
+      </td>
+      <td width="50%">
+      <p> Open File.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> void (*fclose_fp)(void *fd)</p>
+      </td>
+      <td width="50%">
+      <p> Close File.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> int (*fread_fp)(void *buf, int m, int n, void *fd)</p>
+      </td>
+      <td width="50%">
+      <p> Read File.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> int (*fwrite_fp)(void *buf, int m, int n, void *fd)</p>
+      </td>
+      <td width="50%">
+      <p> Write File.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> int (*feof_fp)(void *fd)</p>
+      </td>
+      <td width="50%">
+      <p> Return non-zero if EOF.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> s64 (*ftell_fp)(void *fd)</p>
+      </td>
+      <td width="50%">
+      <p> Get current file offset (s64 == signed 64-bit integer)</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="50%">
+      <p> int (*fseek_fp)(void *fd, s64 pos, int rel)</p>
+      </td>
+      <td width="50%">
+      <p> Seek in current file, returns generic status.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+typedef struct BLNK_Scope_s BLNK_Scope;<br>
+typedef struct BLNK_ScopeSym_s BLNK_ScopeSym;<br>
+typedef struct BLNK_Env_s BLNK_Env;<br>
+<br>
+struct BLNK_ScopeSym_s {<br>
+char *name;<br>
+char *sig;<br>
+void *addr;<br>
+};<br>
+<br>
+struct BLNK_Scope_s {<br>
+BLNK_Scope *super;<br>
+BLNK_ScopeSym **syms;<br>
+int n_syms, m_syms;<br>
+};<br>
+<br>
+struct BLNK_Env_s {<br>
+BLNK_Env *super;<br>
+void *data[1];<br>
+};<br>
+<br>
+typedef struct {<br>
+byte jump[16];<br>
+byte *text;<br>
+byte *data;<br>
+BLNK_Scope *scope;<br>
+BLNK_Scope *env_info;<br>
+BLNK_Env *xf_env; //initial env (XFrame)<br>
+byte *xf_ip; //initial rIP (XFrame)<br>
+BLNK_Scope *args_info;<br>
+}BLNK_Thunk;<br>
+<br>
+Note: XFrame is an incomplete experimental calling convention which had
+aimed to allow for simplifying things such as:<br>
+Lexical closures, continuations, ...<br>
+<br>
+Thunks were the intended means for implementing them. The cost is,
+however, that this would not mix well with more traditional code, since
+any non-frame function in the mix would essentially break the ability
+to use continuations via frames.<br>
+<br>
+</body>
+</html>

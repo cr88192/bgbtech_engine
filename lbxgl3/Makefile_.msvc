@@ -1,0 +1,165 @@
+CFLAGS=/I. /Iinclude /I../include
+
+LDFLAGS=-lpdgl
+EXE=.exe
+
+# all: liblbxgl2.dll
+all: includes libs apps FORCE
+
+
+FORCE:
+
+%.obj: %.c
+	cl $(CFLAGS) /c /Fo$@ $<
+
+#	geom/camera.obj \
+
+LBXGL_OBJS = \
+	geom/prim3d1.obj \
+	geom/prim3d2.obj \
+	geom/draw2.obj \
+	geom/texture.obj \
+	geom/skyplane.obj \
+	geom/skycube.obj \
+	geom/mesh.obj \
+	geom/shader.obj \
+	geom/particle.obj \
+	geom/method.obj \
+	geom/model.obj \
+	\
+	brush/brush.obj \
+	brush/brush_draw.obj \
+	brush/brush_bsp.obj \
+	brush/brush_csg.obj \
+	brush/brush_vis2.obj \
+	brush/brush_portal.obj \
+	brush/brush_light.obj \
+	brush/brush_drawnode.obj \
+	brush/brush_bmodel.obj \
+	brush/brush_world.obj \
+	brush/brush_solidmap.obj \
+	brush/brush_phys.obj \
+	brush/brush_map.obj \
+	brush/brush_ground.obj \
+	brush/brush_path.obj \
+	\
+	brush/terr_draw.obj \
+	geom/shadow.obj \
+	\
+	format/sprite.obj \
+	format/asm.obj \
+	format/effect.obj \
+	\
+	format/fmt_qmdl.obj \
+	format/fmt_qmd3.obj \
+	format/fmt_smd.obj \
+	format/fmt_ac3d.obj \
+	\
+	geom/video/avi.obj \
+	geom/video/codec.obj \
+	geom/video/codec_vfw.obj \
+	geom/video/codec_mjpg.obj \
+	\
+	skel/skel_base.obj \
+	skel/skel_draw.obj \
+	skel/skel_save.obj \
+	skel/skel_mesh.obj \
+	skel/skel_smd.obj \
+	skel/skel_util.obj \
+	skel/skel_pose.obj \
+	\
+	entity23/entity.obj \
+	entity23/ent_misc.obj \
+	entity23/ent_scr.obj \
+	entity23/ent_trace.obj \
+	entity23/ent_phys.obj \
+	\
+	entity21/sentity.obj \
+	\
+	btgecl/cl_update.obj
+
+#	entity23/query.obj \
+#	entity23/physics.obj \
+
+
+DEL_OBJS2 = \
+	entity2/entity.obj \
+	entity2/physics.obj \
+	entity2/ent_scr.obj \
+	entity2/ent_trace.obj \
+	entity21/sentity.obj \
+	\
+	entity2/ent_misc.obj \
+	\
+	bsp/bsp_entity.obj \
+	bsp/bsp_draw.obj \
+	bsp/bsp_dlight.obj \
+	bsp/bsp_tree.obj \
+	bsp/bsp_util.obj \
+	bsp/bsp_fileio.obj \
+	bsp/itcf_bsp.obj \
+	\
+	bsp/bsp_build.obj \
+	bsp/bsp_clip.obj \
+	bsp/bsp_brush.obj \
+	\
+	bsp/bsp_bsde.obj
+
+#	format/fmt_acxml.obj \
+
+DEL_OBJS = \
+	math/mathlib_f.obj \
+	math/mathlib_d.obj \
+	math/math_quat.obj \
+	math/math_mf.obj \
+	math/math_plane.obj \
+	math/math_v3f.obj \
+	math/math_vnf.obj \
+	\
+	entity/event.obj \
+	entity/entity.obj \
+	entity/sequence.obj \
+	entity/query.obj \
+	entity/ent_class.obj \
+	\
+	bsp/bsp_entity.obj \
+	bsp/bsp_draw.obj \
+	bsp/bsp_tree.obj \
+	bsp/bsp_util.obj \
+	bsp/bsp_fileio.obj \
+	bsp/itcf_bsp.obj \
+
+LBXGL_SRCS = \
+	$(LBXGL_OBJS:.obj=.c)
+
+LBXGL_HDRS = $(shell find include -name \*.h)
+
+autohead.exe: autohead.c
+	cl /Feautohead.exe autohead.c
+
+adler32.exe: adler32.c
+	cl /Feadler32.exe adler32.c
+
+include/lbxgl2/auto.h: autohead.exe $(LBXGL_SRCS)
+	autohead.exe -api LBXGL_API $(LBXGL_SRCS) > include/lbxgl2/auto.h
+include/lbxgl2/ty_auto.h: adler32.exe include/lbxgl2/types.txt
+	adler32.exe -header include/lbxgl2/types.txt include/lbxgl2/ty_auto.h
+
+# liblbxgl2.lib: include/lbxgl2/auto.h include/lbxgl2/ty_auto.h $(LBXGL_OBJS)
+#	lib /out:liblbxgl2.lib $(LBXGL_OBJS)
+
+liblbxgl2.dll: $(LBXGL_SRCS)
+	cl /LD /Feliblbxgl2.dll $(LBXGL_SRCS) /Iinclude /I../include /DLBXGL_DLL \
+		/Z7 ../libpdgl.lib ../libpdglui.lib ../libbsde.lib \
+		../bgbasm.lib ../bgbgc.lib ../bgbdy.lib ../libbsgen.lib \
+		../bgbcc.lib ../libvecmath.lib \
+		opengl32.lib gdi32.lib user32.lib winmm.lib vfw32.lib
+
+liblbxgl2.html: $(LBXGL_SRCS)
+	bgbdoc liblbxgl2.html $(LBXGL_SRCS) $(LBXGL_HDRS)
+
+includes: include/lbxgl2/auto.h include/lbxgl2/ty_auto.h
+libs: liblbxgl2.dll
+apps:
+
+clean:

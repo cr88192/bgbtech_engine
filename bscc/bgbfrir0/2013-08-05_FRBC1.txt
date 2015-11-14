@@ -1,0 +1,158 @@
+Possible:
+Use TLV format, and store contents per-module.
+Will be stored in ExWAD image similar to BSVM objects.
+
+Information:
+Strings;
+Metadata;
+Constant Pool;
+Bytecode.
+
+Use BTIC2B package.
+
+EIGHTCC: "FRBC0100"
+Main Image.
+
+FOURCC: "STRS"
+Strings Table.
+
+0=NULL
+1=Empty String
+2+=Strings (MUTF8Z)
+
+FOURCC: "SIDX"
+String Index.
+
+
+FOURCC: "BLOB"
+Data Blobs.
+
+{
+tag:UVLI_SIDX;
+len:UVLI;
+data:byte[len];
+}
+
+FOURCC: "BIDX"
+Blob Index.
+
+
+FOURCC: "TEXT"
+ByteCode.
+
+FOURCC: "TIDX"
+ByteCode Index.
+
+{
+tag:UVLI_META;
+len:UVLI;
+data:byte[len];
+}
+
+FOURCC: "CDAT"
+Constant Pool Data.
+
+{
+tag:UVLI_SIDX;
+len:UVLI;
+data:byte[len];
+}
+
+FOURCC: "CIDX"
+Constant Pool Index.
+
+FOURCC: "MKEY"
+Meta Key.
+
+{
+key:UVLI_STR;
+value:UVLI_CIDX;
+}
+
+FOURCC: "MNOD"
+Meta Node.
+
+{
+name:UVLI_STR;
+keyIdx:UVLI_KIDX;
+keyCnt:UVLI;
+nodeIdx:UVLI_NIDX;
+nodeCnt:UVLI;
+}
+
+FOURCC: "KIDX"
+Meta Key Index.
+
+FOURCC: "NIDX"
+Meta Node Index.
+
+
+Index Compression:
+Index Offsets will be stored as deltas from predicted values.
+
+P=2*B-A
+
+Byte Values:
+00-7F: Prediction +- 0..63 (LSB Sign Fold)
+80-BF: Prediction +- 64..8195
+C0-DF: Prediction +- 8192..1048575
+E0: Absolute 24-Bit Value.
+E1: Absolute 32-Bit Value.
+E2-EF: RLE 2-15 (Exact Prediction)
+F0: RLE 16-271 (Exact Prediction)
+F1: Prior +- 0-127
+F2: Prior +- 128-32767
+
+
+
+Alternatively:
+
+Use Constant Pool for everything (Similar to BSVM ByteCode).
+
+FOURCC: "DATA"
+Constant Pool Data.
+
+{
+tag:UVLI_IDX;
+len:UVLI;
+data:byte[len];
+}
+
+FOURCC: "INDX"
+Constant Pool Index.
+
+Possibly store simple prediction deltas for index (SVLI).
+These are stored as offsets into the data area.
+
+
+CIDX=Constant Pool Index Number (UVLI)
+
+Tag:
+"string": Raw M-UTF-8
+"code": ByteCode Data
+"method": ByteCode Method
+{
+owner:CIDX;		//owner (class/package)
+name:CIDX;		//method name
+sig:CIDX;		//method signature
+flags:CIDX;		//method flags
+code:CIDX;		//bytecode
+ltab:CIDX;		//literal table
+}
+
+"table": Index Table
+Holds a collection of index values.
+
+"metakey":
+{
+var:CIDX_Str;
+val:CIDX;
+}
+
+"metanode":
+{
+name:CIDX_Str;		//node name
+keys:CIDX_Tab;		//node key/value pairs
+child:CIDX_Tab;		//children
+parent:CIDX;		//parent node
+}

@@ -1,0 +1,5 @@
+$sprite 2
+$spr_frame 0  24 24  48 48  sprites/squid/ship0_1.png
+$spr_frame 1  24 24  48 48  sprites/squid/ship0_2.png
+// $spr_frame 2  24 24  48 48  sprites/bfg/s_bfg1_2.png
+// $spr_frame 3  24 24  48 48  sprites/bfg/s_bfg1_3.png

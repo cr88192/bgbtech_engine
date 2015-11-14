@@ -1,0 +1,19 @@
+function Test0()
+{
+	BS_EndCamera();
+}
+
+println("Greetings");
+
+var obj0, obj1;
+// obj0=G_Find(NULL, "classname", "player");
+
+obj0=G_FindClassname(null, "monster_zombie");
+obj1=G_FindClassname(obj0, "monster_zombie");
+
+BS_BeginCamera();
+// BS_SetCameraBase(obj0);
+BS_MoveCameraBase(obj0, 100, 100);
+BS_TurnCameraTarget(obj1, 100);
+
+BS_DelayEval(10, "Test0()");

@@ -1,0 +1,19 @@
+{
+ "classname" "worldspawn"
+ "sky" "bkgtst"
+}
+{
+ "classname" "info_player_start"
+ "origin" "0 0 4096"
+ "angle" "360"
+}
+{
+ "classname" "random_terrain"
+// "origin" "16 -188 -2280"
+// "boxsize" "16 16 1"
+}
+{
+ "classname" "light_sunrel"
+ "origin" "0 0 2048"
+ "light" "10000"
+}

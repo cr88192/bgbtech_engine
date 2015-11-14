@@ -1,0 +1,58 @@
+Will serve a role similar to debug info, but will have a different emphasis. Likely, it will also be built and managed separate from the object files.
+
+
+Idea:
+The format itself will be based around a serialized XML-based representation.
+
+Serialization will be based around a kind of bytecode.
+A stack machine will be used for assembling the XML trees.
+
+Bytecodes will use a UTF-8 style encoding.
+0x00, NULL, serves as a kind of end marker.
+
+Strings will be represented as UTF-8 with a zero terminator.
+0x10-0x1F will serve as dictionary escapes
+0x0F will serve as a character escape
+0x0E will escape a longer dictionary reference
+
+0x01-0x3F: used for general opcodes
+0x40...: used for registered opcodes
+
+0x01: begin string
+0x02: append string
+
+
+Alternative
+
+0xxxxxxx: ASCII 
+100xxxxx: single-byte command 
+101xxxxx: signle-byte reference 
+110xxxxx 10xxxxxx: UTF-8 char (0x80-0x3FF) 
+110xxxxx 00xxxxxx: dual-byte command 
+110xxxxx 01xxxxxx: dual-byte reference 
+1110xxxx 10xxxxxx 10xxxxxx: UTF-8 char (0x400-0x1FFF) 
+1110xxxx 00xxxxxx 00xxxxxx: tri-byte command 
+1110xxxx 01xxxxxx 01xxxxxx: tri-byte reference 
+...
+
+Text will be compressed using an LZW-like scheme.
+Text will not be quoted or similar, but will appear in the raw stream.
+
+Strings will be encoded as some number of characters and/or LZW matches, and will be terminated by an END marker (or by anything else not allowed within a string).
+
+Commands
+0: END, marks the end of a node or substring;
+1: DefNS <string>, declare a new namespace marker;
+2: DefAttr <string>, declare a new attribute;
+3: DefTag <string>, declare a tag.
+
+Note that these declaration forms, will result in a particular NS, Attr, or Tag being added to the dictionary.
+
+Whenever a reference is made past the first 48 entries, the item will be moved to the front of the list.
+
+For the time being, structural members will not be compressed.
+
+<foo><bar><baz/></bar><baz/></foo>
+
+0x83 "foo" 0xA0 0x83 "bar" 0xA1 0x83 "baz" 0xA2 0x80 0x80 0xA2 0x80 0x80
+

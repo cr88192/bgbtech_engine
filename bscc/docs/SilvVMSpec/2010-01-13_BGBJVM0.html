@@ -1,0 +1,254 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.0  (Win32)">
+	<META NAME="CREATED" CONTENT="20100113;13090300">
+	<META NAME="CHANGED" CONTENT="20100113;14072100">
+	<META NAME="Info 1" CONTENT="">
+	<META NAME="Info 2" CONTENT="">
+	<META NAME="Info 3" CONTENT="">
+	<META NAME="Info 4" CONTENT="">
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<P STYLE="margin-bottom: 0in">BGBJVM</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">This is an interpreter for
+Java-ByteCode, and may be later usable as a more general-purpose Java
+interpreter.</P>
+<P STYLE="margin-bottom: 0in">Thus far, it has not received a whole
+lot of attention, and thus has not as of yet really been made usable.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">API Overview</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Interpreter</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">BJVM_Frame
+*BJVM_CreateFrame(BJVM_Method *mth);</P>
+<P STYLE="margin-bottom: 0in">Create a frame. A frame is essentially
+a local context for the running function.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BJVM_ReleaseFrame(BJVM_Frame *frm);</P>
+<P STYLE="margin-bottom: 0in">Release a frame.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *BJVM_ConvertJSigSig(char *sig);</P>
+<P STYLE="margin-bottom: 0in">Convert JVM-style signature strings to
+the format used elsewhere in the VM.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BJVM_GetSigArgSize(char *sig);</P>
+<P STYLE="margin-bottom: 0in">Count how many spots will be used for a
+given function signature.</P>
+<P STYLE="margin-bottom: 0in">Note that 'long' and 'double' will take
+2 spots regardless of machine word size.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BJVM_StepFrame(BJVM_Frame *ctx);</P>
+<P STYLE="margin-bottom: 0in">Step frame instruction.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BJVM_RunFrame(BJVM_Frame *ctx);</P>
+<P STYLE="margin-bottom: 0in">Run current frame.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *BJVM_ApplyMethod(BJVM_Method
+*mth, dyt obj, void **args);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Apply a method to args within a given
+object. Will also run the method, and return a pointer to a temporary
+buffer containing the return value.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Class-File Machinery</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">BJVM_Class *BJVM_LookupClass(char
+*name);</P>
+<P STYLE="margin-bottom: 0in">Lookup a class with via a given
+classname (Qualified Name).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">BJVM_Class *BJVM_AllocClass(char
+*name);</P>
+<P STYLE="margin-bottom: 0in">Allocate a new class with a given
+classname.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">BJVM_Class *BJVM_CreateClass(char
+*name);</P>
+<P STYLE="margin-bottom: 0in">Create a new class. This differs from
+AllocClass in that CreateClass will link the new class into the known
+class-list, whereas AllocClass will not.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">BJVM_Class *BJVM_GetClass(char *name);</P>
+<P STYLE="margin-bottom: 0in">Get a given class given its classname,
+creating it if necessary.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">BJVM_Method
+*BJVM_LookupClassMethod(BJVM_Class *info, char *name, char *sig);</P>
+<P STYLE="margin-bottom: 0in">Lookup a method within a given class.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">BJVM_Method
+*BJVM_AllocMethod(BJVM_Class *info, char *name, char *sig);</P>
+<P STYLE="margin-bottom: 0in">BJVM_Method
+*BJVM_GetClassMethod(BJVM_Class *info, char *name, char *sig);</P>
+<P STYLE="margin-bottom: 0in">Allocate or get a method from a class.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BJVM_CtabIndexUtf8(BJVM_Class
+*info, char *str);</P>
+<P STYLE="margin-bottom: 0in">int BJVM_CtabIndexInt(BJVM_Class *info,
+int v);</P>
+<P STYLE="margin-bottom: 0in">int BJVM_CtabIndexFloat(BJVM_Class
+*info, float v);</P>
+<P STYLE="margin-bottom: 0in">int BJVM_CtabIndexLong(BJVM_Class
+*info, s64 v);</P>
+<P STYLE="margin-bottom: 0in">int BJVM_CtabIndexDouble(BJVM_Class
+*info, double v);</P>
+<P STYLE="margin-bottom: 0in">int BJVM_CtabIndexClass(BJVM_Class
+*info, char *str);</P>
+<P STYLE="margin-bottom: 0in">int BJVM_CtabIndexString(BJVM_Class
+*info, char *str);</P>
+<P STYLE="margin-bottom: 0in">int BJVM_CtabIndexNameType(BJVM_Class
+*info, char *name, char *type);</P>
+<P STYLE="margin-bottom: 0in">int BJVM_CtabIndexFieldRef(BJVM_Class
+*info,char *classname, char *name, char *type);</P>
+<P STYLE="margin-bottom: 0in">int BJVM_CtabIndexMethodRef(BJVM_Class
+*info,char *classname, char *name, char *type);</P>
+<P STYLE="margin-bottom: 0in">int
+BJVM_CtabIndexInterfaceMethodRef(BJVM_Class *info,char *classname,
+char *name, char *type);</P>
+<P STYLE="margin-bottom: 0in">Index various metadata items in a
+class. May create the items if needed.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BJVM_CtabLookupFieldRef(BJVM_Class
+*info,char *classname, char *name);</P>
+<P STYLE="margin-bottom: 0in">Lookup a field reference, does not
+create.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BJVM_AddClassInterface(BJVM_Class
+*info, char *classname);</P>
+<P STYLE="margin-bottom: 0in">Add an interface to a class.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BJVM_AddClassField(BJVM_Class
+*info, char *name, char *sig, int flags, int value);</P>
+<P STYLE="margin-bottom: 0in">Add a field definition to a class.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BJVM_AddClassMethod(BJVM_Class
+*info, BJVM_Method *mth);</P>
+<P STYLE="margin-bottom: 0in">Add a method to a class.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BJVM_CtabIndexDynamic(BJVM_Class
+*info, dyt val);</P>
+<P STYLE="margin-bottom: 0in">Index a dynamically-typed value (note:
+non-standard extension).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">BJVM_FieldInfo
+*BJVM_LookupClassField(BJVM_Class *info, char *name);</P>
+<P STYLE="margin-bottom: 0in">Lookup a class field definition.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Strings</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BJVM_WStringHash(u16 *str);</P>
+<P STYLE="margin-bottom: 0in">int BJVM_WStringHash2(u16 *str);</P>
+<P STYLE="margin-bottom: 0in">Calculate string hash. These differ in
+the hash function used.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BJVM_WStringCompare(u16 *stra, u16
+*strb);</P>
+<P STYLE="margin-bottom: 0in">Compare 2 strings in UTF-16 format.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BJVM_GetStringObjLen(dyt obj);</P>
+<P STYLE="margin-bottom: 0in">u16 *BJVM_GetStringObjChars(dyt obj);</P>
+<P STYLE="margin-bottom: 0in">u16 *BJVM_GetStringObjCharsAlloc(dyt
+obj);</P>
+<P STYLE="margin-bottom: 0in">char
+*BJVM_GetStringObjCharsUtf8Alloc(dyt obj);</P>
+<P STYLE="margin-bottom: 0in">Get information from a String object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BJVM_CompareStringObjChars(dyt
+obja, u16 *strb);</P>
+<P STYLE="margin-bottom: 0in">int BJVM_CompareStringObj(dyt obja, dyt
+objb);</P>
+<P STYLE="margin-bottom: 0in">int BJVM_CompareStringObjChars2(dyt
+obja, char *str);</P>
+<P STYLE="margin-bottom: 0in">Compare String objects.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt BJVM_NewStringWSz(u16 *str, int
+sz);</P>
+<P STYLE="margin-bottom: 0in">dyt BJVM_NewStringW(u16 *str);</P>
+<P STYLE="margin-bottom: 0in">dyt BJVM_NewString(char *str);</P>
+<P STYLE="margin-bottom: 0in">dyt BJVM_LiteralStringW(u16 *str);</P>
+<P STYLE="margin-bottom: 0in">dyt BJVM_LiteralString(char *str);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Create string objects.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">JBC Assembler</P>
+<P STYLE="margin-bottom: 0in">BJVM_Class
+*BJVM_ASM_AssembleBuffer(char *buf);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Assembler class from textual JBC-ASM
+(Jasmin-like syntax).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">BJVM_Class *BJVM_Load_DecodeClass(byte
+*buf, int sz);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Decode a class from a serialized class
+object.</P>
+<P STYLE="margin-bottom: 0in">This class is in a raw form (not linked
+into the VM).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BJVM_LinkClass(BJVM_Class *info);</P>
+<P STYLE="margin-bottom: 0in">Link a class into the running VM.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *BJVM_JITC_CompileClass(BJVM_Class
+*info);</P>
+<P STYLE="margin-bottom: 0in">Compile a class into C code.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+</BODY>
+</HTML>

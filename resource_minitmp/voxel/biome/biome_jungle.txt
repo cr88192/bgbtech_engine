@@ -1,0 +1,17 @@
+$flags trees4x
+
+$biome_id 7
+$biome_val_arcane 0
+$biome_val_temperature 1
+$biome_val_humidity 1
+
+$biome_clr_grass 192 255 128
+$biome_clr_water 192 255 128
+$biome_clr_sun 224 255 192
+
+$terr_vox_stone stone
+$terr_vox_dirt dirt
+$terr_vox_grass grass
+$terr_vox_grass2 grass
+$terr_vox_sand sand
+$terr_vox_water water

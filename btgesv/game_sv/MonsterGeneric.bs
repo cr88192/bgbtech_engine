@@ -1,0 +1,359 @@
+
+public class monster_generic2 extends ActorBase
+{
+	static var stand1_mf;
+	static var walk1_mf;
+	static var walk2_mf;
+
+	static var stand1_mfi;
+	static var walk1_mfi;
+	static var walk2_mfi;
+
+	static var run_mf;
+	static var attack1_mf;
+	static var run_mfi;
+	static var attack1_mfi;
+
+	function think_idle(self)
+	{
+		if(btRandom()<0.1)
+		{
+			btSound(self, BT_CHAN_VOICE, self->snd_idle,
+				1.0, BT_ATTN_NORM);
+		}
+	}
+
+	function init(self)
+	{
+//		printf("monster_generic2: init A self=%p\n", self);
+
+		self->solidtype=BT_SOLID_SLIDEBOX;
+		self->movetype=BT_MOVE_STEP;
+	
+		btSetModel(self, "models/monsters/soldier/soldier.model");
+		self->snd_sight="sound/soldier/solsght1";
+		self->snd_idle="sound/soldier/solidle1";
+	
+		self->mins=#[-16, -16, -24];
+		self->maxs=#[16, 16, 40];
+		self->health=30;
+
+//		printf("monster_generic2: init B\n");
+
+		btWalkmonsterStart(self);
+	}
+
+	function deinit(self)
+		{ }
+//	function null(self)
+//		{ }
+
+	function blocked(self, other)
+		{ }
+	function touch(self, other)
+		{ }
+	function use(self, other)
+		{ }
+	function pain(self, other, damage)
+		{ }
+	
+	function die(self, other, damage)
+	{
+//		BT_EntityExplode(self);
+//		BT_EntityBloodExplode(self);
+//		BT_EntityDisintegration(self);
+		BT_EntityRobotExplode(self);
+	}
+
+	function cmdmsg(self, other, str)
+		{ }
+
+	function stand(self)
+	{
+		btSetMove(self, stand1_mfi);
+	}
+
+	function walk1_random(self)
+	{
+		if(btRandom()>0.1)
+			btSetMove(self, walk1_mfi);
+	}
+
+	function walk(self)
+	{
+		if(btRandom()>0.5)
+			btSetMove(self, walk1_mfi);
+		else
+			btSetMove(self, walk2_mfi);
+	}
+
+	function run(self)
+		{ btSetMove(self, run_mfi); }
+	function missile(self)
+		{ btSetMove(self, attack1_mfi); }
+
+	function think_fire(self)
+	{
+		var org, dir;
+//		org=self->origin;
+//		dir=btYawVector(btCurrentYaw(self));
+//		dir=BT_TargetDirection(self, self->enemy);
+		org=BT_AimOrigin(self);
+		dir=BT_AimDirection(self, self->enemy, 600);
+//		BT_FireRocket(self, org, dir, 10, 600, 25);
+//		BT_FireBlaster(self, org, dir, 10, 600, 25);
+		BT_FireBlaster(self, org, dir, 25, 600, 32);
+	}
+
+	function melee(self)
+	{
+	}
+
+	public function monster_generic2(ent, sent)
+	{
+//		printf("monster_generic2: ctor\n");
+		super(ent, sent);
+
+//		printf("monster_generic2: ctor B\n");
+		this.init(ent);
+
+//		printf("monster_generic2: ctor C\n");
+	}
+
+	static
+	{
+		stand1_mf=
+		[
+//		[btaiStand, 0, think_idle],
+		[btaiStand, 0, fun(self) { think_idle(self) } ],
+		[btaiStand, 0, null],
+		[btaiStand, 0, null],		[btaiStand, 0, null],
+		[btaiStand, 0, null],		[btaiStand, 0, null],
+		[btaiStand, 0, null],		[btaiStand, 0, null],
+		[btaiStand, 0, null],		[btaiStand, 0, null],
+		[btaiStand, 0, null],		[btaiStand, 0, null],
+		[btaiStand, 0, null],		[btaiStand, 0, null],
+		[btaiStand, 0, null],		[btaiStand, 0, null],
+		[btaiStand, 0, null],		[btaiStand, 0, null],
+		[btaiStand, 0, null],		[btaiStand, 0, null],
+		[btaiStand, 0, null],		[btaiStand, 0, null],
+		[btaiStand, 0, null],		[btaiStand, 0, null],
+		[btaiStand, 0, null],		[btaiStand, 0, null],
+		[btaiStand, 0, null],		[btaiStand, 0, null],
+		[btaiStand, 0, null],		[btaiStand, 0, null],
+		[btaiStand, 0, null],
+		];
+
+		walk1_mf =
+		[
+//		[btaiWalk, 3, think_idle],
+		[btaiWalk, 3, fun(self) { think_idle(self) } ],
+		[btaiWalk, 5, null],
+		[btaiWalk, 3, null],		[btaiWalk, 2, null],
+		[btaiWalk, 2, null],		[btaiWalk, 2, null],
+		[btaiWalk, 5, null],		[btaiWalk, 5, null],
+		[btaiWalk, 2, null],		[btaiWalk, 0, walk1_random],
+		[btaiWalk, 0, null],		[btaiWalk, 0, null],
+		[btaiWalk, 0, null],		[btaiWalk, 0, null],
+		[btaiWalk, 0, null],		[btaiWalk, 0, null],
+		[btaiWalk, 0, null],		[btaiWalk, 0, null],
+		[btaiWalk, 0, null],		[btaiWalk, 0, null],
+		[btaiWalk, 0, null],		[btaiWalk, 0, null],
+		[btaiWalk, 0, null],		[btaiWalk, 0, null],
+		[btaiWalk, 0, null],		[btaiWalk, 0, null],
+		[btaiWalk, 0, null],		[btaiWalk, 0, null],
+		[btaiWalk, 0, null],		[btaiWalk, 0, null],
+		[btaiWalk, 0, null],		[btaiWalk, 0, null],
+		];
+
+		walk2_mf =
+		[
+//		[btaiWalk, 3, think_idle],
+		[btaiWalk, 3, fun(self) { think_idle(self) } ],
+		[btaiWalk, 5, null],
+		[btaiWalk, 3, null],		[btaiWalk, 2, null],
+		[btaiWalk, 2, null],		[btaiWalk, 2, null],
+		[btaiWalk, 5, null],		[btaiWalk, 5, null],
+		[btaiWalk, 2, null],		[btaiWalk, 0, null],
+		];
+
+		run_mf =
+		[
+		[btaiRun, 10, null],		[btaiRun, 11, null],
+		[btaiRun, 11, null],		[btaiRun, 15, null],
+		[btaiRun, 11, null],		[btaiRun, 15, null],
+		[btaiRun, 15, null],
+		];
+
+		attack1_mf =
+		[
+//		[btaiCharge, 0, think_fire},	[btaiCharge, 0, null],
+		[btaiCharge, 0, fun(self) { think_fire(self) } ],
+		[btaiCharge, 0, null],
+		[btaiCharge, 0, null],		[btaiCharge, 0, null],
+		[btaiCharge, 0, null],		[btaiCharge, 0, null],
+		[btaiCharge, 0, null],		[btaiCharge, 0, null],
+		[btaiCharge, 0, null],		[btaiCharge, 0, null],
+		[btaiCharge, 0, null],		[btaiCharge, 0, null],
+		];
+
+		stand1_mfi =
+			btDyBuildMove("stand1", 0, 30,
+				stand1_mf, stand);
+		walk1_mfi =
+			btDyBuildMove("walk1", 0, 32,
+				walk1_mf, walk);
+		walk2_mfi =
+			btDyBuildMove("walk2", 0, 10,
+				walk2_mf, walk);
+		run_mfi =
+			btDyBuildMove("run", 2, 8,
+				run_mf, run);
+		attack1_mfi =
+			btDyBuildMove("attack1", 2, 8,
+				attack1_mf, run);
+				
+		printf("This A = %p, run=%p, this.run=%p\n", this, run, this.run);
+	}
+
+//	printf("This B = %p\n", this);
+}
+
+public class passive_sheep extends monster_generic2
+{
+	public function passive_sheep(ent, sent)
+	{
+		printf("passive_sheep: ctor\n");
+		super(ent, sent);
+	}
+
+	function think_idle(self)
+	{
+		if(btRandom()<0.1)
+		{
+			btSound(self, BT_CHAN_VOICE, self->snd_idle,
+				1.0, BT_ATTN_NORM);
+		}
+	}
+
+	function init(self)
+	{
+		printf("monster_sheep: init A self=%p\n", self);
+
+		self->solidtype=BT_SOLID_SLIDEBOX;
+		self->movetype=BT_MOVE_STEP;
+	
+		btSetModel(self, "models/monsters/sheep/sheep.model");
+		self->snd_sight="sound/soldier/solsght1";
+		self->snd_idle="sound/animal/sheep_idle1";
+
+		self->mins=#[-16, -16, -16];
+		self->maxs=#[16, 16, 40];
+		self->health=30;
+
+//		printf("monster_generic2: init B\n");
+
+		btWalkPassiveStart(self);
+	}
+}
+
+public class passive_pig extends monster_generic2
+{
+	public function passive_pig(ent, sent)
+	{
+		printf("passive_pig: ctor\n");
+		super(ent, sent);
+	}
+
+	function think_idle(self)
+	{
+		if(btRandom()<0.1)
+		{
+			btSound(self, BT_CHAN_VOICE, self->snd_idle,
+				1.0, BT_ATTN_NORM);
+		}
+	}
+
+	function init(self)
+	{
+		printf("monster_sheep: init A self=%p\n", self);
+
+		self->solidtype=BT_SOLID_SLIDEBOX;
+		self->movetype=BT_MOVE_STEP;
+	
+		btSetModel(self, "models/monsters/pig/pig.model");
+		self->snd_sight="sound/soldier/solsght1";
+		self->snd_idle="sound/animal/pig0";
+	
+		self->mins=#[-16, -16, -16];
+		self->maxs=#[16, 16, 40];
+		self->health=30;
+
+//		printf("monster_generic2: init B\n");
+
+		btWalkPassiveStart(self);
+	}
+}
+
+public class monster_army extends monster_generic2
+{
+	public function monster_army(ent, sent)
+	{
+//		printf("monster_army: ctor\n");
+		super(ent, sent);
+	}
+}
+
+
+public class monster_enemyhead extends monster_generic2
+{
+	public function monster_enemyhead(ent, sent)
+	{
+		printf("monster_enemyhead: ctor\n");
+		super(ent, sent);
+	}
+
+	function think_idle(self)
+	{
+		if(btRandom()<0.1)
+		{
+			btSound(self, BT_CHAN_VOICE, self->snd_idle,
+				1.0, BT_ATTN_NORM);
+		}
+	}
+
+	function think_fire(self)
+	{
+		var org, dir;
+//		org=self->origin;
+//		dir=btYawVector(btCurrentYaw(self));
+//		dir=BT_TargetDirection(self, self->enemy);
+		org=BT_AimOrigin(self);
+		dir=BT_AimDirection(self, self->enemy, 600);
+//		BT_FireRocket(self, org, dir, 10, 600, 25);
+//		BT_FireBlaster(self, org, dir, 10, 600, 25);
+		BT_FireRocket(self, org, dir, 60, 600, 160);
+	}
+
+	function init(self)
+	{
+		printf("monster_enemyhead: init A self=%p\n", self);
+
+		self->solidtype=BT_SOLID_SLIDEBOX;
+		self->movetype=BT_MOVE_STEP;
+	
+		btSetModel(self, "models/monsters/enemyhead/enemyhead.model");
+		self->snd_sight="sound/soldier/solsght1";
+		self->snd_idle="sound/soldier/solidle1";
+	
+		self->origin=self->origin + #[0, 0, 256];
+	
+		self->mins=#[-64, -64, -32];
+		self->maxs=#[64, 64, 64];
+		self->health=900;
+
+//		printf("monster_generic2: init B\n");
+
+		btFlymonsterStart(self);
+	}
+}

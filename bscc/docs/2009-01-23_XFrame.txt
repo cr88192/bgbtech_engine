@@ -1,0 +1,277 @@
+Idea:
+XFrame is another calling convention like XCall, but will be used on both x86 and x86-64 with minor variation.
+
+
+
+Metadata
+
+Metadata can be in-memory compressed by storing offsets in a relative form, thus allowing both reduced storage space, and also independence from central table structures.
+
+UVLI:
+0-127				0xxxxxxx
+128-16383			10xxxxxx xxxxxxxx
+16384-2097151		110xxxxx xxxxxxxx xxxxxxxx
+2097152-268435455		1110xxxx xxxxxxxx xxxxxxxx xxxxxxxx
+268435456-34359738367	11110xxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
+34359738368-(2^42-1)	111110xx xxxxxxxx(*5)
+
+0 - (2^7-1)			0xxxxxxx
+2^7 - (2^14-1)		10xxxxxx xxxxxxxx
+2^14 - (2^21-1)		110xxxxx xxxxxxxx xxxxxxxx
+2^21 - (2^28-1)		1110xxxx xxxxxxxx xxxxxxxx xxxxxxxx
+2^28 - (2^35-1)		11110xxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
+2^35 - (2^42-1)		111110xx xxxxxxxx(*5)
+2^42 - (2^49-1)		1111110x xxxxxxxx(*6)
+2^49 - (2^56-1)		11111110 xxxxxxxx(*7)
+2^56 - (2^63-1)		11111111 0xxxxxxx xxxxxxxx(*7)
+2^63 - (2^70-1)		11111111 10xxxxxx xxxxxxxx(*8)
+2^70 - (2^77-1)		11111111 110xxxxx xxxxxxxx(*9)
+2^77 - (2^84-1)		11111111 1110xxxx xxxxxxxx(*10)
+2^84 - (2^91-1)		11111111 11110xxx xxxxxxxx(*11)
+2^91 - (2^98-1)		11111111 111110xx xxxxxxxx(*12)
+2^98 - (2^105-1)		11111111 1111110x xxxxxxxx(*13)
+2^105 - (2^112-1)		11111111 11111110 xxxxxxxx(*14)
+2^112 - (2^119-1)		11111111 11111111 0xxxxxxx xxxxxxxx(*14)
+2^119 - (2^126-1)		11111111 11111111 10xxxxxx xxxxxxxx(*15)
+2^126 - (2^133-1)		11111111 11111111 110xxxxx xxxxxxxx(*16)
+...
+
+
+SVLI will be the same as UVLI, but will have the sign rotated to the LSB.
+
+j=(i<0)?(((-i)<<1)|1):(i<<1);
+
+Thus: 0, -1, 1, -2, 2, -3, 3, ...
+
+SVLI will be used for encoding pointers, where here I will use ~ to indicate a pointer encoded in such a manner. The token '~*' will indicate a compressed pointer to a physical pointer encoded in a PtrsMeta block.
+
+The pointer will be encoded as the distance between the start of the pointer and the destination. The special value 0 will encode a NULL value (rather than a pointer to the pointer).
+
+
+
+MetaMagic {
+u64 magic;	//'XFRAMEMD' (0x444D454D41524658)
+}
+
+MetaMagic serves to point out the start of a glob of metadata. It is to be 8-byte aligned. This will be followed by a list of Metadata blocks, and terminated with a NullMeta
+
+
+Meta {
+uvli tag, sz;	//?, ?
+byte data[sz];
+}
+
+Generic Metadata block. Tag indicates the type of the metadata block, and sz gives the size of the payload.
+
+
+NullMeta {
+uvli tag, sz;	//0, 0
+}
+
+A group of metadata tags will be terminated by NullMeta.
+
+
+
+StringsMeta {
+uvli tag, sz;	//1
+byte data[sz];
+}
+
+Encodes a glob of strings. Each string in the glob is NULL-terminated, and strings are encoded using UTF-8.
+
+
+PtrsMeta {
+uvli tag, sz;	//2
+uvli _pad;		//used to align to a sizeof(void *) boundary
+void *addr[];
+}
+
+PtrsMeta will reflect a pointer array stored in the metadata. This is used because it would ask too much for the linker to be able to figure out how to relocate compressed pointers (the pointer is encoded directly).
+
+
+VarMeta {
+uvli tag, sz;	//3
+uvli flags;
+char ~name;
+char ~sig;
+}
+
+EnvMeta {
+uvli tag, sz;	//4
+uvli flags;
+EnvMeta ~next;
+VarMeta ~var[];
+}
+
+EnvMeta contains an array of VarMeta's, and is terminated with a NULL.
+Physically, within a given Env the data for each meta-entry is assumed to be packed end to end (like in a structure, ...).
+
+FuncMeta {
+uvli tag, sz;	//5
+void ~*ip;		//rIP addr
+uvli flags;		//flags
+char ~name;		//name
+char ~sig;		//signature
+EnvMeta ~env;	//info about env (opaque)
+EnvMeta ~args;	//info about args (opaque)
+}
+
+Metadata about a functions.
+
+These metadata structures will be produced by the compiler.
+
+(signature strings defined elsewhere...)
+
+
+Frames
+
+XFrame will use special frame structures, which are to be allocated and freed using special functions. Frames will differ from ordinary heap-based objects in that the available sizes will be fixed, allowing in many cases the allocation or free to be performed via a small number of instructions.
+
+
+XFrame will be structured using special "helpers" for performing operations like calls, returns, ... These helpers will in general use a register-based calling convention.
+
+Calls in XFrame will pass arguments via frame structures, and as such the CPU stack will be left primarily for intermediate calculations.
+
+
+Frame Sizes will be defined in terms of the number of pointer-sized elements they contain, where this size will be defined via the calculation:
+j=5;
+for(i=0; i<48; i++)
+	{ frame_size[i]=j; j=j+(j>>2); }
+
+So:
+5 6 7 8 10 12 15 18 22 27 33 41 51 63 78 97 121 151 188 235 293 366 457 571 713 891 1113 1391 1738 2172 2715 3393 4241 5301 6626 8282 10352 12940 16175 20218 25272 31590 39487 49358 61697 77121 96401 120501
+
+Frames will also be aligned on a 16-byte boundary.
+
+Note that frames will be required to be freed with a helper of the same specified size as used when allocating the frame.
+
+
+The exact structure and use of a frame will vary.
+
+CallFrame {
+CallFrame *last_frame;	//caller's frame
+void *next_ip;		//rIP to jump to on return
+void *this_ptr;		//reserved for "this"
+EnvFrame *env;		//current "environment"
+ExecFrame *ctx;		//execution context
+void *args[];		//arguments
+}
+
+EnvFrame {
+EnvFrame *next;
+void *data[];
+}
+
+The EnvFrame structure holds space for local variables, ...
+
+ExecFrame {
+void *_resv;		//reserved
+ThunkInfo *fcn;		//current function
+...
+}
+
+The ExecFrame structure holds info for internal use by XFrame, and its layout or behavior should not be depended on.
+
+
+ThunkInfo {
+byte jump[16];	//reserved for a magic jump (opaque)
+void *text;		//pointer to ".text" section for thunk
+void *data;		//pointer to ".data" section for thunk
+void *scope;	//info about current symbol scope (opaque)
+void *env_info;	//info about env (opaque)
+EnvFrame *xf_env;	//initial env
+void *xf_ip;	//initial rIP addr (xframe)
+void *args_info;	//info about args (opaque)
+...
+}
+
+ThunkInfo defines a function, and its specifics are specific to the implementation.
+
+Notes:
+ThunkInfo structures are not to be composed (or modified) directly by client code (the defined structure is primarily informative, and may be subject to change);
+The 'jump' field is reserved for a magic jump from the native calling convention (XFrame functions masquerading as native function pointers, ...);
+Thunks are likely to be allocated on the main heap, not as frames;
+...
+
+
+Function Calls
+
+On function entry, rBP will point to the current call frame.
+The 'env' field will have been initialized to 'xf_env' from the thunk.
+
+rAX, rCX, rDX, and R8-R11 (x86-64) will be used as scratch registers.
+XMM0-XMM5 and ST0-ST7 will also be scratch registers.
+All others are to be preserved.
+
+
+Note:
+Given that the CPU stack will not be used for holding non-transient values, caller-preserve registers are to be stored in the EnvFrame structure (along with locals, ...).
+
+
+These helpers will preserve any registers not used for input/output should the need arise.
+
+xframe_AllocFrame<num>
+Allocate a frame of the given size (frame_size[num]).
+The new frame will be returned in rAX.
+
+xframe_FreeFrame<num>
+Free a frame of the given size.
+The frame will be given in rAX.
+
+xframe_AllocLocals<n>
+This will create a new (empty) environment frame of the given size, with 'next' set to the prior 'env' value from the call frame. This will be added to the call frame given in rBP.
+
+
+xframe_ReturnZ
+xframe_Return<n>
+
+Return from the current function. This is to be performed by a jump rather than a call. ReturnZ will return to the caller without freeing the Env, whereas the forms which accept a number will free the top-level environment (created via AllocLocals, and with the same number).
+
+Note that in XFrame, the return value is to be passed in the same space used for the arguments (so the return value may overwrite the existing args list).
+
+
+xframe_CallN
+
+Call a function, where the Frame is given in rSI, and the ThunkInfo is given in rDI. The values of these registers will be preserved across the call. All scratch registers will be left in an undefined state.
+
+Note that the caller will be responsible for destroying the frame structure in this case (This form will be used when returning structured datatypes, ... but otherwise should not be used).
+
+The above will form call sequences along the lines of:
+
+call xframe_AllocFrame<n>
+mov rsi, rax
+; fill with args, ...
+mov rdi, [function]
+call xframe_CallN
+; extract return value
+mov rax, rsi
+call xframe_FreeFrame<n>
+
+
+xframe_Call<n>[i/l/f/d/a/x]
+
+This will be similar to CallN, except that the frame will be left under the control of XFrame, and as such the value will be returned in a register (EAX, RAX or EDX:EAX, ST0, or XMM0).
+
+This will differ from the caller-free form primarily in that it will allow the use of tail-calls, and the final values of rSI and rDI will be undefined.
+
+
+xframe_TailCall<n>
+
+Perform a tail-call. A tail call will differ from an ordinary call in that the caller's frame will be destroyed prior to calling into the function, and a tail-call will not return. Tail-calls are to be initiated with a jump.
+
+Tail calls may not be used if the function may be called with the CallN form.
+
+
+xframe_Conti
+
+Capture the current continuation state.
+Following this operation, rAX will contain a continuation object, which may be called like a function. Doing so will cause the current function to return.
+
+
+xframe_Close
+
+Create a closure object.
+In this case, the env is given in rSI and the initial FuncMeta is given in rDI. This will create a new ThunkInfo.
+
+This object will take the form of a function returned in rAX.
+

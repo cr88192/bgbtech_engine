@@ -1,0 +1,31 @@
+package bsvm.io;
+
+public abstract class Reader extends Object
+{
+protected Object lock;
+
+public Reader()
+	{ }
+public Reader(Object obj)
+	{ }
+
+public abstract void close();
+
+public void mark(int limit)
+	{ }
+public boolean markSupported()
+	{ return false; }
+
+public int read()
+	{ return 0; }
+public int read(char[] cbuf)
+	{ return 0; }
+public int read(char[] cbuf, int off, int len)
+	{ return 0; }
+public boolean ready()
+	{ return false; }
+public void reset()
+	{ }
+public long skip(long n)
+	{ return 0; }
+}

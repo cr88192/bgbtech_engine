@@ -1,0 +1,415 @@
+Use a variant of BTIC1C/2C TLV packaging.
+
+Will use big-endian ordering for values.
+
+Object Module TLV structure:
+0xC0..0xDF(len-1): tag:BYTE, data[len-2]
+0xE0, EOF
+0xE1, len:WORD24, data:BYTE[len-4]
+0xE2, tag:BYTE, len:WORD, data:BYTE[len-4]
+0xE3, len:WORD24, tag:TWOCC, data:BYTE[len-6]
+0xE4, len:WORD24, tag:FOURCC, data:BYTE[len-8]
+0xE5, len:BYTE, tag:TWOCC, data:BYTE[len-4]
+0xE6, len:WORD56, tag:FOURCC, data:BYTE[len-12]
+
+All byte-tag lumps will be context-dependent.
+
+TWOCC values will be a pair of ASCII characters, with all values under 0x2020 being interpreted as a context-dependent numeric value (or "magic number").
+
+FOURCC values will be likewise, except that the cutoff will be 0x20202020 (or 4M). For ASCII FOURCC values, characters outside the printable ASCII range (0x20..0x7E) are not allowed.
+
+For TWOCC and FOURCC tags, if the MSB is set, then the tag will be interpreted as an offset into the strings table. If the tag is seen as a big-endian number, this applies for values above 0x8000 and 0x80000000 respectively.
+
+
+TWOCC('ST')
+Strings Table.
+Glob of M-UTF-8 strings.
+0 is a Null String;
+1 is an Empty String.
+
+References into the strings table will be the byte offset of the start of the string.
+
+TWOCC('BT')
+Blobs Table.
+0 is a Null Blob.
+	TWOCC('BC')
+		ByteCode.
+
+References into the blobs table will be the byte offset of the start of the blob. Entries in the blobs table are not required to be contiguous, but any spaces between blobs should be filled with zero bytes.
+
+Blobs will use the same structure as normal lumps.
+
+
+TWOCC('CT')
+Constant Pool.
+	TWOCC('I4')
+		32-bit integer.
+	TWOCC('I8')
+		64-bit integer.
+	TWOCC('F4')
+		32-bit float.
+	TWOCC('F8')
+		64-bit double.
+
+	TWOCC('SI')
+		32-bit string-table index.
+		Represents a string literal (ASCII / UTF-8).
+	TWOCC('SL')
+		32-bit string-table index.
+		Represents a string literal (UTF-16).
+	TWOCC('TI')
+		32-bit string-table index.
+		Represents a symbol literal.
+	TWOCC('SV')
+		(Possible)
+		Raw string (represented directly in the ctab).
+		Represents a string literal (ASCII / UTF-8).
+
+
+	TWOCC('V2'), TWOCC('V3'), TWOCC('V4')
+		2/3/4 element float vector.
+	TWOCC('W2'), TWOCC('W3'), TWOCC('W4')
+		2/3/4 element double vector.
+
+	TWOCC('S2'), TWOCC('S3'), TWOCC('S4')
+		2/3/4 element short vector.
+	TWOCC('T2'), TWOCC('T3'), TWOCC('T4')
+		2/3/4 element int vector.
+	TWOCC('U2'), TWOCC('U3'), TWOCC('U4')
+		2/3/4 element byte vector.
+
+Entries in the constant pool will be referred to by index number.
+The first entry will start at logical index 1, with 0 as an implicit NULL entry.
+
+TWOCC('DV')
+Define Variable.
+qname:DWORD_STR, sig:DWORD_STR, flags:DWORD_STR, value:DWORD_CTAB
+	Sub-Tags
+
+TWOCC('DF')
+Define Function.
+qname:DWORD_STR, sig:DWORD_STR, flags:DWORD_STR, code:DWORD_BLOB
+	Sub-Tags
+
+The qname/sig/flags fields will be offsets into the strings table.
+The value field will be an index into the constant pool.
+The code field will be an offset into the blobs table.
+
+Registers:
+	<arguments>
+	<locals>
+	<temporaries>
+
+Registers will be untyped, and it will be the responsibility of code to use the registers according to the correct types.
+
+Frames will consist of collections of registers, and the Frame will be the primary form of execution context. Each active frame will be owned by a context, which will in turn be owned by an environment context.
+
+EnvironmentContext:
+	ExecutionContext:
+		Frame
+
+The frames within a given execution context will be organized into a call-stack.
+
+
+Core Types:
+	ILFDPA
+	I: Int (32 bit)
+	L: Long (64 bit)
+	F: Float (32 bit)
+	D: Double (64 bit)
+	P: Address / Narrow Pointer
+	Q: Fat Pointer / Array
+	V: Variant
+
+P will be used for object references, and will consist of a raw CPU pointer.
+
+Q will be used for user-defined pointers and arrays.
+
+Operations on pointer-type values will be in terms of the native element size of the pointer, and these will be given as 'Q' in signatures.
+
+Operations on address values will normally be in terms of raw byte addresses.
+
+
+Value types wider than the natural VM register size will be represented internally via pointers to these values. These will be referred to as Boxed-Value-Types (BVT). Pointers and arrays will be a special example of a BVT.
+
+Vectors will also be classified as a BVT, but may be handled internally using special registers (SSE registers, ...). Thus, being classified as a BVT does not mandate a specific representation.
+
+Integer types will default to being logically signed, with special cases provided for unsigned operations.
+
+Secondary Types:
+	C: Char (Unsigned, 16-bit)
+	SB: Signed Byte (signed 8 bit)
+	UB: Unsigned Byte (unsigned 8 bit)
+	SS: Signed Short (signed 16 bit)
+	US: Unsigned Short (unsigned 16 bit)
+
+Vector Types:
+	V2F/V3F/V4F: Float Vectors
+	V2D/V3D/V4D: Double Vectors
+	V2I/V3I/V4I: Int Vectors
+	V2L/V3L/V4L: Long Vectors
+	V2B/V3B/V4B/../V16B: Byte Vectors
+	V2S/V3S/V4S/../V8S: Short Vectors
+
+Bytecode:
+Prefix+Suffix.
+
+Opcode:
+Prefix, High 4 bits.
+Operation, Low 4 bits.
+
+Opcode Byte (High 4):
+	 0=Unary 4 I (Op=4 bits)
+	 1=Unary 4 L (Op=4 bits)
+	 2=Unary 4 F (Op=4 bits)
+	 3=Unary 4 D (Op=4 bits)
+		PO DS
+	 4=Binary 4 I (Op=8 bits)
+	 5=Binary 4 L (Op=8 bits)
+	 6=Binary 4 F (Op=8 bits)
+	 7=Binary 4 D (Op=8 bits)
+		PO OD ST
+	 8=Unary 4 IC (Op=4 bits, Const=12 bits)
+		PO DC CC
+	 9=Binary 4 IC (Op=8 bits, Const=12 bits)
+		PO OD SC CC
+	10=Unary Jump (Pf=4B2)
+		(Pf==0) PP AA AA AA (Addr=24 bits)
+		(Pf!=0) PP OS AA AA (Op=4 bits, Addr=16 bits)
+	11=Binary Jump I/L
+	12=Binary Jump F/D
+		PP ST AA AA (Op=4 bits, Addr=16 bits)
+	13=Binary Jump I/L C
+		PP SC CC AA AA (Op=4 bits, Const=12 bits, Addr=16 bits)
+	14=Escape Generic 1 (Pf=4B3 bits, Op=8 bits)
+		PP OO ...
+	15=Escape Generic 2 (Pf=8B3 bits, Op=12 bits)
+		PP PO OO ...
+		
+Unary Ops
+	 0=MOV (d=s)
+	 1=NEG (d=-s)
+	 2=NOT (d=~s)
+	 3=LNOT (d=!s)
+	 4=INC (d=s+1)
+	 5=DEC (d=s-1)
+	 6=DEFER (d=*s, d=s[0])
+	 7=SETDEFER (*d=s, d[0]=s)
+	 8=DEFERA (d=*s, d=s[0])
+	 9=SETDEFERA (*d=s, d[0]=s)
+	 
+Binary Ops
+	 0=ADD (d=s+t)
+	 1=SUB (d=s-t)
+	 2=MUL (d=s*t)
+	 3=DIV (d=s/t)
+	 4=MOD (d=s%t)
+	 5=AND (d=s&t)
+	 6=OR (d=s|t)
+	 7=XOR (d=s^t)
+	 8=SHL (d=s<<t)
+	 9=SHR (d=s>>t)
+	10=SHRR (d=s>>>t)
+	11=CMPL (d=(s==t)?0:((s>t):1:(-1)))
+	12=CMPG (d=(s==t)?0:((s<t):(-1):1))
+	13=LAND (d=s&&t)
+	14=LOR (d=s||t)
+	15=LXOR (d=s^^t)
+	16=CMP_EQ (d=(s==t))
+	17=CMP_NE (d=(s!=t))
+	18=CMP_LT (d=(s<t))
+	19=CMP_GT (d=(s>t))
+	20=CMP_LE (d=(s<=t))
+	21=CMP_GE (d=(s>=t))
+	22=CMP_UN (Unordered Compare)
+	23=CMP_TR (Trap Compare)
+	24=JMP_EQ (d=(s==t))
+	25=JMP_NE (d=(s!=t))
+	26=JMP_LT (d=(s<t))
+	27=JMP_GT (d=(s>t))
+	28=JMP_LE (d=(s<=t))
+	29=JMP_GE (d=(s>=t))
+	30=JMP_UN (Unordered Compare)
+	31=JMP_TR (Trap Compare)
+	32=LOADINDEX (d=s[t], d=s[c])
+	33=STOREINDEX (d[s]=t, d[c]=s)
+	34=UMUL (d=s*t)
+	35=UDIV (d=s/t)
+	36=UMOD (d=s%t)
+	37=UCMP (d=(s==t)?0:((s>t):1:(-1)))
+	38=LOADINDEXL (d=s[t], d=s[c])
+	39=STOREINDEXL (d[s]=t, d[c]=s)
+	40=LOADINDEXA (d=s[t], d=s[c])
+	41=STOREINDEXA (d[s]=t, d[c]=s)
+
+Special Behaviors:
+	Compare operators will always produce integers as output.
+
+	LOADINDEX and STOREINDEX will use an integer as the index.
+	They will use a pointer/array type by default.
+	The prefix will encode the element type.
+	LOADINDEXL and STOREINDEXL will use a long index.
+	LOADINDEXA and STOREINDEXA will use a raw pointer.
+
+Prefix 4B2 Unary Jump
+	 0=Z (Void / Unconditional)
+	 1=I (Int)
+	 2=L (Long)
+	 3=F (Float)
+	 4=D (Double)
+	 5=Q (Fat Pointer)
+	 6=P (Narrow Pointer)
+	 7..11=Reserved
+	12=V (Variant)
+	13=S2 (Signature, 16-bit)
+	14=S3 (Signature, 24-bit)
+	15=S4 (Signature, 32-bit)
+
+Unary Jump
+	 0=False (s==0)
+	 1=True (s!=0)
+	 2=Less Than (s<0)
+	 3=Greater Than (s>0)
+	 4=Less Equal (s<=0)
+	 5=Greater Equal (s>=0)
+	 6=Unordered
+	 7=Trap
+	 8..15=Reserved
+
+Binary Jump
+	 0=Equal (32)
+	 1=Not Equal (32)
+	 2=Less Than (32)
+	 3=Greater Than (32)
+	 4=Less Equal (32)
+	 5=Greater Equal (32)
+	 6=Unordered (32)
+	 7=Trap (32)
+	 8=Equal (64)
+	 9=Not Equal (64)
+	10=Less Than (64)
+	11=Greater Than (64)
+	12=Less Equal (64)
+	13=Greater Equal (64)
+	14=Unordered (64)
+	15=Trap (64)
+
+Prefix 4B3/8B3 (Generic Ops)
+	 0=Z (Void / Unconditional)
+	 1=I (Int)
+	 2=L (Long)
+	 3=F (Float)
+	 4=D (Double)
+	 5=Q (Fat Pointer)
+	 6=P (Narrow Pointer)
+	 7=C (Char, U16)
+	 8=SB (Byte)
+	 9=UB (Byte)
+	10=SS (Short)
+	11=US (Short)
+	12=V (Variant)
+	13=S2 (Signature, 16-bit)
+	14=S3 (Signature, 24-bit)
+	15=S4 (Signature, 32-bit)
+	16=V2F
+	17=V3F
+	18=V4F
+	19=V2D
+	20=V3D
+	21=V4D
+	22=V2I
+	23=V3I
+	24=V4I
+	25=V2B
+	26=V3B
+	27=V4B
+	28=V2S
+	29=V3S
+	30=V4S
+
+The signature cases will be special, and will add a string-table index following the opcode (prior to any opcode-specific arguments).
+
+Generic Ops
+	 0=Unary (8 bit Registers)
+		PP OO QQ DD SS
+	 1=Binary (8 bit Registers)
+		PP OO QQ DD SS TT
+	 2=Unary Const (8 bit Registers, 32-bit const)
+		PP OO QQ DD CC CC CC CC
+	 3=Binary Const (8 bit Registers, 32-bit const)
+		PP OO QQ DD SS CC CC CC CC
+	 4=Unary Jump (8 bit Registers, 32-bit address)
+		PP OO QQ SS AA AA AA AA
+	 5=Binary Jump (8 bit Registers, 32-bit address)
+		PP OO QQ SS TT AA AA AA AA
+	 6=Binary Jump Const (8 bit Registers, 32-bit const, 32-bit address)
+		PP OO QQ SS CC CC CC CC AA AA AA AA
+	 7=CALL
+		PP OO RR FF Ac AA ...
+		RR=Return Register
+		FF=Function Register (A)
+		Ac=Arguments Count
+		AA=Argument
+	 8=RET
+		(Pf==Z) PP OO
+		(Pf!=Z) PP OO RR
+	 9=ConvTo
+	10=ConvFrom
+		PP OO QQ DD SS
+		Convert between the type given in the prefix, and
+		the type prefix given in QQ.
+		Where QQ gives the type to convert to/from.
+	11=ConvToSig
+	12=ConvFromSig
+		PP OO CC CC DD SS
+		Similar, however CC is given as a signature.
+
+	13=SLOAD
+		PP OO DD CC CC
+		Load from a variable.
+	14=SSTORE
+		PP OO SS CC CC
+		Store to a variable.
+	15=SCALL
+		PP OO CC CC RR Ac AA ...
+		Calls a function using the variable given in CC.
+	16=LDCONST
+		PP OO DD CC CC
+		Load a constant.
+		The constant pool entry is given in CC.
+
+
+Constant Values
+
+For unary and binary operators with a constant, for int and long types, the constant value will be encoded directly, whereas for other types it will be used as an index into the constant pool.
+
+
+FRIR2 ASM Syntax
+
+DeclVar:
+	name ':' sig
+
+DeclVars: DeclVar [ ',' DeclVars]
+
+Var:
+	'var' DeclVar ';'
+
+Func:
+	'function' DeclVar '(' DeclVars ')' '{' Instr* '}'
+
+Instr:
+	opname '.' optype OpArgs ';'
+
+Signature:
+	i: int32
+	j: uint32
+	l: long (alias for x)
+	m: ulong (alias for y)
+	x: long (64 bit)
+	y: ulong (64 bit)
+	f: float
+	d: double
+	r: variant (as a raw pointer)
+	Cr: variant (as a tagged value)
+	P*: pointer (narrow pointer / address)
+	Q*: array or fat pointer.

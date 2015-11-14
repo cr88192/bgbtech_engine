@@ -1,0 +1,2445 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.0  (Win32)">
+	<META NAME="CREATED" CONTENT="0;0">
+	<META NAME="CHANGED" CONTENT="20100227;10354400">
+	<META NAME="Info 1" CONTENT="">
+	<META NAME="Info 2" CONTENT="">
+	<META NAME="Info 3" CONTENT="">
+	<META NAME="Info 4" CONTENT="">
+	<STYLE TYPE="text/css">
+	<!--
+		@page { margin: 0.79in }
+		TD P { margin-bottom: 0.08in }
+		H1 { margin-bottom: 0.08in }
+		H1.western { font-family: "Arial", sans-serif; font-size: 16pt }
+		H1.cjk { font-family: "MS Mincho"; font-size: 16pt }
+		H1.ctl { font-family: "Tahoma"; font-size: 16pt }
+		P { margin-bottom: 0.08in }
+		H2 { margin-bottom: 0.08in }
+		H2.western { font-family: "Arial", sans-serif; font-size: 14pt; font-style: italic }
+		H2.cjk { font-family: "MS Mincho"; font-size: 14pt; font-style: italic }
+		H2.ctl { font-size: 14pt; font-style: italic }
+		H3 { margin-bottom: 0.08in }
+		H3.western { font-family: "Arial", sans-serif }
+		H3.cjk { font-family: "MS Mincho" }
+		A:link { so-language: zxx }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<H1 CLASS="western">BGBASM: BGB Assembler</H1>
+<P><BR><BR>
+</P>
+<P>This contains the assembler and linker, where the assembler is a
+good old assembler for x86 and x86-64, supporting an Intel/NASM style
+syntax, and a C-style preprocessor (I needed one and this is what I
+happened to have on-hand...). It is generally the idea that code be
+produced in the form of textual ASM, and assembled with the assembler
+(JIT compilers hand-crafting machine code is IMO both tacky and
+fragile, as well as introducing many other issues).<BR><BR>The
+assembler supports 2 major styles:<BR>The creation of top-level
+modules, which are assumed to be linked into the running image, and
+which share the same space as all the other modules (namespaces and
+similar can be achieved through the use of name-mangling);<BR>The
+creation of standalone thunks, which are typically linked into their
+own custom chucks of garbage-collected executable memory, and which
+make use of a different approach to external linking (scopes may be
+passed in, and symbols are not required to be kept up to date).<BR><BR>The
+linker is partly joined with the assembler, but is done as a separate
+stage. The linker mostly functions similarly to a conventional linker
+(takes object modules, links them together), and may accept COFF,
+ELF, and static libraries (GNU-AR and MS Win32/Win64 libraries), and
+also allows exporting code from the assembler into object modules
+(currently COFF), but differs partly in that it allows a few novel
+features (particularly in that it allows other subsystems to hook
+into it for purposes such as fetching or emitting custom symbols, or
+registering handlers such that automatic code generation can take
+place as a means to resolve symbols, as well as including machinery
+for things like gluing together several different calling
+conventions, accessing thread-local-storage, ...).<BR><BR>The linker
+has primary responsibility over managing the running image and
+keeping track of the symbol table.<BR><BR>It is assumed that if
+porting to a new arch, the assembler and/or linker could be modified
+or rewritten to support the arch in question.<BR><BR><BR>
+</P>
+<H3 CLASS="western">Scopes and Thunks</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+By default, assembly code is linked into what are known as modules,
+which as noted, all share a global top-level environment. This
+environment implicitly also includes all contents pulled in from
+libraries and dynamic libraries (such as DLL or Shared Object), in
+addition to that present in the linked in modules. This can be
+roughly compared with the C top-level.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Modules linked into this top-level environment are managed by the
+dynamic linker, and are at present not garbage collected. The idea
+then is that the top level will used primarily for &ldquo;general-purpose&rdquo;
+code, such as functions or methods, and not for &ldquo;one-off&rdquo;
+dynamically-constructed executable objects.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Note that not all modules will be linked immediately, but in some
+cases the linker may delay final linking until a symbol is needed
+from a given module. The reason for doing this would be to help
+reduce the potential risks of a circular dependency during the
+linking process, which could otherwise lead to faulty linking or
+other link-related problems (the idea here is that the modules will
+be visible to the linker prior to needing to resolve their symbols,
+so that linking several modules would cause them to link against the
+symbols in the other modules, rather than resorting to possibly more
+drastic measures to attempt to resolve a symbol which has not yet
+come into view).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Thunks exist as an alternative means of linking modules, where as
+opposed to being linked into the global top-level and managed
+statically, will be instead linked into a garbage-collected
+executable object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Thunks will come in 2 different types: normal and inline. A 'normal'
+thunk exists in the form of an executable structure. The first member
+of the struct is generally a jump to the entry point, allowing it to
+be called as if it were a function. This type of thunk also keeps
+track of some structural information and as a result, allows for the
+use of multiple sections, as well as an entry point which is not at
+the start of the thunk.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+An inline thunk, on the other hand, is simply a glob of instructions
+located in an executable memory object. As a result, the entry point
+needs to be at the start of the thunk, and all contents will need to
+be located within a single section (by convention, this will be
+&ldquo;.text&rdquo;). The advantage of an inline thunk, however, is
+that it will need less memory.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Scopes are an alternative means for representing binding
+environments, and are used for ASM thunks. Scopes were designed in a
+different way as to be more friendly with the garbage collector. A
+scope essentially represents a local set of bindings, and bindings
+inside a scope are not visible from elsewhere.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Unlike in the global scope, bindings within a scope will not change
+those in already linked thunks. Instead, a thunk will need to use
+'G.' addressing if it hopes to retain an up-to-date pointer to a
+variable (see section on Indirect Names).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Scopes will be searched recursively, and if a label is not found, it
+will fall back to the global scope.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Note that thunks will also not create global bindings, but will
+instead create bindings within the given scope.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H1 CLASS="western">Assembly Language Overview (x86 and x86-64)</H1>
+<H2 CLASS="western">Assembler Syntax</H2>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><B>General</B></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Apart from labels, most tokens are not
+case sensitive.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">/* C-style comment */</P>
+<P STYLE="margin-bottom: 0in">// line comment</P>
+<P STYLE="margin-bottom: 0in">; also a line comment</P>
+<P STYLE="margin-bottom: 0in">mov eax, 6 ;terminal comment (needs
+preceding whitespace)</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Multiple instructions may be globed on
+a single line in the following ways:</P>
+<P STYLE="margin-bottom: 0in">A semicolon absent a space, as in:</P>
+<P STYLE="margin-bottom: 0in">push ebp; mov ebp, esp</P>
+<P STYLE="margin-bottom: 0in">A vertical bar, as in:</P>
+<P STYLE="margin-bottom: 0in">push ebp | mov ebp, esp</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">This will not necessarily apply at
+present to any special forms, which may have their own parsing
+behavior.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><B>Numbers</B></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<TABLE WIDTH=100% BORDER=1 BORDERCOLOR="#000000" CELLPADDING=4 CELLSPACING=0>
+	<COL WIDTH=128*>
+	<COL WIDTH=128*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P>'0x'[('0'..'9')|('A'..'F')|('a'..'f')]<SUP>+ </SUP>
+			</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P>Hexadecimal</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P>'0'['0'..'7']<SUP>+</SUP></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P>Octal</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P>('1'..'9')['0'..'9']<SUP>*</SUP></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P>Decimal Int</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P>('0'..'9')[('0'..'9')|('A'..'F')|('a'..'f')]<SUP>+</SUP>('h'|'H')</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P>Hexadecimal</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P>('0'..'1')<SUP>+</SUP>('b'|'B') 
+			</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P>Binary</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><B>Strings</B></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Strings are represented in the C style.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<TABLE WIDTH=100% BORDER=1 BORDERCOLOR="#000000" CELLPADDING=4 CELLSPACING=0>
+	<COL WIDTH=128*>
+	<COL WIDTH=128*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P>Escape</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P>Meaning</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P>\\ 
+			</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P>\</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P>\r</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P>Carriage Return</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P>\n</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P>Newline</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P>\t</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P>Tab</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P>\b</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P>Backspace</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P>\xHH</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P>Escape ASCII char</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P>\uHHHH</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P>Escape Unicode character</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P>\UHHHHHHHH</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P>Escape Unicode character (larger range)</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><B>Labels</B></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;name&gt;':'</P>
+<P STYLE="margin-bottom: 0in">Normal Label.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;name&gt; when followed by an
+operation in which a label is implied, such as db, dw, dd, or dq.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">'.'&lt;name&gt;':'</P>
+<P STYLE="margin-bottom: 0in">Creates a label relative to the last
+normal label. This will be handled by forming a composite label such
+that in &quot;foo: .bar:&quot;, the later label is treated as
+&quot;foo.bar:&quot;.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Labels will be treated as case
+sensitive.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">$&lt;name&gt;, when used in an operand,
+gives an offset relative to a base Rather than the absolute address.
+This is a feature intended for PIC code (note: This is not used for
+x86-64 RIP-relative addressing).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">RIP-relative addresses are the default
+on x86-64.</P>
+<P STYLE="margin-bottom: 0in">mov ecx, [foo] ;will refer to foo using
+rip-relative addressing</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">@&lt;name&gt;, will be used to indicate
+absolute addressing.</P>
+<P STYLE="margin-bottom: 0in">mov ecx, [@foo] ;refer to foo via an
+absolute address</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Absolute addresses will be the default
+for addresses given as immediates.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">mov ecx, [0x410] ;get the value at the
+address 0x410</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">RIP-relative addressing can be
+specified as such:</P>
+<P STYLE="margin-bottom: 0in">mov ecx, [rip-0x1f2c] ;refer to a value
+0x1f2c bytes backwards</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier New, monospace"><FONT SIZE=2><B>Indirect
+Names</B></FONT></FONT></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier New, monospace"><FONT SIZE=2>'G.'&lt;name&gt;</FONT></FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier New, monospace"><FONT SIZE=2>This
+is a special way of accessing names, and will indicate that the
+reference is indirect (for example, via a GOT or proxy or similar),
+rather than directly to the name in question.</FONT></FONT></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier New, monospace"><FONT SIZE=2>mov
+eax, [G.foo] ;loads a pointer to foo, rather than foo itself</FONT></FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier New, monospace"><FONT SIZE=2>...</FONT></FONT></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier New, monospace"><FONT SIZE=2>foo
+dd 0</FONT></FONT></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier New, monospace"><FONT SIZE=2>This
+allows speeding up dynamic relinking (since relinking can be done
+without having to update all references to a given label), and will
+be the only allowed way to use dynamically relinking with
+garbage-collectible thunks (See the section on thunks).</FONT></FONT></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><B>Definitions</B></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">db, dw, dd, dq: emit 1 or more values
+seperated by commas, where db emits bytes, dw words, dd doublewords,
+and dq quadwords.</P>
+<P STYLE="margin-bottom: 0in">db and dw may also accept strings,
+where each character in the string is encoded as a value. Note that
+using dw for strings assumes Unicode code-points (db assumes ASCII or
+UTF-8). In the case of string literals, it may be needed to manually
+include the trailing 0, as this will not be inserted automatically.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dd/dq may accept float values, which
+will be encoded in the traditional IEEE forms.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">resb, resw, resd, resq: fill space with
+some number of 0s of the respective size.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;name&gt; equ &lt;value&gt;</P>
+<P STYLE="margin-bottom: 0in">Defines an assembler constant, where at
+present value may only be an integer.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><B>Directives</B></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">[section .text] Direct output to text</P>
+<P STYLE="margin-bottom: 0in">[section .data] Direct output to data</P>
+<P STYLE="margin-bottom: 0in">[section .bss] Direct output to bss
+(currently data)</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">[bits 16/32/64] Declare the native
+word-size to emit code for.</P>
+<P STYLE="margin-bottom: 0in">[use16/32/64] Likewise</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">These later forms may be wrapped in
+square braces, as in:</P>
+<P STYLE="margin-bottom: 0in">[section .text]</P>
+<P STYLE="margin-bottom: 0in">[bits 32]</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><B>Special Forms</B></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">getip &lt;reg&gt;</P>
+<P STYLE="margin-bottom: 0in">Special form used to get the current
+EIP value (via a call and a pop). This value will be adjusted to
+point to the following instruction.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">getbase &lt;reg&gt;</P>
+<P STYLE="margin-bottom: 0in">Special form used to compute the base
+address and load it into the register. This works similar to the
+above, but adds to this by adjusting the value to point to the chosen
+address.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">This can be combined with the $&lt;name&gt;
+form of labels for use in PIC code.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">getbase ecx</P>
+<P STYLE="margin-bottom: 0in">...</P>
+<P STYLE="margin-bottom: 0in">mov eax, [ecx+$str]</P>
+<P STYLE="margin-bottom: 0in">push eax</P>
+<P STYLE="margin-bottom: 0in">call printf</P>
+<P STYLE="margin-bottom: 0in">pop edx</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">setbase &lt;name&gt;</P>
+<P STYLE="margin-bottom: 0in">Set the base used for computing
+relative addresses. By default the base is set to the IP at the start
+of the current assembly or file.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note that this name needs to be defined
+prior to using this special form.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><B>Register Naming</B></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Base Regs (classic):</P>
+<TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=11%>
+			<P>Byte:</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>al</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>cl</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>dl</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>bl</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>ah | spl</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>ch | bpl</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>dh | sil</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>bh | dil</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=11%>
+			<P>Word:</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>ax</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>cx</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>dx</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>bx</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>sp</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>bp</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>si</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>di</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=11%>
+			<P>DWord:</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>eax</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>ecx</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>edx</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>ebx</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>esp</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>ebp</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>esi</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>edi</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=11%>
+			<P>QWord:</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>rax</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>rcx</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>rdx</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>rbx</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>rsp</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>rbp</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>rsi</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>rdi</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Base Regs (alternative):</P>
+<TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=11%>
+			<P>Byte:</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r0b</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r1b</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r2b</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r3b</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r4b</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r5b</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r6b</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r7b</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=11%>
+			<P>Word:</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r0w</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r1w</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r2w</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r3w</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r4w</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r5w</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r6w</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r7w</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=11%>
+			<P>DWord:</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r0d</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r1d</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r2d</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r3d</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r4d</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r5d</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r6d</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r7d</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=11%>
+			<P>QWord:</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r0</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r1</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r2</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r3</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r4</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r5</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r6</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r7</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Extended GPRs:</P>
+<TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<COL WIDTH=28*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=11%>
+			<P>Byte:</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r8b</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r9b</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r10b</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r11b</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r12b</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r13b</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r14b</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r15b</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=11%>
+			<P>Word:</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r8w</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r9w</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r10w</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r11w</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r12w</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r13w</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r14w</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r15w</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=11%>
+			<P>DWord:</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r8d</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r9d</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r10d</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r11d</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r12d</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r13d</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r14d</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r15d</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=11%>
+			<P>QWord:</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r8</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r9</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r10</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r11</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r12</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r13</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r14</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>r15</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">As for: ah/spl, ch/bpl, dh/sil, bh/dil.</P>
+<P STYLE="margin-bottom: 0in">Which is used is based on the absence
+or presence of a REX prefix, as otherwise the registers are encoded
+the same.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">As such, accessing spl/bpl/sil/dil will
+make an opcode that looks the same as the ah/ch/dh/bh form, apart
+from the addition of a dummy REX prefix, and alternatively
+ah/ch/dh/bh may not be used with an opcode which uses REX.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Albeit, alternative possibilities exist
+in this latter case (an ijklmnop progression, or mimicking
+irregularities of the latter 4 base regs). As such, this convention
+will be viewed as deprecated and may be removed.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><B>Opcodes</B></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Opcodes will be similar to as in many
+other assemblers (NASM and friends in particular).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">reg</P>
+<P STYLE="margin-bottom: 0in">imm</P>
+<P STYLE="margin-bottom: 0in">label</P>
+<P STYLE="margin-bottom: 0in">mem</P>
+<P STYLE="margin-bottom: 0in">'[' [&lt;sreg&gt;':']
+(&lt;reg|label|addr|const&gt; | (&lt;label&gt; '+' &lt;reg&gt;))
+['+'&lt;reg&gt;['*'&lt;scale&gt;]] ['+'&lt;label|disp|const&gt;] ']'</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">A size override may be provided between
+an opcode and the first argument, which may be used when choosing
+which particular version of the opcode to encode.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">short Jumps, 8-bit offset</P>
+<P STYLE="margin-bottom: 0in">near16 Jumps, 16-bit offset</P>
+<P STYLE="margin-bottom: 0in">near32 Jumps, 32-bit offset</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">byte 8-bit value.</P>
+<P STYLE="margin-bottom: 0in">word 16-bit value.</P>
+<P STYLE="margin-bottom: 0in">dword 32-bit value.</P>
+<P STYLE="margin-bottom: 0in">qword 64-bit value.</P>
+<P STYLE="margin-bottom: 0in">oword 128-bit value.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">In the case of jumps/calls/... to a
+label, the default encoding chosen is based on the current arch.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">At present, an immediate given as a
+real will be assumed to be a float (it is treated as an dword
+encoding the float). Likewise, in this case it will generate an
+implicit 'dword'.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Using 'qword' will cause it to be
+treated as a double (only valid if the opcode can accept a 64 bit
+immediate).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">mov [foo], 2.7178 ;store a float into
+foo</P>
+<P STYLE="margin-bottom: 0in">mov dword [foo], 2.7178 ;equivalent
+('dword' is implied above).</P>
+<P STYLE="margin-bottom: 0in">mov ecx, 3.14159265359 ;likewise...</P>
+<P STYLE="margin-bottom: 0in">mov cx, 3.14159265359 ;invalid...</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><B>Special Cases</B></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">inc/dec reg</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Increment or decrement a register.</P>
+<P STYLE="margin-bottom: 0in">In other assemblers, these would simply
+be part of inc/dec, however, in x86-64, these forms have been
+overloaded as the REX prefixes (and thus these forms are invalid in
+x86-64).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">'inc reg16/32' and 'dec reg16/32' will
+be internally renamed on x86-32, and will produce a less efficient
+form of the instruction on x86-64.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">movsx and movzx</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">movsx r32, rm16</P>
+<P STYLE="margin-bottom: 0in">movsx r64, rm32</P>
+<P STYLE="margin-bottom: 0in">and:</P>
+<P STYLE="margin-bottom: 0in">movzx r32, rm16</P>
+<P STYLE="margin-bottom: 0in">movzx r64, rm32</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Have been renamed to movsxw and movzxw
+since the size of memory oprands is not known, and it wasn't really
+possible to distinguish them from the 8-bit forms.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2 CLASS="western">Preprocessor Syntax</H2>
+<P STYLE="margin-bottom: 0in">At present, a preprocessor is present
+which will accept syntax in 2 styles:</P>
+<P STYLE="margin-bottom: 0in">C-style, for example:</P>
+<P STYLE="margin-bottom: 0in">#define FOO</P>
+<P STYLE="margin-bottom: 0in">&hellip;</P>
+<P STYLE="margin-bottom: 0in">#ifdef FOO</P>
+<P STYLE="margin-bottom: 0in">...</P>
+<P STYLE="margin-bottom: 0in">#endif</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">as well as NASM style:</P>
+<P STYLE="margin-bottom: 0in">%define FOO &hellip;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note that the syntax for NASM style
+block macros is not presently supported.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note that '#' or '%' as the first
+character on a line will signal the use of a preprocessor directive.
+A preprocessor directive will terminate at the end of a line,
+however, \ may be used to break a directive onto multiple lines.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">#include &ldquo;<I>name</I>&rdquo;</P>
+<P STYLE="margin-bottom: 0in">#include &lt;<I>name</I>&gt;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Include another file.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">#define <I>name</I></P>
+<P STYLE="margin-bottom: 0in">#define <I>name value</I></P>
+<P STYLE="margin-bottom: 0in">#define <I>name</I>(<I>args</I>)
+<I>pattern</I></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Define a macro. Note that macros may
+not be overloaded.</P>
+<P STYLE="margin-bottom: 0in">A macro may be invoked where pattern is
+inserted in place of the macro invocation, and each argument is
+substituted into the appropriate place in the pattern.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">#undef <I>name</I></P>
+<P STYLE="margin-bottom: 0in; font-style: normal">Remove a macro
+definition.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+#ifdef <I>name</I></P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Begins a block, which is included if name has been defined.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+#ifndef <I>name</I></P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Begins a block, which is included if name has not been defined.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+#if <I>pp-expression</I></P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Begins a block, which is included if pp-expression is true
+(non-zero).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+#else</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Ends the current block and begins a new block which is included if
+the prior block was not included.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+#endif</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Ends the current block.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Special Defines</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+__x86__ or __x86_64__ will be defined to identify which CPU
+architecture is currently in use.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+<BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+<BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Special Directives</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+<BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+#macro <I>name</I>(<I>args</I>)</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><I>text...</I></P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+#endmacro</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+<BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Creates a multi-line macro. A multi-line macro allows definition of
+multiple lines, as well as the inclusion of preprocessing and
+delayed-preprocessing directives within the body of the macro.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Note that newlines within the body of the macro will be preserved in
+the expanded output.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+<BR>
+</P>
+<P STYLE="margin-bottom: 0in">#definelocal <I>name</I></P>
+<P STYLE="margin-bottom: 0in">#definelocal <I>name value</I></P>
+<P STYLE="margin-bottom: 0in">#definelocal <I>name</I>(<I>args</I>)
+<I>pattern</I></P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Performs a local define. This differs from an ordinary define in that
+local defines include a scope (whereas an ordinary define is global
+by default), and when the scope exits the local define will
+disappear.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+<BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+#assign <I>name</I> <I>pp-expression</I></P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Assign a new value to a prior define. The expression will be
+evaluated prior to being assigned.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Note that this will search upwards along the scopes, assigning the
+first define found, and failing finding a define will bind at the top
+level.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+<BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+#assignlocal <I>name</I> <I>pp-expression</I></P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Performs a similar task to &ldquo;#assign&rdquo;, but differs in that
+it will not search parent scopes and will use a local define rather
+than a top-level define.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+<BR>
+</P>
+<P STYLE="margin-bottom: 0in">#define <I>name value</I></P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+May be used to replace the value in a prior define.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+<BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+#enterscope</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+#exitscope</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Manually enter or exit a local scope. These are to be paired.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+<BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+##...</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Allows &ldquo;delaying&rdquo; a PP directive within a multi-line
+macro. This delayed directive will in turn be evaluated at the time
+the macro is expanded, rather than at the time it is declared.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Multiple levels of &ldquo;#&rdquo; may be be used, with each being
+eaten off at each level of expansion (allowing, for example, the
+creation of macros within macros).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H1 CLASS="western">BASM API</H1>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3 CLASS="western">Frontend</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+char *BASM_CPUID_String();</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+u32 BASM_CPUID_Version();</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+u32 BASM_CPUID_Unit();</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+u32 BASM_CPUID_Ext();</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+u32 BASM_CPUID_Feature();</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Post-initialization, these give basic info about what was returned
+via the CPUID instruction.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+This can be used, for example, to determine if certain features are
+available.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *BASM_GetEBP();</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+This returns the value of rBP in the caller.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BASM_GetReturnState(void **regs);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+This gets the register state. The structure and meaning is arch
+specific.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+byte *BASM_Win64LocateEpilogue(byte *ip);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+For Win64, locate the following epilogue for a given rIP.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+byte *BASM_Win64AdjustEpilogueRSP(byte *ip, byte *sp,BGBASM_RegsBuf
+*regs);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+For Win64, Adjust the contents of regs in accordance with the
+epilogue (used in order to do simulated stack unwinding for
+backtracing).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BASM_StackTrace(void **ip, void **bp, int lim);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+This unwinds the stack giving the rIP address and base-pointer at
+each step.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+The lim argument gives the maximum number of stack frames to return.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+The return value is the number of frames successfully back-traced, or
+-1 on error.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void basm_putc(int c);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void basm_puts(char *str);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void basm_vprint(char *str, va_list lst);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void basm_print(char *str, ...);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Submit ASM code to the current ASM buffer.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BASM_RegisterPtr(char *lbl, void *ptr);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Declare that a given label has a given address.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *BASM_GetPtr(char *lbl);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Get the address of a particular label.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+char *BASM_GetPtrName(void *ptr);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Get the label associated with a particular address.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+char *BASM_GetLastNamePtr(void *ptr, void **rbp);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Gets the name of the last label for a given address, as well as the
+base address for said label.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *BASM_FetchSymPrefix(char *name);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Get the address of the label with name as its prefix.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+char *BASM_FetchSymPrefixName(char *name);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Get the name of the label with name as its prefix.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BASM_DumpModule(char *name);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Dump information about a given loaded module by name.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *BASM_GetFPtrDummy(char *lbl);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Get the address of a given label, or if the label is not found,
+return a no-op function pointer.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BASM_BeginAssembly(char *name);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Begin a new ASM module with a given name. The name may be NULL, which
+means that the module is unnamed. At this point, basm_print() and
+similar may be used to submit ASM code.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *BASM_EndAssembly();</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *BASM_EndAssemblyQuiet();</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *BASM_EndAssemblyDebug();</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BASM_EndAssemblyQueue();</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *BASM_EndAssemblyCache(char *name);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BASM_EndAssemblyFile(char *name);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+byte *BASM_EndAssemblyObjBuf(int *rsz);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+byte *BASM_EndAssemblyCacheObjBuf(int *rsz);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+BLNK_Thunk *BASM_EndAssemblyThunk(BLNK_Scope *scope);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+byte *BASM_EndAssemblyThunkInline(BLNK_Scope *scope);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BASM_EndAssemblyVirtualHeader();</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+<BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Ends the ASM module, where the suffix indicates additional
+special-case behaviors.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<TABLE WIDTH=100% BORDER=1 BORDERCOLOR="#000000" CELLPADDING=4 CELLSPACING=0>
+	<COL WIDTH=128*>
+	<COL WIDTH=128*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">BASM_EndAssembly()</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Ends with
+			default behaviors. Returns the start of the linked &ldquo;.text&rdquo;
+			section.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">BASM_EndAssemblyQuiet()</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Ends but
+			doesn't print anything (the default version may be allowed to emit
+			debugging messages).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">BASM_EndAssemblyDebug()</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Request
+			printing some debugging messages.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">BASM_EndAssemblyQueue()</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Queue module
+			for delayed linking.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">BASM_EndAssemblyCache()</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Stores an
+			object module in the file given by name in addition to linking it
+			into the running image.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">BASM_EndAssemblyFile()</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Stores output
+			into the file given by name (does not link into running image).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">BASM_EndAssemblyObjBuf()</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Stores output
+			object module into a returned buffer (does not link). The object
+			module is managed by malloc.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">BASM_EndAssemblyCacheObjBuf()</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Stores output
+			object module into a returned buffer and link into running image.
+			The object module is managed by malloc.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">BASM_EndAssemblyThunk()</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Output is
+			linked into a garbage-collected thunk object. For info about
+			thunks and scopes, see the section on thunks.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">BASM_EndAssemblyThunkInline()</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Output is
+			linked into a garbage collected inline thunk object (saves memory
+			by not using a header, and so is raw machine code).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">BASM_EndAssemblyVirtualHeader()</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Output was a
+			virtual preprocessing header. It is sent to the preprocessor and
+			can be later included as if it were a header file.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BASM_FreeAssembly(void *ip);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Free the ASM module located by the stating rIP address.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+char *BASM_GenSym();</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+char *BASM_GenSym2();</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Generate a unique label name. The name is generated via a TRNG and is
+18 digits encoded in base48 with around 96 bits of entropy. Both
+store the name in a temporary memory buffer.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+They differ in that 2 uses an underscore prefix.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BASM_LoadObjectBuffer(char *name, byte *buf, int sz);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Load an object module from a buffer and link into the current running
+image.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BASM_LoadFile(char *name);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Loads contents from a file and link into the running image.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+This may load object modules, libraries, or textual ASM.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BASM_AssembleFile(char *iname, char *oname);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Assemble the contents of the file given by iname and store the
+resultant object module in oname.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BASM_ProcessEXE(char *name);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Attempt to load and process the EXE file given by name, which is to
+refer to the current app's main EXE. This may be no-op. Its original
+purpose was to load the symbol table from the main EXE and map it to
+the current process, but fell into uselessness given MSVC does not
+store symbol tables in linked executables, and due to the conversion
+of the project to using DLL files. (This call is deprecated de
+facto).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BASM_Init();</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+This is the main initialization function for the assembler, and
+should be called prior to doing most other stuff.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Note that setting up the GC and IO callbacks should be done prior to
+calling this function, and this function should be called prior to
+using other facilities.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BASM_CallSig(void *fcn, char *sig, void *buf, void *ret);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BASM_CallSigStd(void *fcn, char *sig, void *buf, void *ret);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+These call a function given a function pointer, call signature (see
+Metadata spec), and a buffer holding the args (packed linearly
+according to architecture specific rules). The ret argument holds a
+pointer to the place where the return value will be stored.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+'Std' is specific to Win32, and is used to indicate that the function
+is being called with the stdcall calling convention (the other
+function will perform the call using cdecl).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BASM_CreateStub(void *buf, void *fcn, void *data, char *sig);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *BASM_CreateStubGC(void *fcn, void *data, char *sig);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+These will create a 'closure' stub, which when called will redirect
+the call to the passed in function while adding in data as the first
+argument. Sig gives the baseline signature for the function.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+The former writes the generated stub into the buffer.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+The latter creates a GC'ed thunk which holds the stub.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *BASM_MakeBufferCallStub(void *fcn, char *sig);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+This call may attempt to create a call-stub, which will allow faster
+calls than via CallSig. It will do so by producing a specially
+crafted chunk of code for moving the arguments from the argument
+buffer into the correct registers and/or stack locations (CallSig, by
+definition, needs to use general purpose signature-handling code).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+The stub will be located in a GC'ed inline thunk, and will have the
+form:</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void (*)(void *buf);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Where buf is the argument buffer, and is also used for storing the
+return value.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+This function may return NULL, indicating that for whatever reason it
+was unable to produce a thunk (such as unhandled arch or type
+issues), and it may instead be needed to use CallSig.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BASM_UnmangleXCall(char *str, char *buf);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+This will unmangle an XCall symbol name into its canonical form (See
+Metadata spec).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+char **BASM_UnmangleSplit(char *str);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+This will unmangle an XCall symbol containing multiple components
+(such as a meta-function or meta-trigger), and return an array of
+strings comprising each component. These strings will be located in
+temporary buffers.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BASM_MangleXCall(char *str, char *buf);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Mangle a string from its cannonical form into a mangled form.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BASM_RegisterLinkMeta(char *name, basm_meta_ft fcn);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BASM_RegisterLinkMetaTrigger(char *name, basm_mtrg_ft fcn);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Register handlers for resolving link meta functions and link meta
+triggers (See Metadata spec).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+char *BASM_ComposeLinkMetaName(char *name, char **args);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+char *BASM_ComposeLinkNotifyName(char *name, char **args);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Compose a symbol name for a link meta function or meta trigger (See
+Metadata spec).</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Meta is for Meta-Functions, and Notify is for Meta-Triggers.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3 CLASS="western">Jumps and Exceptions</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BASM_SaveRegs(BGBASM_RegsBuf *buf);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Copy the current register state into a register buffer.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *BASM_SetJmp(BGBASM_JmpBuf *buf);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Store the present state into a jump buffer. Returns the value used
+with LongJmp or NULL.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BASM_LongJmp(BGBASM_JmpBuf *buf, void *val);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Initiate a long jump, and pass a pointer along.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *BASM_StartUnwind(BGBASM_JmpBuf *buf);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BASM_EndUnwind(BGBASM_JmpBuf *buf);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *BASM_BeginUnwind(BGBASM_JmpBuf *buf);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BASM_DoUnwind(void *val);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+These are related to low-level exception handling mechanics. Use with
+caution.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+BeginUnwind / EndUnwind register and unregister an exception-handling
+frame.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+DoUnwind passes along an exception to the last unwind handler, where
+the control passes out of BeginUnwind (it would look as if
+BeginUnwind exited with a pointer, similar to a LongJmp).</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+It may in turn use DoUnwind to re-throw the exception.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3 CLASS="western">Misc</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+char *basm_strdup(char *str);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+This function interns the string it is given, and returns a pointer
+to the interned string.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Note: This was exported mostly as a lot of other code had used it
+prior to converting things into DLL form, but in general using this
+is discouraged.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+byte *BDISASM_PrintOpcode(byte *ip, int *rfl);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Prints a disassembly of the opcode at a given ip, while also updating
+the decoder state flags and returning the next ip.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BDISASM_PrintOpcodes(byte *ip, int fl, int sz);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Print a disassembly of the opcodes located at ip and for sz bytes.
+The fl argument gives the initial state flags for the decoder.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BDISASM_HexDump(byte *ip, int sz);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Do a hex dump of the given memory.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3 CLASS="western">Linker</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BLNK_CheckPointerImageP(void *p);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Returns non-zero if the pointer points to a part of the current
+image.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BLNK_AssignSym(char *name, void *ptr);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Assign a symbol to a particular pointer, may re-link if needed.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+AssignSym may also attempt to create a proxy (in addition to
+assigning a symbol).</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Note: Consider BASM_RegisterPtr() instead.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BLNK_AddProxyPtr(char *name, void *ptr);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Create a proxy for a given symbol and bind the proxy to point to the
+given pointer.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Note: Don't use proxies for variables. Proxies are intended primarily
+to allow dynamic function patching, and may give incorrect behavior
+if used for variables.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BLNK_AddProxy(char *name);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Create a proxy for a given name and bind proxy to prior address
+referenced by name.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Note as see above.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BLNK_AddProxyImport(char *name);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Add a proxy, but use specialized behavior related to DLL imports.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Note: Don't use without good reason and familiarity with the linker
+internals.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BLNK_LoadLibrary(char *name);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Load a library into the current running image.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3 CLASS="western">Thunks</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+BLNK_Scope *BLNK_NewScope(BLNK_Scope *super);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Create a new empty scope delegating to a parent scope.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+If the parent scope is NULL, then it delegates to the global scope.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BLNK_FreeScope(BLNK_Scope *scope);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Destroy a scope.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BLNK_IndexScopeSym(BLNK_Scope *scope, char *name);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BLNK_BindScopeSym(BLNK_Scope *scope, char *name, void *ptr);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BLNK_BindScopeSymSig(BLNK_Scope *scope,char *name, char *sig,
+void *ptr);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BLNK_AssignScopeSym(BLNK_Scope *scope, char *name, void *ptr);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *BLNK_FetchScopeSym(BLNK_Scope *scope, char *name);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *BLNK_FetchScopeSym2(BLNK_Scope *scope, char *name);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+char *BLNK_FetchScopeSig(BLNK_Scope *scope, char *name);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+More to come...</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+BLNK_Thunk *BLNK_LinkModuleThunk(BLNK_Object *ctx, BLNK_Scope
+*scope);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+byte *BLNK_LinkThunkInline(BLNK_Object *ctx, BLNK_Scope *scope);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+BLNK_Thunk *BLNK_LinkModuleThunkObj(BLNK_Scope *scope, void *buf, int
+sz);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+byte *BLNK_LinkModuleThunkInlineObj(BLNK_Scope *scope, void *buf, int
+sz);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+These are internal and probably shouldn't be used.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+These basically link an object against a scope and create a thunk,
+where a Thunk is basically a directly executable object (the first
+part of the Thunk structure is a jump to its entry point). The thunk
+object basically keeps track of its scope, and has a few other
+features, and can support multiple sections, &hellip;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+An inline thunk omits the header, and so is basically a raw buffer
+with some code in it.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Both types of thunks are allocated via the garbage collector.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3 CLASS="western">Callback Registration</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BLNK_SetScanRange(int (*fcn)(void **p, int cnt));</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BLNK_RegisterLookup(blnk_lookup_ft fcn);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int BLNK_RegisterNotify(blnk_notify_ft fcn);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void BLNK_MarkData();</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+The above should probably not be used without good reason. Messing
+with them may break stuff...</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+SetScanRange() and MarkData() are generally related to integration
+with the garbage collector.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+RegisterLookup() and RegisterNotify() are in fact used elsewhere in
+BASM and so don't really even belong in the external API.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+BLNK_GCFuncs_t *BLNK_GetGCFuncs();</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+BLNK_IOFuncs_t *BLNK_GetIOFuncs();</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+These basically get the structures of function pointers used to plug
+the assembler into other subsystems. The idea is that &ldquo;some
+other piece of code&rdquo; (currently BGBDY / DYLL) gets these
+structures and shoves in a bunch of function pointers to the relevant
+machinery.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+GCFuncs is basically a structure used to plug the assembler into the
+garbage collector.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+IOFuncs is basically a structure used to plug the assembler into the
+VFS (or some other facility implementing file IO).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+These structures will generally be used for most memory management,
+and all file IO within the assembler (memory management not done via
+this will generally be that of grabbing chunks of address space from
+the OS, and some current use of malloc).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+These structures should be set up prior to initializing the assembler
+(although, these should not be touched directly if DYLL is in use,
+since DYLL will set these up on its own).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3 CLASS="western">Reference Structures</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+These structures are provided here for reference, but the actual
+structures used may be subject to change in the future and without
+warning.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+typedef void *(*basm_meta_ft)(char *sym, char *name, char **args);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+typedef void (*basm_mtrg_ft)(char *sym, char *name, char **args, void
+*ptr);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+The above are for meta-link and meta-trigger handlers.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+typedef struct BASM_XMeta_s BASM_XMeta;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+struct BASM_XMeta_s {</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+BASM_XMeta *next;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+char *name;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+basm_meta_ft mfcn;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+basm_mtrg_ft mtrg;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+char **tmp;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int ntmp, mtmp;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+};</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+This relates to meta-link handlers.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+typedef struct {</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *seh_next; //next chain (nested unwind)</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *seh_hdlr; //handler (SEH specific)</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+#ifdef WIN64</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *regs[16+20]; //saved regs (for restore)</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+#else</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *regs[12]; //saved regs (for restore)</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+#endif</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *seh_ehr; //EXCEPTION_RECORD (SEH)</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *seh_ctx; //CONTEXT (SEH)</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+}BGBASM_JmpBuf;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+typedef struct {</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+#ifdef X86_64</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *gregs[16]; //@0</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int xregs[16*4]; //@128</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *spregs[4]; //@384, special (return RIP, return RSP)</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+#else</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *gregs[8]; //@0</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int xregs[8*4]; //@32</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *spregs[4]; //</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+#endif</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+}BGBASM_RegsBuf;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+These are used for exceptions and state capture.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+typedef struct {</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int (*scanrange_f)(void **p, int cnt);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *(*gcalloc_f)(int sz);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *(*gcexec_f)(int sz);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *(*gcatomic_f)(int sz);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *(*gctalloc_f)(char *ty, int sz);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *(*gctexec_f)(char *ty, int sz);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *(*gctatomic_f)(char *ty, int sz);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void (*gcfree_f)(void *p);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *(*gcrealloc_f)(void *p, int sz);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+char *(*gcgettype_f)(void *p);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int (*gcalloctls_f)(char *name, int sz);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int (*gcgettlstls_f)();</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+}BLNK_GCFuncs_t;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+typedef struct {</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *(*fopen_fp)(char *name, char *mode);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void (*fclose_fp)(void *fd);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int (*fread_fp)(void *buf, int m, int n, void *fd);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int (*fwrite_fp)(void *buf, int m, int n, void *fd);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int (*feof_fp)(void *fd);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+s64 (*ftell_fp)(void *fd);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int (*fseek_fp)(void *fd, s64 pos, int rel);</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+}BLNK_IOFuncs_t;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+These are used for callback registration:</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=128*>
+	<COL WIDTH=128*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">int
+			(*scanrange_f)(void **p, int cnt)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Used during the
+			GC pass so that the linker can tell the GC which objects it has
+			seen over. Note that the GC is conservative here, so not all
+			pointers will refer to valid GC managed objects.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">void
+			*(*gcalloc_f)(int sz)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Allocate a
+			generic untyped memory object from the GC.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">void
+			*(*gcexec_f)(int sz)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Allocate a
+			generic executable memory object from the GC.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">void
+			*(*gcatomic_f)(int sz)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Allocate a
+			generic atomic object from the GC (atomic objects are garbage
+			collected, but are assumed not to contain valid references).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">void
+			*(*gctalloc_f)(char *ty, int sz)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Allocate a
+			typed memory object, where the type is a generic string-based
+			name.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">void
+			*(*gctexec_f)(char *ty, int sz)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Allocate a
+			typed executable object.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">void
+			*(*gctatomic_f)(char *ty, int sz)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Allocate a
+			typed atomic object.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">void
+			(*gcfree_f)(void *p)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Free a garbage
+			collected object, assumed valid for all types.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">void
+			*(*gcrealloc_f)(void *p, int sz)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Re-allocate a
+			GC object, where the new object is assumed to retain the same
+			properties as the old object.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">char
+			*(*gcgettype_f)(void *p)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Get the type
+			name associated with a GC object (NULL if unknown).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">int
+			(*gcalloctls_f)(char *name, int sz)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Attempt to
+			allocate a TLS variable with a given name and size.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">int
+			(*gcgettlstls_f)()</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Get the (OS)
+			TLS variable pointing to the allocatable TLS vars.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+File IO follows stdio-like conventions, but does not make assumptions
+regarding the contents of the file pointer. The purpose is to allow
+plugging the assembler into a VFS (Virtual File System).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=128*>
+	<COL WIDTH=128*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">void
+			*(*fopen_fp)(char *name, char *mode)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Open File.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">void
+			(*fclose_fp)(void *fd)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Close File.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">int
+			(*fread_fp)(void *buf, int m, int n, void *fd)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Read File.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">int
+			(*fwrite_fp)(void *buf, int m, int n, void *fd)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Write File.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">int
+			(*feof_fp)(void *fd)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Return non-zero
+			if EOF.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">s64
+			(*ftell_fp)(void *fd)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Get current
+			file offset (s64 == signed 64-bit integer)</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">int
+			(*fseek_fp)(void *fd, s64 pos, int rel)</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="font-style: normal; font-weight: normal">Seek in current
+			file, returns generic status.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+typedef struct BLNK_Scope_s BLNK_Scope;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+typedef struct BLNK_ScopeSym_s BLNK_ScopeSym;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+typedef struct BLNK_Env_s BLNK_Env;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+struct BLNK_ScopeSym_s {</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+char *name;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+char *sig;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *addr;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+};</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+struct BLNK_Scope_s {</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+BLNK_Scope *super;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+BLNK_ScopeSym **syms;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+int n_syms, m_syms;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+};</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+struct BLNK_Env_s {</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+BLNK_Env *super;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+void *data[1];</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+};</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+typedef struct {</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+byte jump[16];</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+byte *text;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+byte *data;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+BLNK_Scope *scope;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+BLNK_Scope *env_info;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+BLNK_Env *xf_env; //initial env (XFrame)</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+byte *xf_ip; //initial rIP (XFrame)</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+BLNK_Scope *args_info;</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+}BLNK_Thunk;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Note: XFrame is an incomplete experimental calling convention which
+had aimed to allow for simplifying things such as:</P>
+<P STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal">
+Lexical closures, continuations, &hellip; Thunks were the intended
+means for implementing them. The cost is, however, that this would
+not mix well with more traditional code, since any non-frame function
+in the mix would essentially break the ability to use continuations
+via frames.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+</BODY>
+</HTML>

@@ -1,0 +1,41 @@
+{
+	"classname" "worldspawn"
+	"sky" "skybox"
+	entityDef {
+		"classname" "gen_tiles"
+		"image" "images/map2d/tiletest0"
+		"origin" "0 0 0"
+		"step" "128"
+	}
+}
+
+{
+"classname" "light"
+"origin" "0 0 256"
+"light" "10000"
+}
+
+{
+"classname" "light_sun"
+"origin" "0 0 256"
+"light" "10000"
+}
+
+{
+	"classname" "misc_spawn_tiles"
+	"image" "images/map2d/tiletest0"
+	"origin" "0 0 0"
+	"step" "128"
+}
+
+{
+	"classname" "info_player_start"
+	"origin" "0 0 256"
+	"angle" "360"
+}
+
+{
+	"classname" "trigger_hurt"
+	"damage" "1000"
+	cubeDef1 ( -8192 -8192 -4096 ) ( 8192 8192 -512 ) common/trigger 0 ( 0 0 0 ) 0
+}

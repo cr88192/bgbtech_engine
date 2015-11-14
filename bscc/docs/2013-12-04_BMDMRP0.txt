@@ -1,0 +1,19 @@
+BGB Multi Density Message Relay Protocol
+
+Low-level is a TLV format.
+
+This is used to build a multiplexed Deflate-like LZ77 based transport.
+
+
+Possible:
+
+FF,Cmd
+
+FF,00: FF Escape
+FF,01: Reserved
+FF,02..7F (len:BYTE), tag:TWOCC, data:BYTE[len-4]
+	Chunk, 0-123 payload bytes.
+FF,80-9F (len1:BYTE), len2:WORD, tag:TWOCC, data:BYTE[len-6]
+	Chunk, 0-8185 payload bytes.
+FF, C0, len:DWORD, tag:TWOCC, data:BYTE[len-8]
+FF, C1, len:DWORD, tag:FOURCC, data:BYTE[len-10]

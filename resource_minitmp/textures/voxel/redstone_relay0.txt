@@ -1,0 +1,10 @@
+$flags voxel alpha
+
+$vox_img_top textures/voxel/redstone_relay0_top
+$vox_img_side textures/voxel/redstone_relay_side
+$vox_img_bot textures/voxel/redstone_relay_side
+
+$vox_EmitBlock BTGE_Voxel_EmitBlock_RedstoneRelay
+$vox_BlockUpdate BTGE_VoxelPower_UpdateVoxel
+$vox_mins 0 0 0
+$vox_maxs 32 32 16

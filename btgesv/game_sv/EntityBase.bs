@@ -1,0 +1,34 @@
+public class EntityBase
+{
+	public var entity;
+	public var spawnEntity;
+
+	public function EntityBase(ent, sent)
+	{
+//		printf("EntityBase: ctor\n");
+		entity=ent;
+		spawnEntity=sent;
+	}
+	
+	public function use(self, other) { /* stub */ }
+	public function touch(self, other) { /* stub */ }
+	public function blocked(self, other) { /* stub */ }
+	public function pain(self, other, damage) { /* stub */ }
+	public function die(self, other, damage) { /* stub */ }
+	public function prethink(self) { /* stub */ }
+}
+
+public class ActorBase extends EntityBase
+{
+	public function ActorBase(ent, sent)
+	{
+//		printf("ActorBase: ctor\n");
+		super(ent, sent);
+	}
+
+	public function stand(self) { /* stub */ }
+	public function walk(self) { /* stub */ }
+	public function run(self) { /* stub */ }
+	public function missile(self) { /* stub */ }
+	public function melee(self) { /* stub */ }
+}

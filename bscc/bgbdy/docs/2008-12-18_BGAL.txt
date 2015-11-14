@@ -1,0 +1,4 @@
+BGB Genetic Algo Library
+
+Will actually be a few structs and a bunch of utility functions...
+

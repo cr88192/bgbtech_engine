@@ -1,0 +1,29 @@
+BUILD=.
+MKSUF=.lnx
+LIBSUF=.a
+DLLSUF=.so
+EXESUF=.elf
+OBJSUF=.o
+DLLPF=lib
+
+CC_OUTEXE=gcc -o 
+CC_OUTDLL=gcc -shared -o 
+CC_OUTOBJ=gcc -c -o 
+
+EXE = .elf
+BIN = .bin
+
+CFLAGS=-Iinclude -I../include -g -pg
+DLL_CFLAGS=$(CFLAGS) -DPDGL_DLL
+DLL_CFLAGS2=$(CFLAGS) -DPDGLUI_DLL
+LDFLAGS=-g -pg -L.. -lbgbgc -lbgbdy -lbgbasm -lbgbsxil -lzpack -lm \
+	-lbsgen -lbgbcc -lvecmath -lGL \
+	-Wl,-rpath,"$$ORIGIN"
+
+DLL_LDFLAGS=-g -pg -L.. -lbgbgc -lbgbdy -lbgbasm -lbgbsxil -lzpack -lm -fPIC \
+	-lbsgen -lbgbcc -lvecmath -lbgbbtjpg  \
+	-Wl,-rpath,"$$ORIGIN"
+DLL_LDFLAGS2=$(DLL_LDFLAGS)
+
+include Makefile.inc
+

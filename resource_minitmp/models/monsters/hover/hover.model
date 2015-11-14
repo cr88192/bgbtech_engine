@@ -1,0 +1,11 @@
+//Hover
+
+bones proto_hov0.bone
+
+vmesh proto_hov0.ac
+
+// anim stand stand0.anim
+
+origin 0 0 0
+scale 1 1 1
+xlat 0 0 0

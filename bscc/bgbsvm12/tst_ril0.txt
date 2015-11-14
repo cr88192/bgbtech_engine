@@ -1,0 +1,42 @@
+//RIL test
+
+BLOCK fib:I x:I
+BODY
+	$x load_i $2 :.l0 jmp_le_ic
+	mark $x load_i dec_i $fib call_is
+	mark $x load_i dec2_i $fib call_is
+	add_i ret_i
+	.l0: 1 ret_i
+END
+
+/*
+fib:
+push ebp; mov ebp, esp
+sub esp, 24
+mov eax, [ebp+8]
+cmp eax, 2
+jle .l0
+mov [ebp-4], ebx
+push ebx; mov ebx, esp
+mov eax, [ebp+8]
+dec eax
+push eax
+call fib
+mov esp, ebx; pop ebx
+push eax
+push ebx; mov ebx, esp
+mov eax, [ebp+8]
+sub eax, 2
+push eax
+call fib
+mov esp, ebx; pop ebx
+pop edx
+add eax, edx
+mov ebx, [ebp-4]
+mov esp, ebp; pop ebp; ret
+.l0:
+mov eax, 1
+mov ebx, [ebp-4]
+mov esp, ebp; pop ebp; ret
+*/
+

@@ -1,0 +1,53 @@
+US_LDFLAGS=/link gdi32.lib opengl32.lib glu32.lib \
+	user32.lib comdlg32.lib ole32.lib kernel32.lib libtrem.lib
+
+TREM_SRCS = \
+	mdct.c dsp.c info.c misc.c \
+	floor1.c floor0.c vorbisfile.c \
+	res012.c mapping0.c codebook.c \
+	framing.c bitwise.c \
+	floor_lookup.c \
+
+TREM_HDRS = \
+	codebook.h misc.h mdct_lookup.h\
+	os.h mdct.h ivorbisfile.h lsp_lookup.h\
+	window_lookup.h \
+	codec_internal.h ogg.h \
+	asm_arm.h ivorbiscodec.h
+
+TREM_APISRCS =
+
+TREM_OBJS = $(TREM_SRCS:.cpp=.obj) $(TREM_APISRCS:.cpp=.obj)
+
+CFLAGS = -Iinclude -O2
+
+CFLAGS2 = -Iinclude -DTREM_DLL -fPIC
+# CFLAGS2 = /Iinclude /O2 /DTREM_DLL
+
+# EXESUF=.elf
+# DLLSUF=.so
+# CC_OUTEXE=gcc -o 
+# CC_OUTDLL=gcc -shared -o 
+
+all: includes libs apps
+
+FORCE:
+
+
+autohead$(BINSUF): autohead.c
+	$(CC_OUTTOOL)autohead$(BINSUF) autohead.c
+
+libtrem$(DLLSUF): $(TREM_SRCS)
+	$(CC_OUTDLL)libtrem$(DLLSUF) $(TREM_SRCS) $(TREM_APISRCS) $(CFLAGS2)
+
+ivorbisfile_example$(EXESUF): libs ivorbisfile_example.c $(TREM_SRCS)
+	$(CC_OUTEXE)ivorbisfile_example$(EXESUF) ivorbisfile_example.c \
+		-L. -ltrem -Wl,-rpath,"$$ORIGIN"
+#		$(TREM_SRCS) $(CFLAGS2)
+
+includes:
+libs: libtrem$(DLLSUF)
+apps: ivorbisfile_example$(EXESUF)
+
+clean:
+

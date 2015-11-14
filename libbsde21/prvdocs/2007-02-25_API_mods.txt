@@ -1,0 +1,77 @@
+Considering a few possible alterations to the library.
+
+In general, the purpose of these alterations will be an attempt to make the library generally more "useful" absent a front end wrapper API.
+
+
+User Specified Slots
+
+These will be specified as BSDE_USER0..BSDE_USERn and will be consecutive.
+
+The values stored here will not be used by the library.
+
+Additionally, several slot types may be added, in particular string and abstract pointer slots (may be equivalent).
+
+
+Queries
+
+Calls may be added to perform various kinds of queries, such as finding the which primitives collide with a particular volume (such as a bbox or line trace).
+
+Likely, such operations will work by filling a bitmap indicating which handles satisfy a given query (low-high bit ordering).
+
+Some queries may be more abstract, such as which handles are valid, which are visible, ...
+
+int bsdeQueryBBoxF(byte *mask, int sz, float *mins, float *maxs);
+Where sz will indicate the size of the bitmask in bytes.
+
+Potentially it may make sense for some operations to use the pre-existing bitmask as an indicator of which entities to check (the default would thus be viewed as a union, or OR operation, and the alternative an intersection or AND operation).
+
+int bsdeQueryBBoxF(byte *mask, int sz, float *mins, float *maxs);
+Query entities and set any that fall in the box, clearing any outside.
+
+int bsdeQueryBBoxUF(byte *mask, int sz, float *mins, float *maxs);
+Query entities and set any that fall in the box.
+
+int bsdeQueryBBoxIF(byte *mask, int sz, float *mins, float *maxs);
+Query entities and clear any that fall outside the box.
+
+
+Events
+
+I may add event and message passing, which in this case is likely to be implemented via callbacks. Likely this will be done in a manner similar to the windows GDI.
+
+It may be the case that only a few common properties are passed to the callback directly, and that others are made accessible through special world/entity properties, allowing for a generic interface to most manner of events.
+
+typedef int (*bsde_event_callback)(int self, int event, int other);
+
+Event callbacks may be registered for:
+specific objects;
+specific event "classes";
+and for the world.
+
+Callbacks will be tried in this order, and the return value will indicate what to do with the message (0=handled successfully, -1=pass to next handler).
+
+Within the scope of a callback, several functions will be available:
+int bsdeGetParamI(int num);
+double bsdeGetParamF(int num);
+void bsdeGetParamIV(int num, int *val, int n);
+void bsdeGetParamFV(int num, float *val, int n);
+void bsdeGetParamDV(int num, double *val, int n);
+
+The values returned by calling these functions outside a callback is undefined.
+
+
+And for the possibility of generating an event:
+void bsdeSetParamI(int num, int val);
+void bsdeSetParamF(int num, double val);
+void bsdeSetParamIV(int num, int *val, int n);
+void bsdeSetParamFV(int num, float *val, int n);
+void bsdeSetParamDV(int num, double *val, int n);
+
+void bsdeGenerateEvent(int obj, int event, int self);
+
+Note that it is unspecified as to whether an event will be handled synchronously or asynchronously, and so it will be considered invalid to rely on any specific behavior.
+
+
+void bsdeSetSolidCallback(int obj, bsde_event_calback cb);
+void bsdeSetClassCallback(int cls, bsde_event_calback cb);
+void bsdeSetWorldCallback(bsde_event_calback cb);

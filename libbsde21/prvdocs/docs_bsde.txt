@@ -1,0 +1,201 @@
+A spec consisting partly of implemented stuff, and partly of planned/incomplete stuff.
+
+int bsdeNewWorld();
+Create new world, returns world handle.
+
+void bsdeBindWorld(int i);
+Set the current world using handle.
+
+void bsdeStepWorld(double dt);
+Step the current world a given amount of time.
+
+double bsdeGetWorldAttrF(int var);
+void bsdeSetWorldAttrF(int var, double val);
+int bsdeGetWorldAttrI(int var);
+void bsdeSetWorldAttrI(int var, int val);
+void bsdeGetWorldAttrFV(int var, float *val, int n);
+void bsdeSetWorldAttrFV(int var, float *val, int n);
+void bsdeGetWorldAttrDV(int var, double *val, int n);
+void bsdeSetWorldAttrDV(int var, double *val, int n);
+Get/Set world attributes.
+For vector functions, n is supplied, which refers to the number of items that can be get/set. Note that this does not tell how many items WILL be get/set, and may in many cases be ignored.
+
+BSDE_GRAVITY
+The world gravity vector.
+
+BSDE_MAXSTEP
+The maximum internal step (the simulations movements will be accurate to a value <= this value).
+
+BSDE_MINSTEP
+The minumum internal step. This limits how finely the simulation can be done.
+
+BSDE_MAXFRAME
+The maximum amount of time to be handled by a single frame. If the frame time exceeds this value, the frame time is reduced to this limit.
+
+BSDE_REALTIME
+BSDE_WORLDTIME
+Automatically updated values reflecting the amount of time that has elapsed (in terms of the 'bsdeStepWorld' function), and the amount of time which has been simulated.
+
+int bsdeNewAABB(double mx, double my, double mz,double nx, double ny, double nz);
+int bsdeNewOBB(double mx, double my, double mz,double nx, double ny, double nz);
+int bsdeNewSphere(double radius);
+int bsdeNewCylinder(double height, double radius);
+int bsdeNewCappedCylinder(double height, double radius);
+int bsdeNewPlane(double x, double y, double z, double d);
+int bsdeNewHullF(float *norms, int n);
+int bsdeNewHullD(double *norms, int n);
+Creates a solid of one of the specified geometry types.
+
+AABBs are unable to change orientation. Angular forces (torque, ...) are generally ignored by them.
+(mx, my, mz) reflects the minumum extents of the box, and (nx, ny, nz) reflects the maximum extents.
+
+OBBs can change orientation are a result of forces. At present for OBBs it is required that they be properly centered, namely that
+(mx+nx, my+ny, mz+nz)=(0, 0, 0).
+
+For planes (x, y, z) gives the plane normal, and is automatically normalized on creation. d gives the distance of the plane from the origin along its normal, (d*x, d*y, d*z) would thus give the origin of the plane.
+The side 'above' the plane is viewed as non solid, thus points V*N-d<0 collide with the plane, and points V*N-d>=0 do not.
+
+Hulls are created by passing in a set of normals. Normals take the form (x, y, z, d) and have the same distance behavior as planes. Hulls can only be convex (all planes face outward).
+
+Solidtype related problems:
+OBB/OBB collisions still have some issues;
+Cylinders and capped cylinders barely work at all;
+Hulls are incomplete.
+
+
+void bsdeHide(int obj);
+void bsdeUnhide(int obj);
+Hide and unhide an object within the simulation.
+A hidden object will be ignored by the simulation.
+
+double bsdeGetAttrF(int obj, int var);
+void bsdeSetAttrF(int obj, int var, double val);
+int bsdeGetAttrI(int obj, int var);
+void bsdeSetAttrI(int obj, int var, int val);
+void bsdeGetAttrFV(int obj, int var, float *val, int n);
+void bsdeSetAttrFV(int obj, int var, float *val, int n);
+void bsdeGetAttrDV(int obj, int var, double *val, int n);
+void bsdeSetAttrDV(int obj, int var, double *val, int n);
+Get/Set attributes for a given solid.
+
+BSDE_ORIGIN
+BSDE_VELOCITY
+BSDE_TORQUE
+BSDE_ANGULAR_VELOCITY
+BSDE_ROTATION
+BSDE_ROTATION_MATRIX
+
+Basic properties for the object.
+Rotation is defined as a quaternion in the form (x, y, z, w).
+Rotation matrix is a 3x3 matrix in row-major ordering of the form:
+[Ix Iy Iz]
+[Jx Jy Jz]
+[Kx Ky Kz]
+
+BSDE_MINS
+BSDE_MAXS
+For AABBs/OBBs, these give the box size.
+
+BSDE_DIRECTION
+Gives the direction/normal of planes.
+
+BSDE_MASS_OFFSET
+A vector giving the center-of-mass relative to the origin (presently ignored).
+
+BSDE_INERTIA_TENSOR
+The inertia tensor for an object.
+This effects how forces like torque are applied to the object.
+This is defined as a 3x3 matrix in row-major ordering.
+
+BSDE_HEIGHT
+BSDE_RADIUS
+These define the height/radius used by the object. Height is relevant to cylinders, and radius is relevant to both cylinders and spheres.
+
+BSDE_MASS
+BSDE_VOLUME
+BSDE_DENSITY
+These effect the properties of the object.
+Volume is typically computed by the geometry construction functions (and should not be changed in general).
+Mass and denisty effect the physical behavior of an object (care should be taken if adjusting these during the simulation).
+
+BSDE_ELASTIC
+BSDE_FRICTION
+Effects the elastic and friction of the surface of the object.
+At present, the total elastic for a surface is defined as Ea*Eb, and the total friction as Fa*Fb. The results of these calculations are clamped during the simulation, so it is safe to set them to values outside the range of 0..1.
+In general values for these between 0.2 and 0.8 should probably be used, as outside of these may lead to unrealistic behavior.
+
+BSDE_VISCOSITY
+Fluid internal viscosity.
+This is used in conjunction with density to figure the forces applied to a submerged object. This is measured in pascals.
+
+BSDE_SOLIDTYPE
+A value representing the type of a solid object.
+At present this is one of:
+	BSDE_SOLID_AABB		Axis-Aligned Bouning Box;
+	BSDE_SOLID_OBB		Orientated Bounding Box;
+	BSDE_SOLID_SPHERE		Sphere;
+	BSDE_SOLID_CYLINDER	Flat topped cylinder;
+	BSDE_SOLID_CCYLINDER	Capped cylinder;
+	BSDE_SOLID_PLANE		Normal and distance;
+	BSDE_SOLID_MESH		Triangular mesh;
+	BSDE_SOLID_HULL		Convex hull.
+
+
+BSDE_NOSPIN, BSDE_NOMOVE, BSDE_NOGRAVITY, BSDE_STATIC, BSDE_SEMISTATIC, BSDE_FLUID, BSDE_NONSOLID, BSDE_TRIGGER
+Flags effecting the behavior of a solid object (given as integers which are either zero or some non-zero value).
+
+NOSPIN prevents rotation and causes torque to be ignored.
+NOMOVE causes linear forces to be ignored.
+NOGRAVITY leads to ignoring the acceleration of gravity.
+STATIC means the object will be unable to move at all (or be otherwise effected by any physical force).
+SEMISTATIC means the object can move, but will otherwise ignore physical forces (incomplete).
+
+FLUID will cause the object, rather than exhibiting solid behavior, will act like a fluid (causing behaviors such as bouyancy and fluid resistance to objects in contact with this). Fluid objects, however, will not flow or otherwise deform (at present either static or semistatic is required for fluid objects as the forces exhibited by other objects on these are undefined).
+
+NONSOLID is effectively the opposite of STATIC. Physical forces are treated normally, however, NONSOLID objects will not generate any forces on other objects.
+
+TRIGGER will indicate that this object serves as a trigger, and will thus record (somehow) information about colliding objects.
+
+
+int bsdeNewJoint(int type);
+Create a new joint of the indicated type.
+
+At present type is one of:
+	BSDE_JOINT_BALL
+	BSDE_JOINT_HINGE
+	BSDE_JOINT_SLIDER
+	BSDE_JOINT_UNIVERSAL
+	BSDE_JOINT_FIXED
+
+BALL works by keeping the joint origins (on each object) fused together.
+HINGE works similar to ball, but also keeps the objects aligned along an axis.
+UNIVERSAL is similar to the above 2, but keeps the axis on opposite objects at 90 degrees.
+
+SLIDER keeps the objects lined up along an axis.
+FIXED keeps the objects fused together.
+
+void bsdeBindJointSolids(int obj, int obja, int objb);
+Sets the 2 objects (obja and obja) used by the joint (given by obj).
+
+double bsdeGetJointAttrF(int obj, int var);
+void bsdeSetJointAttrF(int obj, int var, double val);
+int bsdeGetJointAttrI(int obj, int var);
+void bsdeSetJointAttrI(int obj, int var, int val);
+void bsdeGetJointAttrFV(int obj, int var, float *val, int n);
+void bsdeSetJointAttrFV(int obj, int var, float *val, int n);
+void bsdeGetJointAttrDV(int obj, int var, double *val, int n);
+void bsdeSetJointAttrDV(int obj, int var, double *val, int n);
+
+Get/Set the properties for a joint.
+
+BSDE_ORIGIN		The joint origin (on both objects, in worldspace).
+BSDE_ORIGIN_A	The origin on object A.
+BSDE_ORIGIN_B	The origin on object B.
+BSDE_ORIGIN_RA	The relative origin on object A (A's local space).
+BSDE_ORIGIN_RB	The relative origin on object B.
+
+BSDE_DIECTION	The axis (on both objects, in worldspace)
+BSDE_DIRECTION_A	The axis on object A.
+BSDE_DIRECTION_B	The axis on object B.
+BSDE_DIRECTION_RA	The relative axis on object A.
+BSDE_DIRECTION_RB	The relative axis on object B.

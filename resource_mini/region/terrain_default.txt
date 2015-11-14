@@ -1,0 +1,26 @@
+$flags borders ores caves spawners
+
+$terr_SpanGenerator BTGE_Voxel_GenerateSpanBase
+$terr_SpanGenerator BTGE_Voxel_GenerateSpanBldg
+$terr_SpanGenerator BTGE_Voxel_GenerateLightSpan
+
+$terr_vox_stone stone
+$terr_vox_dirt dirt
+$terr_vox_grass grass
+$terr_vox_grass2 grass
+$terr_vox_sand sand
+$terr_vox_water water
+
+// $terr_ore stone			0.500
+$terr_ore gravel			0.350
+$terr_ore dirt				0.300
+$terr_ore coalore			0.200
+$terr_ore sand				0.150
+$terr_ore ironore			0.100
+$terr_ore clay_block		0.075
+$terr_ore goldore			0.050
+$terr_ore lapis_ore			0.025
+$terr_ore diamond_ore		0.010
+
+$terr_map 0 terr_acid
+$terr_map 1 start

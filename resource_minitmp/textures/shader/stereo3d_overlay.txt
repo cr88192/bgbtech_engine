@@ -1,0 +1,4 @@
+$flags window
+$shader bgb_stereo3d
+$fparm 0 0.025
+$fparm 1 0.1

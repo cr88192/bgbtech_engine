@@ -1,0 +1,6 @@
+$flags window
+$shader bgb_fluid_glow
+$fparm 0 0.05
+$fparm 1 0.1
+$vparm 0 1.0 0.66 0.33 1.0
+$vparm 1 1.0 0.33 0.0 0.0

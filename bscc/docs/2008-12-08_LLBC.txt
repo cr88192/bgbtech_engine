@@ -1,0 +1,317 @@
+Low Level Byte Code
+
+Idea:
+Split the interpreter into several levels, where there is an upper-level interpreter (such as a JVM running JBC), and a lower-level interpreter, potentially running a specialized and partially optimized bytecode, along with a possible JIT backend (likely managed by the higher-level interpreter).
+
+
+Considered Design:
+The stack and locals are merged into a single register set;
+The instructions operate in terms of this set (no stack);
+The low-numbered registers are used for recieved arguments, the middle ones for locals and temporaries, and higher-numbered registers for arguments;
+The exact layout and structure is allowed to vary with the arch.
+
+
+(deprecate)
+
+<---
+
+Opcodes will be 32 bit words in the local endianess.
+
+The low level bits will be used for the opcode, and higher bits will be used for successive arguments.
+
+For "op a, b, c", 'op' will be stored in bits 0-7, 'a' in 8-15, 'b' in 16-23, and 'c' in 24-31.
+
+Forms with 'op2' will have a 2 part opcode 'op/op1'.
+In this form, 'op1' is in 'a'.
+
+
+Forms:
+A	op	dst, left, right
+B	op	dst, imm16
+C	op	-
+D	op2	dst, reg
+E	op2	dst, imm8
+F	op2	-
+
+G	op	dst, idx16
+
+J	op	imm24
+K	op2	imm16
+L	op	imm48 (op imm24, NOP imm24)
+
+
+Types:
+I	int, 32 bits, 1 reg
+L	long, 64 bits, 1 or 2 regs
+F	float, 32 bits, 1 reg
+D	double, 64 bits, 1 or 2 regs
+P	pointer, arch, 1 reg
+X	generic, 128 bits, 2 or 4 regs
+Y	generic, 256 bits, 4 or 8 regs
+Z	generic, 512 bits, 8 or 16 regs
+
+C	constant/immed
+
+
+Opcodes:
+nop		C 0		nop, may hold extra/hidden payload
+
+mov_i		D 1/1		move value between regs
+mov_l		D 1/2		move value between regs
+mov_p		D 1/3		move value between regs
+mov_f		D 1/4		move value between regs
+mov_d		D 1/5		move value between regs
+mov_x		D 1/6		move value between regs
+mov_y		D 1/7		move value between regs
+
+xchg_i	D 1/8		swap value between regs
+xchg_l	D 1/9		swap value between regs
+xchg_p	D 1/10	swap value between regs
+xchg_f	D 1/11	swap value between regs
+xchg_d	D 1/12	swap value between regs
+xchg_x	D 1/12	swap value between regs
+xchg_y	D 1/14	swap value between regs
+
+const_i	G 2		load constant
+const_l	G 3		load constant
+const_p	G 4		load constant
+const_f	G 5		load constant
+const_d	G 6		load constant
+const_x	G 7		load constant
+
+mov_ic	B 14		load small constant
+mov_lc	B 15		load small constant
+
+add_i		A 16
+add_l		A 17
+add_f		A 18
+add_d		A 19
+sub_i		A 20
+sub_l		A 21
+sub_f		A 22
+sub_d		A 23
+mul_i		A 24
+mul_l		A 25
+mul_f		A 26
+mul_d		A 27
+div_i		A 28
+div_l		A 29
+div_f		A 30
+div_d		A 31
+
+mod_i		A 32
+mod_l		A 33
+and_i		A 34
+and_l		A 35
+or_i		A 36
+or_l		A 37
+xor_i		A 38
+xor_l		A 39
+
+mod_ic	B 40
+mod_lc	B 41
+and_ic	B 42
+and_lc	B 43
+or_ic		B 44
+or_lc		B 45
+xor_ic	B 46
+xor_lc	B 47
+
+add_ic	B 48
+add_lc	B 49
+sub_ic	B 50
+sub_lc	B 51
+mul_ic	B 52
+mul_lc	B 53
+div_ic	B 54
+div_lc	B 55
+
+add_fc	G 56
+add_dc	G 57
+sub_fc	G 58
+sub_dc	G 59
+mul_fc	G 60
+mul_dc	G 61
+div_fc	G 62
+div_dc	G 63
+
+--->
+
+Change:
+Bytecode is still bytecode.
+
+Opcodes 0 to 239 are single byte opcodes.
+240 to 4095 use a 2 byte form.
+
+
+'op args*'
+
+Forms:
+dab	op	dst, left, right
+da	op	dst, reg
+di1	op	dst, imm8
+di2	op	dst, imm16
+di4	op	dst, imm32
+di8	op	dst, imm64
+
+i1	op	imm8
+i2	op	imm16
+i4	op	imm32
+i8	op	imm64
+
+dai1	op	dst, arg, imm8
+dai2	op	dst, arg, imm16
+dai4	op	dst, arg, imm32
+dai8	op	dst, arg, imm64
+
+
+df4	op	dst, float32
+df8	op	dst, float64
+
+daf4	op	dst, arg, float32
+daf8	op	dst, arg, float64
+
+-	op	-
+
+Types:
+I	int, 32 bits, 1 reg
+L	long, 64 bits, 1 or 2 regs
+F	float, 32 bits, 1 reg
+D	double, 64 bits, 1 or 2 regs
+P	pointer, arch, 1 reg
+X	generic, 128 bits, 2 or 4 regs
+Y	generic, 256 bits, 4 or 8 regs
+Z	generic, 512 bits, 8 or 16 regs
+
+B	byte immed
+C	short immed (int/long)
+
+
+
+nop		- 0		nop, may hold extra/hidden payload
+
+mov_i		1 da		move value between regs
+mov_l		2 da		move value between regs
+mov_f		3 da		move value between regs
+mov_d		4 da		move value between regs
+mov_p		5 da		move value between regs
+mov_x		6 da		move value between regs
+mov_y		7 da		move value between regs
+
+xchg_i	8 da		swap value between regs
+xchg_l	9 da		swap value between regs
+xchg_f	10 da		swap value between regs
+xchg_d	11 da		swap value between regs
+xchg_p	12 da		swap value between regs
+xchg_x	12 da		swap value between regs
+xchg_y	14 da		swap value between regs
+
+add_i		16 dab
+add_l		17 dab
+add_f		18 dab
+add_d		19 dab
+sub_i		20 dab
+sub_l		21 dab
+sub_f		22 dab
+sub_d		23 dab
+mul_i		24 dab
+mul_l		25 dab
+mul_f		26 dab
+mul_d		27 dab
+div_i		28 dab
+div_l		29 dab
+div_f		30 dab
+div_d		31 dab
+
+mod_i		32 dab
+mod_l		33 dab
+and_i		34 dab
+and_l		35 dab
+or_i		36 dab
+or_l		37 dab
+xor_i		38 dab
+xor_l		39 dab
+
+mod_ic	40 dai2
+mod_lc	41 dai2
+and_ic	42 dai2
+and_lc	43 dai2
+or_ic		44 dai2
+or_lc		45 dai2
+xor_ic	46 dai2
+xor_lc	47 dai2
+
+add_ic	48 dai2
+add_lc	49 dai2
+add_fc	50 daf4
+add_dc	51 daf8
+sub_ic	52 dai2
+sub_lc	53 dai2
+sub_fc	54 daf4
+sub_dc	55 daf8
+mul_ic	56 dai2
+mul_lc	57 dai2
+mul_fc	58 daf4
+mul_dc	59 daf8
+div_ic	60 dai2
+div_lc	61 dai2
+div_fc	62 daf4
+div_dc	63 daf8
+
+const_ib	64 di1
+const_lb	65 di1
+const_ic	66 di2
+const_lc	67 di2
+const_i	68 di4
+const_l	69 di8
+const_f	70 df4
+const_d	71 df8
+
+add_pi	72 dab
+sub_pi	73 dab
+add_pic	74 dabi1
+sub_pic	75 dabi1
+
+load_pp	76 da
+store_pp	77 da
+load_ppi	78 dab
+store_ppi	79 dab
+
+load_ip	80 da
+load_lp	81 da
+load_fp	82 da
+load_dp	83 da
+load_sbp	84 da
+load_ubp	85 da
+load_ssp	86 da
+load_usp	87 da
+
+store_pi	88 da
+store_pl	89 da
+store_pf	90 da
+store_pd	91 da
+store_psb	92 da
+store_pub	93 da
+store_pss	94 da
+store_pus	95 da
+
+load_ipi	96 dab
+load_lpi	97 dab
+load_fpi	98 dab
+load_dpi	99 dab
+load_sbpi	100 dab
+load_ubpi	101 dab
+load_sspi	102 dab
+load_uspi	103 dab
+
+store_pii	104 dab
+store_pli	105 dab
+store_pfi	106 dab
+store_pdi	107 dab
+store_psbi	108 dab
+store_pubi	109 dab
+store_pssi	110 dab
+store_pusi	111 dab
+
+
+const_x	72 di16

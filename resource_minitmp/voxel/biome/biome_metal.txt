@@ -1,0 +1,15 @@
+$biome_id 12
+$biome_val_arcane 1
+$biome_val_temperature 0
+$biome_val_humidity 1
+
+$biome_clr_grass 255 255 255
+$biome_clr_water 255 255 255
+$biome_clr_sun 255 255 255
+
+$terr_vox_stone stone
+$terr_vox_dirt dirt
+$terr_vox_grass block_rust
+$terr_vox_grass2 block_rust
+$terr_vox_sand sand
+$terr_vox_water sand

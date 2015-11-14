@@ -1,0 +1,88 @@
+OBJS_FRONT = \
+	front/basm_api$(O) \
+	front/basm_rand$(O) \
+	front/basm_callsig$(O) \
+	front/basm_vfs$(O) \
+	front/basm_xcall$(O) \
+	front/basm_xmeta$(O) \
+	front/basm_unwind$(O) \
+	front/basm_preproc$(O)
+
+OBJS_ASM = \
+	asm/basm_core$(O) \
+	asm/basm_parse$(O) \
+	asm/basm_insns$(O) \
+	asm/basm_disasm$(O) \
+	asm/basm_coff$(O)
+
+OBJS_LINK = \
+	link/link_context$(O) \
+	link/link_core$(O) \
+	link/link_thunk$(O) \
+	link/link_lnx$(O) \
+	link/link_w32$(O) \
+	link/link_vfs$(O) \
+	link/bldr_coff$(O) \
+	link/bldr_elf$(O)
+
+SRCS_FRONT=$(OBJS_FRONT:$(O)=.c)
+SRCS_ASM=$(OBJS_ASM:$(O)=.c)
+SRCS_LINK=$(OBJS_LINK:$(O)=.c)
+
+OBJS = \
+	$(OBJS_FRONT)	\
+	$(OBJS_ASM)	\
+	$(OBJS_LINK)
+
+SRCS = \
+	$(SRCS_FRONT)	\
+	$(SRCS_ASM)	\
+	$(SRCS_LINK)
+
+
+DEP_HDRS=\
+	include/bgbasm_x86ops.h \
+	include/bgbasm_auto_front.h \
+	include/bgbasm_auto_asm.h \
+	include/bgbasm_auto_link.h
+
+all: libs apps
+
+FORCE:
+
+libs: libbgbasm$(A)
+apps: basmtst$(EXE) basmtst2$(EXE) basmtst3$(EXE)
+
+includes: $(DEP_HDRS)
+
+include/bgbasm_auto_front.h: autohead$(EXE) $(SRCS_FRONT)
+	autohead$(EXE) $(SRCS_FRONT) > include/bgbasm_auto_front.h
+include/bgbasm_auto_asm.h: autohead$(EXE) $(SRCS_ASM)
+	autohead$(EXE) $(SRCS_ASM) > include/bgbasm_auto_asm.h
+include/bgbasm_auto_link.h: autohead$(EXE) $(SRCS_LINK)
+	autohead$(EXE) $(SRCS_LINK) > include/bgbasm_auto_link.h
+
+include/bgbasm_x86ops.h: genx86$(EXE) basm_insns.txt
+	genx86$(EXE)
+
+libbgbasm$(A): $(DEP_HDRS) $(OBJS)
+	$(AR) -cr libbgbasm$(A) $(OBJS)
+
+autohead$(EXE): autohead.c
+	$(CC) -o autohead$(EXE) autohead.c
+
+genx86$(EXE): gen_x86_3.c
+	$(CC) -g -Iinclude -o genx86$(EXE) gen_x86_3.c
+
+basmtst$(EXE): basmtst.c $(DEP_HDRS) $(OBJS)
+	$(CC) -o basmtst$(EXE) basmtst.c -L. -lbgbasm $(CFLAGS)
+
+basmtst2$(EXE): basmtst2.c $(DEP_HDRS) $(OBJS)
+	$(CC) -o basmtst2$(EXE) basmtst2.c -L. -lbgbasm $(CFLAGS)
+
+basmtst3$(EXE): basmtst3.c $(DEP_HDRS) $(OBJS)
+	$(CC) -g -pg -o basmtst3$(EXE) basmtst3.c -L. -lbgbasm $(CFLAGS)
+
+clean:
+	rm -rf $(shell find -name \*$(A))
+	rm -rf $(shell find -name \*$(O))

@@ -1,0 +1,10 @@
+//Gladiator
+
+bones medic2.bone
+
+vmesh glad0.ac
+
+// anim death6 death6.anim
+
+origin 0 0 0
+scale 2 2 2

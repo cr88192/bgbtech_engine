@@ -1,0 +1,858 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+  <title>Linker and Metadata Specification 0</title>
+  <meta content="BGB" name="author">
+</head><body>
+<h2>Signatures</h2>
+<br>
+This will attempt to specify Signature strings as applied to data
+types. These may be used for variables, objects, functions or methods,
+...<br>
+<br>
+Each type is intended to be parsable fairly easily, and where multiple
+types may be present in the same string (them being placed end to end).
+However, only the types in-sequence are specified, and this does not
+necessarily specify how these will be placed in memory.<br>
+<br>
+<span style="font-weight: bold;"><br>
+</span>Qualifiers:
+<table border="1" cellpadding="2" cellspacing="2" width="100%">
+
+<tbody><tr>
+      <td style="vertical-align: top;">Notation<br>
+      </td>
+      <td style="vertical-align: top;">Description<br>
+      </td>
+    </tr>
+<tr><td>P*</td><td> Pointer to type.</td></tr>
+<tr><td>R*</td><td> Reference to type (invisible pointer).</td></tr>
+<tr><td>C*</td><td> Complex type (f, d, e, g, k).</td></tr>
+<tr><td>C&lt;digit&gt;*</td><td> Multidimensional dynamic array of type.</td></tr>
+<tr><td>G*</td><td> Imaginary type (f, d, e, g, k).</td></tr>
+<tr><td>U*</td><td> Extended type qualifier ('&lt;name&gt;;').</td></tr>
+
+<tr><td>X*</td><td> Compound type (struct or union), followed by '&lt;name&gt;;'.</td></tr>
+<tr><td>T*</td><td> Will specify a tagged type (deprecated).</td></tr>
+<tr><td>W*</td><td> Wide pointer type.</td></tr>
+<tr><td>L*</td><td> Reference to object type ('&lt;classname&gt;;').</td></tr>
+<tr><td>Q*</td><td> Dynamic array of type.</td></tr>
+
+<tr><td>A*<br>
+</td><td> Used for basic extension types.</td></tr><tr>
+      <td style="vertical-align: top;">B*<br>
+      </td>
+      <td style="vertical-align: top;"> Used for basic extension types.</td>
+    </tr>
+
+</tbody>
+</table>
+
+<span style="font-weight: bold;"><br>
+</span><br>
+Basic Types:<br>
+<table border="1" cellpadding="2" cellspacing="2" width="100%">
+
+<tbody><tr>
+      <td style="vertical-align: top;">Char<br>
+      </td>
+      <td style="vertical-align: top;">Description<br>
+      </td>
+    </tr>
+<tr><td>a</td><td> signed char (8 bits)<br>
+</td></tr>
+<tr><td>b</td><td> bool (8 bits)<br>
+</td></tr>
+<tr><td>c</td><td> char (8 bits)<br>
+</td></tr>
+<tr><td>d</td><td> double (64 bits)<br>
+</td></tr>
+<tr><td>e</td><td> long double (64/80/96/128 bits, 80 bit float conceptually)<br>
+</td></tr>
+<tr><td>f</td><td> float (32 bits)<br>
+</td></tr>
+<tr><td>g</td><td> 128-bit float</td></tr>
+<tr><td>h</td><td> unsigned char/byte (8 bits)<br>
+</td></tr>
+<tr><td>i</td><td> int (32 bits)<br>
+</td></tr>
+<tr><td>j</td><td> unsigned int (32 bits)<br>
+</td></tr>
+<tr><td>k</td><td> hfloat (16-bit float)</td></tr>
+<tr><td>l</td><td> long (32 or 64 or bits), (normalizing at 64 bits)<br>
+</td></tr>
+<tr><td>m</td><td> unsigned long (32 or 64 bits), (normalizing at 64 bits)</td></tr>
+<tr><td>n</td><td> 128-bit int</td></tr>
+<tr><td>o</td><td> unsigned 128-bit int</td></tr>
+<tr><td>p</td><td> (reserved)</td></tr>
+<tr><td>q</td><td> (reserved)</td></tr>
+<tr><td>r</td><td> variant (dynamicly typed reference)</td></tr>
+<tr><td>s</td><td> short (16 bits)<br>
+</td></tr>
+<tr><td>t</td><td> unsigned short (16 bits)<br>
+</td></tr>
+<tr><td>u</td><td> custom type</td></tr>
+<tr><td>v</td><td> void</td></tr>
+<tr><td>w</td><td> wchar (unsigned 16 bits, Java/C# char)<br>
+</td></tr>
+<tr><td>x</td><td> long long (64 bits only)<br>
+</td></tr>
+<tr><td>y</td><td> unsigned long long (64 bits only)<br>
+</td></tr>
+<tr><td>z</td><td> ... (Placeholder for varargs)</td></tr>
+</tbody>
+</table>
+
+<span style="font-weight: bold;"><br>
+</span>Extended Types:<br>
+<table border="1" cellpadding="2" cellspacing="2" width="100%">
+
+<tbody><tr>
+      <td style="vertical-align: top;">Name<br>
+      </td>
+      <td style="vertical-align: top;">Description<br>
+      </td>
+    </tr>
+<tr><td>m64</td><td>    64-bit raw SSE vector</td></tr>
+<tr><td>m128</td><td> 128-bit raw SSE vector</td></tr>
+<tr><td>quat</td><td> Quaternion (IJKW order)<br>
+</td></tr>
+<tr><td>hquat</td><td> Hyperbolic Quaternion (IJKW order)</td></tr>
+<tr><td>vec2</td><td> 2-elem geometric vector</td></tr>
+<tr><td>vec3</td><td> 3-elem geometric vector</td></tr>
+<tr><td>vec4</td><td> 4-elem geometric vector</td></tr>
+<tr><td>mat2</td><td> 2x2 matrix (4 floats, row-major)<br>
+</td></tr>
+<tr><td>mat3</td><td> 3x3 matrix (12 floats, row-major, pad-4)<br>
+</td></tr>
+<tr><td>mat4</td><td> 4x4 matrix (16 floats, row-major)<br>
+</td></tr>
+<tr><td>v2f</td><td> 2-elem raw float vector</td></tr>
+<tr><td>v3f</td><td> 3-elem raw float vector</td></tr>
+<tr><td>v4f</td><td> 4-elem raw float vector</td></tr>
+<tr><td>v2d</td><td> 2-elem raw double vector</td></tr>
+</tbody>
+</table>
+
+<br>
+<br>
+<br>
+If the type is followed by a number, it indicates that this is an array, with a comma allowing multidimensional arrays.<br>
+<br>
+Example:<br>
+bar:PXfoo;4,4<br>
+struct foo *bar[4][4];<br>
+<br>
+Example:<br>
+Uvec4;16<br>
+Array of 16 4-vectors.<br>
+<br>
+These arrays will specify memory with the specified physical layout.<br>
+<br>
+<h4>Object References</h4>
+'L&lt;classname&gt;;'<br>
+<br>
+These will refer to a specific object type, where classname will be the qualified class-name for the object in question.<br>
+<br>
+This will differ from 'PX&lt;name&gt;;' in that 'X&lt;name&gt;;' will
+refer to a specific and known structural type (the physical layout is
+thus known). Likewise, I says nothing about the pointer itself, or the
+nature of the pointed-to memory.<br>
+<br>
+On the other hand, 'r' specifies that a dynamically-typed reference is
+given, and thus the nature of the pointer and the kind of memory it can
+point to, however, 'r' does not specify anything about 'what' is
+referenced.<br>
+<br>
+'L&lt;classname&gt;;' will then specify that this is a dynamically
+typed reference (similar to 'r'), but will also specify that it is a
+reference to a specific abstract type (for example, the class with the
+given classname, or a class derived from this class), but will not
+specify the physical layout or concrete type of the referenced memory
+(unlike 'X' or 'PX'). In many cases, 'L' may be treated as simply a
+special case of 'r' (differing primarily in terms of assignment, where
+the implementation is strongly encouraged to ensure that the object
+being referenced is of the appropriate class, as otherwise things may
+be allowed to break).<br>
+<br>
+The exact structure and meaning of 'classname' will be internal to the
+object system, but the current idea is that it will represent a
+heirarchy of the form '[&lt;name&gt;/]*&lt;class&gt;'. For example,
+"myApp/custom/Foo".<br>
+<br>
+<br>
+<h4>Dynamic Arrays</h4>
+'Q' will be similar to 'P' in spirit, but differ in practice similarly
+to how 'L' differs from 'PX'. 'Q' will specify that a reference is used
+to a dynamically-managed array holding members with the given type, but
+will specify neither the physical layout of the array nor of the
+referenced values.<br>
+Presently this will be limited to reference based types, such as 'Q', 'L', and 'r'.<br>
+<br>
+For example: 'QQr' will be an array of arrays of references, and "QLmyApp/custom/Foo;" will be an array of objects.<br>
+<br>
+'C&lt;order&gt;*' will be overloaded for dynamic square arrays.<br>
+For example, 'C2i' will be a 2D array of integers, or 'C3r' a 3D array of dynamic references.<br>
+<br>
+<br>
+<h4>Functions and Methods</h4>
+Signature strings as applied to functions and methods will have a
+slightly modified notation, namely in that a specific designation of
+args and return type may be given.<br>
+<br>
+The basic layout will be:<br>
+'(&lt;args&gt;)&lt;ret&gt;'.<br>
+<br>
+Examples:<br>
+"int foo();" gives "()i";<br>
+"double bar(int x, int y);" gives "(ii)d".<br>
+<br>
+This whole unit will be treated as a single type-unit, so, for example, a function-pointer could be specified like this:<br>
+"P(d)i" for the type "int (*)(double)".<br>
+<br>
+The exact meaning or interpretation of this type will depend on the context of its usage.<br>
+<br>
+<br>
+<h4>
+Notes</h4>
+
+Q, C#, and L, as can be noted, are internally handled by making use of
+the object system for handling accesses, rather than by them having any
+concrete or defined layout in memory. In practical terms, this is to be
+accomplished via the 'Linker Meta Funcion' feature, which has bindings
+into the object system's machinery.<br>
+<br>
+<br>
+<h2>XCall</h2>
+Idea:<br>
+<br>
+XCall is a calling convention for x86 and x86-64, and may be used in
+place of the SysV or Win64 conventions on x86-64. Its purpose is to
+simplify code generation in some cases (such as when writing a
+compiler), and also to annotate function names (as a form of name
+mangling).<br>
+<br>
+<br>
+<h4>Convention (x86)</h4>
+On x86, the calling convention proper will be more-or-less equivalent
+to cdecl, and will differ from cdecl primarily in that name mangling
+will by used.<br>
+<br>
+For sake of reference I will describe the convention here.<br>
+Arguments are passed on the stack in right to left order (since the
+stack expands downwards, the leftmost arg has the lowest memory
+address). Similarly, items are aligned on dword boundaries (32-bits / 4
+bytes), however, no other alignment rules are to be imposed.<br>
+<br>
+The registers eax, ecx, and edx may be freely used within a function, and need not be preserved.<br>
+The registers ebx, esi, edi, ebp, and esp are to be preserved.<br>
+The registers xmm0-xmm7 are free for use and do not need to be preserved.<br>
+The register st0 is to be used for returning floating-point arguments,
+but otherwise the x87 stack should be empty on calls and returns.<br>
+<br>
+Structures are generally passed on the stack, and structure return is
+handled by pushing a pointer after the last (leftmost) argument, where
+this pointer will hold the memory to be used for the returned struct.
+Note that compilers may differ on exactly how structs are returned and
+in which situations. My rule is presently to always use the following
+convention.<br>
+<br>
+In this "general" convention, SSE-based types are to be returned as if
+they were structs (rather than in xmm0). Note: I may modify this rule,
+and use xmm0 for xcall, but remain with struct-style returns for pure
+cdecl.<br>
+<br>
+Note that it is also common convention to use EBP to hold the
+frame-pointer, which usually ends up just below the return address:<br>
+<br>
+Example (Typical Function entry and return):<br>
+<pre>foo:<br>push ebp<br>mov ebp, esp<br>sub esp, 999&nbsp;&nbsp;&nbsp; ;this is for allocating space for locals and/or working space<br>...<br>;mov esp, ebp&nbsp;&nbsp; ;may be used to realign stack<br>;add esp, 999	;another common strategy<br>pop ebp<br>ret</pre>
+<br>
+<h4>Convention (x86-64)</h4>
+Arguments are passed on the stack in right-to-left order, with each
+argument taking up 1 or more spots on the stack depending on the size
+of the object;<br>
+Items are to be aligned on natural boundaries, which for 128 bit types (int128, float128, vec3/4, quat, ...), is 16 bytes;<br>
+The stack at the call point is required to be aligned on a 16-byte boundary.<br>
+<br>
+So, Like the AMD64/SysV calling convention, stack alignment is
+required, but unlike SysV, all arguments are to be passed on the stack,
+and not in registers (Justification: Register-based passing may add
+some complexity to the already complex task of compiler writing. It can
+also be noted that on modern processors the cost difference between
+cache and registers is not significant. More so, in the vast majority
+of cases, functions will not directly use their arguments in
+computations, but will rather proceed to call other functions, in
+effect requiring said arguments to be spilled to the stack anyways,
+which is in itself a task not helped via SysV's rules for stack
+layout...).<br>
+<br>
+<br>
+The addition of the 128-bit alignment rule is new, but will help with the performance of SSE vectors passed on on the stack.<br>
+<br>
+<br>
+As another way of viewing it, imagine that pushing certain types may
+involve pushing a special "dummy" item, and that this item can be
+safely discared when retrieving meaningful values. In the case of a
+function call, it can be determined that pushing arguments would cause
+an uneven stack alignment, and so a dummy value is pushed prior to the
+arguments in order to correct the alignment (beyond this, it is up to
+the compiler).<br>
+<br>
+Note: Assuming that pushing types onto the stack will cause them to
+automatically align as needed, it is still necessary to align prior to
+pushing arguments, as otherwise it could cause a "non-deterministic"
+stack layout at the call site.<br>
+<br>
+Another possible option (if left-to-right evaluation is desired), would
+be to pre-allocate space for the arguments, and then as each is
+evaluated it is moved into its assigned spot, and when all arguments
+are evaluated then the call is performed.<br>
+<br>
+As another rule (for increased compatibility with Win64), RSP may be
+required to be kept in proper 16-byte alignment and below any of the
+working data of the function (XCall will not assume the presence of a
+"Red Zone").<br>
+<br>
+<br>
+<h4>Register Usage (x86-64)<br>
+</h4>
+<br>
+The registers RAX, RCX, RDX, R8, R9, R10, R11 are caller-save
+registers, and may be freely used in a called function. A caller can't
+safely assume that these registers will be retained across a function
+call.<br>
+<br>
+The registers RBX, RBP, R12, R13, R14, and R15 are callee save
+registers. A caller may be assume that the values are preserved across
+a call, and a callee is required to preserve their values prior to use
+and restore their values prior to returning.<br>
+<br>
+The registers RSI and RDI are debated, and should be treated as
+caller-save by the caller, and as callee save by the callee. An
+exception to this rule is that they may be treated as caller-save if
+the calling convention is known to be SysV, and as callee save if it is
+known to be Win64.<br>
+<br>
+RBP is is to be used as the frame pointer (technically, this rule will
+be similar to Win64's epilogue requirement, only that RBP is reserved
+specifically for this purpose if a frame pointer is used).<br>
+<br>
+So:<br>
+&lt;function&gt;:<br>
+[push reg]*<br>
+[mov rbp, rsp]<br>
+...<br>
+(mov rsp, rbp) | (lea rsp, [rbp+&lt;const&gt;]) | (add rsp, &lt;const&gt;)<br>
+[pop reg]*<br>
+ret<br>
+<br>
+The reason for this is to simplify the task of function unwinding.<br>
+<br>
+<br>
+<br>
+<h2>General Naming Conventions<br>
+</h2>
+<br>
+<h4>General Name Rules</h4>
+In general, names given in this spec (and in names used internal to the
+project), will omit the leading underscore. This underscore will
+typically be added when producing output object files (such as COFF).
+Thus, internally names will be stored using the Linux/ELF convention.
+As such, when a name is specified with a leading underscore, in effect,
+2 leading underscores will be present on relevant architectures (such
+as WIN32/COFF).<br>
+<br>
+Namespace qualification in names will be done by using '/' as the
+separator (within abstract names), however, a '/' may not directly
+appear in any linkable symbools. In this case, the rule will be that
+any function or variable which uses namespaces (or, for that matter,
+function overloading or other such features) is to be stored according
+to the XCall naming rules (or, in some cases another equivalent
+name-mangling scheme may be used).<br>
+<br>
+It is likewise the case that '/' will also serve to qualify methods via their class.<br>
+<br>
+For example:<br>
+namespace Foo {<br>
+&nbsp;&nbsp;&nbsp; class Bar {<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;  void baz();<br>
+&nbsp;&nbsp;&nbsp; }<br>
+}<br>
+<br>
+The method in question will have the qualified name "Foo/Bar/baz", and
+the name to be mangled (according to XCall rules) would be
+"Foo/Bar/baz(LFoo/Bar;)v". Note that the "this" argument is implicitly
+added as the first argument for the method, even though the method's
+signature is "()v". This allows methods to be considered as essentially
+the same calling convention as functions. Note that for all other uses
+(for example, when considering the method's signature in the context of
+it being a method), the signature will remain as "()v".<br>
+<br>
+This rule will differ slightly for the case of unmanaged classes, which will use 'PX' rather than 'L'.<br>
+<br>
+namespace Foo {<br>
+
+&nbsp;&nbsp;&nbsp; class Bar {&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;  //assume this is C++<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;  void baz();<br>
+
+&nbsp;&nbsp;&nbsp; };<br>
+
+}<br>
+
+<br>
+Then the full (XCall) name will be "Foo/Bar/baz(PXFoo/Bar;)v".<br>
+<br>
+At present I have not decided on the rule to apply in the case of
+static methods. The most likely solution is that they will either be
+passed nothing, or a reference to the given owner class (to allow
+overloading of static methods).<br>
+<br>
+<h4>General Mangling</h4>
+For most things a common mangling scheme will be used.<br>
+This scheme will be generally used for embedding arbitrary strings into
+linker-safe names, which will use a convention which is reasonable for
+use both in raw linker symbols, as well as in C.<br>
+<br>
+The strings will be mangled by replacing certain characters with escape sequences:<br>
+
+'_' with '_1';<br>
+
+';' with '_2';<br>
+
+'[' with '_3';<br>
+
+'(' with '_4';<br>
+
+')' with '_5';<br>
+
+'/' with '_6'.<br>
+
+
+<br>
+
+Alphanumeric characters are embedded unchanged.<br>
+
+'_9xx' encodes a character in the range of 1 to 255 (ASCII range);<br>
+
+'_0xxxx' encodes a character outside this range (Unicode BMP).<br>
+
+<br>
+Note that surrogate pair coding may be used for codepoints outside the BMP.<br>
+<br>
+When this mangling scheme is used, the special combination '__' will
+terminate a given mangled string, and as such may be used as a
+separator.<br>
+<br>
+<h4>XCall</h4>
+XCall will make use of name mangling for all names. This will simplify
+the autogeneration of stubs when linking against existing code which
+may be compiled to use a different calling convention (the mangled name
+will serve to tell the stub generator how the stack frame is layed out
+in order so that it can re-package the arguments as needed).<br>
+<br>
+The function name will include a prefix:<br>
+'_XC_' is used for ordinary functions and for calls to a function which accepts a fixed number of arguments;<br>
+'_XV_' is used when calling vararg functions, and also for the
+call-target of such a call (this symbol will be either an alias or a
+jump to the actual function implementing the vararg function, or a
+conversion stub if an inter-convention call is taking place, however
+this will never be the proper name of the vararg function in question).<br>
+<br>
+This prefix will be followed by a mangled version of the name and signature string.<br>
+<br>
+Note that it is the case with ordinary function calls that the mangled
+name used by the caller and reciever are required to be equivalent.<br>
+<br>
+The signature in this case will represent the arguments being accepted
+by the reciever, and not the types of values on the stack from the POV
+of the caller (It is reasonable that the types not match exactly
+between them, for example, as the result of a cast or implicit type
+conversion).<br>
+<br>
+In the case of Vararg functions, the signature will represent the
+values passed on the stack from the POV of the caller, and so the same
+target function may be called by any number of possible names. It is
+then the responsibility of the linker to locate the correct call-target
+for a given name and signature and/or generate the correct stub
+machinery. Note that those arguments common to both the caller and the
+callee need to be of the same type.<br>
+<br>
+<h4>Thread Local Storage</h4>
+TLS will be handled by the compiler by emitting calls to special magic thunks.<br>
+<br>
+_XT_&lt;name&gt;__&lt;size&gt;_&lt;reg&gt;<br>
+<br>
+Where:<br>
+'_XT_' means 'TLS'.<br>
+'name' gives the mangled name for the variable.<br>
+'size' gives the size (in bytes) needed for the TLS var.<br>
+'reg' gives the register which should contain the returned pointer.<br>
+<br>
+So, when called, this function will return a pointer to the storage for
+the thread-local-variable in question. The value is returned in the
+requested register, but no other registers are to be effected.<br>
+<br>
+<h4>Linker Meta Function</h4>
+Idea:<br>
+This will specify how runtime code could register itself with the
+linker, such that attempts to resolve certain undefined symbols may be
+routed back into the runtime, which is expected to produce code for the
+requested function (as in, special handler thunks), or may also be used
+in supplying data.<br>
+<br>
+If the handler builds a code fragment which exports the given symbol
+name, all further attempts to resolve this symbol will use the symbol
+exported in the generated code fragment. The other option will be
+simply to return a pointer to an anonymous thunk, allowing each request
+to be resolved potentially to a different address.<br>
+<br>
+The request may also be passed arguments, which will describe the
+specifics of the requested thunk or data (such as specific types, class
+names, register names, numerical args, ...).<br>
+<br>
+The calling convention of any generated thunks is purely a matter of
+agreement between the caller and callee. The assumed use here is to
+generate specialized code fragments, as opposed to more general purpose
+functions, so typically any combination of stack, registers, shared
+variables/memory, ... may be used.<br>
+<br>
+It will be assumed (as a mater of practice) that the same runtime code
+be responsible both for generating the request names, as well as for
+generating the thunks.<br>
+<br>
+An example use case would be for some of the runtime code to register
+itself with the compiler, and when generating code for particular cases
+may insert calls to meta-handlers, which may be capable of tasks which
+would not be reasonable to do inline.<br>
+<br>
+<br>
+Symbol Structure:<br>
+_XM_&lt;handler&gt; ['__' &lt;arg&gt;]*<br>
+<br>
+Where handler and each arg are strings mangled according to the general mangling convention.<br>
+<br>
+Callback:<br>
+typedef void *(*basm_meta_ft)(char *sym, char *name, char **args);<br>
+int BASM_RegisterLinkMeta(char *name, basm_meta_ft fcn);<br>
+<br>
+Register a meta-handler.<br>
+The 'sym' argument is the raw symbol, whereas 'name' and 'args' are the
+parsed and unmangled names and arguments (passed as a NULL-terminated
+list, where args[0] is the first argument, ...).<br>
+<br>
+<br>
+<h4>Meta Triggers</h4>
+<br>
+A meta trigger is similar to, but different from, a meta handler.<br>
+A meta trigger will be called after a piece of code is linked, and will identify the address of any trigger symbols.<br>
+<br>
+This could be used for passing info from newly linked code into the runtime.<br>
+<br>
+Similarly, each meta-triggered symbol is to have a unique name, even if
+this means that an extra argument is provided simply to serve as a
+gensym.<br>
+<br>
+Additionally, trigger requests may be queued until an appropriate
+handler is registered, but each symbol will only be handled once
+(unless it is later re-linked).<br>
+<br>
+<br>
+The symbol structure for triggers is:<br>
+_XN_&lt;handler&gt; ['__' &lt;arg&gt;]*<br>
+<br>
+And uses the callback:<br>
+typedef void (*basm_mtrg_ft)(char *sym, char *name, char **args, void *ptr);<br>
+int BASM_RegisterLinkMetaTrigger(char *name, basm_mtrg_ft fcn);<br>
+<br>
+<br>
+<h4>Object System Bindings</h4>
+This will provide an ASM-level interface for the object system.<br>
+This will be accomplished via the Link Meta Function interface.<br>
+<br>
+Handlers:<br>
+<br>
+FieldRef &lt;classname&gt; &lt;fieldname&gt; &lt;reg_ret&gt; &lt;reg_this&gt;<br>
+<br>
+Will return the address of the requested field.<br>
+<br>
+The 'classname' and 'fieldname' arguments identify the field in
+question. The 'reg_ret' and 'reg_this' argument identify the registers
+used for returning the field address, and for passing in the object,
+and may be allowed to be the same register. No registers apart from the
+return register are to be modified by this call.<br>
+<br>
+<br>
+MethodRef &lt;classname&gt; &lt;methodname&gt; &lt;reg_ret&gt; &lt;reg_this&gt;<br>
+<br>
+This will be similar to FieldRef, but will instead return a method.<br>
+In this case, the method will be a valid function pointer, but with the first argument being the 'this' pointer.<br>
+<br>
+Methodname will combine the method name and signature. Note that in
+this case, the method is local (class relative), and also that the
+signature does not contain the implicit "this" argument (even though
+the 'this' argument is present in the returned function pointer).<br>
+<br>
+<br>
+StaticFieldRef &lt;classname&gt; &lt;fieldname&gt; &lt;reg_ret&gt;<br>
+StaticMethodRef &lt;classname&gt; &lt;methodname&gt; &lt;reg_ret&gt;<br>
+<br>
+Similar to the above, but will be specialized for static fields and
+methods. The returned static method will be called as an ordinary
+function call (no implicit 'this' argument). This may not be used for
+non-static methods.<br>
+<br>
+<br>
+ArrayRef &lt;sig&gt; &lt;reg_ret&gt; &lt;reg_index&gt;<br>
+
+ArrayMultiRef &lt;sig&gt; &lt;reg_ret&gt; &lt;reg_index&gt;<br>
+
+
+<br>
+This will index a dynamic array, and in a manner similar to FieldRef,
+will return the address of the requested array index. As in the other
+calls, only reg_ret will be modified by the call.<br>
+<br>
+ArrayRef is for flat or jagged arrays, and where reg_index is an integer.<br>
+ArrayMultiRef is for multi-dimensional/square arrays, and where reg_index points to an array of indices (each index is 32 bits).<br>
+<br>
+These will return NULL in the case of a bounds-check failure.<br>
+<br>
+<h2>Metadata Cache</h2>
+<br>
+General Info about the Metadata Cache<br>
+<br>
+At present, the metadata cache is filled via the compiler.<br>
+Using 'ccLoadModule()' on relevant header files should be sufficient to keep it current.<br>
+<br>
+void ccBindKey(char *key, char *val);<br>
+char *ccLookupKey(char *key);<br>
+<br>
+These will allow looking up and binding keys.<br>
+Binding a key to a value of NULL will serve to delete the key.<br>
+ccLookupKey will return NULL if the key does not exist.<br>
+<br>
+<h4>Structure of the Cache:</h4>
+The cache has a vaguely similar structure to that of the Windows System
+Registry, only that at present all keys and values are string based
+(ASCII or UTF-8).<br>
+<br>
+<h4>General Info</h4>
+<br>
+All keys are accessed via a 'path' or 'key' (the term 'key' here will
+refer to the entire path+name combination, or to the specific key/value
+pair).<br>
+<br>
+The path will be heirarchical, and will consist of a sequence of names separated via '/'.<br>
+<br>
+Names may consist of the following characters in any order:<br>
+'A'..'Z', 'a'..'z', '0'..'9', '_', '-', '.'<br>
+<br>
+As well as all graphical unicode codepoints (no control characters,
+reserved codepoints, surrogate pairs, ...). UTF-8 should be normalized
+as to not contain surrogate pairs (they should instead be represented
+as proper UTF-8 codepoints).<br>
+<br>
+GUIDs are also allowed, provided they are formatted in the usual manner:<br>
+{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}<br>
+<br>
+This syntax may be later used to internally "compact" the GUID (such as base-85).<br>
+<br>
+<br>
+For the time being, all other characters in the ASCII range will be disallowed.<br>
+<br>
+<br>
+The path will be separated from the final key name via ':', for example: "foo/bar:baz".<br>
+<br>
+Similarly, the final key may be left off, in which case it will refer to the "default" key, which will be given the name "_".<br>
+<br>
+As a result "foo/bar/baz" and "foo/bar/baz:_" will refer to the same key/value pair.<br>
+<br>
+<br>
+<h4>Conventions</h4>
+<br>
+The path of a key will typically refer to the namespace or qualified-name of the item being described.<br>
+<br>
+In general, each path will use the default key to indicate the type of
+item described by this path. Similarly, any sub-paths are assumed to be
+valid members of the type contained by this path.<br>
+<br>
+A few types will be defined:<br>
+<table border="1" cellpadding="2" cellspacing="2" width="100%">
+
+<tbody><tr>
+      <td style="vertical-align: top;">ID<br>
+      </td>
+      <td style="vertical-align: top;">Description<br>
+      </td>
+    </tr>
+<tr><td>func</td><td> The item is an ordinary function (toplevel or namespace).</td></tr>
+<tr><td>var</td><td> The item is a variable (toplevel or namespace).</td></tr>
+<tr><td>type</td><td> The item is a type definiton.</td></tr>
+<tr><td>struct</td><td> The item is a structure.</td></tr>
+<tr><td>union</td><td> The item is a union.</td></tr>
+<tr><td>class</td><td> The item is a class (managed or unmanaged).</td></tr>
+<tr><td>interface</td><td> The item is an interface.</td></tr>
+<tr><td>field</td><td> The item is a field.</td></tr>
+<tr><td>method</td><td> The item is a method.</td></tr>
+<tr><td>namespace</td><td> The item is a namespace.</td></tr>
+</tbody>
+</table>
+
+<br>
+The following types will be regarded as Declaration types (DECL):<br>
+&nbsp;&nbsp;&nbsp; func, var, type, field, method.<br>
+The following types will be regarded as Object types (OBJ):<br>
+&nbsp;&nbsp;&nbsp; struct, union, class, interface.<br>
+<br>
+Each type will have a collection of relevant keys:<br>
+<table border="1" cellpadding="2" cellspacing="2" width="100%">
+
+<tbody><tr>
+      <td style="vertical-align: top;">Name<br>
+      </td>
+      <td style="vertical-align: top;">Appears in<br>
+      </td>
+      <td style="vertical-align: top;">Description<br>
+      </td>
+    </tr>
+<tr><td>sig</td><td> DECL</td><td> Gives the type signature string.</td></tr>
+<tr><td>flags</td><td> OBJ|DECL</td><td> Gives the item flags.</td></tr>
+<tr><td>field.#</td><td> OBJ</td><td> Gives the name of a field for a paticular index.</td></tr>
+<tr><td>method.#</td><td> OBJ</td><td> Gives the name of a method for a paticular index.</td></tr>
+</tbody>
+</table>
+
+<br>
+The primary reason for "field.#" and "method.#" is to allow the proper
+ordering of fields to be established (particularly important for struct
+and cclass, as this is needed to determine the physical layout of the
+data and vtables). The "#" in the case of the above refers to the index
+number, which is a set of consecutive integers starting at 0. No gaps
+are allowed, as the first non-assigned index will be assumed to be the
+last field or method of the object in question. Similarly, "field.#"
+and "method.#" will each have their own index space (so, an object will
+have both "field.0" and "method.0").<br>
+<br>
+Flags will be assigned according to an "extended JVM" convention, where
+the lower 16 bits are used for essentially the same modifiers as in the
+JVM.<br>
+<br>
+The present flag assignments are as such:<br>
+<table border="1" cellpadding="2" cellspacing="2" width="100%">
+
+<tbody><tr><td>Flag Name<br>
+ </td><td> Value </td><td> Description</td></tr>
+<tr><td>BGBCC_TYFL_PUBLIC   </td><td>     0x0001  </td><td>  Item has global visibility.</td></tr>
+<tr><td>BGBCC_TYFL_PRIVATE  </td><td>  0x0002   </td><td> Item has local visibility (same class only)</td></tr>
+<tr><td>BGBCC_TYFL_PROTECTED </td><td>   0x0004 </td><td>   Item is visible within the owning package or namespace</td></tr>
+<tr><td>BGBCC_TYFL_STATIC     </td><td>   0x0008  </td><td> Depends on
+context. For class fields and methods, this means that this value
+exists within the class, rather than within instances. Static fields
+will typically be shared with subclasses.<br>
+In other cases, this may mean that a given function or variable is specific to its owning module.<br>
+</td></tr>
+<tr><td>BGBCC_TYFL_FINAL      </td><td>  0x0010   </td><td> This means a given field or variable is immutable once initialized.<br>
+</td></tr>
+<tr><td>BGBCC_TYFL_SUPER      </td><td>  0x0020  </td><td>  I don't remember (JVM related)<br>
+</td></tr>
+<tr><td>BGBCC_TYFL_SYNCHRONIZED  </td><td>  0x0020  </td><td>  I don't remember (JVM related)</td></tr>
+<tr><td>BGBCC_TYFL_VOLATILE   </td><td> 0x0040  </td><td>  Do not cache in a register, variable needs to be accessed in a synchronous manner.<br>
+</td></tr>
+<tr><td>BGBCC_TYFL_TRANSIENT  </td><td>  0x0080 </td><td>   I don't remember (JVM related)</td></tr>
+<tr><td>BGBCC_TYFL_NATIVE      </td><td>  0x0100   </td><td> May indicate that the method in question is JNI-based.<br>
+</td></tr>
+<tr><td>BGBCC_TYFL_INTERFACE </td><td>   0x0200  </td><td>The class in question is an interface.<br>
+</td></tr>
+<tr><td>BGBCC_TYFL_ABSTRACT  </td><td>  0x0400 </td><td>   The class in question can't be instantiated.<br>
+</td></tr>
+<tr><td>BGBCC_TYFL_STRICT      </td><td>  0x0800   </td><td> I forget (has something to do with math precision and rounding issues...).<br>
+</td></tr>
+<tr><td><br>
+</td></tr>
+<tr><td>BGBCC_TYFL_SIGNED      </td><td>  0x00010000   </td><td> Integer is signed (redundant, use signature type instead).</td></tr>
+<tr><td>BGBCC_TYFL_UNSIGNED </td><td>   0x00020000  </td><td>  Integer is unsigned (redundant, again use sig type).</td></tr>
+<tr><td>BGBCC_TYFL_EXTERN    </td><td>    0x00040000  </td><td>  Variable is extern (mostly irrelevant)</td></tr>
+<tr><td>BGBCC_TYFL_CONST      </td><td>  0x00080000  </td><td>  Var is const (in most cases this is similar to final).</td></tr>
+<tr><td>BGBCC_TYFL_INLINE      </td><td>  0x00100000  </td><td>  This may indicate that a given function is intended to be inlined.<br>
+</td></tr>
+<tr><td>BGBCC_TYFL_VIRTUAL  </td><td>  0x00200000  </td><td>This
+indicates that a method is virtual (this is the default case for
+managed classes, but for unmanaged classes indicates that a spot should
+be provided for this method in the object's vtable).<br>
+</td></tr>
+<tr><td>BGBCC_TYFL_PERSISTENT </td><td>   0x00400000  </td><td> Var
+refers to persistent store (typically, this is also interpreted as
+meaning that wide-pointers should be used vs in-memory narrow-pointers).<br>
+</td></tr>
+<tr><td><br>
+</td></tr>
+<tr><td>BGBCC_TYFL_FUNCTION   </td><td> 0x00800000  </td><td>  This is a function (redundant, deprecated)<br>
+</td></tr>
+<tr><td>BGBCC_TYFL_CLASS      </td><td>  0x01000000   </td><td> This is a class (deprecated)<br>
+</td></tr>
+    <tr>
+      <td style="vertical-align: top;">BGBCC_TYFL_XCALL</td>
+      <td style="vertical-align: top;">  0x01000000</td>
+      <td style="vertical-align: top;">Overloaded, use '__xcall' calling convention.<br>
+      </td>
+    </tr>
+<tr><td>BGBCC_TYFL_STDCALL  </td><td>  0x02000000 </td><td>Use of '__stdcall' calling convention<br>
+</td></tr>
+<tr><td>BGBCC_TYFL_CDECL      </td><td>  0x04000000  </td><td>  Use of '__cdecl' calling convention<br>
+</td></tr>
+<tr><td>BGBCC_TYFL_PROXY      </td><td>  0x08000000  </td><td>
+Indicates that '__proxy' should be used. In particular, this means that
+a function should be linked to via a relocatable indirect jump (rather
+than directly to the function body), such that the linker may easily
+replace the function absent having to relink code (and without so much
+risk of stale function pointers).<br>
+</td></tr>
+<tr><td><br>
+</td></tr>
+<tr><td>BGBCC_TYFL_PACKED   </td><td>     0x00010000 </td><td> Overloaded, do not align members</td></tr>
+<tr><td>BGBCC_TYFL_GC      </td><td>  0x00020000 </td><td> Overloaded, class is managed</td></tr>
+<tr><td>BGBCC_TYFL_NOGC  </td><td>      0x00100000 </td><td> Overloaded, class is unmanaged</td></tr>
+</tbody>
+</table>
+
+<br>
+Note that if a piece of information is redundant or conflicts between
+the flags and sig strings, the sig strings are to take precedence.
+Similarly, the exact treatment of flags is not required to be
+consistent between programming languages (as a result, different
+languages may result in variations as to what flags will be set and
+clear and when). As such, the flags should be regarded as primarily
+informative.<br>
+<br>
+<br>
+<h4>External Serialization</h4>
+<br>
+The following external serialization is defined for the metadata cache format:<br>
+;comment<br>
+[path]<br>
+key=value<br>
+<br>
+Where comments and blank lines are ignored, and whitespace is allowed
+prior to the start of a line's contents (this may be used for aesthetic
+purposes).<br>
+Note: Comments are not ignored after key/value pairs, as all characters
+following '=' up until the next newline are assumed to be part of the
+key. As such, a comment would not be filtered, rather, it would be
+assumed to be part of the value.<br>
+<br>
+The '[path]' line will indicate the current path of any following pairs
+up until the next '[path]' line. Note that the path is fully qualified.<br>
+<br>
+There is no particular ordering imposed for either paths or for keys,
+however they should be arraged sequentially (paths and keys sorted by
+name, in ascending order by character and with shorter paths and keys
+preceding longer ones in the case where the former is a prefix of the
+latter).<br>
+<br>
+The reason for this ordering is that it will both improve
+"readability", as well as giving a point of reference for certain
+loader optimizations.<br>
+<br>
+<br>
+</body></html>

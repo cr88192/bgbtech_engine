@@ -1,0 +1,11 @@
+package bsvm.io;
+
+public class UnsupportedEncodingException extends IOException
+{
+private static final long serialVersionUID = 6433858223774886977L;
+
+public UnsupportedEncodingException()
+	{ super(); }
+public UnsupportedEncodingException(String s)
+	{ super(s); }
+}

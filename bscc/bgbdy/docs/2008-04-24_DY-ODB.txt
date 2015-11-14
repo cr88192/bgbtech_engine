@@ -1,0 +1,38 @@
+Idea:
+Dynamic-Types based Object-Relational Database Engine
+
+the basic type provided here will be that of a "table".
+table items will be based on DY-Objects.
+
+In general, the result of a query against a table will be an array, but the exact result type may depend on the type of query performed.
+
+dyt dyordbCreateTable(char *name, char **keys, char **types);
+dyt dyordbCreateTablePrim(char *name, char *prim, char **keys, char **types);
+
+The keys[] argument will identify the main slots in the table, and is terminated by a NULL.
+The types[] argument is used to optionally specify types and other info about the keys. If NULL, then the key is a variant.
+
+The prim argument specifies which key is the primary key. Although for most keys, the type may be NULL, this is not allowed for the primary key (required to be a type with a definable "range", such as an integral type or a string).
+
+
+dyt dyordbGetTable(char *name);
+Get the table with a given name.
+
+
+dyt dyordbSelectSimple(dyt tab, char **keys, dyt *vals);
+dyt dyordbSelectRange(dyt tab, char **keys, dyt *min, dyt *max);
+
+Perform a selection and return an array of results, each result item being an object. In the case of a range, if min[i]==max[i], it works the same as in the case of simple, namely, an equality comparrison.
+
+
+dyt dyordbCreateFilter(dyt *name, dyt tab, char **keys, dyt *vals);
+dyt dyordbCreateFilterRange(char *name, dyt tab,
+	char **keys, dyt *min, dyt *max);
+
+Creates a filter, which looks and behaves much like a table, but only contains items with specified values or ranges.
+
+
+dyt dyordbCreateJoin(dyt *name, dyt atab, dyt btab, char **akeys, char **bkeys);
+
+Creates a joined table, which contains all objects where (akeys[i]==bkeys[i]) from both tables...
+

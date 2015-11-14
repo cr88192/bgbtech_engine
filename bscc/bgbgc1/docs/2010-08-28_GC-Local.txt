@@ -1,0 +1,17 @@
+Idea:
+Put Local/Temporary heap support into the GC.
+
+This will have the following properties:
+Objects need to be allocated in local heaps explicitly;
+When a local heap is destroyed, all contained objects are also destroyed;
+The only way to move local objects to the global heap is to copy them.
+
+A few provisions will be made:
+The GC will be able to have roots in local heaps;
+Dynamic types will be available with local heaps.
+
+dyt gclNewLocal();		//new empty local heap
+void gclDelLocal(dyt heap);	//delete local heap
+
+void *gclAlloc(dyt heap, size_t size);
+void *gclTAlloc(dyt heap, char *ty, size_t size);

@@ -1,0 +1,159 @@
+BXTIL:
+Because I was having difficulty finding unused acronyms...
+
+(IR/DKA-0, also an ammusing possibility...)
+
+
+This will be a new IL partly derived from RPNIL and partly inspired by GIMPLE.
+
+It will be TAC based, and use a GIMPLE-style expression syntax.
+Declarations will be, OTOH, different.
+
+
+qname = (name '/')* name
+literal = integer | real | string | '{' literals '}'
+literals = literal (',' literal)*
+
+var = qname ':' type
+arg = qname ':' type
+
+vars = var (',' var)*
+args = arg (',' arg)*
+
+attr = '$' attrname
+fname = attr* qname ':' type
+vname = attr* qname ':' type
+
+An attr is one of:
+$stdcall: x86, indicates the use of the WIN32 stdcall convention
+$cdecl: x86, indicates the use of the cdecl convention (default)
+$xcall: x86, use xcall calling convention
+$alignpad: x86-64, use alignment padding
+$static: function is static (aka: hidden from other modules)
+$inline: function is inlinable
+$proxy: function has a proxy (can be modified absent relinking)
+
+
+funcdef =
+	'func' fname '(' args ')' vars '{' stmts '}' |
+	'proto' fname '(' args ')' ';'
+
+supers = qname (',' qname)*
+
+objdef =
+	'struct' qname '{' vars '}' |
+	'union' qname '{' vars '}' |
+	'class' qname supers '{' vars '}' |
+	'iface' qname supers '{' vars '}'
+	'classextern' qname
+
+vardef =
+	'var' vname ['=' literal] |
+	'extern' vname ['=' literal]
+
+fline = 'fline' string int ';'
+
+
+topstmt = funcdef | objdef | fline
+
+top = topstmt*
+
+
+stmts = stmts stmt | stmt
+
+varname = qname
+value = qname | literal
+
+unop = '+' | '-' | '!' | '~'
+binop = relop |
+	'+' | '-' | '*' | '/' | '%' |
+	'&' | '|' | '^' | '>>' | '<<'
+
+relop = '==' | '!=' | '<' | '<=' | '>' | '>='
+
+cond = val | val relop val
+lblname = name
+
+stmt = 
+	'return' ';' |
+//	'return' val ';' |
+//	'if' cond lname 'else' lname ';' |
+//	'if' cond lname ';' |
+
+	'return' varname ';' |
+	'return' integer ';' |
+	'return' real ';' |
+
+	'if' varname lname ';' |
+	'if' varname relop name lblname ';' |
+	'if' varname relop int lblname ';' |
+	'if' varname relop real lblname ';' |
+
+	'goto' lblname ';' |
+	lblname ':' |
+	istmt ';'
+
+istmt =
+	assign |
+	qname '(' ')' |
+	qname '(' callargs ')'
+
+callargs = value (',' value)*
+
+assign =
+	varname '=' expr |
+	varname '[' val ']' '=' val |
+	varname '->' val '=' val |
+	'*' varname '=' val
+
+assign_expanded:
+	varname '=' qname '(' ')' |
+	varname '=' qname '(' callargs ')' |
+	varname '=' varname '[' varname ']' |
+	varname '=' varname '[' integer ']' |
+	varname '=' varname '->' name |
+
+	varname '=' varname |
+
+	varname '=' int |
+	varname '=' real |
+	varname '=' string |
+	varname '=' vector |
+
+	varname '=' '&' varname '[' varname ']' |
+	varname '=' '&' varname '[' integer ']' |
+	varname '=' '&' varname '->' name |
+	varname '=' '&' varname |
+	varname '=' '*' varname |
+	varname '=' '(' type ')' varname |
+	varname '=' unop varname
+
+	varname '=' varname binop varname
+	varname '=' varname binop integer
+	varname '=' varname binop real
+
+	'*' varname '=' varname
+	'*' varname '=' integer
+	'*' varname '=' real
+
+expr =
+	qname '(' ')' |
+	qname '(' callargs ')' |
+	varname '[' varname ']' |
+	varname '[' integer ']' |
+	varname '->' name |
+	literal |
+	unexp |
+	binexp |
+	varname
+
+unexp =
+ 	'&' varname '[' val ']' |
+ 	'&' varname '->' name |
+ 	'&' varname |
+ 	'*' varname |
+	'(' type ')' varname |
+	unop value
+
+binexp = value binop value
+

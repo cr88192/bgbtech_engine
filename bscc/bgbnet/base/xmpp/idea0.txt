@@ -1,0 +1,18 @@
+I am presently considering something else, eg, using xml-rpc over xmpp to try to link apps...
+I had started with extending http to try to allow servers to "glob together" and stuff, then was thinking that a different protocol was in line. I had considered making up my own but was then thinking that xmpp has a similar design.
+
+thus the current idea:
+write a basic xmpp client for use within my pdlib subproject;
+write code to glue xml-rpc onto xmpp (shouldn't be too major);
+get to writing code to glue my lang to xml-rpc.
+
+advantages:
+it is a little less ugly than my previous design;
+I can use existing servers, and can more readily route messages between systems (for performance and security though it would probably make sense to use a server local to that machine...).
+
+disadvantages:
+for effective use within my lang, and effective use of xmpp, some extensions to xml-rpc may be needed (or some ugly kludges, eg, building another protocol on top of xml-rpc...);
+if intended to be used over the net, some means of generating unique app names is needed (likekly textualized guids...);
+it is still pretty ugly, and will not exactly be fast (though luckily xmpp is at least faster than http would probably be, and allows more advanced routing and such...).
+
+I don't know.

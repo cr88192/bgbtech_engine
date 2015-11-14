@@ -1,0 +1,56 @@
+Engine Server:
+	Scene-Graph
+	Delta-Encoder
+
+Engine Client:
+	Input Handling
+	Renderer
+
+Network:
+	SBXE+Deflate over TCP or UDP
+
+<delta ent="num">
+	<org x="x" y="y" z="z"/>
+	<rot v="p" q="q" r="r"/>
+	<mdl v="name"/>
+</delta>
+
+Origins are in x/y/z coords (integer).
+
+Rot will encode a an axis/angle in several integer values.
+p will be the angle around a circle (X/Y), in the range of -8192..8191;
+q will be the offset from the north pole (+Z), 0..8191;
+r will be the rotation along the indicated axis (-8192..8191).
+
+The choice of angle values is based on efficient encoding within SBXE.
+
+
+Message Dispatcher
+
+Messages to be sent will be sent to a message dispatcher. This will then try to combine messages into a unit which will fit into the MTU. Messages will be
+marked as reliable or unreliable, and will have a timeout (measured in ms), although the dispatcher will likely itself operate at a much coarser
+"tick-rate".
+
+Delta messages will "combine" with outgoing delta messages with the same entnum, updating fields and updating the timeout. Delta messages will typically be unreliable and have a relatively short timeout.
+
+
+
+Reliable UDP
+
+A reliable UDP protocol may be used.
+
+possible:
+struct BRUDP_Head_s {
+u16 txseq;	//transmission sequence number
+u16 rxseg;	//reciever sequence number
+u16 flag;	//control flags
+u16 crc;	//message checksum
+};
+
+Flags:
+0x0001=ACK
+0xC000=Msg Type
+
+
+Following the head will be the SBXE glob.
+

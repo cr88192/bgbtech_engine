@@ -1,0 +1,209 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.0  (Win32)">
+	<META NAME="CREATED" CONTENT="20100113;15492500">
+	<META NAME="CHANGED" CONTENT="20100113;16022300">
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<P STYLE="margin-bottom: 0in">BGBVX86: BGB Virtual x86 Interpreter</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">This is an interpreter for x86 machine
+code. It works by essentially simulating processes, allowing programs
+to run in their own virtual address spaces. This aims to be
+sufficiently general as to allow user-space code produced by
+general-purpose compilers to work.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">However, it is not the aim of this to
+serve as a full-featured OS or HW-level emulator, and so many
+features needed for these tasks are not presently available (it is
+assumed that code intended to run in the interpreter be compiled for
+the interpreter).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note that several ISA extensions are
+used by the interpreter, and are intended more for back-end libraries
+than for code targeting the interpreter. General code targeting the
+interpreter should produce &quot;clean&quot; x86.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">API</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Process Image Functions</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">BGBV86_Image *BGBV86_LookupImage(int
+pid);</P>
+<P STYLE="margin-bottom: 0in">BGBV86_Context
+*BGBV86_LookupContext(int tid);</P>
+<P STYLE="margin-bottom: 0in">BGBV86_Image *BGBV86_NewImage();</P>
+<P STYLE="margin-bottom: 0in">BGBV86_Context
+*BGBV86_NewContextImg(BGBV86_Image *img);</P>
+<P STYLE="margin-bottom: 0in">BGBV86_Context *BGBV86_NewContext();</P>
+<P STYLE="margin-bottom: 0in">int
+BGBV86_DestroyContext(BGBV86_Context *ctx);</P>
+<P STYLE="margin-bottom: 0in">int BGBV86_DestroyImage(BGBV86_Image
+*img);</P>
+<P STYLE="margin-bottom: 0in">int
+BGBV86_ImageIndexAddr(BGBV86_Context *ctx, s64 addr);</P>
+<P STYLE="margin-bottom: 0in">int
+BGBV86_ImageIndexAddr(BGBV86_Context *ctx, s64 addr);</P>
+<P STYLE="margin-bottom: 0in">int
+BGBV86_ImageIndexAddr2(BGBV86_Context *ctx, s64 addr, s64 sz);</P>
+<P STYLE="margin-bottom: 0in">int
+BGBV86_ImageIndexAddr(BGBV86_Context *ctx, s64 addr);</P>
+<P STYLE="margin-bottom: 0in">int
+BGBV86_ImageIndexAddr2(BGBV86_Context *ctx, s64 addr, s64 sz);</P>
+<P STYLE="margin-bottom: 0in">byte
+*BGBV86_ImageResolveAddr(BGBV86_Context *ctx, s64 addr);</P>
+<P STYLE="margin-bottom: 0in">byte
+*BGBV86_ImageResolveAddr2(BGBV86_Context *ctx, s64 addr, s64 sz);</P>
+<P STYLE="margin-bottom: 0in">byte
+*BGBV86_ImageResolveAddrW(BGBV86_Context *ctx, s64 addr);</P>
+<P STYLE="margin-bottom: 0in">byte
+*BGBV86_ImageResolveAddr2W(BGBV86_Context *ctx, s64 addr, s64 sz);</P>
+<P STYLE="margin-bottom: 0in">s64
+BGBV86_ImageCheckPointerVA(BGBV86_Context *ctx, byte *ptr);</P>
+<P STYLE="margin-bottom: 0in">byte
+*BGBV86_ImageResolveAddr(BGBV86_Context *ctx, s64 addr);</P>
+<P STYLE="margin-bottom: 0in">byte
+*BGBV86_ImageResolveAddr2(BGBV86_Context *ctx, s64 addr, s64 sz);</P>
+<P STYLE="margin-bottom: 0in">int BGBV86_ImageMapRange(BGBV86_Context
+*ctx,void *ptr, s64 base, int size);</P>
+<P STYLE="margin-bottom: 0in">int
+BGBV86_ImageCheckRangeFree(BGBV86_Context *ctx,s64 base, int size);</P>
+<P STYLE="margin-bottom: 0in">s64
+BGBV86_ImageFindFreeRange(BGBV86_Context *ctx, s64 size);</P>
+<P STYLE="margin-bottom: 0in">s64
+BGBV86_ImageFindFreeRangeTD(BGBV86_Context *ctx, s64 size);</P>
+<P STYLE="margin-bottom: 0in">s64
+BGBV86_ImageVirtualAlloc(BGBV86_Context *ctx,s64 base, s64 size, int
+flalloc, int flprot);</P>
+<P STYLE="margin-bottom: 0in">int
+BGBV86_ImageVirtualFree(BGBV86_Context *ctx,s64 base, s64 size, int
+flag);</P>
+<P STYLE="margin-bottom: 0in">s64 BGBV86_ImageMapFile(BGBV86_Context
+*ctx,s64 base, s64 size, int flalloc, int flprot, int fd, s64 offs);</P>
+<P STYLE="margin-bottom: 0in">int BGBV86_ImageMapSync(BGBV86_Context
+*ctx,s64 base, s64 size, int fl);</P>
+<P STYLE="margin-bottom: 0in">int
+BGBV86_ImageMapProtect(BGBV86_Context *ctx,s64 base, s64 size, int
+fl);</P>
+<P STYLE="margin-bottom: 0in">int BGBV86_ImageReadSz(BGBV86_Context
+*ctx, s64 addr, byte *buf, int sz);</P>
+<P STYLE="margin-bottom: 0in">int BGBV86_ImageWriteSz(BGBV86_Context
+*ctx, s64 addr, byte *buf, int sz);</P>
+<P STYLE="margin-bottom: 0in">s64 BGBV86_ImageMalloc(BGBV86_Context
+*ctx, int size);</P>
+<P STYLE="margin-bottom: 0in">void BGBV86_ImageFree(BGBV86_Context
+*ctx, s64 addr);</P>
+<P STYLE="margin-bottom: 0in">s64 BGBV86_ImageStrdup(BGBV86_Context
+*ctx, char *str);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Instruction Decoder</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">byte
+*BGBV86_DecodeOpcode(BGBV86_Context *ctx,BGBV86_DecodeOp *dop, byte
+*ip);</P>
+<P STYLE="margin-bottom: 0in">char *BGBV86_GetRegName(int reg);</P>
+<P STYLE="margin-bottom: 0in">void
+BGBV86_DumpOpcode_RM(BGBV86_Context *ctx,BGBV86_DecodeOp *op);</P>
+<P STYLE="margin-bottom: 0in">void BGBV86_DumpOpcode(BGBV86_Context
+*ctx,BGBV86_DecodeOp *op);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Interpreter</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void BGBV86_SetEIP(BGBV86_Context *ctx,
+s64 addr);</P>
+<P STYLE="margin-bottom: 0in">void BGBV86_SetESP(BGBV86_Context *ctx,
+s64 addr);</P>
+<P STYLE="margin-bottom: 0in">void BGBV86_SetEBP(BGBV86_Context *ctx,
+s64 addr);</P>
+<P STYLE="margin-bottom: 0in">int BGBV86_DumpState(BGBV86_Context
+*ctx);</P>
+<P STYLE="margin-bottom: 0in">int BGBV86_Step(BGBV86_Context *ctx);</P>
+<P STYLE="margin-bottom: 0in">int BGBV86_RunCnt2(BGBV86_Context *ctx,
+int cnt);</P>
+<P STYLE="margin-bottom: 0in">int BGBV86_RunCnt(BGBV86_Context *ctx,
+int cnt);</P>
+<P STYLE="margin-bottom: 0in">int BGBV86_RunSchedPass(int cnt);</P>
+<P STYLE="margin-bottom: 0in">int BGBV86_RunSchedUS(int usec);</P>
+<P STYLE="margin-bottom: 0in">s64 BGBV86_GetTimeUS();</P>
+<P STYLE="margin-bottom: 0in">int BGBV86_MiniRand();</P>
+<P STYLE="margin-bottom: 0in">int BGBV86_RegisterHandlerStatic(int
+idx, int (*fcn)(BGBV86_Context *ctx));</P>
+<P STYLE="margin-bottom: 0in">int BGBV86_RegisterHandlerDynamic(int
+(*fcn)(BGBV86_Context *ctx));</P>
+<P STYLE="margin-bottom: 0in">int BGBV86_Init();</P>
+<P STYLE="margin-bottom: 0in">int
+BGBV86_DestroyProcess(BGBV86_Context *ctx);</P>
+<P STYLE="margin-bottom: 0in">BGBV86_Context
+*BGBV86_SpawnProcess(char *path, char **argv, char **env,
+BGBV86_SpawnInfo *inf, int flag);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">External Interfaces</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *BGBV86_GetVFEnvOS();</P>
+<P STYLE="margin-bottom: 0in">void *bgbv86_setio(void *env);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">BGBV86_GCFuncs *BGBV86_GetGCFuncs();</P>
+<P STYLE="margin-bottom: 0in">BGBV86_ASFuncs *BGBV86_GetASFuncs();</P>
+<P STYLE="margin-bottom: 0in">void BGBV86_InitGCAS();</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">DLL Related</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BGBV86_AddDllPath(char *path);</P>
+<P STYLE="margin-bottom: 0in">BGBV86_PE_Info
+*BGBV86_PE_LookupImage(BGBV86_Context *vm, char *name);</P>
+<P STYLE="margin-bottom: 0in">BGBV86_PE_Info
+*BGBV86_PE_LookupImageAddr(BGBV86_Context *vm, s64 addr);</P>
+<P STYLE="margin-bottom: 0in">int
+BGBV86_PE_LookupImageExportNameOrdinal(BGBV86_PE_Info *ctx, char
+*name);</P>
+<P STYLE="margin-bottom: 0in">u32
+BGBV86_PE_LookupImageExportOrdinalRVA(BGBV86_PE_Info *ctx, int ord);</P>
+<P STYLE="margin-bottom: 0in">byte
+*BGBV86_PE_LookupImageExportOrdinal(BGBV86_PE_Info *ctx, int ord);</P>
+<P STYLE="margin-bottom: 0in">s64
+BGBV86_PE_LookupImageExportOrdinalVA(BGBV86_PE_Info *ctx, int ord);</P>
+<P STYLE="margin-bottom: 0in">byte
+*BGBV86_PE_LookupImageExport(BGBV86_PE_Info *ctx, char *name);</P>
+<P STYLE="margin-bottom: 0in">s64
+BGBV86_PE_LookupImageExportVA(BGBV86_PE_Info *ctx, char *name);</P>
+<P STYLE="margin-bottom: 0in">BGBV86_PE_Info
+*BGBV86_PE_LoadImageBuf(BGBV86_Context *vm,char *name, byte *buf, int
+sz);</P>
+<P STYLE="margin-bottom: 0in">BGBV86_PE_Info
+*BGBV86_PE_LoadImage(BGBV86_Context *vm, char *name);</P>
+<P STYLE="margin-bottom: 0in">s64
+BGBV86_ImageLookupSymbol(BGBV86_Context *ctx, char *name);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+</BODY>
+</HTML>

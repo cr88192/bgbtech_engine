@@ -1,0 +1,5 @@
+$flags voxel alpha slime warpst nowateroverlay
+
+$vox_img_top_scale 4
+
+$video textures/voxel/slime_d.avi

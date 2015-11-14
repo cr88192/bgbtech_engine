@@ -1,0 +1,15 @@
+package bsvm.lang;
+
+public final class Compiler extends Object
+{
+public static Object command(Object any)
+	{ return null; }
+public static boolean compileClass(Class clazz)
+	{ return false; }
+public static boolean compileClasses(String string)
+	{ return false; }
+public static void disable()
+	{}
+public static void enable()
+	{}
+}

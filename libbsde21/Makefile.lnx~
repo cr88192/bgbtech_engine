@@ -1,0 +1,96 @@
+US_LDFLAGS=-L. -lbsde
+EXE=
+#	source/solid_obb2.c \
+
+BSDE_SRCS = \
+	source/solid_aabb.c \
+	source/solid_obb.c \
+	source/solid_obb3.c \
+	source/solid_cylinder.c \
+	source/solid_brep.c \
+	source/solid_sphere.c \
+	source/solid_plane.c \
+	source/solid_hull.c \
+	source/solid_hull2.c \
+	source/solid_bsp.c \
+	source/solid_bsp2.c \
+	\
+	source/bsde_collide.c \
+	source/bsde_solid.c \
+	source/bsde_joint.c \
+	source/bsde_world.c \
+	source/bsde_math.c \
+	source/bsde_force.c \
+	source/bsde_iter.c \
+	source/bsde_iter2.c \
+	source/bsde_iter3.c \
+	source/bsde_random.c \
+	\
+	source/math_vec3.c \
+	source/math_matd.c \
+	source/math_quatd.c \
+	source/math_planed.c
+
+BSDE_APISRCS = \
+	source/api_bsde.c
+
+BSDE_HEADERS = \
+	include/bsde_auto.h \
+	include/bsde_funcs.h
+
+BSDE_OBJS = $(BSDE_SRCS:.c=.o) $(BSDE_APISRCS:.c=.o)
+
+BSDE_STUB_SRCS = \
+	apps/gl_win.c \
+	apps/input.c \
+	apps/mouse_win.c \
+	apps/stub_w32.c \
+	apps/prim3d2.c \
+	apps/gl_draw.c
+
+BSDE_APP0_SRCS = \
+	apps/bsde_app0.c
+
+BSDE_APP1_SRCS = \
+	apps/bsde_app1.c
+
+BSDE_STUB_OBJS = $(BSDE_STUB_SRCS:.c=.o)
+BSDE_APP0_OBJS = $(BSDE_APP0_SRCS:.c=.o)
+BSDE_APP1_OBJS = $(BSDE_APP1_SRCS:.c=.o)
+
+CFLAGS = -Werror-implicit-function-declaration -Iinclude -g -pg
+# CFLAGS = -Werror-implicit-function-declaration -Iinclude -O3
+
+all: libbsde.a bsde_app0 bsde_app1
+
+FORCE:
+
+%.o: %.c
+	gcc $(CFLAGS) -c -o $@ $<
+
+autohead$(EXE): autohead.c
+	gcc -o autohead$(EXE) autohead.c
+
+include/bsde_auto.h: autohead$(EXE) $(BSDE_SRCS)
+	./autohead$(EXE) $(BSDE_SRCS) > include/bsde_auto.h
+
+include/bsde_funcs.h: autohead $(BSDE_APISRCS)
+	./autohead $(BSDE_APISRCS) > include/bsde_funcs.h
+
+libbsde.a: $(BSDE_HEADERS) $(BSDE_OBJS)
+	ar -cr libbsde.a $(BSDE_OBJS)
+
+bsde_app0: $(BSDE_STUB_OBJS) $(BSDE_APP0_OBJS)
+	gcc -g -pg -o bsde_app0 $(BSDE_STUB_OBJS) $(BSDE_APP0_OBJS) \
+		$(US_LDFLAGS)
+
+bsde_app1: $(BSDE_STUB_OBJS) $(BSDE_APP1_OBJS)
+	gcc -g -pg -o bsde_app1 $(BSDE_STUB_OBJS) $(BSDE_APP1_OBJS) \
+		$(US_LDFLAGS)
+
+clean:
+	rm -rf bsde_auto.h bsde_funcs.h
+	rm -rf $(shell find -name \*.o)
+	rm -rf $(shell find -name \*.a)
+	rm -rf $(shell find -name \*.obj)
+	rm -rf $(shell find -name \*.lib)

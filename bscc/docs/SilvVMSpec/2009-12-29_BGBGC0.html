@@ -1,0 +1,1045 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.0  (Win32)">
+	<META NAME="CREATED" CONTENT="20091229;22025900">
+	<META NAME="CHANGED" CONTENT="20100105;20443400">
+	<META NAME="Info 1" CONTENT="">
+	<META NAME="Info 2" CONTENT="">
+	<META NAME="Info 3" CONTENT="">
+	<META NAME="Info 4" CONTENT="">
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<H1>BGB Garbage Collector</H1>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">This will describe the core library of
+the BGB Garbage Collector.</P>
+<P STYLE="margin-bottom: 0in; text-decoration: none"><BR>
+</P>
+<H2>Overview</H2>
+<P STYLE="margin-bottom: 0in">The GC will be a conservative
+concurrent GC, and will support types-tagging as a built in feature.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">For various reasons, the GC also
+includes support for cons cells and built-in thread-management
+mechanisms.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Types</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Types in the GC will take the form of
+strings, where the GC itself poses little restriction on the syntax
+or characters which may appear within a type name. A type will be
+generally assigned to an object at allocation time, and will remain
+constant throughout the object's existence.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note that, by convention, most of the
+code which currently uses object type names follows the convention
+&ldquo;_<I>subsystem</I>_<I>typename</I>_t&rdquo;. The leading
+underscore is used for nearly all VM types, and serves primarily to
+avoid possible conflict with type names defined within a front-end
+application.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">By extension, this convention limits
+the allowed character set for type names to that allowed for C
+identifiers ('_', 'A'..'Z', 'a'..'z', '0'..'9').</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The space of all type-names which are
+valid C identifiers and which do not begin with an underscore are
+reserved for application use.</P>
+<P STYLE="margin-bottom: 0in">In much the same way, all type names
+which are valid C identifiers and which begin with an underscore are
+reserved for VM or compiler use.</P>
+<P STYLE="margin-bottom: 0in">The space of names starting with
+characters which are not valid in C-style identifiers is currently
+reserved for subsequent &ldquo;fundamental&rdquo; expansion of the
+typesystem.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">By convention, types without a
+subsystem are generally assumed to be &ldquo;universal&rdquo; types.</P>
+<P STYLE="margin-bottom: 0in">To classify as a universal type, a type
+should be &ldquo;fairly obvious&rdquo; and &ldquo;widely applicable&rdquo;.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note that, for the most part, a type is
+made known to the GC, but the type names and semantics for a
+particular object are not themselves managed by the GC.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The GC will assume that objects
+allocated with default settings may include pointers, and objects
+allocated as atomic will not contain pointers.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">If creating a new type, nearly any type
+name may be chosen, but care needs to be taken not to conflict with
+other possible uses of the same type name.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">However, there are a few type-names
+which are special to the GC and are used internally, and so caution
+should be used with them:</P>
+<TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=128*>
+	<COL WIDTH=128*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">&ldquo;_raw_t&rdquo;</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">Untyped data. Objects are created
+			with this type if allocated with no particular type.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">&ldquo;_weak_t&rdquo;</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">Weak objects. This type is used
+			internally and has associated modified semantics.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">&ldquo;_exec_raw_t&rdquo;</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">This is used by executable
+			objects allocated without a particular type name.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">&quot;_raw_rc_t&quot;</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">Object allocated with
+			ref-counting but no explicit type.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">&quot;_exec_raw_rc_t&quot;</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">Executable object allocated with
+			ref-counting but no explicit type.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">&ldquo;_cons_t&rdquo;</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">Cons Cell. Cons cells are
+			allocated specially and have their own special heap. Do not try to
+			allocate cons cells via the ordinary allocation functions.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">&ldquo;_string_t&rdquo;</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">Object is a C-style string.
+			Allocate as atomic. No other restrictions are placed.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in; text-decoration: none"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; text-decoration: none"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; text-decoration: none">In addition,
+there are some types which are defined outside the GC, but it is
+worth noting their existence:</P>
+<TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=128*>
+	<COL WIDTH=128*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">&ldquo;_symbol_t&rdquo;</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">A C-string understood to be an
+			identifier (As in Scheme or Lisp). (Allocate as Atomic).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">&ldquo;_keyword_t&rdquo;</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">A C-string understood to be a
+			keyword (As in Lisp). (Atomic).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">&ldquo;_wstring_t&rdquo;</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">A string in UTF-16 format
+			(Atomic).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">&ldquo;_fixint_t&rdquo;</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">An integer value mapped to a
+			space.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">&ldquo;_flonum_t&rdquo;</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">A floating point value encoded
+			into a space</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">&ldquo;_int_t&rdquo;</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">A boxed integer (Atomic).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">&ldquo;_long_t&rdquo;</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">A boxed 64-bit integer (Atomic).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">&ldquo;_float_t&rdquo;</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">A boxed 32-bit float (Atomic).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">&ldquo;_double_t&rdquo;</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P STYLE="text-decoration: none">A boxed 64-bit double (Atomic).</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in; text-decoration: none"><BR>
+</P>
+<H3>Algorithms Overview</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">In general, the GC will try to be
+memory efficient when dealing with small objects (Objects &lt; 100
+bytes being fairly common). By default, small objects are allocated
+via the use of 16-byte cells which are in turn managed by a bitmap.
+Objects larger than a certain size (currently around 6kB) threshold
+will fall back to a more traditional allocation strategy (a free-list
+allocator). At present, 8 bytes are used for the main object header,
+where many fields are bit-packed.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Currently, the main algorithm used is
+Mark/Sweep, but with a few variations:</P>
+<P STYLE="margin-bottom: 0in">The mark phase is generally run at the
+same time as the mutator, with the assumption that the write barrier
+(via 'gcset()') will catch writes to the heap.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The GC itself uses an internal stack,
+and so marking will essentially push items to this stack (the GC loop
+will pop items, and to the individual object marking).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">There are currently, in fact, 3 sweep
+passes:</P>
+<P STYLE="margin-bottom: 0in">PreSweep, which calls destructor for
+any GC'ed objects, and may mark additional objects (possibly
+triggering a return to the mark pass);</P>
+<P STYLE="margin-bottom: 0in">Sweep, this destroys any objects which
+are still marked white;</P>
+<P STYLE="margin-bottom: 0in">PostSweep, calls the preserve handlers.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note that a destructor may return a
+value of 1 to cause the object to be &ldquo;revived&rdquo;, but this
+feature should be used with caution as misuse could cause
+noncollectable and/or zombie objects (objects which may have had
+their destructors called or are left with dangling pointers). Either
+gcmalloc/gctmalloc or locking should be used instead to prevent an
+object from being collected.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H4>Cons Cells</H4>
+<P STYLE="margin-bottom: 0in">A different region of memory is used
+for cons cells. A cons cell is always 2 pointers, and so its exact
+size will vary depending on the word-size of the system (this is in
+contrast to object cells, which are always 16 bytes in this
+implementation).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Cons cells are stored separately from
+other objects, and do not use an object header. This also allows cons
+cells to take less space than other objects. A cons cell consists of
+two pointers traditionally known as 'car' and 'cdr', with the former
+holding the current item value, and the latter usually pointing to
+the remainder of the list (or NULL for the end of a list).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">We can introduce a syntax for cons
+cells: (<I>car</I> . <I>cdr</I>)</P>
+<P STYLE="margin-bottom: 0in">And, 3 cons cells can be chained, as
+in: (<I>car1</I> . (<I>car2</I> . (<I>car3</I> . <I>nil</I>))), which
+would in turn be written as a list: (<I>car1</I> <I>car2</I> <I>car3</I>).</P>
+<P STYLE="margin-bottom: 0in">Lists can in turn contain other lists,
+as in: (<I>car1</I> (<I>car4</I> <I>car5</I>) <I>car3</I>) which is,
+in effect: (<I>car1</I> . ((<I>car4</I> . (<I>car5</I> . nil)) .
+(<I>car3</I> . <I>nil</I>))).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Cons cells are also managed with a
+bitmap, which is used to mark information about each cons cell, such
+as whether it is in use, whether it has been marked via the GC, &hellip;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Cons allocation is also streamlined via
+the use of an internal free-list of recently freed cons cells, which
+may save from having to scan the bitmap.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H4>Small Objects</H4>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Small Objects also also allocated in
+terms of cells, however, these cells have a fixed and defined size
+(16 bytes).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Any given cell may be 1 of 4 types:
+free, header, data, or reserved.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Free cells may be used for allocating
+new objects, and for simplicity have all their associated bits set to
+0.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Header cells mark the beginning of an
+object, generally hold both the object header, as well as generally
+the first bytes of the object's payload. A header cell is then
+followed by a run of 0 or more data cells, which is terminated by the
+first non data cell (such as a free cell or another header cell). All
+data cells following the header cell are assumed to be the same
+object (thus simplifying the mark and sweep stages in the GC, which
+tend to operate primarily in terms of these bitmaps).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Reserved cells are, well, reserved.
+These indicate portions of the heap which have been marked as
+off-limits for some reason (typically due to chunk headers or other
+heap-internal structures).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Cells are managed by the GC in terms of
+chunks, where a chunk is a fixed-size region used as an array of
+cells. Each chunk itself contains a header, a data area, and a bitmap
+area. The chunk header will mark itself as reserved to prevent
+accidental allocation.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Allocation of small objects from a
+chunk usually consists of linearly scanning forwards on the bitmap
+and stopping (to allocate an object) when a sufficient run of free
+cells has been seen in order to store the requested object. If the
+end of the chunk is reached before finding a spot, then allocation
+has failed for this chunk, and the GC may in turn try the next chunk,
+or consider possible alternative options.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H4>Large Objects</H4>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Large Objects are managed differently
+from small objects. A large object is allocated via a more
+traditional free-list allocator (currently malloc, but little
+mandates this and a specialized free-list allocator could be used in
+the future). An object is created as a large object due to its size,
+where objects larger than a certain size limit (at present 6 KiB),
+will be allocated as large objects rather than small objects.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The reason for this is that the
+efficiency of the small-object allocator drops severely if one tries
+to use it for larger objects, and as well, one has problems if the
+object happens to be larger than the chunk size. Additionally, large
+objects don't need the sort of linear-space overhead implied by the
+bitmap used for allocating small objects.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Large objects are generally managed by
+an array. This array is kept compacted during general operation, but
+is not in general kept sorted. Sorting may be used during garbage
+collection to help speed up object lookup.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H4>Internal Details</H4>
+<P STYLE="margin-bottom: 0in">Bitmap</P>
+<P STYLE="margin-bottom: 0in">The bitmap is actually more properly an
+array of bytes, but each bit in each byte has meaning.</P>
+<P STYLE="margin-bottom: 0in">0-1: Cell Type, 0=Free, 1=Header,
+2=Data, 3=Reserved;</P>
+<P STYLE="margin-bottom: 0in">2-3: Mark State, 0=White, 1=Black,
+2=Gray, 3=Locked</P>
+<P STYLE="margin-bottom: 0in">4-6: GC Type, 0=Conservative, 1=Atomic,
+2-7: GCP (dropped, reserved)</P>
+<P STYLE="margin-bottom: 0in">7: Currently set on conservative mark
+(GCP related)</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Object Header</P>
+<P STYLE="margin-bottom: 0in">For now, the Header has this layout:</P>
+<P STYLE="margin-bottom: 0in">ObjHead {</P>
+<P STYLE="margin-bottom: 0in">u32 size;</P>
+<P STYLE="margin-bottom: 0in">u16 ty_idx;</P>
+<P STYLE="margin-bottom: 0in">u16 ty_chk;</P>
+<P STYLE="margin-bottom: 0in">}</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Where size gives the object size,
+ty_idx the type index, and ty_chk gives some other information.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Size is u32, currently setting a 4GB
+object size limit for 64-bit archs.</P>
+<P STYLE="margin-bottom: 0in">Since in many places, signed integers
+are used, this sets the practical limit at 2GB.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The ty_chk field has this layout:</P>
+<P STYLE="margin-bottom: 0in">Bits 0-11: Header Sanity Checksum</P>
+<P STYLE="margin-bottom: 0in">Bits 12-15: Ref-Count, 0..14,
+15=Many/Unknown (Default for non-RC objects)</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The object header is invisible from the
+client code, and is also subject to change in terms of both size and
+layout.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note: GCP was an attempt at adding
+precise GC, but at the cost of essentially fragmenting the heap, and
+so this feature was later dropped after concluding that this role
+could be better served by using an alternate GC if precise collection
+is needed.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Idle Thoughts:</P>
+<P STYLE="margin-bottom: 0in">Some internal redesign of the GC may be
+needed, such as changing the workings of the mark/sweep pass:</P>
+<P STYLE="margin-bottom: 0in">while(StuffToDo):</P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in">PreMark, check
+barriers and locked objs;</P>
+<P STYLE="margin-left: 0.79in; margin-bottom: 0in">Mark, mark
+objects.</P>
+<P STYLE="margin-bottom: 0in">PreSweep (remove revive and barrier
+stuff);</P>
+<P STYLE="margin-bottom: 0in">Sweep;</P>
+<P STYLE="margin-bottom: 0in">PostSweep.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Consider 16-byte alignment, but could
+keep 8-byte header by moving header to end of cell and leaving the
+first 8 bytes for the prior object (Alternatively, simpler could be
+to move the header to the end of the prior cell instead).</P>
+<P STYLE="margin-bottom: 0in">Possible: Size could be reduced to
+12-bits (and max SObj size reduced), LObj size is made external. A
+4-bit size is possible, but would require calculating size from
+bitmap (would reduce performance).</P>
+<P STYLE="margin-bottom: 0in">Possible: Prime-based checksum,
+possibly 8 bit.</P>
+<P STYLE="margin-bottom: 0in">Possible: Make header a single 64-bit
+datum.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2>Memory Management</H2>
+<P STYLE="margin-bottom: 0in">void *gcalloc(int sz);</P>
+<P STYLE="margin-bottom: 0in">Allocate a garbage collected memory
+object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *gctalloc(char *ty, int sz);</P>
+<P STYLE="margin-bottom: 0in">Allocate a garbage collected memory
+object with an assigned type name.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *gcatomic(int sz);</P>
+<P STYLE="margin-bottom: 0in">Allocate an &ldquo;atomic&rdquo;
+garbage collected object.</P>
+<P STYLE="margin-bottom: 0in">At atomic object will have the special
+property that it will not be checked during GC for references.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *gctatomic(char *ty, int sz);</P>
+<P STYLE="margin-bottom: 0in">Allocate an atomic garbage collected
+object with an assigned type name.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *gcweak(int sz);</P>
+<P STYLE="margin-bottom: 0in">Allocate a &ldquo;weak&rdquo; object. A
+weak object will be assumed to be an array of references, and any
+reference within a weak object which is subsequently freed will be
+set to NULL following garbage collection.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">At present, no typed weak object is
+provided. The reason for this restriction is that, at present, it is
+assumed that the only thing weak objects are actually useful for are
+very special-purpose uses (such as weak boxes and hashes), and hence
+a generic type name would not be useful. Another reason is because
+weak objects are presently implemented in a way which precludes a
+using a custom type name.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *gcexec(int sz);</P>
+<P STYLE="margin-bottom: 0in">Allocate an executable object. An
+executable object differs from a normal object in that it may contain
+executable code (it is allocated in memory with execute permission),
+whereas general objects are not allocated with this permission.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *gctexec(char *ty, int sz);</P>
+<P STYLE="margin-bottom: 0in">Allocate an executable object with an
+assigned type name.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *gcallocrc(int sz);</P>
+<P STYLE="margin-bottom: 0in">void *gcexecrc(int sz);</P>
+<P STYLE="margin-bottom: 0in">void *gctallocrc(char *ty, int sz);</P>
+<P STYLE="margin-bottom: 0in">void *gctexecrc(char *ty, int sz);</P>
+<P STYLE="margin-bottom: 0in">Allocate garbage collectible objects
+with reference counting enabled.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *gcrealloc(void *p, int sz);</P>
+<P STYLE="margin-bottom: 0in">Reallocate an object with a different
+size. This call may attempt to resize the object, if possible, or
+allocate a new memory object with the adjusted size. A re-allocated
+object will retain the same types and properties as the original.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *gctallocu(char *ty, int sz);</P>
+<P STYLE="margin-bottom: 0in">Allocate a GC managed object
+&ldquo;unaligned&rdquo;. This basically means that the GC may be
+allowed to allocate the object with a smaller alignment than the
+default minimum alignment in order to safe space.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *gcmalloc(size_t sz);</P>
+<P STYLE="margin-bottom: 0in">Allocate a GC managed object which will
+not be automatically freed even if no references to this object
+exist. Essentially, an object allocated with this type will be
+regarded as a part of the root set, and so will not be freed, and any
+referenced objects will be preserved.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void gcfree(void *p);</P>
+<P STYLE="margin-bottom: 0in">Free a GC managed object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *gcgettype(void *p);</P>
+<P STYLE="margin-bottom: 0in">Get the type name associated with a GC
+object. This will return NULL if the object does not have a type, or
+is not managed by the GC.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int gcgetsize(void *p);</P>
+<P STYLE="margin-bottom: 0in">Get the size of a GC managed object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int gcIndexType(char *name);</P>
+<P STYLE="margin-bottom: 0in">Get the index number of a type name.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *gcGetType(void *p);</P>
+<P STYLE="margin-bottom: 0in">int gcGetSize(void *p);</P>
+<P STYLE="margin-bottom: 0in">These are the same as before, but use a
+different notation.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *gcGetTypeFast(void *p);</P>
+<P STYLE="margin-bottom: 0in">This tries to get the type, but may use
+shortcuts to get the type faster.</P>
+<P STYLE="margin-bottom: 0in">This is only valid if the pointer
+points to the start of a valid GC object (excluding both spaces and
+cons cells), otherwise the behavior is undefined.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int gcGetSizeFast(void *p);</P>
+<P STYLE="margin-bottom: 0in">Get the size of a GC object, similarly
+making it faster at the cost of basic safety checks.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int gcGetTypeIdx(void *p);</P>
+<P STYLE="margin-bottom: 0in">Get the type index number for an
+object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int gcGetTypeIdxFast(void *p);</P>
+<P STYLE="margin-bottom: 0in">Get the type index number for an
+object, similarly making it faster at the cost of basic safety
+checks.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int gctypep(void *p, char *ty);</P>
+<P STYLE="margin-bottom: 0in">Returns 1 if the pointer given in p has
+the type name given in ty, 0 otherwise.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int gcatomicp(void *p);</P>
+<P STYLE="margin-bottom: 0in">Returns 1 if the object p is atomic, 0
+otherwise.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int gcsetmark(char *ty, int (*fcn)(void
+*p));</P>
+<P STYLE="margin-bottom: 0in">Set the handler which is called when
+marking an object of a given type. This will override the default
+behavior associated with an object of this type.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int gcsetfinal(char *ty, int
+(*fcn)(void *p));</P>
+<P STYLE="margin-bottom: 0in">Set the handler to be called when
+freeing an object of a given type. During a GC pass, this will
+generally be as a result of no references existing to an object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int gcsetpreserve(char *ty, int
+(*fcn)(void *p));</P>
+<P STYLE="margin-bottom: 0in">Set the handler to be called when an
+object of a given type has survived a GC pass.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void gclock(void *p);</P>
+<P STYLE="margin-bottom: 0in">This will lock an object. When an
+object is locked, it will not be collected, and any referenced
+objects will also be preserved.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void gcunlock(void *p);</P>
+<P STYLE="margin-bottom: 0in">This will unlock an object which has
+been formerly locked.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void gcinc(void *p);</P>
+<P STYLE="margin-bottom: 0in">This will increment a reference count
+for an object which uses reference counting, This will be no-op for
+objects which don't use reference counting.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void gcdec(void *p);</P>
+<P STYLE="margin-bottom: 0in">This will decrement a reference count
+for reference counted objects. An object will be freed if its
+reference count is 0 following this operation.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void gcsafedec(void *p);</P>
+<P STYLE="margin-bottom: 0in">This will perform a safe decrement for
+reference counted objects. A safe decrement will not free an object
+if the count is 0.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void gcset(void **r, void *p);</P>
+<P STYLE="margin-bottom: 0in">This will set the pointer given in r to
+the value given in p.</P>
+<P STYLE="margin-bottom: 0in">This will also update reference counts
+and manage a software write barrier (and hence is advised whenever
+assigning references involving GC objects as to aid the GC in not
+accidentally missing references to ones' objects...).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void gcclear(void **r);</P>
+<P STYLE="margin-bottom: 0in">This will set a reference to NULL, and
+may also decrement any prior object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *gcstrdup(char *str);</P>
+<P STYLE="margin-bottom: 0in">This will copy str into a new GC object
+with the type &ldquo;_string_t&rdquo;.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *gcralloc(int sz);</P>
+<P STYLE="margin-bottom: 0in">This will allocate a buffer of sz bytes
+in a &ldquo;rotating&rdquo; memory region. This buffer will be, as
+such, temporary and will continue to exist for an undefined period of
+time. The main intention then is to support very short-lived buffers,
+typically for string operations, with the assumption that the
+operation will complete before the buffer is overwritten.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note that it is not safe to hold onto
+one of these pointers for any length of time, since even if nothing
+happens in the current thread, another thread may still result in the
+thrashing of this buffer. Use with caution.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *gcrstrdup(char *str);</P>
+<P STYLE="margin-bottom: 0in">This will copy a string into a rotating
+memory buffer, and return the new string.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *gcrsprint(char *str, ...);</P>
+<P STYLE="margin-bottom: 0in">This will print into a rotating memory
+buffer.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char **gcrsplit(char *s);</P>
+<P STYLE="margin-bottom: 0in">This will split a string placing the
+results into rotating buffers.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *gcrgets(char **str);</P>
+<P STYLE="margin-bottom: 0in">This will read a line from a
+string-pointer into a rotating buffer. The string pointer will be
+updated to point to the next line.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2>Spaces</H2>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">'Spaces' in this context refer to
+otherwise inaccessible regions of the address space which are used
+for &ldquo;magic&rdquo; value ranges, such as, for example, integers
+or reduced-range floating-point numbers, &hellip;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">It is assumed that a pointer within
+this region points to a value of a given type.</P>
+<P STYLE="margin-bottom: 0in">Note: The location of this space is OS
+specific. On Win32, it will be generally located within the upper
+1GB. On Linux, things are a little more complicated as some
+distributions make the entire 4GB addressable.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">On Win64 and Linux x86-64 it will be
+located outside the valid addressable region. Note that on x86-64 in
+general, up to 48 bits may be allocated for a space, with a 56-bit
+wide region being used for allocating spaces (this region is
+otherwise disallowed under the x86-64 ISA, currently
+71000000:00000000 &ndash; 71FFFFFF:FFFFFFFF). However, the exact size
+and/or location of this region should not be relied upon.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note that spaces are not necessarily
+aligned on power-of-2 boundaries.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Aside: At the time of this writing,
+BGBDY uses these facilities to implement both 'fixnum' and 'flonum'
+support, where flonum is 28 bits on x86, and 48 bits on x86-64 (the
+x86-64 flonum is basically just a double shaved down to 48 bits and
+shoved into a pointer). The 28-bit format uses S.7.20 format with
+bias=24 (vs S.8.23, bias=127 for IEEE float).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Rationale: Basically, this strategy was
+used as it is less of a hassle to work with than a tagged-reference
+scheme (as well as working better with a C codebase), and there would
+not seem to be a significant difference (in general) between
+range-checking and pointer arithmetic, and the use of bit-masking and
+shifting (as is needed for tagged references).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note that the existence of this
+facility does not preclude the use of tagged references elsewhere.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int gcllSpaceAllocSafeP(int bits);</P>
+<P STYLE="margin-bottom: 0in">Returns true if it is safe to allocate
+a region with a given number of bits (or a region with a size of
+2<SUP>bits</SUP>).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *gcllSpaceNew(char *type, int
+bits);</P>
+<P STYLE="margin-bottom: 0in">Allocate a region of address space with
+a given type and a given number of bits.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *gcllSpaceLookup(char *type);</P>
+<P STYLE="margin-bottom: 0in">Lookup an allocated region for a given
+type.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *gcllSpaceType(void *ptr);</P>
+<P STYLE="margin-bottom: 0in">Returns the type name associated with
+the region in which the pointer resides.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int gcllSpaceBits(void *ptr);</P>
+<P STYLE="margin-bottom: 0in">Return the number of bits allocated to
+the region in which the pointer resides.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *gcllSpaceBase(void *ptr);</P>
+<P STYLE="margin-bottom: 0in">Return the base address of the region
+in which the pointer resides.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">s64 gcllSpaceOffset(void *ptr);</P>
+<P STYLE="margin-bottom: 0in">Return the offset from the base of the
+region in which the pointer resides.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *gcllSpaceWrap(char *type, s64
+offs);</P>
+<P STYLE="margin-bottom: 0in">Returns a pointer offs bytes from the
+start of the region with the given type.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2>Threads</H2>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int thAllocTls();</P>
+<P STYLE="margin-bottom: 0in">Allocate a new TLS variable. Note that
+BGBGC typically uses its own set of TLS variables built on-top of the
+OS-level TLS vars.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int thAllocTlsName(char *name, int sz);</P>
+<P STYLE="margin-bottom: 0in">Allocate a new TLS variable with a name
+and storage size.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void thFreeTls(int idx);</P>
+<P STYLE="margin-bottom: 0in">Free a TLS variable.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *thGetTlsValue(int idx);</P>
+<P STYLE="margin-bottom: 0in">Get the value of a TLS variable
+(assumes it is a pointer).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void thSetTlsValue(int idx, void *val);</P>
+<P STYLE="margin-bottom: 0in">Set the value of a TLS variable
+(assumes it is a pointers).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *thGetTlsPtr(int idx);</P>
+<P STYLE="margin-bottom: 0in">Get a pointer to a TLS variable.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *thThread(int (*fcn)(void *ptr),
+void *ptr);</P>
+<P STYLE="margin-bottom: 0in">Spawns a new thread given a pointer to
+its entry function and a pointer to be passed to the entry function.
+The new thread will terminate when the entry function returns.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *thMutex();</P>
+<P STYLE="margin-bottom: 0in">Allocate a new mutex object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void thLockMutex(void *p);</P>
+<P STYLE="margin-bottom: 0in">Lock a mutex.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int thTryLockMutex(void *p);</P>
+<P STYLE="margin-bottom: 0in">Try to lock a mutex, return status
+indicates whether or not the mutex was locked.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void thUnlockMutex(void *p);</P>
+<P STYLE="margin-bottom: 0in">Unlock a mutex.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void thFreeMutex(void *p);</P>
+<P STYLE="margin-bottom: 0in">Free a mutex.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *thFastMutex();</P>
+<P STYLE="margin-bottom: 0in">void thLockFastMutex(void *p);</P>
+<P STYLE="margin-bottom: 0in">int thTryLockFastMutex(void *p);</P>
+<P STYLE="margin-bottom: 0in">void thUnlockFastMutex(void *p);</P>
+<P STYLE="margin-bottom: 0in">void thFreeFastMutex(void *p);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Do the same, but for &ldquo;fast&rdquo;
+mutexes.</P>
+<P STYLE="margin-bottom: 0in">Fast mutexes exist as a result of an
+issue on Windows, namely that the OS provided mutexes are absurdly
+slow. As a result, I implemented custom mutexes which were a good
+deal faster.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void thSleep(int ms);</P>
+<P STYLE="margin-bottom: 0in">Sleep a certain number of milliseconds.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">thContext *thGetContext();</P>
+<P STYLE="margin-bottom: 0in">Get the thread context for the current
+thread.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int thGetTlsTlsW32();</P>
+<P STYLE="margin-bottom: 0in">Windows specific: Get the TLS index
+which refers to BGBGC's TLS variables.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void thWaitPtr(void *ptr);</P>
+<P STYLE="margin-bottom: 0in">Wait for a &ldquo;signal&rdquo; related
+to a given pointer.</P>
+<P STYLE="margin-bottom: 0in">This will cause the thread to sleep
+until a signal is generated for this pointer, which will in turn wake
+the thread (and any others waiting for the same pointer). This is
+used mostly for threads which are waiting for an activity to happen
+involving a particular object, such as adding a message to a queue.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void thSignalPtr(void *ptr);</P>
+<P STYLE="margin-bottom: 0in">Generate a signal related to a
+particular pointer in which to wake other threads.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2>Misc</H2>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void gc_init(void *base);</P>
+<P STYLE="margin-bottom: 0in">Original GC initialization function,
+where base is a pointer somewhere near the top of the stack for the
+main thread.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void gc_init2(int (*fcn)(void *ptr),
+void *ptr);</P>
+<P STYLE="margin-bottom: 0in">Alternative GC initialization function.
+This one differs mostly in that it will grab the calling thread
+(presumably the main thread) for its own use (as the GC monitor
+thread), and spawns a new thread (presumably the new main thread).
+The reason for this is mostly that this allows the GC to know a bit
+more about the &ldquo;main&rdquo; thread, which no longer has to be
+handled as a special case.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void gc_deinit();</P>
+<P STYLE="margin-bottom: 0in">Causes a GC tear-down.</P>
+<P STYLE="margin-bottom: 0in">This is needed with gc_init2() mostly
+because, otherwise, the application will not exit.</P>
+<P STYLE="margin-bottom: 0in">This function also serves to close the
+output log, &hellip;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void gcAddLogHook(void (*fcn)(char
+*str));</P>
+<P STYLE="margin-bottom: 0in">This allows other functions to
+intercept the GC logging functions, which may do something with it
+(such as keep track of it in an in-application console, &hellip;).
+This is mostly useful for Windows GUI applications, which don't have
+a nice attached console to look at (as output instead goes solely to
+the log file).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void gc_printf(char *str, ...);</P>
+<P STYLE="margin-bottom: 0in">This is printf() wrapper which allows
+redirecting plain printf commands (such as via a macro) to send
+output instead to the log file and to any log hooks. This was mostly
+added to the GC as there was no other particularly good place to add
+it at the time.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *BGBGC_GetTypeVTab(char *str);</P>
+<P STYLE="margin-bottom: 0in">Get the &ldquo;vtable&rdquo; pointer
+associated with a given object type. This is mostly used by BGBDY for
+its own internal uses.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void BGBGC_SetTypeVTab(char *str, void
+*p);</P>
+<P STYLE="margin-bottom: 0in">Set the &ldquo;vtable&rdquo; pointer
+associated with a given object type.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *BGBGC_GetObjVTab(void *p);</P>
+<P STYLE="margin-bottom: 0in">Get the &ldquo;vtable&rdquo; pointer
+associated with a given object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *BGBGC_AllocCons();</P>
+<P STYLE="margin-bottom: 0in">Allocate a cons cell. This is wrapped
+by BGBDY for implementing its own cons and list facilities.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void BGBGC_FreeCons(void *p);</P>
+<P STYLE="margin-bottom: 0in">Free a cons cell.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BGBGC_ConsP(void *p);</P>
+<P STYLE="margin-bottom: 0in">Returns 1 if the pointer points to a
+cons cell, otherwise it returns 0.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BGBGC_ScanRange(void **p, int cnt);</P>
+<P STYLE="margin-bottom: 0in">Scan a range of pointers for GC
+references (only valid during a garbage collection pass).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void BGBGC_AddMarkHandler(void
+(*fcn)());</P>
+<P STYLE="margin-bottom: 0in">Add a mark handler. These are usually
+called at the start of a GC pass and are responsible for telling the
+GC about any regions of memory they have which may contain
+references.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+</BODY>
+</HTML>

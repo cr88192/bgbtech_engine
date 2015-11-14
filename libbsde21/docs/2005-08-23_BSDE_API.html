@@ -1,0 +1,1710 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title></title>
+    
+</head>
+  <body>
+               
+<h1>BSDE Spec 0.02</h1>
+        Features that are <i><font color="#ff0000">RED</font></i> are incomplete/unimplemented.<br>
+       Features that are <i><font color="#ff00ff">PURPLE</font></i> are deprecated.<br>
+               
+<h2>Constants</h2>
+        Various properties will be assigned constant values.<br>
+   The exact meaning of a constant, when used, will depend on the context 
+it  is used in.<br>
+   <br>
+     
+<h4>Constant Ranges</h4>
+     
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+     <tbody>
+       <tr>
+         <td valign="top">Lower<br>
+         </td>
+         <td valign="top">Upper<br>
+         </td>
+         <td valign="top">Description<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">0<br>
+         </td>
+         <td valign="top">255<br>
+         </td>
+         <td valign="top">Small numbers with a context-defined meaning<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">256<br>
+         </td>
+         <td valign="top">8191<br>
+         </td>
+         <td valign="top">Reserved for 'officially defined' constants<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">8192<br>
+         </td>
+         <td valign="top">16383<br>
+         </td>
+         <td valign="top">Reserved for 'locally defined' constants (eg: for 
+ a particular implementation)<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">16384<br>
+         </td>
+         <td valign="top">32767<br>
+         </td>
+         <td valign="top">Reserved for experimental and/or dynamically assigned 
+ values<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">32768<br>
+         </td>
+         <td valign="top">65535<br>
+         </td>
+         <td valign="top">Larger set of context-defined numbers<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">65536+<br>
+         </td>
+         <td valign="top"><br>
+         </td>
+         <td valign="top">Invalid<br>
+         </td>
+       </tr>
+           
+  </tbody>   
+</table>
+   <br>
+   <br>
+   IO Type Modifiers<br>
+   &nbsp;&nbsp;&nbsp; I, integer;<br>
+   &nbsp;&nbsp;&nbsp; B, bool;<br>
+   &nbsp;&nbsp;&nbsp; F, float;<br>
+   &nbsp;&nbsp;&nbsp; V2/3/4, Vector of described length;<br>
+   &nbsp;&nbsp;&nbsp; M22/33/44, Matrix of described size;<br>
+   &nbsp;&nbsp;&nbsp; IV, integer vector.<br>
+                 
+<h3>Global Values</h3>
+        <br>
+                 
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+           <tbody>
+             <tr>
+               <td valign="top">Name<br>
+               </td>
+               <td valign="top">Value<br>
+               </td>
+               <td valign="top">Description<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_FALSE<br>
+               </td>
+               <td valign="top">0<br>
+               </td>
+               <td valign="top">Logical False Value passed to functions.<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_TRUE<br>
+               </td>
+               <td valign="top">1<br>
+               </td>
+               <td valign="top">Logical True Value passed to functions.<br>
+               </td>
+             </tr>
+                                   
+  </tbody>         
+</table>
+         <br>
+         <br>
+               
+<h3>Object Vector Properties</h3>
+        0x0100..0x011F<br>
+        <br>
+                 
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+           <tbody>
+             <tr>
+               <td valign="top">Name<br>
+               </td>
+               <td valign="top">Value<br>
+               </td>
+               <td valign="top">IO<br>
+             </td>
+             <td valign="top">Description<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_ORIGIN<br>
+   BSDE_ORIGIN_0<br>
+               </td>
+               <td valign="top">0x0100<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The origin for an object<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_VELOCITY<br>
+               </td>
+               <td valign="top">0x0101<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The linear velocity for an object<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_TORQUE<br>
+               </td>
+               <td valign="top">0x0102<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The torque at the center of mass for an object<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_ANGULAR_VELOCITY<br>
+               </td>
+               <td valign="top">0x0103<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The angular velocity at the center of mass<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_ROTATION<br>
+               </td>
+               <td valign="top">0x0104<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">A quaternion giving the rotation at the center
+  of   mass<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_MINS<br>
+               </td>
+               <td valign="top">0x0105<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The minimum extents for an AABB or OBB<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_MAXS<br>
+               </td>
+               <td valign="top">0x0106<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The maximum extents for an AABB or OBB<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_MASS_OFFSET<br>
+               </td>
+               <td valign="top">0x0107<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The offset of the center of mass relative to
+ the   origin for an object<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_INERTIA_TENSOR<br>
+               </td>
+               <td valign="top">0x0108<br>
+               </td>
+               <td valign="top">R/W, M33<br>
+             </td>
+             <td valign="top">A 3x3 matrix giving the distribution of mass
+ relative    to the center of mass for an object. This matrix is stored in
+I/m form.<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_DIRECTION<br>
+   BSDE_DIRECTION_0<br>
+               </td>
+               <td valign="top">0x0109<br>
+               </td>
+               <td valign="top">R/W, V3/4<br>
+             </td>
+             <td valign="top">The direction of orientation for an object/joint<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_ORIGIN_A<br>
+               </td>
+               <td valign="top">0x010A<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The origin on object A for a joint<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_ORIGIN_B<br>
+               </td>
+               <td valign="top">0x010B<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The object on object B for a joint<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_ORIGIN_RA<br>
+               </td>
+               <td valign="top">0x010C<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The origin on object A for a joint in object
+ A's   local space<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_ORIGIN_RB<br>
+               </td>
+               <td valign="top">0x010D<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The origin on object B for a joint in object
+ B's   local space<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_DIRECTION_A<br>
+               </td>
+               <td valign="top">0x010E<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">Axis on Object A<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_DIRECTION_B<br>
+               </td>
+               <td valign="top">0x010F<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">Axis on Object B<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_DIRECTION_RA<br>
+               </td>
+               <td valign="top">0x0110<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">Axis on Object A in local space<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_DIRECTION_RB<br>
+               </td>
+               <td valign="top">0x0111<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">Axis on Object B in local space<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_ROTATION_MATRIX<br>
+               </td>
+               <td valign="top">0x0112<br>
+               </td>
+               <td valign="top">R, M33<br>
+             </td>
+             <td valign="top">3x3 matrix giving rotation.<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top"><i><font color="#ff0000">BSDE_NORMAL</font></i><br>
+               </td>
+               <td valign="top">0x0113<br>
+               </td>
+               <td valign="top">V4<br>
+             </td>
+             <td valign="top">Normal vector<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_VERTICES<br>
+               </td>
+               <td valign="top">0x0114<br>
+               </td>
+               <td valign="top">R<br>
+             </td>
+             <td valign="top">A set of vertices for an object<br>
+               </td>
+             </tr>
+           <tr>
+             <td valign="top">BSDE_CONTACT_VELOCITY<br>
+             </td>
+             <td valign="top">0x0115<br>
+             </td>
+             <td valign="top">R/W<br>
+             </td>
+             <td valign="top">Velocity at contact points (walking, ...)<br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">BSDE_ACCELERATION<br>
+             </td>
+             <td valign="top">0x0116<br>
+             </td>
+             <td valign="top">R/W<br>
+             </td>
+             <td valign="top">Global acceleration at the center of mass<br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">BSDE_LOCAL_THRUST<br>
+             </td>
+             <td valign="top">0x0117<br>
+             </td>
+             <td valign="top">R/W<br>
+             </td>
+             <td valign="top">Local acceleration at the center of mass<br>
+             </td>
+           </tr>
+       <tr>
+         <td valign="top">BSDE_ORIGIN_1<br>
+         </td>
+         <td valign="top">0x0118<br>
+         </td>
+         <td valign="top">W<br>
+         </td>
+         <td valign="top">Second origin<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">BSDE_ORIGIN_2<br>
+         </td>
+         <td valign="top">0x0119<br>
+         </td>
+         <td valign="top">W<br>
+         </td>
+         <td valign="top">Third origin<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">BSDE_ORIGIN_3<br>
+         </td>
+         <td valign="top">0x011A<br>
+         </td>
+         <td valign="top">W<br>
+         </td>
+         <td valign="top">Fourth origin<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">BSDE_DIRECTION_1<br>
+         </td>
+         <td valign="top">0x011B<br>
+         </td>
+         <td valign="top">W<br>
+         </td>
+         <td valign="top">Second direction<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">BSDE_ORIGIN_123<br>
+         </td>
+         <td valign="top">0x011C<br>
+         </td>
+         <td valign="top">W<br>
+         </td>
+         <td valign="top">Set base origin and generate others<br>
+         </td>
+       </tr>
+                                   
+  </tbody>         
+</table>
+         <br>
+         <br>
+               
+<h3>Object Float Properties</h3>
+         0x0120..0x013F<br>
+        <br>
+                 
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+           <tbody>
+             <tr>
+               <td valign="top">Name<br>
+               </td>
+               <td valign="top">Value<br>
+               </td>
+               <td valign="top">IO<br>
+             </td>
+             <td valign="top">Description<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_HEIGHT<br>
+               </td>
+               <td valign="top">0x0120<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The height for an object<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top"> BSDE_RADIUS<br>
+               </td>
+               <td valign="top">0x0121<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The radius for an object<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">  BSDE_MASS<br>
+               </td>
+               <td valign="top">0x0122<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The mass for an object<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">   BSDE_VOLUME<br>
+               </td>
+               <td valign="top">0x0123<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The volume for an object<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">    BSDE_DENSITY<br>
+               </td>
+               <td valign="top">0x0124<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The density for an object<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">     BSDE_ELASTIC<br>
+               </td>
+               <td valign="top">0x0125<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The elastic value for object surfaces<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">      BSDE_FRICTION<br>
+               </td>
+               <td valign="top">0x0126<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The friction value for object surfaces<br>
+       Friction is presently defined as (roughly) f<sub>0</sub>f<sub>1</sub>v/(v<sup>2</sup>+1)<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">       BSDE_VISCOSITY<br>
+               </td>
+               <td valign="top">0x0127<br>
+               </td>
+               <td valign="top">R/W<br>
+             </td>
+             <td valign="top">The viscosity of a fluid<br>
+               </td>
+             </tr>
+       <tr>
+         <td valign="top"><font color="#ff00ff"><i>BSDE_CONTACT_POWER</i></font><br>
+         </td>
+         <td valign="top">0x0128<br>
+         </td>
+         <td valign="top">R/W<br>
+         </td>
+         <td valign="top">Power at contact point<br>
+         </td>
+       </tr>
+      <tr>
+        <td valign="top">BSDE_INERTIA_SCALAR<br>
+        </td>
+        <td valign="top">0x0129<br>
+        </td>
+        <td valign="top">R/W<br>
+        </td>
+        <td valign="top">A scalar representing the moment of inertia for
+an  object.<br>
+More specifically, this scalar represents I/m.<br>
+Behavior related to scalar vs tensor issues is undefined.<br>
+        </td>
+      </tr>
+                                   
+  </tbody>         
+</table>
+         <br>
+        <br>
+               
+<h3>Object Integer/Boolean Properties</h3>
+         0x0140..0x015F<br>
+        <br>
+                 
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+           <tbody>
+             <tr>
+               <td valign="top">Name<br>
+               </td>
+               <td valign="top">Value<br>
+               </td>
+               <td valign="top">IO<br>
+             </td>
+             <td valign="top">Description<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_SOLIDTYPE<br>
+               </td>
+               <td valign="top">0x0140<br>
+               </td>
+               <td valign="top">R<br>
+             </td>
+             <td valign="top">The solid-type for an object<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top"><i><font color="#ff00ff">BSDE_MOVEFLAGS</font></i><br>
+               </td>
+               <td valign="top">0x0141<br>
+               </td>
+               <td valign="top">R<br>
+             </td>
+             <td valign="top">A set of flags for the object<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_NOSPIN<br>
+               </td>
+               <td valign="top">0x0142<br>
+               </td>
+               <td valign="top">R/W, B<br>
+             </td>
+             <td valign="top">Object can't rotate<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_NOMOVE<br>
+               </td>
+               <td valign="top">0x0143<br>
+               </td>
+               <td valign="top">R/W, B<br>
+             </td>
+             <td valign="top">Object can't move<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_NOGRAVITY<br>
+               </td>
+               <td valign="top">0x0144<br>
+               </td>
+               <td valign="top">R/W, B<br>
+             </td>
+             <td valign="top">Object is uneffected by gravity<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_STATIC<br>
+               </td>
+               <td valign="top">0x0145<br>
+               </td>
+               <td valign="top">R/W, B<br>
+             </td>
+             <td valign="top">Object does not move and otherwise ignores
+physics<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top"><i><font color="#ff0000">BSDE_SEMISTATIC</font></i><br>
+               </td>
+               <td valign="top">0x0146<br>
+               </td>
+               <td valign="top">R/W, B<br>
+             </td>
+             <td valign="top">Object may move but otherwise ignores physics<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_FLUID<br>
+               </td>
+               <td valign="top">0x0147<br>
+               </td>
+               <td valign="top">R/W, B<br>
+             </td>
+             <td valign="top">Object is a fluid<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_NONSOLID<br>
+               </td>
+               <td valign="top">0x0148<br>
+               </td>
+               <td valign="top">R/W, B<br>
+             </td>
+             <td valign="top">Object is non-solid<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_TRIGGER<br>
+               </td>
+               <td valign="top">0x0149<br>
+               </td>
+               <td valign="top">R/W, B<br>
+             </td>
+             <td valign="top">Object is a trigger<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_NUM_FACES<br>
+               </td>
+               <td valign="top">0x014A<br>
+               </td>
+               <td valign="top">R<br>
+             </td>
+             <td valign="top">Number of faces for a hull or trimesh<br>
+               </td>
+             </tr>
+             <tr>
+               <td valign="top">BSDE_NUM_VERTICES<br>
+               </td>
+               <td valign="top">0x014B<br>
+               </td>
+               <td valign="top">R<br>
+             </td>
+             <td valign="top">Number of vertices for a hull or trimesh<br>
+               </td>
+             </tr>
+                                   
+  </tbody>         
+</table>
+         <br>
+        <br>
+               
+<h3>Object Integer Vector Properties</h3>
+         0x0160..0x017F<br>
+        <br>
+               
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+          <tbody>
+            <tr>
+              <td valign="top">Name<br>
+              </td>
+              <td valign="top">Value<br>
+              </td>
+              <td valign="top">IO<br>
+             </td>
+             <td valign="top">Description<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"> BSDE_FACE_VERTICES<br>
+              </td>
+              <td valign="top">0x0160<br>
+              </td>
+              <td valign="top">R<br>
+             </td>
+             <td valign="top">Vertex numbers for each vertex in each face<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"> BSDE_FACE_COUNTS<br>
+              </td>
+              <td valign="top">0x0161<br>
+              </td>
+              <td valign="top">R<br>
+             </td>
+             <td valign="top">The number of vertices for each face<br>
+              </td>
+            </tr>
+                               
+  </tbody>        
+</table>
+        <br>
+        <br>
+             
+<h3>  World Properties</h3>
+         0x0180..0x019F<br>
+        <br>
+               
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+          <tbody>
+            <tr>
+              <td valign="top">Name<br>
+              </td>
+              <td valign="top">Value<br>
+              </td>
+              <td valign="top">IO<br>
+             </td>
+             <td valign="top">Description<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"> BSDE_GRAVITY<br>
+              </td>
+              <td valign="top">0x0180<br>
+              </td>
+              <td valign="top">R/W, V3<br>
+             </td>
+             <td valign="top">Gravity Vector<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"> BSDE_MAXSTEP<br>
+              </td>
+              <td valign="top">0x0181<br>
+              </td>
+              <td valign="top">R/W, F<br>
+             </td>
+             <td valign="top">Maximal/Main internal timestep<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"> BSDE_MINSTEP<br>
+              </td>
+              <td valign="top">0x0182<br>
+              </td>
+              <td valign="top">R/W, F<br>
+             </td>
+             <td valign="top">Minimal internal timestep<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"> BSDE_MAXFRAME<br>
+              </td>
+              <td valign="top">0x0183<br>
+              </td>
+              <td valign="top">R/W, F<br>
+             </td>
+             <td valign="top">Maximum amount of time/frame<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"> BSDE_REALTIME<br>
+              </td>
+              <td valign="top">0x0184<br>
+              </td>
+              <td valign="top">R, F<br>
+             </td>
+             <td valign="top">Total amount of time step has been called with<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"> BSDE_WORLDTIME<br>
+              </td>
+              <td valign="top">0x0185<br>
+              </td>
+              <td valign="top">R, F<br>
+             </td>
+             <td valign="top">The approximate time within the simulation<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"><font color="#ff0000"> <i>BSDE_CONTACT_SELF</i></font><br>
+              </td>
+              <td valign="top">0x0186<br>
+              </td>
+              <td valign="top"><br>
+             </td>
+             <td valign="top">Array of self handles for contact array<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"> <i><font color="#ff0000">BSDE_CONTACT_OTHER</font></i><br>
+              </td>
+              <td valign="top">0x0187<br>
+              </td>
+              <td valign="top"><br>
+             </td>
+             <td valign="top">Array of other handles for contact array<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"><i><font color="#ff0000"> BSDE_CONTACT_ORIGIN</font></i><br>
+              </td>
+              <td valign="top">0x0188<br>
+              </td>
+              <td valign="top"><br>
+             </td>
+             <td valign="top">Vector for each contact point<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"><i><font color="#ff0000"> BSDE_CONTACT_NORMAL</font></i><br>
+              </td>
+              <td valign="top">0x0189<br>
+              </td>
+              <td valign="top"><br>
+             </td>
+             <td valign="top">Normal for each contact point<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"> BSDE_TRIGGER_ARRAY<br>
+              </td>
+              <td valign="top">0x018A<br>
+              </td>
+              <td valign="top">R/W, IV<br>
+             </td>
+             <td valign="top">Pairs of handles for trigger behavior<br>
+              </td>
+            </tr>
+          <tr>
+            <td valign="top">BSDE_COLLIDE_STRICT<br>
+            </td>
+            <td valign="top">0x018B<br>
+            </td>
+            <td valign="top">R/W, B<br>
+            </td>
+            <td valign="top">Attempt to avoid interpenetration whenever possible.<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">BSDE_FRAME_PASSES<br>
+            </td>
+            <td valign="top">0x018C<br>
+            </td>
+            <td valign="top">R/W, I<br>
+            </td>
+            <td valign="top">(implementation specific) Recommended number 
+of  passes  to take when simulating a frame.<br>
+            </td>
+          </tr>
+                               
+  </tbody>        
+</table>
+        <br>
+         <br>
+             
+<h3>  Solid Types</h3>
+        0x0210..0x023F<br>
+         <br>
+               
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+          <tbody>
+            <tr>
+              <td valign="top">Name<br>
+              </td>
+              <td valign="top">Value<br>
+              </td>
+              <td valign="top">Description<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"> BSDE_SOLID_OTHER<br>
+              </td>
+              <td valign="top">0x0210<br>
+              </td>
+              <td valign="top">"Other" solid types<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"> BSDE_SOLID_AABB<br>
+              </td>
+              <td valign="top">0x0211<br>
+              </td>
+              <td valign="top">Axis-Aligned-Bounding-Box<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"> BSDE_SOLID_OBB<br>
+              </td>
+              <td valign="top">0x0212<br>
+              </td>
+              <td valign="top">Oriented-Bounding-Box<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"> BSDE_SOLID_SPHERE<br>
+              </td>
+              <td valign="top">0x0213<br>
+              </td>
+              <td valign="top">Sphere<br>
+              </td>
+            </tr>
+          <tr>
+            <td valign="top">BSDE_SOLID_CYLINDER               </td>
+              <td valign="top">0x0214<br>
+              </td>
+              <td valign="top">Flat topped cylinder<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top">BSDE_SOLID_CCYLINDER<br>
+      BSDE_SOLID_CAPSULE<br>
+              </td>
+              <td valign="top">0x0215<br>
+              </td>
+              <td valign="top">Sphere capped cylinder<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"> BSDE_SOLID_PLANE<br>
+              </td>
+              <td valign="top">0x0216<br>
+              </td>
+              <td valign="top">Solid Plane<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"><i><font color="#ff0000"> BSDE_SOLID_TRIMESH</font></i><br>
+              </td>
+              <td valign="top">0x0217<br>
+              </td>
+              <td valign="top">Triangular Mesh<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"> BSDE_SOLID_HULL<br>
+              </td>
+              <td valign="top">0x0218<br>
+              </td>
+              <td valign="top">Convex Hull<br>
+              </td>
+            </tr>
+            <tr>
+              <td valign="top"> BSDE_SOLID_BSP<br>
+              </td>
+              <td valign="top">0x0219<br>
+              </td>
+              <td valign="top">BSP Tree<br>
+              </td>
+            </tr>
+                               
+  </tbody>        
+</table>
+        <br>
+         <br>
+             
+<h3>  Joint Types</h3>
+        0x0240..0x025F<br>
+         <br>
+             
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+         <tbody>
+           <tr>
+             <td valign="top">Name<br>
+             </td>
+             <td valign="top">Value<br>
+             </td>
+             <td valign="top">Description<br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_JOINT_OTHER<br>
+             </td>
+             <td valign="top">0x0240<br>
+             </td>
+             <td valign="top">"Other" joint type<br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_JOINT_BALL<br>
+             </td>
+             <td valign="top">0x0241<br>
+             </td>
+             <td valign="top">Keeps Joint Origins together<br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_JOINT_HINGE<br>
+             </td>
+             <td valign="top">0x0242<br>
+             </td>
+             <td valign="top">Works like a ball, but also keeps direction 
+vectors    together<br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top"><font color="#ff0000">  <i>BSDE_JOINT_SLIDER</i></font><br>
+             </td>
+             <td valign="top">0x0243<br>
+             </td>
+             <td valign="top">Allows sliding along an axis<br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_JOINT_UNIVERSAL<br>
+             </td>
+             <td valign="top">0x0244<br>
+             </td>
+             <td valign="top">Works like a ball, but keeps direction vectors
+  at  90 degrees<br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top"><font color="#ff0000">  <i>BSDE_JOINT_FIXED</i></font><br>
+             </td>
+             <td valign="top">0x0245<br>
+             </td>
+             <td valign="top">"Welds" objects together<br>
+             </td>
+           </tr>
+       <tr>
+         <td valign="top"><font color="#ff0000"><i>BSDE_JOINT_ELASTIC</i></font><br>
+         </td>
+         <td valign="top">0x0246<br>
+         </td>
+         <td valign="top">Pulls joint origins together with a defined force 
+ when the distance exceeds the radius. Attenuation factors effect the force: 
+ f=Ad<sup>2</sup>+Bd+C<br>
+         </td>
+       </tr>
+                           
+  </tbody>       
+</table>
+       <br>
+  <br>
+         
+<h3>Joint-Specific Properties</h3>
+  0x0260..0x027F<br>
+   
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+    <tbody>
+      <tr>
+        <td valign="top">Name<br>
+        </td>
+        <td valign="top">Value<br>
+        </td>
+        <td valign="top">IO<br>
+        </td>
+        <td valign="top">Description<br>
+        </td>
+      </tr>
+       <tr>
+         <td valign="top">BSDE_STRENGTH<br>
+   BSDE_STRENGTH_0<br>
+         </td>
+         <td valign="top">0x0260<br>
+         </td>
+         <td valign="top">R/W, F<br>
+         </td>
+         <td valign="top">The strength of a force/joint constraint<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">BSDE_STRENGTH_1<br>
+         </td>
+         <td valign="top">0x0261<br>
+         </td>
+         <td valign="top">R/W, F<br>
+         </td>
+         <td valign="top">Second strength<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">BSDE_STRENGTH_2<br>
+         </td>
+         <td valign="top">0x0262<br>
+         </td>
+         <td valign="top">R/W, F<br>
+         </td>
+         <td valign="top">Third strength<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">BSDE_STRENGTH_3<br>
+         </td>
+         <td valign="top">0x0263<br>
+         </td>
+         <td valign="top">R/W, F<br>
+         </td>
+         <td valign="top">Fourth strength<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">BSDE_CONSTANT_ATTENUATION<br>
+         </td>
+         <td valign="top">0x0264<br>
+         </td>
+         <td valign="top">R/W, F<br>
+         </td>
+         <td valign="top">Constant Attenuation (D)<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">BSDE_LINEAR_ATTENUATION<br>
+         </td>
+         <td valign="top">0x0265<br>
+         </td>
+         <td valign="top">R/W, F<br>
+         </td>
+         <td valign="top">Linear Attenuation (C)<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">BSDE_QUADRATIC_ATTENUATION<br>
+         </td>
+         <td valign="top">0x0266<br>
+         </td>
+         <td valign="top">R/W, F<br>
+         </td>
+         <td valign="top">Quadratic Attenuation (B)<br>
+         </td>
+       </tr>
+    <tr>
+      <td valign="top">BSDE_CUBIC_ATTENUATION<br>
+      </td>
+      <td valign="top">0x0267<br>
+      </td>
+      <td valign="top">R/W, F<br>
+      </td>
+      <td valign="top">Cubic Attentuation (A)<br>
+   Together these form a cubic: Ax<sup>3</sup>+Bx<sup>2</sup>+Cx+D<br>
+      </td>
+    </tr>
+   
+  </tbody>  
+</table>
+  <br>
+  <br>
+             
+<h3><i><font color="#ff0000">Data Types</font></i></h3>
+       0x0280..0x02BF<br>
+         <br>
+             
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+         <tbody>
+           <tr>
+             <td valign="top">Name<br>
+             </td>
+             <td valign="top">Value<br>
+             </td>
+             <td valign="top">Description<br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_BYTE<br>
+             </td>
+             <td valign="top">0x0280<br>
+             </td>
+             <td valign="top">Signed byte value<br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_UNSIGNED_BYTE<br>
+             </td>
+             <td valign="top">0x0281<br>
+             </td>
+             <td valign="top">Unsigned byte value<br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">   BSDE_SHORT<br>
+             </td>
+             <td valign="top">0x0282<br>
+             </td>
+             <td valign="top">Signed short<br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">    BSDE_UNSIGNED_SHORT<br>
+             </td>
+             <td valign="top">0x0283<br>
+             </td>
+             <td valign="top">...<br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">     BSDE_INT<br>
+             </td>
+             <td valign="top">0x0284<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">      BSDE_UNSIGNED_INT<br>
+             </td>
+             <td valign="top">0x0285<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">       BSDE_FLOAT<br>
+             </td>
+             <td valign="top">0x0286<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">        BSDE_DOUBLE<br>
+             </td>
+             <td valign="top">0x0287<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_2_BYTES<br>
+             </td>
+             <td valign="top">0x0288<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_3_BYTES<br>
+             </td>
+             <td valign="top">0x0289<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_4_BYTES<br>
+             </td>
+             <td valign="top">0x028A<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">BSDE_2_SHORTS<br>
+             </td>
+             <td valign="top">0x028B<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">BSDE_3_SHORTS<br>
+             </td>
+             <td valign="top">0x028C<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">BSDE_4_SHORTS<br>
+             </td>
+             <td valign="top">0x028D<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_2_INTS<br>
+             </td>
+             <td valign="top">0x028E<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_3_INTS<br>
+             </td>
+             <td valign="top">0x028F<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_4_INTS<br>
+             </td>
+             <td valign="top">0x0290<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_2_FLOATS<br>
+             </td>
+             <td valign="top">0x0291<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_3_FLOATS<br>
+             </td>
+             <td valign="top">0x0292<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_4_FLOATS<br>
+             </td>
+             <td valign="top">0x0293<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_2_DOUBLES<br>
+             </td>
+             <td valign="top">0x0294<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_3_DOUBLES<br>
+             </td>
+             <td valign="top">0x0295<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_4_DOUBLES<br>
+             </td>
+             <td valign="top">0x0296<br>
+             </td>
+             <td valign="top"><br>
+             </td>
+           </tr>
+                           
+  </tbody>       
+</table>
+       <br>
+       <br>
+             
+<h3>  Construction Related</h3>
+       0x02C0..0x02FF<br>
+       <br>
+             
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+         <tbody>
+           <tr>
+             <td valign="top">Name<br>
+             </td>
+             <td valign="top">Value<br>
+             </td>
+             <td valign="top">Description<br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_BSP_LEAF<br>
+             </td>
+             <td valign="top">0x02C0<br>
+             </td>
+             <td valign="top">BSP Leaf<br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_BSP_NODE<br>
+             </td>
+             <td valign="top">0x02C1<br>
+             </td>
+             <td valign="top">BSP Node<br>
+             </td>
+           </tr>
+           <tr>
+             <td valign="top">  BSDE_BSP_FACE<br>
+             </td>
+             <td valign="top">0x02C2<br>
+             </td>
+             <td valign="top">BSP Face<br>
+             </td>
+           </tr>
+                           
+  </tbody>       
+</table>
+       <br>
+       <br>
+             
+<h2>Functions</h2>
+             
+<h3>General</h3>
+   void bsdeSRand(bsdeUInt seed);<br>
+    void bsdeSRand2(bsdeUInt seed1, bsdeUInt seed2);<br>
+    <br>
+    Set seed values for the random number generators.<br>
+    If the initial seeds are not set, then random number generation will
+use   some default seed instead or will otherwise be initialized in an implementation
+  defined manner.<br>
+    If these are to be used, they should be called before the first call
+to  bsdeNewWorld.<br>
+    These may be no-op if the implementation does not use an RNG, or if some 
+ other condition exists.<br>
+    <br>
+   char *bsdeGetString(int str);<br>
+   <br>
+   Get a null-terminated string describing some aspect of the implementation.<br>
+     
+<table cellpadding="2" cellspacing="2" border="1" width="100%">
+     <tbody>
+       <tr>
+         <td valign="top">Name<br>
+         </td>
+         <td valign="top">Value<br>
+         </td>
+         <td valign="top">Description<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">BSDE_NULL<br>
+         </td>
+         <td valign="top">0<br>
+         </td>
+         <td valign="top">An empty string.<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">BSDE_CREATOR<br>
+         </td>
+         <td valign="top">1<br>
+         </td>
+         <td valign="top">The name of the creator of this implementation.<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">BSDE_ENGINE<br>
+         </td>
+         <td valign="top">2<br>
+         </td>
+         <td valign="top">The name of the implementation.<br>
+   This should fairly uniquely identify the implementation and should not 
+change  between implementation versions.<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">BSDE_ENGINE_VER<br>
+         </td>
+         <td valign="top">3<br>
+         </td>
+         <td valign="top">The version of the implementation.<br>
+   If one engine has multiple varieties, (for example, a standalone and networked
+  version, or a software and hw-accel version), these should be encoded in 
+ this string, along with any other info that is expected to vary.<br>
+   The exact structure and meaning of the contents of this string may depend 
+ on the implementation.<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">BSDE_VERSION<br>
+         </td>
+         <td valign="top">4<br>
+         </td>
+         <td valign="top">The newest version of the specification the implementation 
+ conforms to.<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">BSDE_EXTENSIONS<br>
+         </td>
+         <td valign="top">5<br>
+         </td>
+         <td valign="top">A space seperated list of known extensions.<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">Reserved<br>
+         </td>
+         <td valign="top">6 to 127<br>
+         </td>
+         <td valign="top">A set of currently reserved string numbers.<br>
+         </td>
+       </tr>
+       <tr>
+         <td valign="top">Implementation Defined<br>
+         </td>
+         <td valign="top">128 to 255<br>
+         </td>
+         <td valign="top">A set of implementation specific strings.<br>
+         </td>
+       </tr>
+           
+  </tbody>   
+</table>
+   <br>
+   The returned value for any unknown string number is to be NULL.<br>
+   <br>
+     
+<h3>World</h3>
+       <br>
+   int bsdeNewWorld();<br>
+       Create a new world.<br>
+       At least a single default world is needed for the simulation.<br>
+       Each world is completely seperate. It is not possible for objects
+located    in different worlds to interact, and handles related to objects
+in one world   are invalid in another (or may refer to a different object).<br>
+       <br>
+         void bsdeBindWorld(int i);<br>
+       Set the current world.<br>
+       Any objects or joints created will be created within the context of
+ the   current world.<br>
+       <br>
+         void bsdeStepWorld(double dt);<br>
+       Step the world by a certain amount of time.<br>
+       <br>
+       double bsdeGetWorldAttrF(int var);<br>
+         void bsdeSetWorldAttrF(int var, double val);<br>
+         int bsdeGetWorldAttrI(int var);<br>
+         void bsdeSetWorldAttrI(int var, int val);<br>
+         void bsdeGetWorldAttrFV(int var, float *val, int n);<br>
+         void bsdeSetWorldAttrFV(int var, float *val, int n);<br>
+         void bsdeGetWorldAttrDV(int var, double *val, int n);<br>
+         void bsdeSetWorldAttrDV(int var, double *val, int n);<br>
+       <br>
+       Get/Set world attributes.<br>
+       For vector types, a count is passed indicating the size of the vector
+  being  get/set.<br>
+       <br>
+             
+<h3>Triggers</h3>
+         int *bsdeGetTriggerArray();<br>
+         int bsdeGetTriggerArrayPos();<br>
+         void bsdeResetTriggerArray();<br>
+         void bsdeSetTriggerArray(int *arr, int num);<br>
+       <br>
+       Get/Set the trigger array.<br>
+       The trigger array is used for reporting contact between objects that 
+ are   marked as triggers, and is represented as an array of integer pairs 
+ (the  first holding 'self', the other, 'other').<br>
+       For each trigger there will be 1 entry for each object it makes contact
+   with.<br>
+       <br>
+       Reseting the trigger array position sets it to be 0, meaning that
+the   array  can be refilled.<br>
+       Each world will have a seperate trigger array.<br>
+       <br>
+             
+<h3>Objects/Solids</h3>
+         int bsdeNewAABB(double mx, double my, double mz,double nx, double
+ ny,   double  nz);<br>
+         int bsdeNewOBB(double mx, double my, double mz,double nx, double 
+ny,   double   nz);<br>
+         int bsdeNewSphere(double radius);<br>
+         int bsdeNewCylinder(double height, double radius);<br>
+         int bsdeNewCappedCylinder(double height, double radius);<br>
+         int bsdeNewPlane(double x, double y, double z, double d);<br>
+         int bsdeNewHullF(float *norms, int n);<br>
+         int bsdeNewHullD(double *norms, int n);<br>
+       int bsdeNewTriMeshF(float *vecs, int *tris, int nv, int nt);<br>
+   int bsdeNewTriMeshD(double *vecs, int *tris, int nv, int nt);<br>
+   <br>
+       Create an object/solid of the specified type.<br>
+       Note that OBBs are currently required to be centered with their origins.<br>
+       For planes, d points in the positive direction along the normal.<br>
+       Hulls are passed as arrays of 4 values comprising each plane, likewise,
+   d points in the positive direction of the normal.<br>
+       <br>
+   TriMeshes are passed as 2 arrays, 1 of vertices, and the other of triangles. 
+ Each vertex occupies 3 values, and vertex indices start at 0.<br>
+   <br>
+         void bsdeHide(int obj);<br>
+         void bsdeUnhide(int obj);<br>
+   <br>
+       Hide or Unhide an object.<br>
+       A hidden object will be ignored in the simulation of the world.<br>
+       <br>
+   void bsdeDestroy(int obj);<br>
+   Remove an object from the simulation and free the memory used by the object.<br>
+   <br>
+         double bsdeGetAttrF(int obj, int var);<br>
+         void bsdeSetAttrF(int obj, int var, double val);<br>
+         int bsdeGetAttrI(int obj, int var);<br>
+         void bsdeSetAttrI(int obj, int var, int val);<br>
+         void bsdeGetAttrFV(int obj, int var, float *val, int n);<br>
+         void bsdeSetAttrFV(int obj, int var, float *val, int n);<br>
+         void bsdeGetAttrDV(int obj, int var, double *val, int n);<br>
+         void bsdeSetAttrDV(int obj, int var, double *val, int n);<br>
+         void bsdeGetAttrIV(int obj, int var, int *val, int n);<br>
+         void bsdeSetAttrIV(int obj, int var, int *val, int n);<br>
+       <br>
+       Get/Set object attributes.<br>
+       For vector types, a count is passed indicating the size of the vector
+  being  get/set.<br>
+       <br>
+             
+<h3>Joints</h3>
+       <br>
+         int bsdeNewJoint(int type);<br>
+         void bsdeBindJointSolids(int obj, int obja, int objb);<br>
+         double bsdeGetJointAttrF(int obj, int var);<br>
+         void bsdeSetJointAttrF(int obj, int var, double val);<br>
+         int bsdeGetJointAttrI(int obj, int var);<br>
+         void bsdeSetJointAttrI(int obj, int var, int val);<br>
+         void bsdeGetJointAttrFV(int obj, int var, float *val, int n);<br>
+         void bsdeSetJointAttrFV(int obj, int var, float *val, int n);<br>
+         void bsdeGetJointAttrDV(int obj, int var, double *val, int n);<br>
+         void bsdeSetJointAttrDV(int obj, int var, double *val, int n);<br>
+         <br>
+             
+<h3>Object Construction</h3>
+       void bsdeBegin(int type);<br>
+         int bsdeEnd();<br>
+       <br>
+       Begin/End construction of something.<br>
+       These may be nested for the construction of compound objects.<br>
+       At the toplevel, bsdeEnd() will return the handle of the constructed 
+ object.<br>
+       <br>
+       At the time of this writing only BSP trees may be created in this
+way.<br>
+       <br>
+         void bsdeVertex3f(double x, double y, double z);<br>
+         void bsdeVertex4f(double x, double y, double z, double w);<br>
+         void bsdeVertex3d(double x, double y, double z);<br>
+         void bsdeVertex4d(double x, double y, double z, double w);<br>
+         void bsdeVertex3fv(float *v);<br>
+         void bsdeVertex4fv(float *v);<br>
+         void bsdeVertex3dv(double *v);<br>
+         void bsdeVertex4dv(double *v);<br>
+         void bsdeNormal3f(double x, double y, double z);<br>
+         void bsdeNormal4f(double x, double y, double z, double w);<br>
+         void bsdeNormal3d(double x, double y, double z);<br>
+         void bsdeNormal4d(double x, double y, double z, double w);<br>
+         void bsdeNormal3fv(float *v);<br>
+         void bsdeNormal4fv(float *v);<br>
+         void bsdeNormal3dv(double *v);<br>
+         void bsdeNormal4dv(double *v);<br>
+       <br>
+       Pass a vertex or normal to be used in constructing an object.<br>
+       Note that normals are treated like vertices, and not like an implicit
+  property  applied to vertices.<br>
+       The exact meaning of a vertex or normal is context dependent.<br>
+       <br>
+         void bsdeAttrI(int var, int val);<br>
+         void bsdeAttrF(int var, double val);<br>
+         void bsdeAttrIV(int var, int *val, int num);<br>
+         void bsdeAttrFV(int var, float *val, int num);<br>
+         void bsdeAttrDV(int var, double *val, int num);<br>
+         <br>
+          Pass an attribute to be used in object construction.<br>
+       The meaning of an attribute may depend on context.<br>
+       <br>
+       <br>
+         <br>
+   
+</body>
+</html>

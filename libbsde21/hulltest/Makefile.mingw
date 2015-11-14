@@ -1,0 +1,44 @@
+US_LDFLAGS=-L. -lgdi32 -lopengl32 -lglaux -lglu32 \
+	-luser32 -lcomdlg32 -lwinmm -lole32 -lrpcrt4 -lkernel32
+
+GLSTUB_SRCS = \
+	gl_win.c \
+	input.c \
+	mouse_win.c \
+	stub_w32.c \
+	prim3d2.c \
+	gl_draw.c
+
+BSDE_APP2_SRCS = \
+	bsde_app2.c
+
+GLSTUB_OBJS = $(GLSTUB_SRCS:.c=.o)
+BSDE_APP2_OBJS = $(BSDE_APP2_SRCS:.c=.o)
+
+CFLAGS = -Werror-implicit-function-declaration -Iinclude -I. -g -pg
+# CFLAGS = -Werror-implicit-function-declaration -Iinclude -O3
+
+all: bsde_app2
+
+FORCE:
+
+%.o: %.c
+	gcc $(CFLAGS) -c -o $@ $<
+
+autohead: autohead.c
+	gcc -o autohead autohead.c
+
+glstub_auto.h: autohead $(GLSTUB_SRCS)
+	autohead $(GLSTUB_SRCS) > glstub_auto.h
+
+
+bsde_app2: glstub_auto.h $(GLSTUB_OBJS) $(BSDE_APP2_OBJS)
+	gcc -g -pg -o bsde_app2 $(GLSTUB_OBJS) $(BSDE_APP2_OBJS) \
+		$(US_LDFLAGS)
+
+clean:
+	rm -rf bsde_auto.h bsde_funcs.h
+	rm -rf $(shell find -name \*.o)
+	rm -rf $(shell find -name \*.a)
+	rm -rf $(shell find -name \*.obj)
+	rm -rf $(shell find -name \*.lib)

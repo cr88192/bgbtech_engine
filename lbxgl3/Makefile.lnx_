@@ -1,0 +1,99 @@
+CFLAGS=-Werror-implicit-function-declaration -I. -Iinclude \
+	-I../build/include
+
+LDFLAGS=-lpdgl -lpdscript -lpdnet -lpdlib
+
+all: liblbxgl2.a
+
+FORCE:
+
+%.o: %.c
+	gcc $(CFLAGS) -g -pg -c -o $@ $<
+
+LBXGL_OBJS = \
+	geom/prim3d1.o \
+	geom/prim3d2.o \
+	geom/draw2.o \
+	geom/texture.o \
+	geom/camera.o \
+	geom/skyplane.o \
+	geom/skycube.o \
+	geom/brush.o \
+	geom/mesh.o \
+	geom/shader.o \
+	\
+	geom/bs1_if.o \
+	\
+	format/sprite.o \
+	format/asm.o \
+	\
+	format/fmt_qmdl.o \
+	format/fmt_qmd3.o \
+	format/fmt_smd.o \
+	format/fmt_ac3d.o \
+	format/fmt_acxml.o \
+	\
+	skel/skel_mesh.o \
+	skel/skel_base.o \
+	skel/skel_util.o \
+	skel/skel_smd.o \
+	\
+	entity2/entity.o \
+	entity2/physics.o \
+	entity2/bs1if.o \
+	entity21/sentity.o \
+	\
+	bsp/bsp_entity.o \
+	bsp/bsp_draw.o \
+	bsp/bsp_dlight.o \
+	bsp/bsp_tree.o \
+	bsp/bsp_util.o \
+	bsp/bsp_fileio.o \
+	bsp/itcf_bsp.o \
+	bsp/bsp_bsde.o
+
+DEL_OBJS = \
+	math/mathlib_f.o \
+	math/mathlib_d.o \
+	math/math_quat.o \
+	math/math_mf.o \
+	math/math_plane.o \
+	math/math_v3f.o \
+	math/math_vnf.o \
+	\
+	entity/event.o \
+	entity/entity.o \
+	entity/sequence.o \
+	entity/query.o \
+	entity/ent_class.o \
+	\
+	bsp/bsp_entity.o \
+	bsp/bsp_draw.o \
+	bsp/bsp_tree.o \
+	bsp/bsp_util.o \
+	bsp/bsp_fileio.o \
+	bsp/itcf_bsp.o \
+
+LBXGL_SRCS = \
+	$(LBXGL_OBJS:.o=.c)
+
+LBXGL_HDRS = $(shell find include -name \*.h)
+
+
+autohead$(EXE): autohead.c
+	gcc -o autohead$(EXE) autohead.c
+
+include/lbxgl2/auto.h: autohead$(EXE) $(LBXGL_SRCS)
+	./autohead$(EXE) $(LBXGL_SRCS) > include/lbxgl2/auto.h
+include/lbxgl2/ty_auto.h: include/lbxgl2/types.txt
+	adler32 -header include/lbxgl2/types.txt include/lbxgl2/ty_auto.h
+
+liblbxgl2.a: include/lbxgl2/auto.h include/lbxgl2/ty_auto.h $(LBXGL_OBJS)
+	ar -cr liblbxgl2.a $(LBXGL_OBJS)
+
+liblbxgl2.html: $(LBXGL_SRCS)
+	bgbdoc liblbxgl2.html $(LBXGL_SRCS) $(LBXGL_HDRS)
+
+clean:
+	rm -rf $(shell find -name \*.o)
+	rm -rf $(shell find -name \*.a)

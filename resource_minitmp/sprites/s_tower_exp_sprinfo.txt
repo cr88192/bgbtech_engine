@@ -1,0 +1,13 @@
+$sprite 12
+$spr_frame 0  24 24  48 48  sprites/planet/tow_exp0z.png
+$spr_frame 1  24 24  48 48  sprites/planet/tow_exp0.png
+$spr_frame 2  24 24  48 48  sprites/planet/tow_exp1.png
+$spr_frame 3  24 24  48 48  sprites/planet/tow_exp2.png
+$spr_frame 4  24 24  48 48  sprites/planet/tow_exp3.png
+$spr_frame 5  24 24  48 48  sprites/planet/tow_exp4.png
+$spr_frame 6  24 24  48 48  sprites/planet/tow_exp5.png
+$spr_frame 7  24 24  48 48  sprites/planet/tow_exp6.png
+$spr_frame 8  24 24  48 48  sprites/planet/tow_exp7.png
+$spr_frame 9  24 24  48 48  sprites/planet/tow_exp8.png
+$spr_frame 10  24 24  48 48  sprites/planet/tow_exp8.png
+$spr_frame 11  24 24  48 48  sprites/planet/tow_exp8.png

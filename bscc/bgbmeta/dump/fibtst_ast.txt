@@ -1,0 +1,352 @@
+<module>
+  <types/>
+  <structs/>
+  <body>
+    <defun name="fib" fn="fibtst.c" ln="15">
+      <type flags="0" ind="0" name="int"/>
+      <args>
+        <var name="x">
+          <type flags="0" ind="0" name="int"/>
+        </var>
+      </args>
+      <body>
+        <begin>
+          <if fn="fibtst.c" ln="17">
+            <cond>
+              <binary op="&gt;">
+                <left>
+                  <ref name="x"/>
+                </left>
+                <right>
+                  <int value="2"/>
+                </right>
+              </binary>
+            </cond>
+            <then>
+              <return fn="fibtst.c" ln="17">
+                <value>
+                  <binary op="+">
+                    <left>
+                      <funcall name="fib">
+                        <args>
+                          <binary op="-">
+                            <left>
+                              <ref name="x"/>
+                            </left>
+                            <right>
+                              <int value="1"/>
+                            </right>
+                          </binary>
+                        </args>
+                      </funcall>
+                    </left>
+                    <right>
+                      <funcall name="fib">
+                        <args>
+                          <binary op="-">
+                            <left>
+                              <ref name="x"/>
+                            </left>
+                            <right>
+                              <int value="2"/>
+                            </right>
+                          </binary>
+                        </args>
+                      </funcall>
+                    </right>
+                  </binary>
+                </value>
+              </return>
+            </then>
+          </if>
+          <return fn="fibtst.c" ln="18">
+            <value>
+              <int value="1"/>
+            </value>
+          </return>
+        </begin>
+      </body>
+    </defun>
+    <defun name="hash_str" fn="fibtst.c" ln="57">
+      <type flags="0" ind="0" name="int"/>
+      <args>
+        <var name="s">
+          <type flags="0" ind="1" name="char"/>
+        </var>
+      </args>
+      <body>
+        <begin>
+          <vars fn="fibtst.c" ln="59">
+            <var name="i">
+              <type flags="0" ind="0" name="int"/>
+            </var>
+          </vars>
+          <assign fn="fibtst.c" ln="61">
+            <left>
+              <ref name="i"/>
+            </left>
+            <right>
+              <int value="0"/>
+            </right>
+          </assign>
+          <while fn="fibtst.c" ln="62">
+            <cond>
+              <unary op="*">
+                <value>
+                  <ref name="s"/>
+                </value>
+              </unary>
+            </cond>
+            <body>
+              <assign fn="fibtst.c" ln="62">
+                <left>
+                  <ref name="i"/>
+                </left>
+                <right>
+                  <binary op="+">
+                    <left>
+                      <binary op="*">
+                        <left>
+                          <ref name="i"/>
+                        </left>
+                        <right>
+                          <int value="251"/>
+                        </right>
+                      </binary>
+                    </left>
+                    <right>
+                      <unary op="*">
+                        <value>
+                          <postinc>
+                            <expr>
+                              <ref name="s"/>
+                            </expr>
+                          </postinc>
+                        </value>
+                      </unary>
+                    </right>
+                  </binary>
+                </right>
+              </assign>
+            </body>
+          </while>
+          <return fn="fibtst.c" ln="63">
+            <value>
+              <binary op="&amp;">
+                <left>
+                  <ref name="i"/>
+                </left>
+                <right>
+                  <int value="0xFFF"/>
+                </right>
+              </binary>
+            </value>
+          </return>
+        </begin>
+      </body>
+    </defun>
+    <defun name="bscc_main" fn="fibtst.c" ln="66">
+      <type flags="0" ind="0" name="int"/>
+      <args/>
+      <body>
+        <begin>
+          <vars fn="fibtst.c" ln="68">
+            <var name="li">
+              <type flags="0" ind="0" name="llong"/>
+            </var>
+          </vars>
+          <vars fn="fibtst.c" ln="69">
+            <var name="i">
+              <type flags="0" ind="0" name="int"/>
+            </var>
+            <var name="t">
+              <type flags="0" ind="0" name="int"/>
+            </var>
+            <var name="dt">
+              <type flags="0" ind="0" name="int"/>
+            </var>
+          </vars>
+          <funcall name="printf" fn="fibtst.c" ln="71">
+            <args>
+              <string value="test&#10;"/>
+            </args>
+          </funcall>
+          <assign fn="fibtst.c" ln="73">
+            <left>
+              <ref name="t"/>
+            </left>
+            <right>
+              <funcall name="clock">
+                <args/>
+              </funcall>
+            </right>
+          </assign>
+          <assign fn="fibtst.c" ln="74">
+            <left>
+              <ref name="i"/>
+            </left>
+            <right>
+              <funcall name="fib">
+                <args>
+                  <int value="36"/>
+                </args>
+              </funcall>
+            </right>
+          </assign>
+          <assign fn="fibtst.c" ln="75">
+            <left>
+              <ref name="dt"/>
+            </left>
+            <right>
+              <binary op="-">
+                <left>
+                  <funcall name="clock">
+                    <args/>
+                  </funcall>
+                </left>
+                <right>
+                  <ref name="t"/>
+                </right>
+              </binary>
+            </right>
+          </assign>
+          <funcall name="printf" fn="fibtst.c" ln="77">
+            <args>
+              <string value="fibtst %d %d&#10;"/>
+              <ref name="i"/>
+              <ref name="dt"/>
+            </args>
+          </funcall>
+          <funcall name="printf" fn="fibtst.c" ln="79">
+            <args>
+              <string value="hashtst %d&#10;"/>
+              <funcall name="hash_str">
+                <args>
+                  <string value="foobarbaz"/>
+                </args>
+              </funcall>
+            </args>
+          </funcall>
+          <assign fn="fibtst.c" ln="81">
+            <left>
+              <ref name="li"/>
+            </left>
+            <right>
+              <int value="0"/>
+            </right>
+          </assign>
+          <if fn="fibtst.c" ln="83">
+            <cond>
+              <unary op="!">
+                <value>
+                  <ref name="li"/>
+                </value>
+              </unary>
+            </cond>
+            <then>
+              <funcall name="printf" fn="fibtst.c" ln="83">
+                <args>
+                  <string value="LI-Z&#10;"/>
+                </args>
+              </funcall>
+            </then>
+          </if>
+          <return fn="fibtst.c" ln="87">
+            <value>
+              <int value="0"/>
+            </value>
+          </return>
+        </begin>
+      </body>
+    </defun>
+    <defun name="main" fn="fibtst.c" ln="90">
+      <type flags="0" ind="0" name="int"/>
+      <args/>
+      <body>
+        <begin>
+          <vars fn="fibtst.c" ln="92">
+            <var name="i">
+              <type flags="0" ind="0" name="int"/>
+            </var>
+            <var name="t">
+              <type flags="0" ind="0" name="int"/>
+            </var>
+            <var name="dt">
+              <type flags="0" ind="0" name="int"/>
+            </var>
+          </vars>
+          <assign fn="fibtst.c" ln="94">
+            <left>
+              <ref name="t"/>
+            </left>
+            <right>
+              <funcall name="clock">
+                <args/>
+              </funcall>
+            </right>
+          </assign>
+          <assign fn="fibtst.c" ln="98">
+            <left>
+              <ref name="i"/>
+            </left>
+            <right>
+              <funcall name="fib">
+                <args>
+                  <int value="36"/>
+                </args>
+              </funcall>
+            </right>
+          </assign>
+          <assign fn="fibtst.c" ln="101">
+            <left>
+              <ref name="dt"/>
+            </left>
+            <right>
+              <binary op="-">
+                <left>
+                  <funcall name="clock">
+                    <args/>
+                  </funcall>
+                </left>
+                <right>
+                  <ref name="t"/>
+                </right>
+              </binary>
+            </right>
+          </assign>
+          <funcall name="printf" fn="fibtst.c" ln="102">
+            <args>
+              <string value="%d %fms&#10;"/>
+              <ref name="i"/>
+              <binary op="/">
+                <left>
+                  <binary op="*">
+                    <left>
+                      <ref name="dt"/>
+                    </left>
+                    <right>
+                      <real value="1000.0"/>
+                    </right>
+                  </binary>
+                </left>
+                <right>
+                  <int value="60"/>
+                </right>
+              </binary>
+            </args>
+          </funcall>
+          <funcall name="printf" fn="fibtst.c" ln="104">
+            <args>
+              <string value="hashtst %d&#10;"/>
+              <funcall name="hash_str">
+                <args>
+                  <string value="foobarbaz"/>
+                </args>
+              </funcall>
+            </args>
+          </funcall>
+        </begin>
+      </body>
+    </defun>
+  </body>
+</module>

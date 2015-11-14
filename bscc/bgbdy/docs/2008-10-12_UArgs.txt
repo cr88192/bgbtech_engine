@@ -1,0 +1,26 @@
+Untyped Arguments
+
+So, at the point this is being written, there are several ways in which arguments lists can be passed around:
+dynamically-typed arrays or lists (the primary cost here is that all of the members need to be dynamically typed);
+arch-specific buffers or va_lists with appropriate signature strings (the signature strings are used heavily, which may impair performance, as well as this approach being of limited scope).
+
+
+So, another mechanism is being considered.
+
+Current idea:
+Untyped arguments lists will, like their dynamically-typed kin, be passed around as arrays of void pointers, and each void pointer will again represent an individual item.
+
+The main difference will be this:
+Each item will have a pre-defined type, and the value will be either represented directly in the pointer (for types that fit in pointers), as a pointer to the item (if the type will not fit), or as a dynamically-typed reference.
+
+Signature strings may still be used, but given the nature of the structure they will not be need to be used as intensively (instead, it will be more often sufficient to pass the array length, as in the dynamically-typed case).
+
+Note that when a pointer-to-a-type is used, it is unspecified how or where this memory is stored, so it is assumed that the producer will manage this memory. In some cases, it is assumed a manual memory-management approach will be taken, and so pointed-to items will be freed.
+
+When an untyped value is used for returning something that will not fit in a pointer, memory will be allocated on the heap and it will be assumed that the caller free this memory (gcatomic/gcfree).
+
+
+Exactly which types will be stored in a pointer will depend on 'sizeof(void *)' and other factors.
+
+A special case may exist in which the 'double' and 'long long' types are represented as a pair of items (even on 64-bit archs). This case is intended to allow easing implementation of a JVM.
+

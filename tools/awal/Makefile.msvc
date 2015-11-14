@@ -1,0 +1,18 @@
+WALPNG_SRCS = \
+	inflate.c \
+	deflate.c \
+	png.c \
+	pcx.c \
+	tga.c \
+	wal.c \
+	jpg2.c \
+	out_avi.c \
+	img_btv0.c
+
+all: awal.exe genavi.exe
+
+awal.exe: $(WALPNG_SRCS) awal.c
+	cl /Feawal.exe /I. $(WALPNG_SRCS) awal.c /Z7
+	
+genavi.exe: $(WALPNG_SRCS) genavi.c
+	cl /Fegenavi.exe /I. $(WALPNG_SRCS) genavi.c /Z7

@@ -1,0 +1,6 @@
+$flags window
+$shader bgb_split3d
+$fparm 0 0.025
+$fparm 1 0.1
+$fparm_cvar 0 splitOffset r_split_offset
+$vparm_cvar 0 distortK r_split_distort

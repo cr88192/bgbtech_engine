@@ -1,0 +1,69 @@
+package bgb.vm;
+import bsvm.lang.*;
+import bsvm.io.*;
+
+public class Z_ConsoleOutput extends PrintStream
+{
+public Z_ConsoleOutput()
+{
+	super(null);
+}
+
+public native void printChars(char[] str);
+public native void printString(String str);
+
+// private void printString(String str)
+//	{ printChars(str.toCharArray()); }
+
+public boolean checkError()
+	{ return false; }
+public void close()
+	{}
+public void flush()
+	{}
+public void print(boolean b)
+	{ printString(Boolean.toString(b)); }
+public void print(char c)
+	{ printString(Character.toString(c)); }
+public void print(char[] s)
+	{ printString(new String(s)); }
+public void print(double d)
+	{ printString(Double.toString(d)); }
+public void print(float f)
+	{ printString(Float.toString(f)); }
+public void print(int i)
+	{ printString(Integer.toString(i)); }
+public void print(long l)
+	{ printString(Long.toString(l)); }
+public void print(Object obj)
+	{ printString(obj.toString()); }
+public void print(String s)
+	{ printString(s); }
+
+public void println()
+	{ printString("\n"); }
+
+public void println(boolean b)
+	{ print(b); println(); }
+public void println(char c)
+	{ print(c); println(); }
+public void println(char[] s)
+	{ print(s); println(); }
+public void println(double d)
+	{ print(d); println(); }
+public void println(float f)
+	{ print(f); println(); }
+public void println(int i)
+	{ print(i); println(); }
+public void println(long l)
+	{ print(l); println(); }
+public void println(Object obj)
+	{ print(obj); println(); }
+public void println(String s)
+	{ print(s); println(); }
+
+public void write(byte[] b, int off, int len)
+	{}
+public void write(int b)
+	{}
+}

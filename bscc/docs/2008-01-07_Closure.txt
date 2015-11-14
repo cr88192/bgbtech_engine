@@ -1,0 +1,13 @@
+Lexical Scoping and Closures
+
+__lambda keyword.
+When used with an inner function, will indicate lexical binding capture.
+
+int (*foo(int x))(int y)
+{
+	__lambda int bar(int y) { return(x+y); }
+	return(bar);
+}
+
+Lexical bindings and function stubs will be stored in a non-reclaimable/non-freeable region of memory.
+

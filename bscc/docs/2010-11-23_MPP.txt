@@ -1,0 +1,82 @@
+Message Passing Protocol
+
+Goals:
+Not absurdly complex;
+Relatively generic.
+
+BasicMessage
+{
+u2 type;
+u2 size;
+byte data[size];
+}
+
+type<256: special magic numbers;
+type>=256: names (index=type-256)
+
+NullMessage
+{
+u2 type=0;
+u2 size;
+byte pad[size];
+}
+
+StringMessage
+{
+u2 type=0;
+u2 size;
+u2 index;	//string number
+char str[size-2]; //string chars
+}
+
+
+
+ASCII Data Coding
+
+Encodes data in an ASCII string.
+each character will be an opcode, and a stack will be used.
+
+'0'..'9', 'A'..'F':
+	hex digit, i -- i*16+digit
+
+'G', 'H', 'I', 'J':
+	Opcode extension space.
+
+'(' ... ')':
+	Character glob / String.
+	'~': Character Escape
+		~~
+		~(
+		~)
+		~n
+		~r
+		~t
+		~xHH
+		...
+
+'<' ... '>':
+	Byte Data (Base64)
+
+'[' ... ']':
+	Symbol
+
+'[:' ... ']':
+	Keyword
+
+
+'x': -- 0
+'y': -- -1
+'z': -- NULL
+
+'a': x -- (x)
+'b': x y -- (x y)
+'c': x y -- (x . y)
+'d': x y z -- (x y . z)
+'e': w x y z -- (w x y . z)
+'f': -- #f
+'g': x y -- x*(2.0^y)
+
+'t': -- #t
+
+'v': ( ... ) -- #( ... )
+

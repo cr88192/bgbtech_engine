@@ -1,0 +1,6 @@
+typedef BTGE_VoxelData LBXGL_VoxelData;
+typedef BTGE_VoxelInfo LBXGL_VoxelInfo;
+typedef BTGE_VoxelChunk LBXGL_VoxelChunk;
+typedef BTGE_VoxelRegion LBXGL_VoxelRegion;
+
+typedef BTGE_NoiseContext LBXGL_NoiseContext;

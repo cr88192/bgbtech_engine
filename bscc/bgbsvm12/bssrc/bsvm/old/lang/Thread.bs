@@ -1,0 +1,89 @@
+package bsvm.lang;
+
+public class Thread extends Object implements Runnable
+{
+
+public static final int MAX_PRIORITY = 10;
+public static final int MIN_PRIORITY = 1;
+public static final int NORM_PRIORITY = 5;
+
+public Thread()
+	{}
+public Thread(Runnable target)
+	{}
+public Thread(Runnable target, String name)
+	{}
+public Thread(String name)
+	{}
+public Thread(ThreadGroup group, Runnable target)
+	{}
+public Thread(ThreadGroup group, Runnable target, String name)
+	{}
+public Thread(ThreadGroup group, String name)
+	{}
+
+
+public static int activeCount()
+	{ return 0; }
+public void checkAccess()
+	{}
+public int countStackFrames()
+	{ return 0; }
+public static Thread currentThread()
+	{ return null; }
+public void destroy()
+	{}
+public static void dumpStack()
+	{}
+public static int enumerate(Thread[] tarray)
+	{ return 0; }
+public String getName()
+	{ return null; }
+public int getPriority()
+	{ return 0; }
+public ThreadGroup getThreadGroup()
+	{ return null; }
+public void interrupt()
+	{}
+public static boolean interrupted()
+	{ return false; }
+public boolean isAlive()
+	{ return false; }
+public boolean isDaemon()
+	{ return false; }
+public boolean isInterrupted()
+	{ return false; }
+public void join()
+	{}
+public void join(long millis)
+	{}
+public void join(long millis, int nanos)
+	{}
+public void resume()
+	{}
+public void run()
+	{}
+public void setDaemon(boolean on)
+	{}
+public void setName(String name)
+	{}
+public void setPriority(int newPriority)
+	{}
+public static void sleep(long millis)
+	{}
+public static void sleep(long millis, int nanos)
+	{}
+public void start()
+	{}
+public void stop()
+	{}
+public void stop(Throwable o)
+	{}
+public void suspend()
+	{}
+public String toString()
+	{ return null; }
+public static void yield()
+	{}
+
+}

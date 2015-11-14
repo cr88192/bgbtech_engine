@@ -1,0 +1,175 @@
+Mini-RPN ByteCode
+
+Will be a mini RPN based language.
+It will be ASCII-based, but it will not use tokens, and as a result will be a character-driven notation.
+
+\ and " will not be used, as this would add hassle to embedding fragments in C strings. Character escapes in internal strings will instead use ~.
+
+Whilespace may be allowed between operations, where whitespace characters will generally be regarded as no-op.
+
+
+Types:
+IFP: Int, Float, Pointer;
+Stack uses single item size (uniform size stack);
+Operations are untyped.
+
+
+Scope:
+Globals, accessed as an array.
+
+Intlit := <digit+>
+Number := <digit*> ['.' <digit*>]
+Strlit := '(' ... ')'
+Name := <char*> ';'
+
+
+a
+b			
+c<name>		Call
+d			Dup
+e
+f			
+g
+h
+i
+j
+k
+l<name>		Load
+m			Mark
+n
+o
+p			Pop
+q
+s<name>		Store
+t			True (int 1)
+u
+v
+w
+x			Exchange
+z			Zero (int 0)
+
+0..9			Reserved
+
+
+Sl			Shift-Left
+Sr			Shift-Right
+
+Ad			Add
+Sb			Sub
+Ml			Mul
+Dv			Div
+Md			Mod
+An			And
+Or			Or
+Xr			Xor
+Xp			Exponent
+
+Ln			Logical Not
+Bn			Bitwise Not
+Ng			Negate
+Sq			Square
+Rt			Square Root
+
+Lt			x<y
+Gt			x>y
+Le			x<=y
+Ge			x>=y
+Ee			x==y
+Ne			x!=y
+
+Mk			Mark
+Ex			Exchange
+Dp			Dup
+Pp			Pop
+Ie			if(x)y else z;
+If			if(x)y;
+
+Rs			Roll-stack
+Pm			Pop-mark
+Nm			Count-to-mark
+
+Ci			Convert-Int
+Cf			Convert-Float
+
+Lg			log10
+Ln			loge
+Lb			log2
+
+Sn			Sin
+Cs			Cos
+Tn			Tan
+Rn			Round
+
+Fl			Floor
+Ab			Abs
+Xb			2^x
+Xd			10^x
+Xe			e^x
+
+At			Atan
+As			Atan2
+
+Fi			Truncate
+Ce			Ceil
+
+It			Index from top
+Im			Index from mark
+
+
+Bl<name>		Label
+Br<name>		Jump name
+Bt<name>		Jump if true
+Bf<name>		Jump if false
+
+
+Pa			Pop Array
+Pl			Pop List
+Pd			Pop Dict
+Pv			Pop Vector
+
+
+A,B
+
+D
+E
+H
+
+J,K
+
+F<number>		Float Literal
+I<number>		Integer Literal
+
+Cl<name>		Call named function
+
+M,N,O
+P
+Q,R
+
+T,U,V,W,X,Y
+
+
+
+{...}			Block
+
+(...)			String
+	~~
+	~(
+	~)
+	~n
+	~r
+	~t
+	~xHH
+	...
+
+<...>			Binary data, Hex
+<|...|>		Binary data, Base64
+<~...~>		Binary data, Base85
+
+Base-85 uses a glob of characters from '!' to 'u'.
+
+0x21..0x75 / 33..117
+
+Groups of 4 bytes are interpreted as a big-endian number, and encoded into a group of 5 characters, again in big-endian order.
+
+
+

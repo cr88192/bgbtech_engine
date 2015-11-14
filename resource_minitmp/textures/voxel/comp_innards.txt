@@ -1,0 +1,11 @@
+// $flags voxel alpha nonsolid
+$flags voxel lightmat
+
+$vox_img_top textures/voxel/comp_a1
+$vox_img_side textures/voxel/comp_a2
+$vox_img_bot textures/voxel/comp_a3
+
+// $vox_EmitBlock BTGE_Voxel_EmitBlock_RedstoneWire
+// $vox_BlockUpdate BTGE_VoxelPower_UpdateVoxel
+// $vox_mins 0 0 0
+// $vox_maxs 32 32 8

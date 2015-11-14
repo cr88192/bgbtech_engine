@@ -1,0 +1,174 @@
+Init
+
+Client Sends "(connect)"
+Server Responds
+	(mapname /map/ )				//gives current map
+	(camera /entnum/ )				//sets camera entity
+	(wdelta /camera.../ )			//gives initial camera state
+
+Client Message Types
+	(impulse /camnum/				//which entity the impulse applies to
+		(framedt /flonum/ )			//frame delta time
+		(svtime /flonum/ )			//server time
+		(cltime /flonum/ )			//client time
+		(mpos /x/ /y/ /b/ )			//mouse position
+		(lmpos /x/ /y/ /b/ )		//last mouse position
+		(iang /x/ /y/ /z/ )			//impulse angle
+		(org /x/ /y/ /z/ )			//client origin
+		(ang /x/ /y/ /z/ )			//client angle
+		(ivel /x/ /y/ /z/ )			//impulse velocity (basic/planar)
+		(ivel2 /x/ /y/ /z/ )		//impulse velocity (raw)
+		(morg /x/ /y/ /z/ )			//mouse vector origin
+		(mend /x/ /y/ /z/ )			//mouse vector end
+		(mdir /x/ /y/ /z/ )			//mouse direction
+		(impfl /flags/ )			//impulse flags
+		(wdelta deltas... )			//world deltas
+		(uidelta /ctxnum/ ...)		//UI delta events
+	)
+	(connect)						//client has connected
+	(stuffcmd /camnum/ /command/ )	//send a console command
+
+Server Message Types
+	(delta /entnum/					//entity delta
+		(org /x/ /y/ /z/ )			//origin
+		(vel /x/ /y/ /z/ )			//velocity
+		(ang /x/ /y/ /z/ )			//angle
+		(rot /x/ /y/ /z/ /w/ )		//rotation (quaternion)
+		(mins /x/ /y/ /z/ )			//AABB mins
+		(maxs /x/ /y/ /z/ )			//AABB maxs
+		(vorg /x/ /y/ /z/ )			//view origin
+		(mdl /mdlname/ )			//model
+		(wmdl /mdlname/ )			//weapon model
+		(frm /framenum/ )			//frame number
+		(wfrm /framenum/ )			//weapon frame number
+		(eff /effects/ )			//model effects flags
+		(eff2 /effects2/ )			//more model effects flags
+		(bone /num/					//manually position bone within model
+			(org /x/ /y/ /z/)		//bone origin
+			(rot /x/ /y/ /z/ /w/ )	//bone rotation
+		)
+	)
+	(delent /entnum/ )				//delete entity
+	(ldelta /lightnum/				//light delta
+		(org /x/ /y/ /z/ )			//origin
+		(dir /x/ /y/ /z/ )			//direction
+		(clr /r/ /g/ /b/ )			//color
+		(val /base/ /high/ )		//light intensity and highlight
+		(coeff /amb/ /diff/ /spec/)	//intensity coefficients
+		(ang /angle/ )				//spotlight angle
+		(mins /x/ /y/ /z/ )			//bbox mins
+		(maxs /x/ /y/ /z/ )			//bbox maxs
+		(boxval /x/ /y/ /z/ )		//box size
+		(texname /name/ )			//texture name (falloff/project)
+		(fl /flags/ )				//light flags
+		(st /style/ )				//light style number
+	)
+	(uidelta /ctxnum/ ...)			//UI delta (Context)
+	(wdelta deltas... )				//world deltas
+	(sound /entnum/ /chan/
+		/name/ /vol/ /attn/ )		//sound effect
+	(speak /entnum/ /chan/
+		/voice/ /ctrl/ /text/
+		/vol/ /attn/ )				//speech synth command
+	(particles						//particle effect
+		(ty /name/)					//particle type
+		(org /x/ /y/ /z/ )			//origin
+		(vel /x/ /y/ /z/ )			//velocity
+		(svel /x/ /y/ /z/ )			//spread velocity
+		(cnt /count/ )				//particle count
+		(clr /color/ )				//particle color 0xBBGGRR
+	)
+	(time /svtime/ /cltime/ )		//gives timing info
+	(camera /entnum/ )				//set current camera entity
+	(centerprint /msg/ /msgtime/ )	//centerprint a message
+	(centerprint_box /msg/ )		//centerprint in a box
+	(viewflags /flags/ )			//view-state flags
+	(view_mins /x/ /y/ /z/ )		//AABB mins of camera (ortho)
+	(view_maxs /x/ /y/ /z/ )		//AABB maxs of camera (ortho)
+	(view_fov /angle/ )				//set FOV for perspective view
+	(viewflash /color/
+		/time/ /scale/ )			//screen flash (0xBBGGRR)
+	(setbgm /name/ )				//set background music
+	(stuffcmd /command/ )			//stuff a command into console
+	(mapname /map/ )				//gives the current map
+
+Brush Delta Messages
+	(bdelta /brushid/				//brush delta
+		(face /num/					//face delta
+			(norm /x/ /y/ /z/ /d/ )	//normal
+			(sdir /x/ /y/ /z/ /d/ )	//sdir
+			(tdir /x/ /y/ /z/ /d/ )	//tdir
+			(texname /name/)		//used texture
+		)
+		(patchdef ... )				//patch definition
+		(meshdef ... )				//mesh definition
+	)
+	(newbrush /sentid/ /brushid/	//create new brush
+		faces...
+	)
+	(sedelta /senum/				//spawn entity delta
+		(key /var/ /val/)			//update key/value pair
+	)
+	(newsent /senum/ )				//create new spawn entity
+
+GUI Delta Messages
+//	(frmdelta /formid/				//create/update form
+//		(idname /name/)				//set ID-name
+//		(title /name/)				//set form title
+//		(widget /widget/ ...)		//define form widget
+//	)
+//	(fwedelta /form/ /widget/ ...)	//update form widget
+
+	(org /ox/ /oy/)				//set form/widget origin
+	(size /xs/ /ys/)			//set form/widget size
+	(fgcolor /color/)			//set form/widget text forground color
+	(bgcolor /color/)			//set form/widget text background color
+	(wbgcolor /color/)			//set form/widget background color
+	(flags /flags/)				//set form/widget flags
+	(name /name/)				//set form/widget name
+	(title /name/)				//set form title
+	(style /name/)				//set form style
+
+	(type /type/)				//set widget type name
+	(id /id/)					//set widget id name
+	(value /value/)				//set widget value string
+	(label /label/)				//set widget label string
+	(image /image/)				//set widget image name
+
+	(form_delta /formid/
+		(widget_delta /widgetid/
+			...
+			)
+		...
+	)
+
+	(event
+		(widget_idnum /idnum/)	//widget ID number
+		(widget_id /id/)		//widget ID name
+		(widget_name /name/)	//widget name
+		(event_name /ev_name/)	//event name
+		(event_id /ev_id/)		//event number
+		(event_ival /ev_ival/)	//event integer value
+		(event_sval /ev_sval/)	//event string value
+	)
+
+	
+File Transfer Messages
+
+	(file_req /muxid/				//file request
+		(path /path/)				//file path
+		(offset /offset/)			//start offset in file
+		(size /size/)				//request size (partial files)
+		)
+
+	(file_resp /muxid/				//file response
+		(status /idstring/)			//status code
+		(size /size/)				//size of file
+	)
+	
+	(file_data /muxid/				//file data chunk
+		(offset /offset/)			//offset in file
+		(size /size/)				//size of chunk
+		(data /data/)				//data payload (byte-vector)
+		)
+	

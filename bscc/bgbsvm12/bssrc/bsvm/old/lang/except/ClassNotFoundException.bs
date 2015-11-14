@@ -1,0 +1,11 @@
+package bsvm.lang;
+
+public class ClassNotFoundException extends Exception
+{
+// private static final long serialVersionUID = 2256477558314496007L;
+
+public ClassNotFoundException()
+	{ super(); }
+public ClassNotFoundException(String s)
+	{ super(s); }
+}

@@ -1,0 +1,17 @@
+package bsvm.init;
+
+public class Error extends Exception
+{
+public Error()
+	{  super(); }
+public Error(str)
+	{ super(str); }
+}
+
+public class IllegalAccessError extends Error
+{
+public IllegalAccessError()
+	{  super(); }
+public IllegalAccessError(str)
+	{ super(str); }
+}

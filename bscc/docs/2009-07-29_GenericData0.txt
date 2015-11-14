@@ -1,0 +1,61 @@
+Idea for a Generic Data Representation.
+
+Purpose:
+Represent a generic and simplistic representation for data;
+Data should be relatively architecture neutral, effectively usable when mapped into a host address space, and relatively simple in the common case.
+
+
+Definitions:
+
+Integers will be in little-endian ordering. FWIW, LE represents the majority of processors in use at this time, and so although BE can be used, there is no particular reason for doing so.
+
+For the integer types, 'int' will be 32-bits, and 'long' 64 bits.
+Note that values will be naturally aligned to appropriate boundaries.
+
+
+Strings will be null-terminated UTF-8 strings.
+
+...
+
+
+Pointers will use a 32-bit differential encoding. In this case, pointers will be base-relative (as in, the pointed-to address is the address of the pointer + the pointer's stored value).
+
+The value 0 will indicate NULL (otherwise, it would mean the pointer having its own address).
+
+Part of the addressable space will be reserved, in particular, pointers in the range of 0x70000000..0x8FFFFFFF (+-(2GB - 256MB)) will be reserved for "non-local" addresses (in particular, to allow encoding addresses either outside the +-2GB window, or outside the local linear address space).
+
+These longer-range addresses actually encode an indirect addressing to a "bigger" pointer, where the current pointer address will be padded down or up to a 16-byte boundary (down for negative addresses, up for positive ones), combined with the difference (shifted left 4 bits).
+
+if(diff>=1879048192)
+{
+	base=(ptr+15)&(~15);
+	ptr2=base+((diff-1879048192)*16);
+}
+
+if(diff<-1879048192)
+{
+	base=ptr&(~15);
+	ptr2=base+((diff+1879048192)*16);
+}
+
+
+At this address, one will find a 128-bit wide pointer.
+
+Wide Pointers will be split into 2 64 bit values, a segment and an offset. The low 64 bits will be the offset, and the high 64 bits will be the segment.
+
+xxxxxxxx_xxxxxxxx:yyyyyyyy_yyyyyyyy
+Where the x's are the segment (in hex), and the y's are the offset.
+
+The segment itself is structured:
+xxyyzzzz_zzzzzzzz
+
+Where xx is a special control byte:
+76543210
+abcdef10
+a,b,c,d,e: reserved, set to 0
+f=0: z identifies the segment (global segment), y=free for local use
+f=1: y identifies the segment (local segment), z=free for local use
+
+0600zzzz_zzzzzzzz: 64 bit local absolute address
+04yyzzzz_zzzzzzzz: 48 bit global segment, 64 bit offset
+

@@ -1,0 +1,44 @@
+/*
+This script is invoked on engine startup.
+This basically gives a place to pull in any game-related scripts.
+*/
+
+function Game_CreateMainMenu()
+{
+	PDGLUI_BeginMenu("menu");
+
+	PDGLUI_BeginSubMenu("&New Game");
+	PDGLUI_MenuItem("ng_easy",			"Easy");
+	PDGLUI_MenuItem("ng_medium",		"Medium");
+	PDGLUI_MenuItem("ng_hard",			"Hard");
+	PDGLUI_MenuItem("ng_nightmare",		"Nightmare");
+	PDGLUI_EndSubMenu();
+
+	PDGLUI_BeginSubMenu("&Load Game");
+	PDGLUI_MenuItem("sv_load1",			"Game 1");
+	PDGLUI_MenuItem("sv_load2",			"Game 2");
+	PDGLUI_MenuItem("sv_load3",			"Game 3");
+	PDGLUI_MenuItem("sv_load4",			"Game 4");
+	PDGLUI_EndSubMenu();
+
+	PDGLUI_BeginSubMenu("&Save Game");
+	PDGLUI_MenuItem("sv_save1",			"Game 1");
+	PDGLUI_MenuItem("sv_save2",			"Game 2");
+	PDGLUI_MenuItem("sv_save3",			"Game 3");
+	PDGLUI_MenuItem("sv_save4",			"Game 4");
+	PDGLUI_EndSubMenu();
+
+
+	PDGLUI_BeginSubMenu("Help");
+	PDGLUI_MenuItem("help_generic", "General");
+	PDGLUI_MenuItem("help_about", "About");
+	PDGLUI_EndSubMenu();
+
+	PDGLUI_EndMenu();
+}
+
+printf("BGBScript Main Start\n");
+
+Game_CreateMainMenu();
+
+printf("BGBScript Main End\n");

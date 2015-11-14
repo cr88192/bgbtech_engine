@@ -1,0 +1,119 @@
+US_LDFLAGS=/link gdi32.lib opengl32.lib glu32.lib \
+	user32.lib comdlg32.lib ole32.lib kernel32.lib libbsde.lib
+
+BSDE_SRCS = \
+	source/solid_aabb.cpp \
+	source/solid_obb.cpp \
+	source/solid_obb3.cpp \
+	source/solid_cylinder.cpp \
+	source/solid_brep.cpp \
+	source/solid_sphere.cpp \
+	source/solid_plane.cpp \
+	source/solid_hull.cpp \
+	source/solid_hull2.cpp \
+	source/solid_bsp.cpp \
+	source/solid_bsp2.cpp \
+	\
+	source/bsde_collide.cpp \
+	source/bsde_solid.cpp \
+	source/bsde_joint.cpp \
+	source/bsde_world.cpp \
+	source/bsde_math.cpp \
+	source/bsde_force.cpp \
+	source/bsde_iter.cpp \
+	source/bsde_iter2.cpp \
+	source/bsde_iter3.cpp \
+	\
+	source/bsde_message.cpp \
+	source/bsde_thread.cpp \
+	source/bsde_build.cpp \
+	source/bsde_random.cpp \
+	\
+	source/misc_vecheap.cpp \
+	\
+	source/math_vec3.cpp \
+	source/math_matd.cpp \
+	source/math_quatd.cpp \
+	source/math_planed.cpp \
+	source/math_hull.cpp
+
+BSDE_APISRCS = \
+	source/api_bsde.cpp
+
+BSDE_OBJS = $(BSDE_SRCS:.cpp=.obj) $(BSDE_APISRCS:.cpp=.obj)
+
+
+BSDE_STUB_SRCS = \
+	apps/gl_win2.c \
+	apps/input.c \
+	apps/mouse_win.c \
+	apps/stub_w32.c \
+	apps/prim3d2.c \
+	apps/gl_draw.c \
+	apps/map.c
+
+BSDE_APP0_SRCS = \
+	apps/bsde_app0.c
+
+BSDE_APP1_SRCS = \
+	apps/bsde_app1.c
+
+BSDE_APP2_SRCS = \
+	apps/bsde_app2.c
+
+BSDE_STUB_OBJS = $(BSDE_STUB_SRCS:.c=.obj)
+BSDE_APP0_OBJS = $(BSDE_APP0_SRCS:.c=.obj)
+BSDE_APP1_OBJS = $(BSDE_APP1_SRCS:.c=.obj)
+BSDE_APP2_OBJS = $(BSDE_APP2_SRCS:.c=.obj)
+
+CFLAGS = /Iinclude /O2
+
+CFLAGS2 = /Iinclude /Zi /DBSDE_DLL
+# CFLAGS2 = /Iinclude /O2 /DBSDE_DLL
+
+all: libbsde.dll bsde_app0.exe bsde_app1.exe bsde_app2.exe
+
+FORCE:
+
+.c.obj:
+	cl /Iinclude /c /Fo$*.obj $*.c
+
+.cpp.obj:
+	cl /Iinclude /c /Fo$*.obj $*.cpp
+
+%.obj: %.c
+	cl /Iinclude /c /Fo$*.obj $*.c
+
+%.obj: %.cpp
+	cl /Iinclude /c /Fo$*.obj $*.cpp
+
+autohead.exe: autohead.c
+	cl autohead.c
+
+include/bsde_auto.h: autohead.exe $(BSDE_SRCS)
+	autohead -api BSDE_API $(BSDE_SRCS) > include/bsde_auto.h
+
+include/bsde_funcs.h: autohead.exe $(BSDE_APISRCS)
+	autohead -api BSDE_API $(BSDE_APISRCS) > include/bsde_funcs.h
+
+# libbsde.lib: include/bsde_auto.h include/bsde_funcs.h $(BSDE_OBJS)
+#	lib /out:libbsde.lib $(BSDE_OBJS)
+
+libbsde.dll: include/bsde_auto.h include/bsde_funcs.h $(BSDE_SRCS) $(BSDE_APISRCS)
+	cl /LD /Felibbsde.dll $(BSDE_SRCS) $(BSDE_APISRCS) $(CFLAGS2)
+
+bsde_app0.exe: libs $(BSDE_STUB_OBJS) $(BSDE_APP0_OBJS)
+	cl /Febsde_app0.exe $(BSDE_STUB_OBJS) $(BSDE_APP0_OBJS) $(US_LDFLAGS)
+
+bsde_app1.exe: libs $(BSDE_STUB_OBJS) $(BSDE_APP1_OBJS)
+	cl /Febsde_app1.exe $(BSDE_STUB_OBJS) $(BSDE_APP1_OBJS) $(US_LDFLAGS)
+
+bsde_app2.exe: libs $(BSDE_STUB_OBJS) $(BSDE_APP2_OBJS)
+	cl /Febsde_app2.exe $(BSDE_STUB_OBJS) $(BSDE_APP2_OBJS) $(US_LDFLAGS)
+
+includes: include/bsde_auto.h include/bsde_funcs.h
+libs: libbsde.dll
+
+clean:
+#	del /S *.obj
+#	del /S *.lib

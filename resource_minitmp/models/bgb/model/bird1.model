@@ -1,0 +1,6 @@
+//flying bird
+
+bones bird1.bone
+
+vmesh bird11.ac
+anim fly bird1_fly1.anim

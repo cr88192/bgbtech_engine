@@ -1,0 +1,3333 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="CONTENT-TYPE" content="text/html;
+      charset=windows-1252">
+    <title>Linker and Metadata Specification 0</title>
+    <meta name="GENERATOR" content="OpenOffice.org 3.0 (Win32)">
+    <meta name="AUTHOR" content="BGB">
+    <meta name="CREATED" content="0;0">
+    <meta name="CHANGED" content="20100809;10005200">
+    <meta name="Info 1" content="">
+    <meta name="Info 2" content="">
+    <meta name="Info 3" content="">
+    <meta name="Info 4" content="">
+  </head>
+  <body dir="LTR" lang="en-US">
+    <h2>Signatures</h2>
+    <p style="margin-bottom: 0in;"><br>
+    </p>
+    This will attempt to specify Signature strings as applied to data
+    types. These may be used for variables, objects, functions or
+    methods, ...<br>
+    <br>
+    Each type is intended to be parsable fairly easily, and where
+    multiple types may be present in the same string (them being placed
+    end to end). However, only the types in-sequence are specified, and
+    this does not necessarily specify how these will be placed in
+    memory.<br>
+    <br>
+    No whitespace or control characters or similar will be allowed in
+    signature strings.<br>
+    <p style="margin-bottom: 0in;"></p>
+    <p style="margin-bottom: 0in;">This notation will be partly
+      recursive as to aid handling.<br>
+    </p>
+    <p style="margin-bottom: 0in;">A general pattern will be:<br>
+      Any lowercase letter except 'u' will be a terminal value, where
+      'u' will give a context dependent named parameter.<br>
+      Upper case letters will generally be qualifiers, and will
+      typically be followed either by special syntax, extended
+      qualifiers, or terminal values.<br>
+      Digits will usually encode numeric values, but with their meaning
+      and syntax defined relative to the base qualifier.<br>
+    </p>
+    <p style="margin-bottom: 0in;">The letters A/B/C/D following a base
+      qualifier will often be an extended qualifier, with any other
+      syntax defined relative to the base qualifier. The meaning and
+      structure of any extended qualifiers or syntax will depend on the
+      base qualifiers.<br>
+    </p>
+    <p style="margin-bottom: 0in;">There may also be "flags signatures",
+      which will differ from normal (type) signatures in that all of the
+      items are flags. As a result, no 'F' qualifier is used (it will be
+      almost like if all items had an implicit 'F' qualifier).<br>
+    </p>
+    <p style="margin-bottom: 0in;"><br>
+      <b></b>Qualifiers: </p>
+    <table border="1" cellpadding="2" cellspacing="3" width="100%">
+      <colgroup><col width="62*"> <col width="194*"> </colgroup><tbody>
+        <tr>
+          <td width="24%">
+            <p>Notation</p>
+          </td>
+          <td width="76%">
+            <p>Description</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>A&lt;letter&gt;*</p>
+          </td>
+          <td width="76%">
+            <p>Used for context-dependent types. Context-dependent
+              extension qualifiers.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>A&lt;sz&gt;[,&lt;sz&gt;];*</p>
+          </td>
+          <td width="76%">
+            <p>Fixed array (to replace suffix notation).</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>B*</p>
+          </td>
+          <td width="76%">
+            <p>Used for basic extension types (deprecated). Extended
+              qualifiers.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>C*</p>
+          </td>
+          <td width="76%">
+            <p>Complex number (f, d, e, g, k). Extended base types.
+              Extended qualifiers.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>C&lt;digit&gt;*</p>
+          </td>
+          <td width="76%">
+            <p>Multidimensional dynamic array of type.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>D*</p>
+          </td>
+          <td width="76%">
+            <p>Decimal and misc types. Extended qualifiers.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>E -</p>
+          </td>
+          <td width="76%">
+            <p>Complex expression (generics/...).</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>F&lt;char&gt;*</p>
+          </td>
+          <td width="76%">
+            <p>Single type flag.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>Fu&lt;mod&gt;;*</p>
+          </td>
+          <td width="76%">
+            <p>Special Case, named-modifier.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>G*</p>
+          </td>
+          <td width="76%">
+            <p>Imaginary type (f, d, e, g, k).<br>
+              Special generic placeholders.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>H*</p>
+          </td>
+          <td width="76%">
+            <p><br>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>I*</p>
+          </td>
+          <td width="76%">
+            <p><br>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>J*</p>
+          </td>
+          <td width="76%">
+            <p><br>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>K*</p>
+          </td>
+          <td width="76%">
+            <p>Type is const (same as "Fk").</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>L&lt;classname&gt;;</p>
+          </td>
+          <td width="76%">
+            <p>Reference to a managed class type.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>M&lt;mod&gt;;*</p>
+          </td>
+          <td width="76%">
+            <p>(Was named modifier, syntax changed to "Fu&lt;mod&gt;;").<br>
+              List of modifier flags.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>N&lt;name&gt;;*</p>
+          </td>
+          <td width="76%">
+            <p>Optional item name.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>O -</p>
+          </td>
+          <td width="76%">
+            <p>(IA64 ABI rvalue)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>P*</p>
+          </td>
+          <td width="76%">
+            <p>Pointer to type.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>Q*</p>
+          </td>
+          <td width="76%">
+            <p>Dynamic array of type.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>R*</p>
+          </td>
+          <td width="76%">
+            <p>Reference to type (invisible pointer).</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>S &lt;mod&gt; <b>(</b> * <b>)</b></p>
+          </td>
+          <td width="76%">
+            <p>Inline Structure Type (disallowed in "ordinary" types).</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>T*</p>
+          </td>
+          <td width="76%">
+            <p>Will specify a tagged type (deprecated).</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>U&lt;name&gt;;</p>
+          </td>
+          <td width="76%">
+            <p>Extended named type.<br>
+              May also be used as a type name for unresolved types (such
+              as when the type is to be resolved at some later point).<br>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>V*</p>
+          </td>
+          <td width="76%">
+            <p>Type is volatile.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>W*</p>
+          </td>
+          <td width="76%">
+            <p>Wide pointer type.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>X&lt;name&gt;;</p>
+          </td>
+          <td width="76%">
+            <p>Compound type (struct, union, unmanaged class, ...).</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>Y -</p>
+          </td>
+          <td width="76%">
+            <p>(IA64 ABI "extern C").</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="24%">
+            <p>Z&lt;qual&gt;*</p>
+          </td>
+          <td width="76%">
+            <p>Extended base qualifiers (reserved).</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-bottom: 0in;"><b><br>
+      </b><br>
+      Primitive Types:</p>
+    <table border="1" cellpadding="2" cellspacing="3" width="100%">
+      <colgroup><col width="42*"> <col width="214*"> </colgroup><tbody>
+        <tr>
+          <td width="16%">
+            <p>Char</p>
+          </td>
+          <td width="84%">
+            <p>Description</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>a</p>
+          </td>
+          <td width="84%">
+            <p>signed char (8 bits)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>b</p>
+          </td>
+          <td width="84%">
+            <p>bool (8 bits)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>c</p>
+          </td>
+          <td width="84%">
+            <p>char (8 bits)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>d</p>
+          </td>
+          <td width="84%">
+            <p>double (64 bits)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>e</p>
+          </td>
+          <td width="84%">
+            <p>long double (64/80/96/128 bits, 80 bit float
+              conceptually)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>f</p>
+          </td>
+          <td width="84%">
+            <p>float (32 bits)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>g</p>
+          </td>
+          <td width="84%">
+            <p>128-bit float</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>h</p>
+          </td>
+          <td width="84%">
+            <p>unsigned char/byte (8 bits)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>i</p>
+          </td>
+          <td width="84%">
+            <p>int (32 bits)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>j</p>
+          </td>
+          <td width="84%">
+            <p>unsigned int (32 bits)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>k</p>
+          </td>
+          <td width="84%">
+            <p>hfloat (16-bit float)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>l</p>
+          </td>
+          <td width="84%">
+            <p>long (32 or 64 or bits), (normalizing to 64 bits)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>m</p>
+          </td>
+          <td width="84%">
+            <p>unsigned long (32 or 64 bits), (normalizing to 64 bits)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>n</p>
+          </td>
+          <td width="84%">
+            <p>128-bit int</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>o</p>
+          </td>
+          <td width="84%">
+            <p>unsigned 128-bit int</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>p</p>
+          </td>
+          <td width="84%">
+            <p>(reserved)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>q</p>
+          </td>
+          <td width="84%">
+            <p>(reserved)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>r</p>
+          </td>
+          <td width="84%">
+            <p>variant (dynamically typed reference)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>s</p>
+          </td>
+          <td width="84%">
+            <p>short (16 bits)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>t</p>
+          </td>
+          <td width="84%">
+            <p>unsigned short (16 bits)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>u&lt;name&gt;;</p>
+          </td>
+          <td width="84%">
+            <p>custom type. Same as "U&lt;name&gt;;" if used by itself,
+              but meaning depends on context if used elsewhere.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>v</p>
+          </td>
+          <td width="84%">
+            <p>void</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>w</p>
+          </td>
+          <td width="84%">
+            <p>wchar (unsigned 16 bits, Java/C# char)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>x</p>
+          </td>
+          <td width="84%">
+            <p>long long (64 bits only)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>y</p>
+          </td>
+          <td width="84%">
+            <p>unsigned long long (64 bits only)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>z</p>
+          </td>
+          <td width="84%">
+            <p>... (Placeholder for varargs)</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Ca<br>
+          </td>
+          <td style="vertical-align: top;">vec2 (64 bits, float)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Cb<br>
+          </td>
+          <td style="vertical-align: top;">vec3 (128 bits, float)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Cc<br>
+          </td>
+          <td style="vertical-align: top;">vec4 (128 bits, float)<br>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Cd</p>
+          </td>
+          <td width="84%">
+            <p>Complex double</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Ce</p>
+          </td>
+          <td width="84%">
+            <p>Complex long double</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Cf</p>
+          </td>
+          <td width="84%">
+            <p>Complex float</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Cg</p>
+          </td>
+          <td width="84%">
+            <p>Complex float128</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Ch<br>
+          </td>
+          <td style="vertical-align: top;">Bool (variant)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Ci<br>
+          </td>
+          <td style="vertical-align: top;">Fixnum (variant)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Cj<br>
+          </td>
+          <td style="vertical-align: top;">Flonum (variant)<br>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Ck</p>
+          </td>
+          <td width="84%">
+            <p>Complex float16</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Co</p>
+          </td>
+          <td width="84%">
+            <p>Object (instance / dycObject)<br>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Cq<br>
+          </td>
+          <td style="vertical-align: top;">Quaternion (128 bits, float,
+            xyzw/ijkr)<br>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Cr</p>
+          </td>
+          <td width="84%">
+            <p>Variant / "dytf" reference (64-bit, full double precision
+              with pointers and literal values encoded into Inf and NaN
+              values).</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Cs</p>
+          </td>
+          <td width="84%">
+            <p>C# "string"<br>
+              BGBScript "string".<br>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Ct</p>
+          </td>
+          <td width="84%">
+            <p>Java "String"</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Cu&lt;name&gt;;<br>
+          </td>
+          <td style="vertical-align: top;">Named dynamic-type, Attribute
+            name<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Cv<br>
+          </td>
+          <td style="vertical-align: top;">NULL<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Cw<br>
+          </td>
+          <td style="vertical-align: top;">Variant Char<br>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Cx</p>
+          </td>
+          <td width="84%">
+            <p>Variant This (dythis, dycThis)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Cy</p>
+          </td>
+          <td width="84%">
+            <p>Variant Class (dytcls, dycThisClass)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Cz</p>
+          </td>
+          <td width="84%">
+            <p>Variant Varargs (dytva).<br>
+              Arguments will be folded into a list (basic form), or an
+              array ("PCz"-form)</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Da<br>
+          </td>
+          <td style="vertical-align: top;">vec2d (128 bits, double)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Db<br>
+          </td>
+          <td style="vertical-align: top;">vec3d (256 bits, double)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Dc<br>
+          </td>
+          <td style="vertical-align: top;">vec4d (256 bits, double)<br>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Dd</p>
+          </td>
+          <td width="84%">
+            <p>Decimal float 64</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>De</p>
+          </td>
+          <td width="84%">
+            <p>Decimal float 128</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Df</p>
+          </td>
+          <td width="84%">
+            <p>Decimal float 32</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Dh</p>
+          </td>
+          <td width="84%">
+            <p>float16 (alias k)</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Di</p>
+          </td>
+          <td width="84%">
+            <p>char32</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Ds</p>
+          </td>
+          <td width="84%">
+            <p>char16 (alias w)</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Dq<br>
+          </td>
+          <td style="vertical-align: top;">Quaternion (256 bits, double)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Du&lt;name&gt;;<br>
+          </td>
+          <td style="vertical-align: top;">Reserved<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Dv<br>
+          </td>
+          <td style="vertical-align: top;">Undefined<br>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Gd</p>
+          </td>
+          <td width="84%">
+            <p>Imaginary double</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Ge</p>
+          </td>
+          <td width="84%">
+            <p>Imaginary long double</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Gf</p>
+          </td>
+          <td width="84%">
+            <p>Imaginary float</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Gg</p>
+          </td>
+          <td width="84%">
+            <p>Imaginary float128</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="16%">
+            <p>Gk</p>
+          </td>
+          <td width="84%">
+            <p>Imaginary float16</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-bottom: 0in;"><b><br>
+      </b>Extended Types:</p>
+    <table border="1" cellpadding="2" cellspacing="2" width="100%">
+      <tbody>
+        <tr>
+          <td>
+            <p>Name</p>
+          </td>
+          <td>
+            <p>Description</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>m64</p>
+          </td>
+          <td>
+            <p>64-bit raw SSE vector</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>m128</p>
+          </td>
+          <td>
+            <p>128-bit raw SSE vector</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>quat</p>
+          </td>
+          <td>
+            <p>Quaternion (IJKW order)</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>hquat</p>
+          </td>
+          <td>
+            <p>Hyperbolic Quaternion (IJKW order)</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>vec2</p>
+          </td>
+          <td>
+            <p>2-elem geometric vector</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>vec3</p>
+          </td>
+          <td>
+            <p>3-elem geometric vector</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>vec4</p>
+          </td>
+          <td>
+            <p>4-elem geometric vector</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>mat2</p>
+          </td>
+          <td>
+            <p>2x2 matrix (4 floats, row-major)</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>mat3</p>
+          </td>
+          <td>
+            <p>3x3 matrix (12 floats, row-major, pad-4)</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>mat4</p>
+          </td>
+          <td>
+            <p>4x4 matrix (16 floats, row-major)</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>v2f</p>
+          </td>
+          <td>
+            <p>2-elem raw float vector</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>v3f</p>
+          </td>
+          <td>
+            <p>3-elem raw float vector</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>v4f</p>
+          </td>
+          <td>
+            <p>4-elem raw float vector</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>v2d</p>
+          </td>
+          <td>
+            <p>2-elem raw double vector</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p><br>
+      <br>
+      Flags:</p>
+    <table border="1" cellpadding="4" cellspacing="3" width="100%">
+      <colgroup><col width="39*"> <col width="217*"> </colgroup><tbody>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>Name</p>
+          </td>
+          <td width="85%">
+            <p>Description</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>a</p>
+          </td>
+          <td width="85%">
+            <p>Abstract</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>b</p>
+          </td>
+          <td width="85%">
+            <p>Big-Endian (numeric variable only)</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>c</p>
+          </td>
+          <td width="85%">
+            <p>cdecl (x86) (Note: calling-convention flags are applied
+              to function/method return type in combined signatures)</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>d</p>
+          </td>
+          <td width="85%">
+            <p>Delegate</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>e</p>
+          </td>
+          <td width="85%">
+            <p>Event</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>f</p>
+          </td>
+          <td width="85%">
+            <p>fastcall (x86), SysV/AMD64 (x86-64)</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>g</p>
+          </td>
+          <td width="85%">
+            <p>Getter<br>
+            </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>h</p>
+          </td>
+          <td width="85%">
+            <p>Setter</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>i</p>
+          </td>
+          <td width="85%">
+            <p>Inline</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>j</p>
+          </td>
+          <td width="85%">
+            <p>Final / Const2 / Sealed</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>k</p>
+          </td>
+          <td width="85%">
+            <p>Const / New(method)</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>l</p>
+          </td>
+          <td width="85%">
+            <p>Little-Endian (numeric variable only)</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>m</p>
+          </td>
+          <td width="85%">
+            <p>(reserved)</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>n</p>
+          </td>
+          <td width="85%">
+            <p>Native / Unsafe / __nogc / extern "C"</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>o</p>
+          </td>
+          <td width="85%">
+            <p>Override / Read-Only / (Strict)<br>
+            </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>p</p>
+          </td>
+          <td width="85%">
+            <p>Public</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>q</p>
+          </td>
+          <td width="85%">
+            <p>Private</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>r</p>
+          </td>
+          <td width="85%">
+            <p>Protected</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>s</p>
+          </td>
+          <td width="85%">
+            <p>Static</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>t</p>
+          </td>
+          <td width="85%">
+            <p>thiscall (x86)</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>u&lt;name&gt;;</p>
+          </td>
+          <td width="85%">
+            <p>Named flag (can't be used with M).</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>v</p>
+          </td>
+          <td width="85%">
+            <p>Virtual</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>w</p>
+          </td>
+          <td width="85%">
+            <p>stdcall (x86), Win64 (x86-64)</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>x</p>
+          </td>
+          <td width="85%">
+            <p>XCall / GC / Dynamic<br>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">y<br>
+          </td>
+          <td style="vertical-align: top;">Transient<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">z<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>A*</p>
+          </td>
+          <td width="85%">
+            <p>Context dependent flags.</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>C* / D*</p>
+          </td>
+          <td width="85%">
+            <p>More flags.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Ca<br>
+          </td>
+          <td style="vertical-align: top;">async<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Cb<br>
+          </td>
+          <td style="vertical-align: top;">byref (not usually encoded,
+            type uses R*)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Cc<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Cd<br>
+          </td>
+          <td style="vertical-align: top;">typedef<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Ce<br>
+          </td>
+          <td style="vertical-align: top;">extern<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Cf<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Cg<br>
+          </td>
+          <td style="vertical-align: top;">_setgid<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Ch<br>
+          </td>
+          <td style="vertical-align: top;">_setuid<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Ci</td>
+          <td style="vertical-align: top;">interface / __interface</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Cj<br>
+          </td>
+          <td style="vertical-align: top;">struct<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Ck<br>
+          </td>
+          <td style="vertical-align: top;">union<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Cs<br>
+          </td>
+          <td style="vertical-align: top;">synchronized<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">// Ct</td>
+          <td style="vertical-align: top;">transient / __transient</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Cv</td>
+          <td style="vertical-align: top;">volatile (not usually
+            encoded, type uses V*)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">De</td>
+          <td style="vertical-align: top;">__declspec(dllexport)</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Di</td>
+          <td style="vertical-align: top;">__declspec(dllimport)</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">// Ds<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Dt<br>
+          </td>
+          <td style="vertical-align: top;">__thread<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">// Dy<br>
+          </td>
+          <td style="vertical-align: top;">dynamic<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>CL&lt;name&gt;;</p>
+          </td>
+          <td width="85%">
+            <p>Special: Superclass (managed). N/E with 'M'.</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>CX&lt;name&gt;;</p>
+          </td>
+          <td width="85%">
+            <p>Special: Superclass (unmanaged). N/E with 'M'.</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>DL&lt;name&gt;;</p>
+          </td>
+          <td width="85%">
+            <p>Special: Interface (managed). N/E with 'M'.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Du&lt;name&gt;;<br>
+          </td>
+          <td style="vertical-align: top;">Named Attribute.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-bottom: 0in;"><br>
+      <br>
+      Operator Names:</p>
+    <table style="page-break-inside: avoid;" border="1" cellpadding="4"
+      cellspacing="3" width="100%">
+      <colgroup><col width="39*"> <col width="217*"> </colgroup><tbody>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>Name</p>
+          </td>
+          <td width="85%">
+            <p>Description</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>nw</p>
+          </td>
+          <td width="85%">
+            <p>new</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>na</p>
+          </td>
+          <td width="85%">
+            <p>new[]</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>dl</p>
+          </td>
+          <td width="85%">
+            <p>delete</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>da</p>
+          </td>
+          <td width="85%">
+            <p>delete[] </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>ps</p>
+          </td>
+          <td width="85%">
+            <p>+ (unary)</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>ng</p>
+          </td>
+          <td width="85%">
+            <p>- (unary) </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>ad</p>
+          </td>
+          <td width="85%">
+            <p>&amp; (unary) </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>de</p>
+          </td>
+          <td width="85%">
+            <p>* (unary) </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>co</p>
+          </td>
+          <td width="85%">
+            <p>~ </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>pl</p>
+          </td>
+          <td width="85%">
+            <p>+ </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>mi</p>
+          </td>
+          <td width="85%">
+            <p>- </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>ml</p>
+          </td>
+          <td width="85%">
+            <p>* </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>dv</p>
+          </td>
+          <td width="85%">
+            <p>/ </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>rm</p>
+          </td>
+          <td width="85%">
+            <p>% </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>an</p>
+          </td>
+          <td width="85%">
+            <p>&amp; </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>or</p>
+          </td>
+          <td width="85%">
+            <p>| </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>eo</p>
+          </td>
+          <td width="85%">
+            <p>^ </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>aS</p>
+          </td>
+          <td width="85%">
+            <p>= </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>pL</p>
+          </td>
+          <td width="85%">
+            <p>+=</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>mI</p>
+          </td>
+          <td width="85%">
+            <p>-=</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>mL</p>
+          </td>
+          <td width="85%">
+            <p>*=</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>dV</p>
+          </td>
+          <td width="85%">
+            <p>/=</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>rM</p>
+          </td>
+          <td width="85%">
+            <p>%=</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>aN</p>
+          </td>
+          <td width="85%">
+            <p>&amp;=</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>oR</p>
+          </td>
+          <td width="85%">
+            <p>|=</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>eO</p>
+          </td>
+          <td width="85%">
+            <p>^=</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>ls</p>
+          </td>
+          <td width="85%">
+            <p>&lt;&lt;</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>rs</p>
+          </td>
+          <td width="85%">
+            <p>&gt;&gt;</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>lS</p>
+          </td>
+          <td width="85%">
+            <p>&lt;&lt;=</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>rS</p>
+          </td>
+          <td width="85%">
+            <p>&gt;&gt;=</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>eq</p>
+          </td>
+          <td width="85%">
+            <p>==</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>ne</p>
+          </td>
+          <td width="85%">
+            <p>!=</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>lt</p>
+          </td>
+          <td width="85%">
+            <p>&lt; </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>gt</p>
+          </td>
+          <td width="85%">
+            <p>&gt; </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>le</p>
+          </td>
+          <td width="85%">
+            <p>&lt;=</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>ge</p>
+          </td>
+          <td width="85%">
+            <p>&gt;=</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>nt</p>
+          </td>
+          <td width="85%">
+            <p>! </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>aa</p>
+          </td>
+          <td width="85%">
+            <p>&amp;&amp;</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>oo</p>
+          </td>
+          <td width="85%">
+            <p>||</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>pp</p>
+          </td>
+          <td width="85%">
+            <p>++</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>mm</p>
+          </td>
+          <td width="85%">
+            <p>--</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>cm</p>
+          </td>
+          <td width="85%">
+            <p>,</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>pm</p>
+          </td>
+          <td width="85%">
+            <p>-&gt;*</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>pt</p>
+          </td>
+          <td width="85%">
+            <p>-&gt;</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>cl</p>
+          </td>
+          <td width="85%">
+            <p>(), call</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>ix</p>
+          </td>
+          <td width="85%">
+            <p>[]</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>qu</p>
+          </td>
+          <td width="85%">
+            <p>? </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>st</p>
+          </td>
+          <td width="85%">
+            <p>sizeof (a type)</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>sz</p>
+          </td>
+          <td width="85%">
+            <p>sizeof (an expression)</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>at</p>
+          </td>
+          <td width="85%">
+            <p>alignof (a type)</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>az</p>
+          </td>
+          <td width="85%">
+            <p>alignof (an expression)</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>cv &lt;type&gt;</p>
+          </td>
+          <td width="85%">
+            <p>(cast)</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>v &lt;digit&gt;</p>
+          </td>
+          <td width="85%">
+            <p>Extended operator</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>-</p>
+          </td>
+          <td width="85%">
+            <p>-</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>u&lt;name&gt; [';']</p>
+          </td>
+          <td width="85%">
+            <p>Named operator.</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>is</p>
+          </td>
+          <td width="85%">
+            <p>A is Type, A instanceof Type</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>ex</p>
+          </td>
+          <td width="85%">
+            <p>A extends Type</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>sp</p>
+          </td>
+          <td width="85%">
+            <p>A super Type</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-bottom: 0in;"><br>
+    </p>
+    <p><br>
+      Generic Placeholders:</p>
+    <table border="1" cellpadding="4" cellspacing="3" width="100%">
+      <colgroup><col width="39*"> <col width="217*"> </colgroup><tbody>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>Name</p>
+          </td>
+          <td width="85%">
+            <p>Description</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>GA&lt;letter&gt;</p>
+          </td>
+          <td width="85%">
+            <p>Generic A..Z (U is N/E)</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>Gs</p>
+          </td>
+          <td width="85%">
+            <p>Generic K</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>Gt</p>
+          </td>
+          <td width="85%">
+            <p>Generic T</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>Gu&lt;name&gt;;</p>
+          </td>
+          <td width="85%">
+            <p>Named generic parameter.<br>
+              Note: Redundant, "U&lt;name&gt;;" serves same role.<br>
+            </p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>Gx</p>
+          </td>
+          <td width="85%">
+            <p>Generic U</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>Gy</p>
+          </td>
+          <td width="85%">
+            <p>Generic V</p>
+          </td>
+        </tr>
+        <tr valign="TOP">
+          <td width="15%">
+            <p>Gz</p>
+          </td>
+          <td width="85%">
+            <p>Generic ?</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p><br>
+      <br>
+      <br>
+    </p>
+    <h4>Static Arrays</h4>
+    <p><br>
+      (Deprecated) If the type is followed by a number, it indicates
+      that this is an array, with a comma allowing multidimensional
+      arrays.<br>
+      <br>
+      Example:<br>
+      bar:PXfoo;4,4<br>
+      struct foo *bar[4][4];<br>
+      <br>
+      Example:<br>
+      Uvec4;16<br>
+      Array of 16 4-vectors.<br>
+      <br>
+      These arrays will specify memory with the specified physical
+      layout.<br>
+      <br>
+      New Notation<br>
+      A4,4;PXfoo;<br>
+      A16;Uvec4;</p>
+    <h4>Object References</h4>
+    <p>'L&lt;classname&gt;;'<br>
+      <br>
+      These will refer to a specific object type, where classname will
+      be the qualified class-name for the object in question.<br>
+      <br>
+      This will differ from 'PX&lt;name&gt;;' in that 'X&lt;name&gt;;'
+      will refer to a specific and known structural type (the physical
+      layout is thus known). Likewise, I says nothing about the pointer
+      itself, or the nature of the pointed-to memory.<br>
+      <br>
+      On the other hand, 'r' specifies that a dynamically-typed
+      reference is given, and thus the nature of the pointer and the
+      kind of memory it can point to, however, 'r' does not specify
+      anything about 'what' is referenced.<br>
+      <br>
+      'L&lt;classname&gt;;' will then specify that this is a dynamically
+      typed reference (similar to 'r'), but will also specify that it is
+      a reference to a specific abstract type (for example, the class
+      with the given classname, or a class derived from this class), but
+      will not specify the physical layout or concrete type of the
+      referenced memory (unlike 'X' or 'PX'). In many cases, 'L' may be
+      treated as simply a special case of 'r' (differing primarily in
+      terms of assignment, where the implementation is strongly
+      encouraged to ensure that the object being referenced is of the
+      appropriate class, as otherwise things may be allowed to break).<br>
+      <br>
+      The exact structure and meaning of 'classname' will be internal to
+      the object system, but the current idea is that it will represent
+      a heirarchy of the form '[&lt;name&gt;/]*&lt;class&gt;'. For
+      example, "myApp/custom/Foo".<br>
+      <br>
+      <br>
+    </p>
+    <h4>Dynamic Arrays</h4>
+    <p>'Q' will be similar to 'P' in spirit, but differ in practice
+      similarly to how 'L' differs from 'PX'. 'Q' will specify that a
+      reference is used to a dynamically-managed array holding members
+      with the given type, but will specify neither the physical layout
+      of the array nor of the referenced values.<br>
+      Presently this will be limited to reference based types, such as
+      'Q', 'L', and 'r'.<br>
+      <br>
+      For example: 'QQr' will be an array of arrays of references, and
+      "QLmyApp/custom/Foo;" will be an array of objects.<br>
+      <br>
+      'C&lt;order&gt;*' will be overloaded for dynamic square arrays.<br>
+      For example, 'C2i' will be a 2D array of integers, or 'C3r' a 3D
+      array of dynamic references.<br>
+      <br>
+      <br>
+    </p>
+    <h4>Functions and Methods</h4>
+    <p>Signature strings as applied to functions and methods will have a
+      slightly modified notation, namely in that a specific designation
+      of args and return type may be given.<br>
+      <br>
+      The basic layout will be:<br>
+      '(&lt;args&gt;)&lt;ret&gt;'.<br>
+      <br>
+      Examples:<br>
+      "int foo();" gives "()i";<br>
+      "double bar(int x, int y);" gives "(ii)d".<br>
+      <br>
+      This whole unit will be treated as a single type-unit, so, for
+      example, a function-pointer could be specified like this:<br>
+      "P(d)i" for the type "int (*)(double)".<br>
+      <br>
+      The exact meaning or interpretation of this type will depend on
+      the context of its usage.<br>
+      <br>
+      Calling convention will be applied via the use of flags, and will
+      be applied to the return type.<br>
+      For example "(ii)Fsi" will indicate that the function uses the
+      stdcall calling convention (on x86).<br>
+      Applying such a modifier before the opening parenthesis will be
+      invalid, and modifiers should not be used if their semantics are
+      default or can be easily inferred from context.<br>
+      <br>
+      <br>
+    </p>
+    <h4>Generics</h4>
+    <p>'&lt;' &lt;args&gt; '&gt;' &lt;type&gt;<br>
+      This will be similar to a method call, but will encode a generic.<br>
+      <br>
+      For example:<br>
+      "Array&lt;string&gt;" could give "&lt;Cs&gt;LSystem/Array;"<br>
+      <br>
+      Within a generic, 'Gz' will be used for the wildcard ("?").</p>
+    <p><br>
+      Consider:<br>
+      "<span style="font-weight: bold;">G(</span><span
+        style="font-style: italic;">args</span><span style="font-weight:
+        bold;">)</span><span style="font-style: italic;">type</span>"
+      instead.<br>
+    </p>
+    <p><br>
+      Gt<br>
+    </p>
+    <p><br>
+      Expressions<br>
+      "E&lt;op&gt;;" will encode an operator, where op identifies the
+      specific operator.<br>
+      Generally, this will be followed by any arguments for said
+      operators.<br>
+      <br>
+      Eex;GzLFoo/Bar;<br>
+      <br>
+    </p>
+    <h4>Attributes<br>
+    </h4>
+    <p>'FDu' <span style="font-style: italic;">&lt;name&gt; </span>';'<br>
+      Will declare an attribute with no arguments.<br>
+    </p>
+    <p>'FD' '(' &lt;args&gt; ')' 'u' &lt;name&gt; ';'<br>
+      Will declare an attribute with arguments.<br>
+    </p>
+    <p>'u' &lt;name&gt; ';'<br>
+      Within an attribute arguments list will serve as a literal name or
+      value.<br>
+    </p>
+    <p><br>
+      Note that this will not map exactly to "__declspec" or
+      "__attribute__", in that it will combine both types, and will have
+      a single item for a single contained attribute, rather than the
+      whole group (for example, an "__attribute__" tag containing
+      multiple attributes will generate multiple attribute entries).<br>
+    </p>
+    <p>for example, "__declspec(dllimport)" will become "FDudllimport;"
+      and "__attribute__((align(16)))" will become "FD(u16;)ualign;".<br>
+    </p>
+    <p>Attributes will be placed in the same places as other modifiers.<br>
+    </p>
+    <p>"__declspec(dllimport) int foo(int x);" could be encoded as
+      "(i)FDudllimport;i"<br>
+    </p>
+    <p><br>
+      Thought:<br>
+      Add shorthands for common attribute names (dllimport, dllexport,
+      ...).<br>
+    </p>
+    <p><br>
+    </p>
+    <h4>Structual Types</h4>
+    <p>'S' &lt;mod&gt;* '(' &lt;type&gt;* ')'<br>
+      Will declare a structural type. These will not be allowed within
+      ordinary signatures, and are instead intended for use within
+      serialized data.<br>
+      Modifiers may be used to change aspects of the structure, and may
+      include "special" modifiers.<br>
+      <br>
+      <br>
+    </p>
+    <h4>Context Dependent Types</h4>
+    <p style="margin-bottom: 0in;">'A&lt;char&gt;', where char is a
+      character in the range 'a'..'z', will be used for context
+      dependent types.<br>
+      <br>
+      Context dependent types will differ from ordinary types in that
+      they will not have a defined meaning outside of a particular use
+      case, and are by extension their use is invalid in a cannonical
+      signature (which is any signature which may be reused by multiple
+      components or subsystems). However, their notation is defined for
+      sake of consistency.<br>
+      <br>
+      'u' will be special, in that it will have the syntax
+      'Au&lt;name&gt;;'.<br>
+      This type will refer to a context-dependent named type.<br>
+      <br>
+      'AA&lt;char&gt;', 'AB&lt;char&gt;', 'AC&lt;char&gt;', and
+      'AD&lt;char&gt;' will be reserved for the same purpose, where each
+      will follow the same basic pattern.</p>
+    <h4>Notes</h4>
+    <p>Q, C#, and L, as can be noted, are internally handled by making
+      use of the object system for handling accesses, rather than by
+      them having any concrete or defined layout in memory. In practical
+      terms, this is to be accomplished via the 'Linker Meta Function'
+      feature, which has bindings into the object system's machinery.<br>
+      <br>
+      <br>
+    </p>
+    <h2>XCall</h2>
+    <p>Idea:<br>
+      <br>
+      XCall is a calling convention for x86 and x86-64, and may be used
+      in place of the SysV or Win64 conventions on x86-64. Its purpose
+      is to simplify code generation in some cases (such as when writing
+      a compiler), and also to annotate function names (as a form of
+      name mangling).<br>
+      <br>
+      The XCall calling convention has been deprecated. Instead, the
+      native calling convention for a given architecture will be used,
+      such as cdecl on 32-bit x86 (Win32 or Linux), Win64 on Win64, or
+      SysV / AMD64 on Linux x86-64. In this case, XCall will serve as a
+      name mangling scheme.<br>
+      <br>
+      A non-default calling convention may be forced via the use of
+      signature flags.</p>
+    <p><br>
+      <br>
+    </p>
+    <h2>General Naming Conventions</h2>
+    <p><br>
+      <br>
+    </p>
+    <h4>General Name Rules</h4>
+    <p>In general, names given in this spec (and in names used internal
+      to the project), will omit the leading underscore. This underscore
+      will typically be added when producing output object files (such
+      as COFF). Thus, internally names will be stored using the
+      Linux/ELF convention. As such, when a name is specified with a
+      leading underscore, in effect, 2 leading underscores will be
+      present on relevant architectures (such as WIN32/COFF).<br>
+      <br>
+      Namespace qualification in names will be done by using '/' as the
+      separator (within abstract names), however, a '/' may not directly
+      appear in any linkable symbools. In this case, the rule will be
+      that any function or variable which uses namespaces (or, for that
+      matter, function overloading or other such features) is to be
+      stored according to the XCall naming rules (or, in some cases
+      another equivalent name-mangling scheme may be used).<br>
+      <br>
+      It is likewise the case that '/' will also serve to qualify
+      methods via their class.<br>
+      <br>
+      For example:<br>
+      namespace Foo {<br>
+      &nbsp;&nbsp;&nbsp; class Bar {<br>
+      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp; void baz();<br>
+      &nbsp;&nbsp;&nbsp; }<br>
+      }<br>
+      <br>
+      The method in question will have the qualified name "Foo/Bar/baz",
+      and the name to be mangled (according to XCall rules) would be
+      "Foo/Bar/baz(LFoo/Bar;)v". Note that the "this" argument is
+      implicitly added as the first argument for the method, even though
+      the method's signature is "()v". This allows methods to be
+      considered as essentially the same calling convention as
+      functions. Note that for all other uses (for example, when
+      considering the method's signature in the context of it being a
+      method), the signature will remain as "()v".<br>
+      <br>
+      This rule will differ slightly for the case of unmanaged classes,
+      which will use 'PX' rather than 'L'.<br>
+      <br>
+      namespace Foo {<br>
+      &nbsp;&nbsp;&nbsp; class Bar {&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;
+      //assume this is C++<br>
+      &nbsp;&nbsp;&nbsp; &nbsp;&nbsp; void baz();<br>
+      &nbsp;&nbsp;&nbsp; };<br>
+      }<br>
+      <br>
+      Then the full (XCall) name will be "Foo/Bar/baz(PXFoo/Bar;)v".<br>
+      <br>
+      At present I have not decided on the rule to apply in the case of
+      static methods. The most likely solution is that they will either
+      be passed nothing, or a reference to the given owner class (to
+      allow overloading of static methods).</p>
+    <h4>General Mangling</h4>
+    <p>For most things a common mangling scheme will be used.<br>
+      This scheme will be generally used for embedding arbitrary strings
+      into linker-safe names, which will use a convention which is
+      reasonable for use both in raw linker symbols, as well as in C.<br>
+      <br>
+      The strings will be mangled by replacing certain characters with
+      escape sequences:<br>
+      '_' with '_1';<br>
+      ';' with '_2';<br>
+      '[' with '_3';<br>
+      '(' with '_4';<br>
+      ')' with '_5';<br>
+      '/' with '_6'.<br>
+      <br>
+      Alphanumeric characters are embedded unchanged.<br>
+      '_9xx' encodes a character in the range of 1 to 255 (ASCII range);<br>
+      '_0xxxx' encodes a character outside this range (Unicode BMP).<br>
+      <br>
+      Note that surrogate pair coding may be used for codepoints outside
+      the BMP.<br>
+      <br>
+      When this mangling scheme is used, the special combination '__'
+      will terminate a given mangled string, and as such may be used as
+      a separator.<br>
+      <br>
+      Addition ('_a'..'_z' will be mapped to character shortcuts):</p>
+    <pre>Lttr: abcdefghijklmnopqrstuvwxyz<br>Char: +],.=\&gt;#'-:&lt;*!|?"%$~{}`^&amp;@</pre>
+    <p><br>
+      <br>
+    </p>
+    <h4>XCall</h4>
+    <p>XCall will make use of name mangling for all names. This will
+      simplify the auto-generation of stubs when linking against
+      existing code which may be compiled to use a different calling
+      convention (the mangled name will serve to tell the stub generator
+      how the stack frame is laid out in order so that it can re-package
+      the arguments as needed).<br>
+      <br>
+      The function name will include a prefix:<br>
+      '_XC_' is used for ordinary functions and for calls to a function
+      which accepts a fixed number of arguments;<br>
+      '_XV_' is used when calling vararg functions, and also for the
+      call-target of such a call (this symbol will be either an alias or
+      a jump to the actual function implementing the vararg function, or
+      a conversion stub if an inter-convention call is taking place,
+      however this will never be the proper name of the vararg function
+      in question).<br>
+      <br>
+      This prefix will be followed by a mangled version of the name and
+      signature string.<br>
+      <br>
+      Note that it is the case with ordinary function calls that the
+      mangled name used by the caller and receiver are required to be
+      equivalent.<br>
+      <br>
+      The signature in this case will represent the arguments being
+      accepted by the receiver, and not the types of values on the stack
+      from the POV of the caller (It is reasonable that the types not
+      match exactly between them, for example, as the result of a cast
+      or implicit type conversion).<br>
+      <br>
+      In the case of Vararg functions, the signature will represent the
+      values passed on the stack from the POV of the caller, and so the
+      same target function may be called by any number of possible
+      names. It is then the responsibility of the linker to locate the
+      correct call-target for a given name and signature and/or generate
+      the correct stub machinery. Note that those arguments common to
+      both the caller and the callee need to be of the same type.</p>
+    <h4>Thread Local Storage</h4>
+    <p>TLS will be handled by the compiler by emitting calls to special
+      magic thunks.<br>
+      <br>
+      _XT_&lt;name&gt;__&lt;size&gt;_&lt;reg&gt;<br>
+      <br>
+      Where:<br>
+      '_XT_' means 'TLS'.<br>
+      'name' gives the mangled name for the variable.<br>
+      'size' gives the size (in bytes) needed for the TLS var.<br>
+      'reg' gives the register which should contain the returned
+      pointer.<br>
+      <br>
+      So, when called, this function will return a pointer to the
+      storage for the thread-local-variable in question. The value is
+      returned in the requested register, but no other registers are to
+      be effected.</p>
+    <h4>Linker Meta Function</h4>
+    <p>Idea:<br>
+      This will specify how runtime code could register itself with the
+      linker, such that attempts to resolve certain undefined symbols
+      may be routed back into the runtime, which is expected to produce
+      code for the requested function (as in, special handler thunks),
+      or may also be used in supplying data.<br>
+      <br>
+      If the handler builds a code fragment which exports the given
+      symbol name, all further attempts to resolve this symbol will use
+      the symbol exported in the generated code fragment. The other
+      option will be simply to return a pointer to an anonymous thunk,
+      allowing each request to be resolved potentially to a different
+      address.<br>
+      <br>
+      The request may also be passed arguments, which will describe the
+      specifics of the requested thunk or data (such as specific types,
+      class names, register names, numerical args, ...).<br>
+      <br>
+      In general, some number of fixed-arguments will be used for a
+      given handler, and additional arguments may be given as
+      'properties'. A property is essentially an ordinary argument, but
+      follows the form '&lt;name&gt;=&lt;value&gt;'.<br>
+      <br>
+      The calling convention of any generated thunks is purely a matter
+      of agreement between the caller and callee. The assumed use here
+      is to generate specialized code fragments, as opposed to more
+      general purpose functions, so typically any combination of stack,
+      registers, shared variables/memory, ... may be used.<br>
+      <br>
+      It will be assumed (as a mater of practice) that the same runtime
+      code be responsible both for generating the request names, as well
+      as for generating the thunks.<br>
+      <br>
+      An example use case would be for some of the runtime code to
+      register itself with the compiler, and when generating code for
+      particular cases may insert calls to meta-handlers, which may be
+      capable of tasks which would not be reasonable to do inline.<br>
+      <br>
+      <br>
+      Symbol Structure:<br>
+      _XM_&lt;handler&gt; ['__' &lt;arg&gt;]*<br>
+      <br>
+      Where handler and each arg are strings mangled according to the
+      general mangling convention.<br>
+      <br>
+      Callback:<br>
+      typedef void *(*basm_meta_ft)(char *sym, char *name, char **args);<br>
+      int BASM_RegisterLinkMeta(char *name, basm_meta_ft fcn);<br>
+      <br>
+      Register a meta-handler.<br>
+      The 'sym' argument is the raw symbol, whereas 'name' and 'args'
+      are the parsed and unmangled names and arguments (passed as a
+      NULL-terminated list, where args[0] is the first argument, ...).<br>
+    </p>
+    <p><br>
+      There will be an assember pseudo-op for xmeta handler calls:<br>
+      "xmeta request, args..."<br>
+    </p>
+    <p><br>
+    </p>
+    <h4>Meta Triggers</h4>
+    <p><br>
+      A meta trigger is similar to, but different from, a meta handler.<br>
+      A meta trigger will be called after a piece of code is linked, and
+      will identify the address of any trigger symbols.<br>
+      <br>
+      This could be used for passing info from newly linked code into
+      the runtime.<br>
+      <br>
+      Similarly, each meta-triggered symbol is to have a unique name,
+      even if this means that an extra argument is provided simply to
+      serve as a gensym.<br>
+      <br>
+      Additionally, trigger requests may be queued until an appropriate
+      handler is registered, but each symbol will only be handled once
+      (unless it is later re-linked).<br>
+      <br>
+      <br>
+      The symbol structure for triggers is:<br>
+      _XN_&lt;handler&gt; ['__' &lt;arg&gt;]*<br>
+      <br>
+      And uses the callback:<br>
+      typedef void (*basm_mtrg_ft)(char *sym, char *name, char **args,
+      void *ptr);<br>
+      int BASM_RegisterLinkMetaTrigger(char *name, basm_mtrg_ft fcn);<br>
+    </p>
+    <p><br>
+      There will be an assember pseudo-op for xnotify triggers:<br>
+      "xnotify request, args..."<br>
+    </p>
+    <p><br>
+    </p>
+    <h4>Object System Bindings</h4>
+    <p>This will provide an ASM-level interface for the object system.<br>
+      This will be accomplished via the Link Meta Function interface.<br>
+      <br>
+      Handlers:<br>
+      <br>
+      FieldRef &lt;classname&gt; &lt;fieldname&gt; &lt;reg_ret&gt;
+      &lt;reg_this&gt; &lt;regs=mask&gt;<br>
+      <br>
+      Will return the address of the requested field.<br>
+      <br>
+      The 'classname' and 'fieldname' arguments identify the field in
+      question. The 'reg_ret' and 'reg_this' argument identify the
+      registers used for returning the field address, and for passing in
+      the object, and may be allowed to be the same register. No
+      registers apart from the return register are to be modified by
+      this call.<br>
+      <br>
+      The 'regs' property is a mask of the free registers (1 means a
+      given register is free).<br>
+      In x86, bits 0..7 give the GPRs (0=eax, 1=ecx, 2=edx, 3=ebx,
+      4=esp, 5=ebp, 6=esi, 7=edi), and bits 8..15 give the status of
+      xmm0..xmm7.<br>
+      In x86-64, bits 16..23 give the status of r8..r15, and bits 24..31
+      give the status of xmm8..xmm15.<br>
+      <br>
+      MethodRef &lt;classname&gt; &lt;methodname&gt; &lt;reg_ret&gt;
+      &lt;reg_this&gt; &lt;regs=mask&gt;<br>
+      <br>
+      This will be similar to FieldRef, but will instead return a
+      method.<br>
+      In this case, the method will be a valid function pointer, but
+      with the first argument being the 'this' pointer.<br>
+      <br>
+      Methodname will combine the method name and signature. Note that
+      in this case, the method is local (class relative), and also that
+      the signature does not contain the implicit "this" argument (even
+      though the 'this' argument is present in the returned function
+      pointer).<br>
+      <br>
+      <br>
+      StaticFieldRef &lt;classname&gt; &lt;fieldname&gt; &lt;reg_ret&gt;
+      &lt;regs=mask&gt;<br>
+      StaticMethodRef &lt;classname&gt; &lt;methodname&gt;
+      &lt;reg_ret&gt; &lt;regs=mask&gt;<br>
+      <br>
+      Similar to the above, but will be specialized for static fields
+      and methods. The returned static method will be called as an
+      ordinary function call (no implicit 'this' argument). This may not
+      be used for non-static methods.<br>
+      <br>
+      <br>
+      ArrayRef &lt;sig&gt; &lt;reg_ret&gt; &lt;reg_index&gt;
+      &lt;regs=mask&gt;<br>
+      ArrayMultiRef &lt;sig&gt; &lt;reg_ret&gt; &lt;reg_index&gt;
+      &lt;regs=mask&gt;<br>
+      <br>
+      This will index a dynamic array, and in a manner similar to
+      FieldRef, will return the address of the requested array index. As
+      in the other calls, only reg_ret will be modified by the call.<br>
+      <br>
+      ArrayRef is for flat or jagged arrays, and where reg_index is an
+      integer.<br>
+      ArrayMultiRef is for multi-dimensional/square arrays, and where
+      reg_index points to an array of indices (each index is 32 bits).<br>
+      <br>
+      These will return NULL in the case of a bounds-check failure.<br>
+      <br>
+      <br>
+      ClassRef &lt;classname&gt; &lt;reg_ret&gt; &lt;regs=mask&gt;<br>
+      <br>
+      This will get a handle for a specific class type.<br>
+      <br>
+      <br>
+      InstanceOf &lt;classname&gt; &lt;reg_ret&gt; &lt;reg_obj&gt;
+      &lt;regs=mask&gt;<br>
+      <br>
+      This will check if an object is an instance of a given class. The
+      return will be a boolean.<br>
+    </p>
+    <p><br>
+    </p>
+    <h4>Dynamic Ops</h4>
+    <p>DyLoadInt &lt;reg&gt; &lt;value&gt; &lt;regs=mask&gt;<br>
+      DyLoadLong &lt;reg&gt; &lt;value&gt; &lt;regs=mask&gt;<br>
+      DyLoadFlonum &lt;reg&gt; &lt;value&gt; &lt;regs=mask&gt;<br>
+      DyLoadSymbol &lt;reg&gt; &lt;value&gt; &lt;regs=mask&gt;<br>
+      DyLoadKeyword &lt;reg&gt; &lt;value&gt; &lt;regs=mask&gt;<br>
+      DyLoadString &lt;reg&gt; &lt;value&gt; &lt;regs=mask&gt;<br>
+    </p>
+    <p>Load the costant value into the register.<br>
+      <br>
+    </p>
+    <p>&lt;unop&gt; &lt;dstreg&gt; &lt;sreg&gt; &lt;regs=mask&gt;<br>
+    </p>
+    <p>Perform a unary operation of the source-register, putting the
+      result into the destination register.<br>
+    </p>
+    <p>Unop map be one of:<br>
+      DyNeg, DyNot, DyLNot, DyDefer, DyCar, DyCdr<br>
+      DyCopyValue, DyDropValue, DyDelete, DyClone<br>
+    </p>
+    <p><br>
+      &lt;binop&gt; &lt;dstreg&gt; &lt;lreg&gt; &lt;rreg&gt;
+      &lt;regs=mask&gt;<br>
+    </p>
+    <p>Perform a binary arithmetic operation on two registers and put
+      the result into dstreg.<br>
+      The destination register may be either of the input registers or
+      an unrelated register.<br>
+    </p>
+    <p>Binop may be one of:<br>
+      DyAdd, DySub, DyMul, DyDiv<br>
+      DyMod, DyAnd, DyOr, DyXor<br>
+      DyShl, DyShr, DyCons<br>
+    </p>
+    <br>
+    &lt;trinop&gt; &lt;dstreg&gt; &lt;lreg&gt; &lt;mreg&gt; &lt;rreg&gt;
+    &lt;regs=mask&gt;<br>
+    <p>Perform a trinary operation on 3 registers.<br>
+      DySetKey, DyApplyMethodN.<br>
+    </p>
+    <br>
+    DyGetKey &lt;dstreg&gt; &lt;obj&gt; &lt;key&gt; &lt;regs=mask&gt;<br>
+    DySetKey &lt;dstreg&gt; &lt;obj&gt; &lt;key&gt; &lt;val&gt;
+    &lt;regs=mask&gt;<br>
+    <p>Get or set an object key (array index or slot name).<br>
+    </p>
+    DyGetSlot &lt;dstreg&gt; &lt;obj&gt; &lt;slotname&gt;
+    &lt;regs=mask&gt;<br>
+    DyGetDelegate &lt;dstreg&gt; &lt;obj&gt; &lt;slotname&gt;
+    &lt;regs=mask&gt;<br>
+    <br>
+    DySetSlot &lt;dstreg&gt; &lt;obj&gt; &lt;slotname&gt; &lt;val&gt;
+    &lt;regs=mask&gt;<br>
+    DyBindSlot &lt;dstreg&gt; &lt;obj&gt; &lt;slotname&gt; &lt;val&gt;
+    &lt;regs=mask&gt;<br>
+    DyTrySetSlot &lt;dstreg&gt; &lt;obj&gt; &lt;slotname&gt; &lt;val&gt;
+    &lt;regs=mask&gt;<br>
+    DySetDelegate &lt;dstreg&gt; &lt;obj&gt; &lt;slotname&gt;
+    &lt;val&gt; &lt;regs=mask&gt;<br>
+    <br>
+    Get or set an object slot (by a constant name).<br>
+    <p><br>
+      DyMethodCall &lt;dstreg&gt; &lt;obj&gt; &lt;name&gt; &lt;args&gt;
+      &lt;n_args&gt; &lt;regs=mask&gt;<br>
+      Call a method "dstreg=obj.name(args);".<br>
+      The args parameter is a register holding a pointer to the
+      arguments list,<br>
+      and n_args as the argument count (either an integer value or a
+      register name).<br>
+      <br>
+    </p>
+    <p>DyMethodCallN &lt;dstreg&gt; &lt;obj&gt; &lt;name&gt;
+      &lt;args&gt; &lt;regs=mask&gt;<br>
+    </p>
+    <p>Call a method, but with args as a list.<br>
+    </p>
+    <p><br>
+    </p>
+    <p>DyApplyMethod &lt;dstreg&gt; &lt;obj&gt; &lt;fcn&gt; &lt;args&gt;
+      &lt;n_args&gt; &lt;regs=mask&gt;<br>
+    </p>
+    <p>Apply a method (function-object) with the arguments and 'this'
+      given by obj.<br>
+      The args parameter is a register holding a pointer to the
+      arguments list,<br>
+      and n_args as the argument count (either an integer value or a
+      register name).<br>
+      <br>
+    </p>
+    <p>DyApplyMethodN &lt;dstreg&gt; &lt;obj&gt; &lt;fcn&gt;
+      &lt;args&gt; &lt;regs=mask&gt;<br>
+    </p>
+    <p>Apply a method, but with args as a list.<br>
+    </p>
+    <p><br>
+    </p>
+    <p>DyCall &lt;dstreg&gt; &lt;name&gt; &lt;args&gt; &lt;n_args&gt;
+      &lt;regs=mask&gt;<br>
+    </p>
+    <p>Call a function (global/toplevel).<br>
+      <br>
+    </p>
+    <p>DyNew &lt;dstreg&gt; &lt;name&gt; &lt;args&gt; &lt;n_args&gt;
+      &lt;regs=mask&gt;<br>
+    </p>
+    <p>Create a new object instance (toplevel/qname).<br>
+      <br>
+    </p>
+    <h2>Metadata Cache</h2>
+    <p><br>
+      General Info about the Metadata Cache<br>
+      <br>
+      At present, the metadata cache is filled via the compiler.<br>
+      Using 'ccLoadModule()' on relevant header files should be
+      sufficient to keep it current.<br>
+      <br>
+      void ccBindKey(char *key, char *val);<br>
+      char *ccLookupKey(char *key);<br>
+      <br>
+      void dyllMetaBindKey(char *key, char *val);<br>
+      char *dyllMetaLookupKey(char *key);<br>
+      <br>
+      These will allow looking up and binding keys.<br>
+      Binding a key to a value of NULL will serve to delete the key.<br>
+      ccLookupKey will return NULL if the key does not exist.<br>
+      <br>
+      void dyllMetaCommit();<br>
+      int dyllMetaLoadDB(char *name);<br>
+      int dyllMetaSaveDB(char *name);<br>
+      <br>
+      These allow loading and saving the database.<br>
+      Commit will make sure the contents of the DB are written to disk.
+      <br>
+      <br>
+      LookupKey and BindKey may accept special commands as the key
+      (rather than a raw key name).<br>
+      <br>
+      "$next <i>path</i>" or "$next <i>key</i>" <br>
+      <br>
+      Get the next node or key/value pair following the indicated path.<br>
+      For a key/value pair, this returns the name of the next leaf-key,
+      rather than a full path.<br>
+      <br>
+      "$prev <i>path</i>", "$child <i>path</i>", "$parent <i>path</i>"<br>
+      Get other relations associated with a given node.<br>
+      For relations between nodes, the returned value is the full path.<br>
+      <br>
+      "$leaf <i>path</i>"<br>
+      Returns the name of the first leaf.<br>
+      <br>
+      "$find_first <i>key value</i>"<br>
+      "$find_next <i>key value</i>"<br>
+      Find the first-subnode, or next node, with the given key set to
+      the given value.</p>
+    <h4>Structure of the Cache:</h4>
+    <p>The cache has a vaguely similar structure to that of the Windows
+      System Registry, only that at present all keys and values are
+      string based (ASCII or UTF-8).</p>
+    <h4>General Info</h4>
+    <p><br>
+      All keys are accessed via a 'path' or 'key' (the term 'key' here
+      will refer to the entire path+name combination, or to the specific
+      key/value pair).<br>
+      <br>
+      The path will be hierarchical, and will consist of a sequence of
+      names separated via '/'.<br>
+      <br>
+      Names may consist of the following characters in any order:<br>
+      'A'..'Z', 'a'..'z', '0'..'9', '_', '-', '.'<br>
+      <br>
+      As well as all graphical Unicode code points (no control
+      characters, reserved code points, surrogate pairs, ...). UTF-8
+      should be normalized as to not contain surrogate pairs (they
+      should instead be represented as proper UTF-8 code points).<br>
+      <br>
+      GUIDs are also allowed, provided they are formatted in the usual
+      manner:<br>
+      {XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}<br>
+      <br>
+      This syntax may be later used to internally "compact" the GUID
+      (such as base-85).<br>
+      <br>
+      <br>
+      For the time being, all other characters in the ASCII range will
+      be disallowed.<br>
+      <br>
+      <br>
+      The path will be separated from the final key name via ':', for
+      example: "foo/bar:baz".<br>
+      <br>
+      Similarly, the final key may be left off, in which case it will
+      refer to the "default" key, which will be given the name "_".<br>
+      <br>
+      As a result "foo/bar/baz" and "foo/bar/baz:_" will refer to the
+      same key/value pair.<br>
+      <br>
+      <br>
+      Addition:<br>
+      Any name as part of the path whose first character is '.' will not
+      be stored externally, nor will any of its child entries (making
+      them essentially volatile).<br>
+      Similarly, any key/value pairs with the first character being '.'
+      will not be stored.<br>
+      <br>
+      For example, in the case of "foo/.bar/baz", ".bar" and all of its
+      descendants will be omitted from the stored database.<br>
+      Likewise "foo/bar:.baz" will identify a particular key which will
+      be omitted.<br>
+      <br>
+      Paths beginning with "./" will be regarded as context-dependent
+      relative paths.<br>
+      <br>
+      <br>
+    </p>
+    <h4>Conventions</h4>
+    <p style="margin-bottom: 0in;"><br>
+      The path of a key will typically refer to the namespace or
+      qualified-name of the item being described.<br>
+      <br>
+      In general, each path will use the default key to indicate the
+      type of item described by this path. Similarly, any sub-paths are
+      assumed to be valid members of the type contained by this path.<br>
+      <br>
+      A few types will be defined:</p>
+    <table border="1" cellpadding="2" cellspacing="3" width="100%">
+      <colgroup><col width="45*"> <col width="211*"> </colgroup><tbody>
+        <tr>
+          <td width="18%">
+            <p>ID</p>
+          </td>
+          <td width="82%">
+            <p>Description</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="18%">
+            <p>func</p>
+          </td>
+          <td width="82%">
+            <p>The item is an ordinary function (toplevel or namespace).</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="18%">
+            <p>var</p>
+          </td>
+          <td width="82%">
+            <p>The item is a variable (toplevel or namespace).</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="18%">
+            <p>type</p>
+          </td>
+          <td width="82%">
+            <p>The item is a type definiton.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="18%">
+            <p>struct</p>
+          </td>
+          <td width="82%">
+            <p>The item is a structure.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="18%">
+            <p>union</p>
+          </td>
+          <td width="82%">
+            <p>The item is a union.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="18%">
+            <p>class</p>
+          </td>
+          <td width="82%">
+            <p>The item is a class (managed or unmanaged).</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="18%">
+            <p>interface</p>
+          </td>
+          <td width="82%">
+            <p>The item is an interface.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="18%">
+            <p>field</p>
+          </td>
+          <td width="82%">
+            <p>The item is a field.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="18%">
+            <p>method</p>
+          </td>
+          <td width="82%">
+            <p>The item is a method.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="18%">
+            <p>property</p>
+          </td>
+          <td width="82%">
+            <p>The item is a property.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="18%">
+            <p>namespace</p>
+          </td>
+          <td width="82%">
+            <p>The item is a namespace.</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-bottom: 0in;"><br>
+      The following types will be regarded as Declaration types (DECL):<br>
+      &nbsp;&nbsp;&nbsp; func, var, type, field, method.<br>
+      The following types will be regarded as Object types (OBJ):<br>
+      &nbsp;&nbsp;&nbsp; struct, union, class, interface.<br>
+      <br>
+      Each type will have a collection of relevant keys:</p>
+    <table border="1" cellpadding="2" cellspacing="3" width="100%">
+      <colgroup><col width="37*"> <col width="45*"> <col width="174*">
+      </colgroup><tbody>
+        <tr>
+          <td width="15%">
+            <p>Name</p>
+          </td>
+          <td width="18%">
+            <p>Appears in</p>
+          </td>
+          <td width="68%">
+            <p>Description</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="15%">
+            <p>sig</p>
+          </td>
+          <td width="18%">
+            <p>DECL</p>
+          </td>
+          <td width="68%">
+            <p>Gives the type signature string.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="15%">
+            <p>flags</p>
+          </td>
+          <td width="18%">
+            <p>OBJ|DECL</p>
+          </td>
+          <td width="68%">
+            <p>Gives the item flags.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="15%">
+            <p>flagstr</p>
+          </td>
+          <td width="18%">
+            <p>OBJ|DECL</p>
+          </td>
+          <td width="68%">
+            <p>Flags represented via a string.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="15%">
+            <p>field.#</p>
+          </td>
+          <td width="18%">
+            <p>OBJ</p>
+          </td>
+          <td width="68%">
+            <p>Gives the name of a field for a particular index.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="15%">
+            <p>method.#</p>
+          </td>
+          <td width="18%">
+            <p>OBJ</p>
+          </td>
+          <td width="68%">
+            <p>Gives the name of a method for a particular index.</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="15%">
+            <p>property.#</p>
+          </td>
+          <td width="18%">
+            <p>OBJ</p>
+          </td>
+          <td width="68%">
+            <p>Gives the name of a property for a particular index.</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-bottom: 0in;"><br>
+      The primary reason for "field.#" and "method.#" is to allow the
+      proper ordering of fields to be established (particularly
+      important for struct and cclass, as this is needed to determine
+      the physical layout of the data and vtables). The "#" in the case
+      of the above refers to the index number, which is a set of
+      consecutive integers starting at 0. No gaps are allowed, as the
+      first non-assigned index will be assumed to be the last field or
+      method of the object in question. Similarly, "field.#" and
+      "method.#" will each have their own index space (so, an object
+      will have both "field.0" and "method.0").<br>
+      <br>
+      Flags will be assigned according to an "extended JVM" convention,
+      where the lower 16 bits are used for essentially the same
+      modifiers as in the JVM.<br>
+      <br>
+      The present flag assignments are as such (numerical flags
+      deprecated and subject to change):</p>
+    <table border="1" cellpadding="2" cellspacing="2" width="100%">
+      <tbody>
+        <tr>
+          <td>
+            <p>Flag Name</p>
+          </td>
+          <td>
+            <p>Value </p>
+          </td>
+          <td>
+            <p>Description</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_PUBLIC </p>
+          </td>
+          <td>
+            <p>0x0001 </p>
+          </td>
+          <td>
+            <p>Item has global visibility.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_PRIVATE </p>
+          </td>
+          <td>
+            <p>0x0002 </p>
+          </td>
+          <td>
+            <p>Item has local visibility (same class only)</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_PROTECTED </p>
+          </td>
+          <td>
+            <p>0x0004 </p>
+          </td>
+          <td>
+            <p>Item is visible within the owning package or namespace</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_STATIC </p>
+          </td>
+          <td>
+            <p>0x0008 </p>
+          </td>
+          <td>
+            <p>Depends on context. For class fields and methods, this
+              means that this value exists within the class, rather than
+              within instances. Static fields will typically be shared
+              with subclasses.<br>
+              In other cases, this may mean that a given function or
+              variable is specific to its owning module.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_FINAL </p>
+          </td>
+          <td>
+            <p>0x0010 </p>
+          </td>
+          <td>
+            <p>This means a given field or variable is immutable once
+              initialized.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_SUPER </p>
+          </td>
+          <td>
+            <p>0x0020 </p>
+          </td>
+          <td>
+            <p>I don't remember (JVM related)</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_SYNCHRONIZED </p>
+          </td>
+          <td>
+            <p>0x0020 </p>
+          </td>
+          <td>
+            <p>I don't remember (JVM related)</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_VOLATILE </p>
+          </td>
+          <td>
+            <p>0x0040 </p>
+          </td>
+          <td>
+            <p>Do not cache in a register, variable needs to be accessed
+              in a synchronous manner.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_TRANSIENT </p>
+          </td>
+          <td>
+            <p>0x0080 </p>
+          </td>
+          <td>
+            <p>I don't remember (JVM related)</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_NATIVE </p>
+          </td>
+          <td>
+            <p>0x0100 </p>
+          </td>
+          <td>
+            <p>May indicate that the method in question is JNI-based.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_INTERFACE </p>
+          </td>
+          <td>
+            <p>0x0200 </p>
+          </td>
+          <td>
+            <p>The class in question is an interface.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_ABSTRACT </p>
+          </td>
+          <td>
+            <p>0x0400 </p>
+          </td>
+          <td>
+            <p>The class in question can't be instantiated.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_STRICT </p>
+          </td>
+          <td>
+            <p>0x0800 </p>
+          </td>
+          <td>
+            <p>I forget (has something to do with math precision and
+              rounding issues...).</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p><br>
+            </p>
+          </td>
+          <td colspan="2" valign="TOP">
+            <p><br>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_SIGNED </p>
+          </td>
+          <td>
+            <p>0x00010000 </p>
+          </td>
+          <td>
+            <p>Integer is signed (redundant, use signature type
+              instead).</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_UNSIGNED </p>
+          </td>
+          <td>
+            <p>0x00020000 </p>
+          </td>
+          <td>
+            <p>Integer is unsigned (redundant, again use sig type).</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_EXTERN </p>
+          </td>
+          <td>
+            <p>0x00040000 </p>
+          </td>
+          <td>
+            <p>Variable is extern (mostly irrelevant)</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_CONST </p>
+          </td>
+          <td>
+            <p>0x00080000 </p>
+          </td>
+          <td>
+            <p>Var is const (in most cases this is similar to final).</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_INLINE </p>
+          </td>
+          <td>
+            <p>0x00100000 </p>
+          </td>
+          <td>
+            <p>This may indicate that a given function is intended to be
+              inlined.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_VIRTUAL </p>
+          </td>
+          <td>
+            <p>0x00200000 </p>
+          </td>
+          <td>
+            <p>This indicates that a method is virtual (this is the
+              default case for managed classes, but for unmanaged
+              classes indicates that a spot should be provided for this
+              method in the object's vtable).</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_PERSISTENT </p>
+          </td>
+          <td>
+            <p>0x00400000 </p>
+          </td>
+          <td>
+            <p>Var refers to persistent store (typically, this is also
+              interpreted as meaning that wide-pointers should be used
+              vs in-memory narrow-pointers).</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p><br>
+            </p>
+          </td>
+          <td colspan="2" valign="TOP">
+            <p><br>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_FUNCTION </p>
+          </td>
+          <td>
+            <p>0x00800000 </p>
+          </td>
+          <td>
+            <p>This is a function (redundant, deprecated)</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_CLASS </p>
+          </td>
+          <td>
+            <p>0x01000000 </p>
+          </td>
+          <td>
+            <p>This is a class (deprecated)</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_XCALL</p>
+          </td>
+          <td>
+            <p>0x01000000</p>
+          </td>
+          <td>
+            <p>Overloaded, use '__xcall' calling convention.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_STDCALL </p>
+          </td>
+          <td>
+            <p>0x02000000 </p>
+          </td>
+          <td>
+            <p>Use of '__stdcall' calling convention</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_CDECL </p>
+          </td>
+          <td>
+            <p>0x04000000 </p>
+          </td>
+          <td>
+            <p>Use of '__cdecl' calling convention</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_PROXY </p>
+          </td>
+          <td>
+            <p>0x08000000 </p>
+          </td>
+          <td>
+            <p>Indicates that '__proxy' should be used. In particular,
+              this means that a function should be linked to via a
+              relocatable indirect jump (rather than directly to the
+              function body), such that the linker may easily replace
+              the function absent having to relink code (and without so
+              much risk of stale function pointers).</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p><br>
+            </p>
+          </td>
+          <td colspan="2" valign="TOP">
+            <p><br>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_PACKED </p>
+          </td>
+          <td>
+            <p>0x00010000 </p>
+          </td>
+          <td>
+            <p>Overloaded, do not align members</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_GC </p>
+          </td>
+          <td>
+            <p>0x00020000 </p>
+          </td>
+          <td>
+            <p>Overloaded, class is managed</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>BGBCC_TYFL_NOGC </p>
+          </td>
+          <td>
+            <p>0x00100000 </p>
+          </td>
+          <td>
+            <p>Overloaded, class is unmanaged</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p><br>
+      Note that if a piece of information is redundant or conflicts
+      between the flags and sig strings, the sig strings are to take
+      precedence. Similarly, the exact treatment of flags is not
+      required to be consistent between programming languages (as a
+      result, different languages may result in variations as to what
+      flags will be set and clear and when). As such, the flags should
+      be regarded as primarily informative.<br>
+      <br>
+      <br>
+    </p>
+    <h4>External Serialization</h4>
+    <p><br>
+      The following external serialization is defined for the metadata
+      cache format:<br>
+      ;comment<br>
+      [path]<br>
+      key=value<br>
+      <br>
+      Where comments and blank lines are ignored, and whitespace is
+      allowed prior to the start of a line's contents (this may be used
+      for aesthetic purposes).<br>
+      Note: Comments are not ignored after key/value pairs, as all
+      characters following '=' up until the next newline are assumed to
+      be part of the key. As such, a comment would not be filtered,
+      rather, it would be assumed to be part of the value.<br>
+      <br>
+      The '[path]' line will indicate the current path of any following
+      pairs up until the next '[path]' line. Note that the path is fully
+      qualified.<br>
+      <br>
+      There is no particular ordering imposed for either paths or for
+      keys, however they should be arranged sequentially (paths and keys
+      sorted by name, in ascending order by character and with shorter
+      paths and keys preceding longer ones in the case where the former
+      is a prefix of the latter).<br>
+      <br>
+      The reason for this ordering is that it will both improve
+      "readability", as well as giving a point of reference for certain
+      loader optimizations.<br>
+      <br>
+      <br>
+    </p>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+4 15 -3  0 0 -2  -2 15 -3  0xFFFFFF
+0 0 -2  4 15 -3  4 0 -2  0xFFFFFF
+4 15 -3  4 0 2  4 0 -2  0xFFFFFF
+4 0 2  4 15 -3  4 15 3  0xFFFFFF
+0 0 2  4 15 3  -2 15 3  0xFFFFFF
+4 15 3  0 0 2  4 0 2  0xFFFFFF
+-2 15 3  0 0 -2  0 0 2  0xFFFFFF
+0 0 -2  -2 15 3  -2 15 -3  0xFFFFFF
+-2 15 3  4 15 -3  -2 15 -3  0xFFFFFF
+4 15 -3  -2 15 3  4 15 3  0xFFFFFF
+4 0 2  0 0 -2  4 0 -2  0xFFFFFF
+0 0 -2  4 0 2  0 0 2  0xFFFFFF

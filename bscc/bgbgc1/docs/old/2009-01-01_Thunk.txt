@@ -1,0 +1,134 @@
+Purpose: Informative, Describe Thunks
+
+
+Environments
+
+dyt dyllNewEnv(dyt super);
+
+Create a new empty binding environment.
+Note, this only refers to the contents of the environment itself, where as a general rule it is the case that the global toplevel is visible even if the current env is empty.
+
+The purpose of binding environments is then to provide local bindings which are separate from those of the global toplevel, and which can be assigned programatically.
+
+Super will serve a similar role to a class in class/instance OO, where any bindings lacking in the current env will be checked for in the super, and so on until there is nowhere left to check.
+
+
+void dyllEnvBindAddr(dyt env, char *name, void *addr);
+void dyllEnvBindAddrSig(dyt env, char *name, char *sig, void *addr);
+
+Bind an address in an environment. This binding will be local to the environment in question. If provided, the signature will identify the type of value contained in the variable.
+
+
+void dyllEnvSetAddr(dyt env, char *name, void *addr);
+
+Try to assign the address of the variable in question.
+
+
+void *dyllEnvGetAddr(dyt env, char *name);
+char *dyllEnvGetSig(dyt env, char *name);
+
+Retrieve the address and signature of a variable in an env.
+If no signature was given for the variable, then the returned sig will be NULL.
+
+
+void *dyllEnvAllocVar(dyt env, char *name, char *sig);
+
+Create a new variable and allocate storage for it.
+
+
+
+Thunks
+
+Thunks are executable objects, part object and part function. A thunk can generally be cast to a function pointer and called, or it can be accessed via special functions.
+
+
+dyt dyllThunkEnv(dyt fcn);
+
+Get the environment from a thunk.
+
+
+void dyllThunkBindAddr(dyt fcn, char *name, void *addr);
+void dyllThunkBindAddrSig(dyt fcn, char *name, char *sig, void *addr);
+
+Create a new variable within a thunk (or, more correctly, in the env held by the thunk).
+
+
+void dyllThunkSetAddr(dyt fcn, char *name, void *addr);
+
+Assign the address of a variable within a thunk.
+
+
+void *dyllThunkGetAddr(dyt fcn, char *name);
+char *dyllThunkGetSig(dyt fcn, char *name);
+
+Get the address and sig of a variable within a thunk.
+
+
+dyt dyllAsmThunk(char *buf);
+dyt dyllAsmThunkEnv(char *buf, dyt env);
+dyt dyllAsmThunkSuperEnv(char *buf, dyt senv);
+
+Create a new thunk. The 'buf' argument provides the assembly code to be used for the thunk body. The assembly code in buf should be appropriate for the particular arch.
+
+The env argument gives the current environment to use when assembling the thunk. Bindings in the assembly code may be added to env.
+
+In the case of senv, a new environment is created that has senv as the super, but any new bindings are added to the new environment.
+
+If no environment is provided, then a new empty environment is created to hold the bindings for the thunk.
+
+
+Although the thunk may be called as if it were a function pointer, it is actually a structured object (the first field will typically contain a jump to the entry point). Otherwise, the structure of a non-inline thunk is not described.
+
+
+dyt dyllAsmThunkInline(char *buf);
+dyt dyllAsmThunkInlineEnv(char *buf, dyt env);
+dyt dyllAsmThunkInlineSuperEnv(char *buf, dyt senv);
+
+These create a thunk, similar to the above, however the thunk itself is different. In this case, the thunk is assembled as a raw glob of bytes with no metadata present (for example: the environment is not maintained, ...), thus making it take less memory. If a data section is present, it is assembled directly following the code. Note that the entry point is always located at the physical start of the thunk.
+
+If no data section is present, the end of the thunk is directly after the last instruction, and if a data section is present, the end of the thunk follows the end of the data (in this case, padding may be inserted).
+
+
+Assembly
+
+The basic ASM structure for a thunk is much like any other piece of ASM.
+
+<--
+[section .text]
+[bits 32]
+thunk_start:
+push ebp
+mov ebp, esp
+...
+mov ecx, [G.foo]
+mov eax, [ecx]
+...
+pop ebp
+ret
+
+[section .data]
+foo dd 0
+-->
+
+The label 'thunk_start' is special for thunks, and basically tells where the entry point is. For inline thunks, 'thunk_start' is optional/ignored, and the entry point is always at the physical start of the thunk.
+
+Variables may also be referenced indirectly, where a direct reference such as:
+mov eax, [foo]
+Can be instead written:
+mov ecx, [G.foo]
+mov eax, [ecx]
+
+Which in effect binds the thunk to the environment, allowing changes in the environment to be directly reflected in the code (it is done this way since my other approach to dynamic relinking does not mix well with garbage collection). Directly referencing a variable will link it with the address held in the environment at the time. Indirect references are not to be used with inline thunks.
+
+A data section may be provided with thunks, and serves to hold variables.
+
+
+An example of an inline thunk:
+<--
+push ebp
+mov ebp, esp
+...
+pop ebp
+ret
+-->
+

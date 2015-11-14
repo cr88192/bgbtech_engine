@@ -1,0 +1,14 @@
+Notes regarding the ISA:
+
+Fixnum ops currently accept all small integer types (including int32, which does not necessarily fit into a fixnum).
+
+Int and Fixnum have different ranges, however "fixnum" ops will assume the int32 range.
+
+_FN: fixnum / integer (generic).
+_FL: flonum.
+_FV: value-variant.
+
+_XI: int.
+_XL: long.
+_XF: float.
+_XD: double.

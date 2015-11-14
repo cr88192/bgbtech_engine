@@ -1,0 +1,27 @@
+package bsvm.lang;
+import bsvm.io.*;
+
+public class Throwable extends Object
+{
+private final String msg;
+
+public Throwable()
+	{ this.msg=null; }
+public Throwable(String message)
+	{ this.msg=message; }
+
+public Throwable fillInStackTrace()
+	{ return this; }
+
+public String getMessage()
+	{ return msg; }
+
+public void printStackTrace()
+	{ printStackTrace(System.err); }
+
+public void printStackTrace(PrintStream s)
+	{}
+
+public String toString()
+	{ return null; }
+}

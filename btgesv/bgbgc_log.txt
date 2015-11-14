@@ -1,0 +1,40 @@
+Th 00000048 1916 008814DD
+mounting F:\bgb.proj.pdsys53\btgesv as /
+mounting F:\bgb.proj.pdsys53\btgesv\resource as /
+vfexwad_vfmount: No Module Data bspkg2c.exe
+DYLL_MetaPath_LoadDB2: bspkg2c_meta.txt bspkg2c
+Load DB 'bspkg2c_meta.txt': fail
+vfexwad_vfmount: No Module Data ntdll.dll
+DYLL_MetaPath_LoadDB2: ntdll_meta.txt ntdll
+Load DB 'ntdll_meta.txt': fail
+vfexwad_vfmount: No Module Data snxhk.dll
+DYLL_MetaPath_LoadDB2: snxhk_meta.txt snxhk
+Load DB 'snxhk_meta.txt': fail
+vfexwad_vfmount: No Module Data KERNEL32.dll
+DYLL_MetaPath_LoadDB2: KERNEL32_meta.txt KERNEL32
+Load DB 'KERNEL32_meta.txt': fail
+vfexwad_vfmount: No Module Data KERNELBASE.dll
+DYLL_MetaPath_LoadDB2: KERNELBASE_meta.txt KERNELBASE
+Load DB 'KERNELBASE_meta.txt': fail
+Got Module Data 06A00020 1159168
+DYLL_MetaPath_LoadDB2: bgbsvm_meta.txt bgbsvm
+DYLL_MetaPath_LoadDB2: exwad/bgbsvm/meta.txt bgbsvm
+DYLL_MetaPath_LoadDB2: exwad/bgbsvm/meta.txt bgbsvm (10489 keys, 37550 lines)
+Load DB 'exwad/bgbsvm/meta.txt': pass
+vfexwad_vfmount: No Module Data bgbgc.dll
+DYLL_MetaPath_LoadDB2: bgbgc_meta.txt bgbgc
+Load DB 'bgbgc_meta.txt': fail
+vfexwad_vfmount: No Module Data bgbdy.dll
+DYLL_MetaPath_LoadDB2: bgbdy_meta.txt bgbdy
+Load DB 'bgbdy_meta.txt': fail
+vfexwad_vfmount: No Module Data bgbasm.dll
+DYLL_MetaPath_LoadDB2: bgbasm_meta.txt bgbasm
+Load DB 'bgbasm_meta.txt': fail
+vfexwad_vfmount: No Module Data zpack.dll
+DYLL_MetaPath_LoadDB2: zpack_meta.txt zpack
+Load DB 'zpack_meta.txt': fail
+SpaceNew(0): _flonum_t C0000000..D0000000
+SpaceNew(1): _fixint_t D0000000..E0000000
+SpaceNew(2): _ustring_t E0000000..E1000000
+SpaceNew(3): _usymbol_t E1000000..E2000000
+SpaceNew(4): _char_t E2000000..E2010000

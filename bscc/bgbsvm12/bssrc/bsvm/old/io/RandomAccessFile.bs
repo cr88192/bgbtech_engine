@@ -1,0 +1,87 @@
+package bsvm.io;
+
+public class RandomAccessFile extends Object
+	implements DataOutput, DataInput
+{
+
+public RandomAccessFile(File file, String mode)
+	{}
+public RandomAccessFile(String name, String mode)
+	{}
+
+public void close()
+	{}
+public FileDescriptor getFD()
+	{ return null; }
+public long getFilePointer()
+	{ return 0; }
+public long length()
+	{ return 0; }
+public int read()
+	{ return 0; }
+public int read(byte[] b)
+	{ return 0; }
+public int read(byte[] b, int off, int len)
+	{ return 0; }
+public boolean readBoolean()
+	{ return false; }
+public byte readByte()
+	{ return 0; }
+public char readChar()
+	{ return 0; }
+public double readDouble()
+	{ return 0; }
+public float readFloat()
+	{ return 0; }
+public void readFully(byte[] b)
+	{}
+public void readFully(byte[] b, int off, int len)
+	{}
+public int readInt()
+	{ return 0; }
+public String readLine()
+	{ return null; }
+public long readLong()
+	{ return 0; }
+public short readShort()
+	{ return 0; }
+public int readUnsignedByte()
+	{ return 0; }
+public int readUnsignedShort()
+	{ return 0; }
+public String readUTF()
+	{ return null; }
+public void seek(long pos)
+	{}
+public int skipBytes(int n)
+	{ return 0; }
+public void write(byte[] b)
+	{}
+public void write(byte[] b, int off, int len)
+	{}
+public void write(int b)
+	{}
+public void writeBoolean(boolean v)
+	{}
+public void writeByte(int v)
+	{}
+public void writeBytes(String s)
+	{}
+public void writeChar(int v)
+	{}
+public void writeChars(String s)
+	{}
+public void writeDouble(double v)
+	{}
+public void writeFloat(float v)
+	{}
+public void writeInt(int v)
+	{}
+public void writeLong(long v)
+	{}
+public void writeShort(int v)
+	{}
+public void writeUTF(String str)
+	{}
+
+}

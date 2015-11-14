@@ -1,0 +1,13 @@
+// $flags voxel alpha nonsolid
+// $flags voxel alpha
+// $flags voxel lightmat
+$flags voxel alpha lightmat noshadow
+
+$vox_img_top textures/voxel/rail
+$vox_img_side textures/voxel/rail_curve
+$vox_img_bot textures/voxel/rail
+
+$vox_EmitBlock BTGE_Voxel_EmitBlock_Rail
+$vox_BlockUpdate BTGE_VoxelRail_UpdateVoxel
+$vox_mins 0 0 0
+$vox_maxs 32 32 8

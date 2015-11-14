@@ -1,0 +1,21 @@
+package bsvm.lang;
+
+public final class Class extends Object
+{
+public static Class forName(String className)
+	{ return null; }
+public ClassLoader getClassLoader()
+	{ return null; }
+public Class[] getInterfaces()
+	{ return null; }
+public String getName()
+	{ return null; }
+public Class getSuperclass()
+	{ return null; }
+public boolean isInterface()
+	{ return false; }
+public Object newInstance()
+	{ return null; }
+public String toString()
+	{ return null; }
+}

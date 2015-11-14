@@ -1,0 +1,53 @@
+$sprite 49
+//explode1..explode15
+$spr_frame 0  64 64  128 128  sprites/s_explo3_0.pcx
+$spr_frame 1  64 64  128 128  sprites/s_explo3_0.pcx
+$spr_frame 2  64 64  128 128  sprites/s_explo3_1.pcx
+$spr_frame 3  64 64  128 128  sprites/s_explo3_1.pcx
+$spr_frame 4  64 64  128 128  sprites/s_explo3_2.pcx
+$spr_frame 5  64 64  128 128  sprites/s_explo3_2.pcx
+$spr_frame 6  64 64  128 128  sprites/s_explo3_3.pcx
+$spr_frame 7  64 64  128 128  sprites/s_explo3_3.pcx
+$spr_frame 8  64 64  128 128  sprites/s_explo3_4.pcx
+$spr_frame 9  64 64  128 128  sprites/s_explo3_4.pcx
+$spr_frame 10  64 64  128 128  sprites/s_explo3_5.pcx
+$spr_frame 11  64 64  128 128  sprites/s_explo3_5.pcx
+$spr_frame 12  64 64  128 128  sprites/s_explo3_6.pcx
+$spr_frame 13  64 64  128 128  sprites/s_explo3_6.pcx
+$spr_frame 14  64 64  128 128  sprites/s_explo3_7.pcx
+//explodb1..explodb15
+$spr_frame 15  64 64  128 128  sprites/s_explo3_0.pcx
+$spr_frame 16  64 64  128 128  sprites/s_explo3_0.pcx
+$spr_frame 17  64 64  128 128  sprites/s_explo3_1.pcx
+$spr_frame 18  64 64  128 128  sprites/s_explo3_1.pcx
+$spr_frame 19  64 64  128 128  sprites/s_explo3_2.pcx
+$spr_frame 20  64 64  128 128  sprites/s_explo3_2.pcx
+$spr_frame 21  64 64  128 128  sprites/s_explo3_3.pcx
+$spr_frame 22  64 64  128 128  sprites/s_explo3_3.pcx
+$spr_frame 23  64 64  128 128  sprites/s_explo3_4.pcx
+$spr_frame 24  64 64  128 128  sprites/s_explo3_4.pcx
+$spr_frame 25  64 64  128 128  sprites/s_explo3_5.pcx
+$spr_frame 26  64 64  128 128  sprites/s_explo3_5.pcx
+$spr_frame 27  64 64  128 128  sprites/s_explo3_6.pcx
+$spr_frame 28  64 64  128 128  sprites/s_explo3_6.pcx
+$spr_frame 29  64 64  128 128  sprites/s_explo3_7.pcx
+//explodc1..explodc19
+$spr_frame 30  64 64  128 128  sprites/s_explo3_0.pcx
+$spr_frame 31  64 64  128 128  sprites/s_explo3_0.pcx
+$spr_frame 32  64 64  128 128  sprites/s_explo3_1.pcx
+$spr_frame 33  64 64  128 128  sprites/s_explo3_1.pcx
+$spr_frame 34  64 64  128 128  sprites/s_explo3_2.pcx
+$spr_frame 35  64 64  128 128  sprites/s_explo3_2.pcx
+$spr_frame 36  64 64  128 128  sprites/s_explo3_3.pcx
+$spr_frame 37  64 64  128 128  sprites/s_explo3_3.pcx
+$spr_frame 38  64 64  128 128  sprites/s_explo3_4.pcx
+$spr_frame 39  64 64  128 128  sprites/s_explo3_4.pcx
+$spr_frame 40  64 64  128 128  sprites/s_explo3_4.pcx
+$spr_frame 41  64 64  128 128  sprites/s_explo3_5.pcx
+$spr_frame 42  64 64  128 128  sprites/s_explo3_5.pcx
+$spr_frame 43  64 64  128 128  sprites/s_explo3_5.pcx
+$spr_frame 44  64 64  128 128  sprites/s_explo3_6.pcx
+$spr_frame 45  64 64  128 128  sprites/s_explo3_6.pcx
+$spr_frame 46  64 64  128 128  sprites/s_explo3_6.pcx
+$spr_frame 47  64 64  128 128  sprites/s_explo3_7.pcx
+$spr_frame 48  64 64  128 128  sprites/s_explo3_7.pcx

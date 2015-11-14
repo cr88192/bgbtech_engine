@@ -1,0 +1,297 @@
+
+//<name>	<num> <args> <flow>
+//args:
+//	a, a-register (VLI2), left-source
+//	b, b-register (VLI2), right-source
+//	c, c-register (VLI2), destination
+//
+//	i, integer-immediate (SVLI)
+//	l, long-immediate (SVLI)
+//	f, float-immediate (FVLI)
+//	d, double-immediate (FVLI)
+//	r, dynamic pointer immediate
+//
+//	j, variable index (VLI2)
+//	k, lexical index (VLI2, x+y)
+//
+//	A, jump address
+//	I, literal index
+//	S, symbol
+//	T, string
+//
+//flow:
+//	<in*>=<out*>
+//	!, non-local control flow (ends trace)
+//	@, start of trace.
+
+NOP					  0 - =		//do nothing
+BLOCK				  1 - =!	//blocks if limit!=0
+DBGMARK				  2 TN =	//sets the filename and line number
+CGENAST				  3 I -!	//syntax to be passed to code generator
+FN					  4 T =		//filename
+LN					  5 i =		//line number
+LABEL				  6 S =@	//label
+
+ADD_I				 16 cab =
+ADD_L				 17 cab =
+ADD_F				 18 cab =
+ADD_D				 19 cab =
+ADD_A				 20 cab =
+SUB_I				 21 cab =
+SUB_L				 22 cab =
+SUB_F				 23 cab =
+SUB_D				 24 cab =
+SUB_A				 25 cab =
+MUL_I				 26 cab =
+MUL_L				 27 cab =
+MUL_F				 28 cab =
+MUL_D				 29 cab =
+DIV_I				 30 cab =
+DIV_L				 31 cab =
+DIV_F				 32 cab =
+DIV_D				 33 cab =
+MOD_I				 34 cab =
+MOD_L				 35 cab =
+AND_I				 36 cab =
+AND_L				 37 cab =
+OR_I				 38 cab =
+OR_L				 39 cab =
+XOR_I				 40 cab =
+XOR_L				 41 cab =
+SHL_I				 42 cab =
+SHL_L				 43 cab =
+SHR_I				 44 cab =
+SHR_L				 45 cab =
+SHRR_I				 46 cab =
+SHRR_L				 47 cab =
+NEG_I				 48 ca =
+NEG_L				 49 ca =
+NEG_F				 50 ca =
+NEG_D				 51 ca =
+NOT_I				 52 ca =
+NOT_L				 53 ca =
+MOV_IC				 54 ci =
+MOV_LC				 55 cl =
+MOV_FC				 56 cf =
+MOV_DC				 57 cd =
+MOV_I				 58 ca =
+MOV_L				 59 ca =
+MOV_F				 60 ca =
+MOV_D				 61 ca =
+MOV_A				 62 ca =
+CONV_I2L			 63 ca =
+CONV_I2F			 64 ca =
+CONV_I2D			 65 ca =
+CONV_I2A			 66 ca =
+CONV_L2I			 67 ca =
+CONV_L2F			 68 ca =
+CONV_L2D			 69 ca =
+CONV_L2A			 70 ca =
+CONV_F2I			 71 ca =
+CONV_F2L			 72 ca =
+CONV_F2D			 73 ca =
+CONV_D2I			 74 ca =
+CONV_D2L			 75 ca =
+CONV_D2F			 76 ca =
+CONV_A2I			 77 ca =
+CONV_A2L			 78 ca =
+JMP					 79 A =!	//unconditional jump
+LEA_B				 80 cab =	//c=a+b
+LEA_S				 81 cab =	//c=a+b(short)
+LEA_I				 82 cab =
+LEA_L				 83 cab =
+LEA_F				 84 cab =
+LEA_D				 85 cab =
+LEA_A				 86 cab =
+LEA2_B				 87 cabi =	//c=a+b+i
+LEA2_S				 88 cabi =	//c=a+(b+i)(short)
+LEA2_I				 89 cabi =
+LEA2_L				 90 cabi =
+LEA2_F				 91 cabi =
+LEA2_D				 92 cabi =
+LEA2_A				 93 cabi =
+LLLOAD_I			 94 cj =	//lexical local load
+LLLOAD_L			 95 cj =
+LLLOAD_F			 96 cj =
+LLLOAD_D			 97 cj =
+LLLOAD_A			 98 cj =
+LLSTORE_I			 99 ja =	//lexical local store
+LLSTORE_L			100 ja =
+LLSTORE_F			101 ja =
+LLSTORE_D			102 ja =
+LLSTORE_A			103 ja =
+LALOAD_I			104 cj =	//lexical argument load
+LALOAD_L			105 cj =
+LALOAD_F			106 cj =
+LALOAD_D			107 cj =
+LALOAD_A			108 cj =
+LASTORE_I			109 ja =	//lexical argument store
+LASTORE_L			110 ja =
+LASTORE_F			111 ja =
+LASTORE_D			112 ja =
+LASTORE_A			113 ja =
+LXLOAD_I			114 ck =	//lexical load
+LXLOAD_L			115 ck =
+LXLOAD_F			116 ck =
+LXLOAD_D			117 ck =
+LXLOAD_A			118 ck =
+LXSTORE_I			119 ka =	//lexical store
+LXSTORE_L			120 ka =
+LXSTORE_F			121 ka =
+LXSTORE_D			122 ka =
+LXSTORE_A			123 ka =
+
+JMP_LT_I			- abA =!	//jump if a<b (int)
+JMP_LT_L			- abA =!
+JMP_LT_F			- abA =!
+JMP_LT_D			- abA =!
+JMP_LT_A			- abA =!
+JMP_GT_I			- abA =!
+JMP_GT_L			- abA =!
+JMP_GT_F			- abA =!
+JMP_GT_D			- abA =!
+JMP_GT_A			- abA =!
+JMP_LE_I			- abA =!
+JMP_LE_L			- abA =!
+JMP_LE_F			- abA =!
+JMP_LE_D			- abA =!
+JMP_LE_A			- abA =!
+JMP_GE_I			- abA =!
+JMP_GE_L			- abA =!
+JMP_GE_F			- abA =!
+JMP_GE_D			- abA =!
+JMP_GE_A			- abA =!
+JMP_EQ_I			- abA =!
+JMP_EQ_L			- abA =!
+JMP_EQ_F			- abA =!
+JMP_EQ_D			- abA =!
+JMP_EQ_A			- abA =!
+JMP_NE_I			- abA =!
+JMP_NE_L			- abA =!
+JMP_NE_F			- abA =!
+JMP_NE_D			- abA =!
+JMP_NE_A			- abA =!
+
+JMP_LT_IC			- aiA =!	//jump if a<i (int)
+JMP_LT_LC			- alA =!
+JMP_LT_FC			- afA =!
+JMP_LT_DC			- adA =!
+JMP_GT_IC			- aiA =!
+JMP_GT_LC			- alA =!
+JMP_GT_FC			- afA =!
+JMP_GT_DC			- adA =!
+JMP_LE_IC			- aiA =!
+JMP_LE_LC			- alA =!
+JMP_LE_FC			- afA =!
+JMP_LE_DC			- adA =!
+JMP_GE_IC			- aiA =!
+JMP_GE_LC			- alA =!
+JMP_GE_FC			- afA =!
+JMP_GE_DC			- adA =!
+JMP_EQ_IC			- aiA =!
+JMP_EQ_LC			- alA =!
+JMP_EQ_FC			- afA =!
+JMP_EQ_DC			- adA =!
+JMP_NE_IC			- aiA =!
+JMP_NE_LC			- alA =!
+JMP_NE_FC			- afA =!
+JMP_NE_DC			- adA =!
+
+JMP_LT_IZ			- aA =!		//jump if a<0 (int)
+JMP_GT_IZ			- aA =!
+JMP_LE_IZ			- aA =!
+JMP_GE_IZ			- aA =!
+JMP_EQ_IZ			- aA =!
+JMP_NE_IZ			- aA =!
+
+//compare operators, 1=true, 0=false
+CMP_LT_I			- cab =		//compare if a<b (int)
+CMP_LT_L			- cab =
+CMP_LT_F			- cab =
+CMP_LT_D			- cab =
+CMP_LT_A			- cab =
+CMP_GT_I			- cab =
+CMP_GT_L			- cab =
+CMP_GT_F			- cab =
+CMP_GT_D			- cab =
+CMP_GT_A			- cab =
+CMP_LE_I			- cab =
+CMP_LE_L			- cab =
+CMP_LE_F			- cab =
+CMP_LE_D			- cab =
+CMP_LE_A			- cab =
+CMP_GE_I			- cab =
+CMP_GE_L			- cab =
+CMP_GE_F			- cab =
+CMP_GE_D			- cab =
+CMP_GE_A			- cab =
+CMP_EQ_I			- cab =
+CMP_EQ_L			- cab =
+CMP_EQ_F			- cab =
+CMP_EQ_D			- cab =
+CMP_EQ_A			- cab =
+CMP_NE_I			- cab =
+CMP_NE_L			- cab =
+CMP_NE_F			- cab =
+CMP_NE_D			- cab =
+CMP_NE_A			- cab =
+
+//compare against a constant
+CMP_LT_IC			- cai =		//compare if a<i (int)
+CMP_LT_LC			- cal =
+CMP_LT_FC			- caf =
+CMP_LT_DC			- cad =
+CMP_GT_IC			- cai =
+CMP_GT_LC			- cal =
+CMP_GT_FC			- caf =
+CMP_GT_DC			- cad =
+CMP_LE_IC			- cai =
+CMP_LE_LC			- cal =
+CMP_LE_FC			- caf =
+CMP_LE_DC			- cad =
+CMP_GE_IC			- cai =
+CMP_GE_LC			- cal =
+CMP_GE_FC			- caf =
+CMP_GE_DC			- cad =
+CMP_EQ_IC			- cai =
+CMP_EQ_LC			- cal =
+CMP_EQ_FC			- caf =
+CMP_EQ_DC			- cad =
+CMP_NE_IC			- cai =
+CMP_NE_LC			- cal =
+CMP_NE_FC			- caf =
+CMP_NE_DC			- cad =
+
+ADD_IC				 - cai =
+ADD_LC				 - cal =
+SUB_IC				 - cai =
+SUB_LC				 - cal =
+MUL_IC				 - cai =
+MUL_LC				 - cal =
+DIV_IC				 - cai =
+DIV_LC				 - cal =
+MOD_IC				 - cai =
+MOD_LC				 - cal =
+AND_IC				 - cai =
+AND_LC				 - cal =
+OR_IC				 - cai =
+OR_LC				 - cal =
+XOR_IC				 - cai =
+XOR_LC				 - cal =
+SHL_IC				 - cai =
+SHL_LC				 - cal =
+SHR_IC				 - cai =
+SHR_LC				 - cal =
+SHRR_IC				 - cai =
+SHRR_LC				 - cal =
+
+CALL				- car =		//return, function-handle, args-info
+CALL_S				- cr =		//return, args-info
+METHODCALL			- cabr =	//return, object, method-handle, args-info
+METHODCALL_S		- car =		//return, object, args-info
+TAILCALL			- car =		//return, function-handle, args-info
+TAILCALL_S			- cr =		//return, args-info
+TAILMETHODCALL		- cabr =	//return, object, method-handle, args-info
+TAILMETHODCALL_S	- car =		//return, object, args-info
+RET					- a =		//function return
+RETV				- - =		//function return (void)

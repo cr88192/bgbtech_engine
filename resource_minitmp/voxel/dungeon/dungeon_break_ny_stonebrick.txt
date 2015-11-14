@@ -1,0 +1,6 @@
+$dung_vox air				  0   0   0
+$dung_vox stone_brick		128   0   0
+$dung_vox torch				255 255   0
+
+$dung_allow_py	hall_y_stonebrick
+$dung_allow_py	hall_xy_stonebrick

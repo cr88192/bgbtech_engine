@@ -1,0 +1,10 @@
+Goals:
+Make compiler operate in terms of a self-contained memory manager, which post-compilation can discard its entire heap.
+
+Similarly, trying to optimize it some could help.
+
+
+Approach:
+'dyx' is internalized, and redirected to a new 'malloc';
+preprocessor is modified to use structs, as had been done for the assembler's preprocessor.
+

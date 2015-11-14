@@ -1,0 +1,6 @@
+$flags voxel alpha lightmap
+
+$vox_vlight_val 7
+$vox_vlight_clr red
+
+$video textures/voxel/slip_alt.avi

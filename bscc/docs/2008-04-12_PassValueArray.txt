@@ -1,0 +1,8 @@
+Basic Idea:
+Some types are represented as pass-by-value arrays.
+This would be the case for matrices and similar.
+
+Implementation-wise, pass-by-value arrays will be represented in much the same way as pass-by-reference arrays, namely, by passing a pointer to the first item.
+
+Variable storage for the arrays will be implemented as for usual arrays.
+When assigned, such an array will be copied to the new location.

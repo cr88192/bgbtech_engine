@@ -1,0 +1,35 @@
+BUILD=.
+MKSUF=.lnx
+LIBSUF=.a
+DLLSUF=.so
+EXESUF=.elf
+OBJSUF=.o
+DLLPF=lib
+
+CC_OUTEXE=gcc -o 
+CC_OUTDLL=gcc -shared -o 
+CC_OUTOBJ=gcc -c -o 
+
+EXE = .elf
+BIN = .bin
+
+ARCH=$(shell ./autohead$(EXE) -idarch)
+
+BGBMETA=../bgbmeta$(EXE)
+BGBMETA_EXW=$(BGBMETA) /Fw
+BMETA_CFLAGS=/Iinclude /I../include
+
+CFLAGS=-Iinclude -I../include -g -pg
+DLL_CFLAGS=$(CFLAGS) -DBTGECL_DLL
+LDFLAGS=-g -pg -L.. -llbxgl2 -lpdgl \
+	-lbgbgc -lbgbdy -lbgbasm -lbgbsxil -lzpack -lm \
+	-lbsgen -lbgbcc -lvecmath -lGL \
+	-Wl,-rpath,"$$ORIGIN"
+
+DLL_LDFLAGS=-g -pg -L.. -llbxgl2 -lpdgl \
+	-lbgbgc -lbgbdy -lbgbasm -lbgbsxil -lzpack -lm -fPIC \
+	-lbsgen -lbgbcc -lvecmath -lbsde -lbtgecm \
+	-Wl,-rpath,"$$ORIGIN"
+
+include Makefile.inc
+

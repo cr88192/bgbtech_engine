@@ -1,0 +1,46 @@
+JIT Compiler
+
+At runtime some functions may be JIT compiled.
+This will primarily describe the compilation process and instruction mappings.
+
+Calling convention:
+The calling convention used will push arguments in left to right order, and will expect the callee to clean up the stack. In most cases, functions will only accept a fixed number of arguments.
+
+In general, the top element of the stack will actually be stored in the EAX register.
+
+MARK:
+Mark will primarily effect the internal state of the JIT compiler, ranging from doing nothing, to generating simple streams of instructions.
+
+In many cases mark is likely to involve a few specific operations:
+push eax		;last item goes on stack
+push ebp		;last mark
+mov ebp, esp	;new mark
+
+
+After any arguments are generated, the function is called.
+Upon function return, it is assumed that the stack is cleared to the last mark, and the return value is left in EAX.
+
+RET:
+pop edx		;return address
+mov esp, ebp	;clear to mark
+pop ebp		;last mark
+jmp edx		;return
+
+
+Registers:
+EAX: in general will hold the "top of stack" value;
+EBX: may be used by OS;
+ECX: situation specific;
+EDX: situation specific;
+ESP: stack pointer;
+EBP: last mark;
+ESI: may be used for holding the current self or execution context;
+EDI: similar.
+
+Opcodes like load and store may compile differently depending on the location of the variable. Stack values may be accessed directly, wheras object variables may involve an implicit function call.
+
+Consider:
+EDI refers to the current start of function stack;
+[EDI] thus effectively refers to the return address, and [EDI+4] the last function argument, and [EDI-4] the first local (if any).
+
+Any execution-state related values will thus be left in variables.

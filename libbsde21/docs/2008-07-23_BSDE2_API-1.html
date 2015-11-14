@@ -1,0 +1,3208 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns:st1="urn:schemas-microsoft-com:office:smarttags"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=ProgId content=Word.Document>
+<meta name=Generator content="Microsoft Word 11">
+<meta name=Originator content="Microsoft Word 11">
+<link rel=File-List href="2008-07-23_BSDE2_API-1_files/filelist.xml">
+<title>Changes to core API:</title>
+<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
+ name="place"/>
+<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
+ name="City"/>
+<!--[if gte mso 9]><xml>
+ <o:DocumentProperties>
+  <o:Author>NA</o:Author>
+  <o:LastAuthor>NA</o:LastAuthor>
+  <o:Revision>2</o:Revision>
+  <o:TotalTime>311</o:TotalTime>
+  <o:Created>2008-07-24T12:28:00Z</o:Created>
+  <o:LastSaved>2008-07-24T12:28:00Z</o:LastSaved>
+  <o:Pages>1</o:Pages>
+  <o:Words>3320</o:Words>
+  <o:Characters>18928</o:Characters>
+  <o:Company>NA</o:Company>
+  <o:Lines>157</o:Lines>
+  <o:Paragraphs>44</o:Paragraphs>
+  <o:CharactersWithSpaces>22204</o:CharactersWithSpaces>
+  <o:Version>11.9999</o:Version>
+ </o:DocumentProperties>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:SpellingState>Clean</w:SpellingState>
+  <w:GrammarState>Clean</w:GrammarState>
+  <w:PunctuationKerning/>
+  <w:ValidateAgainstSchemas/>
+  <w:SaveIfXMLInvalid>false</w:SaveIfXMLInvalid>
+  <w:IgnoreMixedContent>false</w:IgnoreMixedContent>
+  <w:AlwaysShowPlaceholderText>false</w:AlwaysShowPlaceholderText>
+  <w:Compatibility>
+   <w:BreakWrappedTables/>
+   <w:SnapToGridInCell/>
+   <w:WrapTextWithPunct/>
+   <w:UseAsianBreakRules/>
+   <w:DontGrowAutofit/>
+  </w:Compatibility>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:LatentStyles DefLockedState="false" LatentStyleCount="156">
+ </w:LatentStyles>
+</xml><![endif]--><!--[if !mso]><object
+ classid="clsid:38481807-CA0E-42D2-BF39-B33AF135CC4D" id=ieooui></object>
+<style>
+st1\:*{behavior:url(#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+h2
+	{mso-style-link:"Heading 2 Char";
+	mso-style-next:Normal;
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:2;
+	font-size:14.0pt;
+	font-family:Arial;
+	font-style:italic;}
+h3
+	{mso-style-link:"Heading 3 Char";
+	mso-style-next:Normal;
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:3;
+	font-size:13.0pt;
+	font-family:Arial;}
+p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
+	{margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Courier New";
+	mso-fareast-font-family:"Times New Roman";}
+span.Heading2Char
+	{mso-style-name:"Heading 2 Char";
+	mso-style-locked:yes;
+	mso-style-link:"Heading 2";
+	mso-ansi-font-size:14.0pt;
+	mso-bidi-font-size:14.0pt;
+	font-family:Arial;
+	mso-ascii-font-family:Arial;
+	mso-hansi-font-family:Arial;
+	mso-bidi-font-family:Arial;
+	mso-ansi-language:EN-US;
+	mso-fareast-language:EN-US;
+	mso-bidi-language:AR-SA;
+	font-weight:bold;
+	font-style:italic;}
+span.Heading3Char
+	{mso-style-name:"Heading 3 Char";
+	mso-style-locked:yes;
+	mso-style-link:"Heading 3";
+	mso-ansi-font-size:13.0pt;
+	mso-bidi-font-size:13.0pt;
+	font-family:Arial;
+	mso-ascii-font-family:Arial;
+	mso-hansi-font-family:Arial;
+	mso-bidi-font-family:Arial;
+	mso-ansi-language:EN-US;
+	mso-fareast-language:EN-US;
+	mso-bidi-language:AR-SA;
+	font-weight:bold;}
+span.SpellE
+	{mso-style-name:"";
+	mso-spl-e:yes;}
+span.GramE
+	{mso-style-name:"";
+	mso-gram-e:yes;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;
+	mso-header-margin:.5in;
+	mso-footer-margin:.5in;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:"Table Normal";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0in 5.4pt 0in 5.4pt;
+	mso-para-margin:0in;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-ansi-language:#0400;
+	mso-fareast-language:#0400;
+	mso-bidi-language:#0400;}
+table.MsoTableGrid
+	{mso-style-name:"Table Grid";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	border:solid windowtext 1.0pt;
+	mso-border-alt:solid windowtext .5pt;
+	mso-padding-alt:0in 5.4pt 0in 5.4pt;
+	mso-border-insideh:.5pt solid windowtext;
+	mso-border-insidev:.5pt solid windowtext;
+	mso-para-margin:0in;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-ansi-language:#0400;
+	mso-fareast-language:#0400;
+	mso-bidi-language:#0400;}
+</style>
+<![endif]-->
+</head>
+
+<body lang=EN-US style='tab-interval:.5in'>
+
+<div class=Section1>
+
+<h2>General</h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeSRand</span>(<span
+class=SpellE>bsdeUInt</span> seed);<br>
+void bsdeSRand2(<span class=SpellE>bsdeUInt</span> seed1, <span class=SpellE>bsdeUInt</span>
+seed2);<br>
+<br>
+Set seed values for the random number generators.<br>
+If the initial seeds are not set, then random number generation will use some
+default seed instead.<br>
+Each world context may use a separate seed.<br style='mso-special-character:
+line-break'>
+<![if !supportLineBreakNewLine]><br style='mso-special-character:line-break'>
+<![endif]></p>
+
+<p class=MsoNormal><br>
+<span class=GramE>char</span> *<span class=SpellE>bsdeGetString</span>(<span
+class=SpellE>int</span> <span class=SpellE>str</span>);<br>
+<br>
+Get a null-terminated string describing some aspect of the implementation.</p>
+
+<table class=MsoNormalTable border=1 cellpadding=0 width="93%"
+ style='width:93.44%;mso-cellspacing:1.5pt;mso-padding-alt:1.5pt 1.5pt 1.5pt 1.5pt'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Name</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Description</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_NULL</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>An empty string.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_CREATOR</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The name of the creator of this implementation.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_ENGINE</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The name of the implementation.<br>
+  This should fairly uniquely identify the implementation and should not change
+  between implementation versions.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_ENGINE_VER</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The version of the implementation.<br>
+  If one engine has multiple varieties, (for example, a standalone and
+  networked version, or a software and hw-<span class=SpellE>accel</span>
+  version), these should be encoded in this string, along with any other info
+  that is expected to vary.<br>
+  The exact structure and meaning of the contents of this string may depend on
+  the implementation.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_VERSION</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The newest version of the specification the implementation
+  conforms to.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6;mso-yfti-lastrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_EXTENSIONS</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>A space <span class=SpellE>seperated</span> list of known
+  extensions.</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><br>
+The returned value for any unknown string number is to be NULL.</p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<h2>World</h2>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><br>
+<span class=SpellE><span class=GramE>int</span></span> <span class=SpellE>bsdeNewWorld</span>();<br>
+Create a new world context.<br>
+At least a single default world is needed for the simulation.<br>
+Each world is completely <span class=SpellE>seperate</span>. It is not possible
+for objects located in different worlds to interact, and handles related to
+objects in one world are invalid in another (or may refer to a different
+object).<br>
+<br>
+<span class=GramE>void</span> <span class=SpellE>bsdeBindWorld</span>(<span
+class=SpellE>int</span> <span class=SpellE>i</span>);<br>
+Set the current world context.<br>
+Any objects or joints created will be created within the context of the current
+world.<br>
+<br>
+<span class=GramE>void</span> <span class=SpellE>bsdeStepWorld</span>(double <span
+class=SpellE>dt</span>);<br>
+Step the world by a certain amount of time.<br style='mso-special-character:
+line-break'>
+<![if !supportLineBreakNewLine]><br style='mso-special-character:line-break'>
+<![endif]></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+class=SpellE><span class=Heading3Char><span style='font-size:13.0pt'>GetWorld/SetWorld</span></span></span><br
+style='mso-special-character:line-break'>
+<![if !supportLineBreakNewLine]><br style='mso-special-character:line-break'>
+<![endif]></p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeGetWorld</span>[/2/3/4][<span
+class=SpellE>i</span>/f/iv/fv/...]();</p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeSetWorld</span>[/2/3/4][<span
+class=SpellE>i</span>/f/iv/fv/...]();</p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+class=SpellE>int</span> <span class=SpellE>bsdeGetWorldi</span>(<span
+class=SpellE>int</span> <span class=SpellE>var</span>);<br>
+double <span class=SpellE>bsdeGetWorldf</span>(<span class=SpellE>int</span> <span
+class=SpellE>var</span>);<br>
+void <span class=SpellE>bsdeGetWorldiv</span>(<span class=SpellE>int</span> <span
+class=SpellE>var</span>, <span class=SpellE>int</span> *val, <span
+class=SpellE>int</span> n);<br>
+void <span class=SpellE>bsdeGetWorldfv</span>(<span class=SpellE>int</span> <span
+class=SpellE>var</span>, float *<span class=SpellE>val</span>, <span
+class=SpellE>int</span> n);<br>
+void <span class=SpellE>bsdeGetWorlddv</span>(<span class=SpellE>int</span> <span
+class=SpellE>var</span>, double *<span class=SpellE>val</span>, <span
+class=SpellE>int</span> n);<br style='mso-special-character:line-break'>
+<![if !supportLineBreakNewLine]><br style='mso-special-character:line-break'>
+<![endif]></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'>void
+bsdeGetWorld2iv(<span class=SpellE>int</span> <span class=SpellE>var</span>, <span
+class=SpellE>int</span> *<span class=SpellE>val</span>);<br>
+void bsdeGetWorld2fv(<span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *val);<br>
+void bsdeGetWorld2dv(<span class=SpellE>int</span> <span class=SpellE>var</span>,
+double *<span class=SpellE>val</span>);<br>
+void bsdeGetWorld3iv(<span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> *val);<br>
+void bsdeGetWorld3fv(<span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *<span class=SpellE>val</span>);<br>
+void bsdeGetWorld3dv(<span class=SpellE>int</span> <span class=SpellE>var</span>,
+double *val);<br>
+void bsdeGetWorld4iv(<span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> *<span class=SpellE>val</span>);<br>
+void bsdeGetWorld4fv(<span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *val);<br>
+void bsdeGetWorld4dv(<span class=SpellE>int</span> <span class=SpellE>var</span>,
+double *<span class=SpellE>val</span>);<br style='mso-special-character:line-break'>
+<![if !supportLineBreakNewLine]><br style='mso-special-character:line-break'>
+<![endif]></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+class=GramE>void</span> <span class=SpellE>bsdeSetWorldi</span>(<span
+class=SpellE>int</span> <span class=SpellE>var</span>, <span class=SpellE>int</span>
+<span class=SpellE>val</span>);<br>
+void <span class=SpellE>bsdeSetWorldf</span>(<span class=SpellE>int</span> <span
+class=SpellE>var</span>, double <span class=SpellE>val</span>);</p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+class=GramE>void</span> <span class=SpellE>bsdeSetWorldiv</span>(<span
+class=SpellE>int</span> <span class=SpellE>var</span>, <span class=SpellE>int</span>
+*val, <span class=SpellE>int</span> n);<br>
+void <span class=SpellE>bsdeSetWorldfv</span>(<span class=SpellE>int</span> <span
+class=SpellE>var</span>, float *<span class=SpellE>val</span>, <span
+class=SpellE>int</span> n);<br>
+void <span class=SpellE>bsdeSetWorlddv</span>(<span class=SpellE>int</span> <span
+class=SpellE>var</span>, double *<span class=SpellE>val</span>, <span
+class=SpellE>int</span> n);<br style='mso-special-character:line-break'>
+<![if !supportLineBreakNewLine]><br style='mso-special-character:line-break'>
+<![endif]></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'>void
+bsdeSetWorld2iv(<span class=SpellE>int</span> <span class=SpellE>var</span>, <span
+class=SpellE>int</span> *<span class=SpellE>val</span>);<br>
+void bsdeSetWorld2fv(<span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *val);<br>
+void bsdeSetWorld2dv(<span class=SpellE>int</span> <span class=SpellE>var</span>,
+double *<span class=SpellE>val</span>);<br>
+void bsdeSetWorld3iv(<span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> *val);<br>
+void bsdeSetWorld3fv(<span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *<span class=SpellE>val</span>);<br>
+void bsdeSetWorld3dv(<span class=SpellE>int</span> <span class=SpellE>var</span>,
+double *val);<br>
+void bsdeSetWorld4iv(<span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> *<span class=SpellE>val</span>);<br>
+void bsdeSetWorld4fv(<span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *val);<br>
+void bsdeSetWorld4dv(<span class=SpellE>int</span> <span class=SpellE>var</span>,
+double *<span class=SpellE>val</span>);<br>
+<br>
+Get/Set world attributes.<br>
+For vector types, a count is passed indicating the size of the vector being
+get/set.</p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<table class=MsoNormalTable border=1 cellpadding=0 width="93%"
+ style='width:93.4%;mso-cellspacing:1.5pt;mso-padding-alt:1.5pt 1.5pt 1.5pt 1.5pt'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Name</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>IO</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Description</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_GRAVITY</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, V3</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Gravity Vector</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_MAXSTEP</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, F</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Maximal/Main internal <span class=SpellE>timestep</span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_MINSTEP</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, F</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Minimal internal <span class=SpellE>timestep</span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_MAXFRAME</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, F</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Maximum amount of time/frame</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_REALTIME</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R, F</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Total amount of time step has been called with</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_WORLDTIME</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R, F</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The approximate time within the simulation</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:7;mso-yfti-lastrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_COLLIDE_STRICT</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, B</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Attempt to avoid interpenetration whenever possible.</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+class=GramE>void</span> <span class=SpellE>bsdeEnable</span>(<span
+class=SpellE>int</span> <span class=SpellE>var</span>);</p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+class=GramE>void</span> <span class=SpellE>bsdeDisable</span>(<span
+class=SpellE>int</span> <span class=SpellE>var</span>);</p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'>Enable
+or disable a given <span class=SpellE><span class=GramE>boolean</span></span>
+variable.</p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'>Units
+and Conversion</p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'>By
+default, values will be assumed to have certain base units.</p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'>Specifying
+the units will not change the internal representation of values, rather, it
+will specify the conversions to be applied when getting or setting variables.</p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'>These
+will be changed via the <span class=SpellE><span class=GramE>bsdeGetWorldi</span></span><span
+class=GramE>(</span>) and <span class=SpellE>bsdeSetWorldi</span>() functions.</p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'>Basic
+Units</p>
+
+<table class=MsoNormalTable border=1 cellpadding=0 width="93%"
+ style='width:93.4%;mso-cellspacing:1.5pt;mso-padding-alt:1.5pt 1.5pt 1.5pt 1.5pt'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Name</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>IO</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Description</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_UNIT_LENGTH<span style='mso-bidi-font-size:10.0pt'><o:p></o:p></span></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/<span class=SpellE>W,i</span></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Basic unit of length</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_UNIT_VOLUME<span style='mso-bidi-font-size:10.0pt'><o:p></o:p></span></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/<span class=SpellE>W,i</span></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Basic unit of volume</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_UNIT_MASS<span style='mso-bidi-font-size:10.0pt'><o:p></o:p></span></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/<span class=SpellE>W,i</span></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Basic unit of mass</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4;mso-yfti-lastrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_UNIT_FORCE<span style='mso-bidi-font-size:10.0pt'><o:p></o:p></span></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/<span class=SpellE>W,i</span></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Basic unit of force</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'>Unit
+Values</p>
+
+<table class=MsoNormalTable border=1 cellpadding=0 width="83%"
+ style='width:83.3%;mso-cellspacing:1.5pt;mso-padding-alt:1.5pt 1.5pt 1.5pt 1.5pt'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Name</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Description</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_METER</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Length=1m, Volume=1m³=1kL</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_CENTIMETER</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>L=1cm=0.01m, V=1cm³=1mL</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_KILOMETER</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>L=1km=1000m, V=1Gm³=1TL</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_FOOT</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>L=1ft=0.30480m, V=0.028316846592m³=28.316846592L<span
+  style='mso-bidi-font-size:10.0pt'><o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_INCH</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>L=1in=25.40mm=0.0254m, V=16.387064mL<span
+  style='mso-bidi-font-size:10.0pt'><o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_YARD</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>L=1yd=3ft=0.9144m, V=0.764554857984m³=764.554857984L<span
+  style='mso-bidi-font-size:10.0pt'><o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:7'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_MILE</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>L=1mi=5280ft=1609.344m=1.609344km,
+  V=4.168181825440579584Gm³<span style='mso-bidi-font-size:10.0pt'><o:p></o:p></span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:8'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_POUND_M</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>M=0.5kg</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:9'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_GRAM</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>M=1g=0.001kg</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:10'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_KILOGRAM</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>M=1kg=1000g</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:11'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_MEGAGRAM</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>M=1Mg=1000kg</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:12'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_MILLIGRAM</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>M=1mg=0.001g</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:13'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal style='tab-stops:center 151.5pt'>BSDE_POUND</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>M=0.4525kg, F= 4.448222N</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:14'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_NEWTON</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>F=1N</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:15'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_GALLON</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>V=1gal=3.785412L</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:16'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_LITER</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>V=1L</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:17'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE _KILOLITER</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>V=1kL=1000L</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:18;mso-yfti-lastrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_MEGALITER</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>V=1ML=1000kL</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'>Default
+Units</p>
+
+<table class=MsoNormalTable border=1 cellpadding=0 width="81%"
+ style='width:81.52%;mso-cellspacing:1.5pt;mso-padding-alt:1.5pt 1.5pt 1.5pt 1.5pt'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Name</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Value</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_UNIT_LENGTH<span style='mso-bidi-font-size:10.0pt'><o:p></o:p></span></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_ METER</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_UNIT_VOLUME<span style='mso-bidi-font-size:10.0pt'><o:p></o:p></span></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_KILOLITER</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_UNIT_MASS<span style='mso-bidi-font-size:10.0pt'><o:p></o:p></span></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_MEGAGRAM</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4;mso-yfti-lastrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_UNIT_FORCE<span style='mso-bidi-font-size:10.0pt'><o:p></o:p></span></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_NEWTON</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><o:p>&nbsp;</o:p></p>
+
+<h2>Message Passing</h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE>int</span></span> <span
+class=SpellE>bsdePeekMessage</span>();</p>
+
+<p class=MsoNormal><span class=GramE>Will return an ID number for the current
+message.</span></p>
+
+<p class=MsoNormal>BSDE_NULL will be returned if the message queue is empty.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE>int</span></span> <span
+class=SpellE>bsdeNextMessage</span>();</p>
+
+<p class=MsoNormal>Will drop the current message and proceed to the next one
+(returning the ID for the next message, or BSDE_NULL if empty).</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeGetMessage</span>[/2/3/4][<span
+class=SpellE>i</span>/f/iv/fv/...]();</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Get a specific property for the current message.</p>
+
+<p class=MsoNormal>The properties present in the message will depend on the
+message in question.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>BSDE_MESSAGE_<span class=GramE>PROPERTIES(</span>iv) can be
+used to get a list of message properties.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2>Objects and Solids</h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=SpellE>nt</span> <span class=SpellE>bsdeNewAABB</span>(double
+<span class=SpellE>mx</span>, double my, double <span class=SpellE>mz,double</span>
+<span class=SpellE>nx</span>, double <span class=SpellE>ny</span>, double <span
+class=SpellE>nz</span>);<br>
+<span class=SpellE>int</span> <span class=SpellE>bsdeNewOBB</span>(double <span
+class=SpellE>mx</span>, double my, double <span class=SpellE>mz,double</span> <span
+class=SpellE>nx</span>, double <span class=SpellE>ny</span>, double <span
+class=SpellE>nz</span>);<br>
+<span class=SpellE>int</span> <span class=SpellE>bsdeNewSphere</span>(double
+radius);<br>
+<span class=SpellE>int</span> <span class=SpellE>bsdeNewCylinder</span>(double
+height, double radius);<br>
+<span class=SpellE>int</span> <span class=SpellE>bsdeNewCappedCylinder</span>(double
+height, double radius);<br>
+<span class=SpellE>int</span> <span class=SpellE>bsdeNewPlane</span>(double x,
+double y, double z, double d);<br>
+<span class=SpellE>int</span> <span class=SpellE>bsdeNewHullf</span>(float
+*norms, <span class=SpellE>int</span> n);<br>
+<span class=SpellE>int</span> <span class=SpellE>bsdeNewHulld</span>(double
+*norms, <span class=SpellE>int</span> n);<br>
+<span class=SpellE>int</span> <span class=SpellE>bsdeNewTriMeshf</span>(float
+*vecs, <span class=SpellE>int</span> *tris, <span class=SpellE>int</span> <span
+class=SpellE>nv</span>, <span class=SpellE>int</span> <span class=SpellE>nt</span>);<br>
+<span class=SpellE>int</span> <span class=SpellE>bsdeNewTriMeshd</span>(double
+*vecs, <span class=SpellE>int</span> *tris, <span class=SpellE>int</span> <span
+class=SpellE>nv</span>, <span class=SpellE>int</span> <span class=SpellE>nt</span>);<br>
+<br>
+Create an object/solid of the specified type.<br>
+Note that <span class=SpellE>OBBs</span> are currently required to be centered
+with their origins.<br>
+For planes, d points in the positive direction along the normal.<br>
+Hulls are passed as arrays of 4 values comprising each plane, likewise, d
+points in the positive direction of the normal.<br>
+<br>
+<span class=SpellE>TriMeshes</span> are passed as 2 arrays, 1 of vertices, and
+the other of triangles. Each vertex occupies 3 values, and vertex indices start
+at 0.<br>
+<br>
+<span class=GramE>void</span> <span class=SpellE>bsdeHide</span>(<span
+class=SpellE>int</span> <span class=SpellE>obj</span>);<br>
+void <span class=SpellE>bsdeUnhide</span>(<span class=SpellE>int</span> <span
+class=SpellE>obj</span>);<br>
+<br>
+Hide or Unhide an object.<br>
+A hidden object will be ignored in the simulation of the world (it will neither
+move nor collide with other objects).<br style='mso-special-character:line-break'>
+<![if !supportLineBreakNewLine]><br style='mso-special-character:line-break'>
+<![endif]></p>
+
+<p class=MsoNormal><br>
+<span class=GramE>void</span> <span class=SpellE>bsdeDestroy</span>(<span
+class=SpellE>int</span> <span class=SpellE>obj</span>);<br>
+Remove an object from the simulation and free the memory used by the object.<br
+style='mso-special-character:line-break'>
+<![if !supportLineBreakNewLine]><br style='mso-special-character:line-break'>
+<![endif]></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3><span class=SpellE>GetAttr/SetAttr</span></h3>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Get/Set object attributes.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeGetAttr</span>[/2/3/4][<span
+class=SpellE>i</span>/f/iv/fv/...]();</p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeSetAttr</span>[/2/3/4][<span
+class=SpellE>i</span>/f/iv/fv/...]();</p>
+
+<p class=MsoNormal><br>
+double <span class=SpellE>bsdeGetAttrf</span>(<span class=SpellE>int</span> <span
+class=SpellE>obj</span>, <span class=SpellE>int</span> <span class=SpellE>var</span>);<br>
+void <span class=SpellE>bsdeSetAttrf</span>(<span class=SpellE>int</span> <span
+class=SpellE>obj</span>, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+double <span class=SpellE>val</span>);<br>
+<span class=SpellE>int</span> <span class=SpellE>bsdeGetAttri</span>(<span
+class=SpellE>int</span> <span class=SpellE>obj</span>, <span class=SpellE>int</span>
+<span class=SpellE>var</span>);<br>
+void <span class=SpellE>bsdeSetAttri</span>(<span class=SpellE>int</span> <span
+class=SpellE>obj</span>, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> <span class=SpellE>val</span>);<br>
+void <span class=SpellE>bsdeGetAttrfv</span>(<span class=SpellE>int</span> <span
+class=SpellE>obj</span>, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *val, <span class=SpellE>int</span> n);<br>
+void <span class=SpellE>bsdeSetAttrfv</span>(<span class=SpellE>int</span> <span
+class=SpellE>obj</span>, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *val, <span class=SpellE>int</span> n);<br>
+void <span class=SpellE>bsdeGetAttrdv</span>(<span class=SpellE>int</span> <span
+class=SpellE>obj</span>, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+double *val, <span class=SpellE>int</span> n);<br>
+void <span class=SpellE>bsdeSetAttrdv</span>(<span class=SpellE>int</span> <span
+class=SpellE>obj</span>, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+double *val, <span class=SpellE>int</span> n);<br>
+void <span class=SpellE>bsdeGetAttriv</span>(<span class=SpellE>int</span> <span
+class=SpellE>obj</span>, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> *val, <span class=SpellE>int</span> n);<br>
+void <span class=SpellE>bsdeSetAttriv</span>(<span class=SpellE>int</span> <span
+class=SpellE>obj</span>, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> *val, <span class=SpellE>int</span> n);<br>
+…</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><br>
+Get/Set object attributes.<br>
+For vector types, a count is passed indicating the size of the vector being
+get/set.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>Object Vector Properties</h3>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<table class=MsoNormalTable border=1 cellpadding=0 width="93%"
+ style='width:93.64%;mso-cellspacing:1.5pt;mso-padding-alt:1.5pt 1.5pt 1.5pt 1.5pt'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Name</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>IO</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Description</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_ORIGIN<br>
+  BSDE_ORIGIN_0</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The origin for an object</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_VELOCITY</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The linear velocity for an object</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_TORQUE</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The torque at the center of mass for an object</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_ANGULAR_VELOCITY</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The angular velocity at the center of mass</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_ROTATION</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>A quaternion giving the rotation at the center of mass</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_MINS</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The minimum extents for an AABB or OBB</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:7'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_MAXS</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The maximum extents for an AABB or OBB</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:8'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_MASS_OFFSET</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The offset of the center of mass relative to the origin
+  for an object</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:9'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_INERTIA_TENSOR</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, M33</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>A 3x3 matrix giving the distribution of mass relative to
+  the center of mass for an object. This matrix is stored in I/m form.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:10'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_DIRECTION<br>
+  BSDE_DIRECTION_0</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, V3/4</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The direction of orientation for an object/joint</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:11'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_ORIGIN_A</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The origin on object A for a joint</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:12'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_ORIGIN_B</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The object on object B for a joint</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:13'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_ORIGIN_RA</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The origin on object A for a joint in object A's local
+  space</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:14'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_ORIGIN_RB</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The origin on object B for a joint in object B's local
+  space</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:15'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_DIRECTION_A</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Axis on Object A</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:16'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_DIRECTION_B</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Axis on Object B</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:17'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_DIRECTION_RA</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Axis on Object A in local space</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:18'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_DIRECTION_RB</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Axis on Object B in local space</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:19'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_ROTATION_MATRIX</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R, M33</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>3x3 matrix giving rotation.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:20'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal><i><span style='color:red'>BSDE_NORMAL</span></i></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>V4</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Normal vector</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:21'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_VERTICES</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>A set of vertices for an object</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:22'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_CONTACT_VELOCITY</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Velocity at contact points (walking, ...)</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:23'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_ACCELERATION</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Global acceleration at the center of mass</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:24'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_LOCAL_THRUST</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Local acceleration at the center of mass</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:25'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_ORIGIN_1</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Second origin</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:26'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_ORIGIN_2</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Third origin</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:27'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_ORIGIN_3</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Fourth origin</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:28'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_DIRECTION_1</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Second direction</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:29;mso-yfti-lastrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_ORIGIN_123</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Set base origin and generate others</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='margin-bottom:12.0pt'><o:p>&nbsp;</o:p></p>
+
+<h3>Object Float Properties</h3>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<table class=MsoNormalTable border=1 cellpadding=0 width="91%"
+ style='width:91.34%;mso-cellspacing:1.5pt;mso-padding-alt:1.5pt 1.5pt 1.5pt 1.5pt'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Name</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>IO</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Description</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_HEIGHT</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The height for an object</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_RADIUS</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The radius for an object</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_MASS</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The mass for an object</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_VOLUME</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The volume for an object</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_DENSITY</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The density for an object</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_ELASTIC</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The elastic value for object surfaces</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:7'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_FRICTION</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The friction value for object surfaces<br>
+  Friction is presently defined as (roughly) f<sub>0</sub>f<sub>1</sub>v/(v<sup>2</sup>+1)</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:8'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_VISCOSITY</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The viscosity of a fluid</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:9'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal><i><span style='color:fuchsia'>BSDE_CONTACT_POWER</span></i></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Power at contact point</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:10;mso-yfti-lastrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_INERTIA_SCALAR</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>A scalar representing the moment of inertia for an object.<br>
+  More specifically, this scalar represents I/m<span class=GramE>.</span><br>
+  Behavior related to scalar <span class=SpellE>vs</span> tensor issues is
+  undefined.</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='margin-bottom:12.0pt'><o:p>&nbsp;</o:p></p>
+
+<h3>Object Integer/Boolean Properties</h3>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<table class=MsoNormalTable border=1 cellpadding=0 width="90%"
+ style='width:90.62%;mso-cellspacing:1.5pt;mso-padding-alt:1.5pt 1.5pt 1.5pt 1.5pt'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Name</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>IO</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Description</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_SOLIDTYPE</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The solid-type for an object</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_NOSPIN</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, B</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Object can't rotate</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_NOMOVE</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, B</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Object can't move</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_NOGRAVITY</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, B</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Object is <span class=SpellE>uneffected</span> by gravity</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_STATIC</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, B</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Object does not move and otherwise ignores physics</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal><i><span style='color:red'>BSDE_SEMISTATIC</span></i></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, B</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Object may move but otherwise ignores physics</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:7'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_FLUID</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, B</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Object is a fluid</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:8'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_NONSOLID</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, B</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Object is non-solid</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:9'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_TRIGGER</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, B</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Object is a trigger</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:10'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_NUM_FACES</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Number of faces for a hull or <span class=SpellE>trimesh</span></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:11;mso-yfti-lastrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_NUM_VERTICES</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Number of vertices for a hull or <span class=SpellE>trimesh</span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='margin-bottom:12.0pt'><o:p>&nbsp;</o:p></p>
+
+<h3>Object Integer Vector Properties</h3>
+
+<table class=MsoNormalTable border=1 cellpadding=0 width="89%"
+ style='width:89.72%;mso-cellspacing:1.5pt;mso-padding-alt:1.5pt 1.5pt 1.5pt 1.5pt'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Name</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>IO</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Description</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_FACE_VERTICES</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Vertex numbers for each vertex in each face</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2;mso-yfti-lastrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_FACE_COUNTS</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The number of vertices for each face</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>Solid Types</h3>
+
+<table class=MsoNormalTable border=1 cellpadding=0 width="87%"
+ style='width:87.5%;mso-cellspacing:1.5pt;mso-padding-alt:1.5pt 1.5pt 1.5pt 1.5pt'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Name</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Description</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_SOLID_OTHER</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>&quot;Other&quot; solid types</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_SOLID_AABB</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Axis-Aligned-Bounding-Box</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_SOLID_OBB</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Oriented-Bounding-Box</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_SOLID_SPHERE</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Sphere</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_SOLID_CYLINDER </p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Flat topped cylinder</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_SOLID_CCYLINDER<br>
+  BSDE_SOLID_CAPSULE</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Sphere capped cylinder</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:7'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_SOLID_PLANE</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Solid Plane</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:8'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal><i><span style='color:red'>BSDE_SOLID_TRIMESH</span></i></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Triangular Mesh</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:9'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_SOLID_HULL</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Convex <st1:place w:st="on"><st1:City w:st="on">Hull</st1:City></st1:place></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:10;mso-yfti-lastrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_SOLID_BSP</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSP Tree</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2>Joints/Constraints</h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE>int</span></span> <span
+class=SpellE>bsdeNewJoint</span>(<span class=SpellE>int</span> type);<br>
+void <span class=SpellE>bsdeBindJointSolids</span>(<span class=SpellE>int</span>
+<span class=SpellE>obj</span>, <span class=SpellE>int</span> <span
+class=SpellE>obja</span>, <span class=SpellE>int</span> <span class=SpellE>objb</span>);</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<table class=MsoNormalTable border=1 cellpadding=0 width="93%"
+ style='width:93.96%;mso-cellspacing:1.5pt;mso-padding-alt:1.5pt 1.5pt 1.5pt 1.5pt'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Name</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Description</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_JOINT_OTHER</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>&quot;Other&quot; joint type</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_JOINT_BALL</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Keeps Joint Origins together</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_JOINT_HINGE</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Works like a ball, but also keeps direction vectors
+  together</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal><i><span style='color:red'>BSDE_JOINT_SLIDER</span></i></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Allows sliding along an axis</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_JOINT_UNIVERSAL</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Works like a ball, but keeps direction vectors at 90
+  degrees</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal><i><span style='color:red'>BSDE_JOINT_FIXED</span></i></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>&quot;Welds&quot; objects together</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:7;mso-yfti-lastrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal><i><span style='color:red'>BSDE_JOINT_ELASTIC</span></i></p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Pulls joint origins together with a defined force when the
+  distance exceeds the radius. Attenuation factors effect the force: f=Ad<sup>2</sup>+Bd+C</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal style='margin-bottom:12.0pt'><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3><span class=SpellE>GetJoint/SetJoint</span></h3>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeGetJoint</span>[/2/3/4][<span
+class=SpellE>i</span>/f/iv/fv/...]();</p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeSetJoint</span>[/2/3/4][<span
+class=SpellE>i</span>/f/iv/fv/...]();</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>double <span class=SpellE>bsdeGetJointf</span>(<span
+class=SpellE>int</span> <span class=SpellE>obj</span>, <span class=SpellE>int</span>
+<span class=SpellE>var</span>);<br>
+void <span class=SpellE>bsdeSetJointf</span>(<span class=SpellE>int</span> <span
+class=SpellE>obj</span>, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+double <span class=SpellE>val</span>);<br>
+<span class=SpellE>int</span> <span class=SpellE>bsdeGetJointi</span>(<span
+class=SpellE>int</span> <span class=SpellE>obj</span>, <span class=SpellE>int</span>
+<span class=SpellE>var</span>);<br>
+void <span class=SpellE>bsdeSetJointi</span>(<span class=SpellE>int</span> <span
+class=SpellE>obj</span>, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> <span class=SpellE>val</span>);<br>
+void <span class=SpellE>bsdeGetJointfv</span>(<span class=SpellE>int</span> <span
+class=SpellE>obj</span>, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *val, <span class=SpellE>int</span> n);<br>
+void <span class=SpellE>bsdeSetJointfv</span>(<span class=SpellE>int</span> <span
+class=SpellE>obj</span>, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *val, <span class=SpellE>int</span> n);<br>
+void <span class=SpellE>bsdeGetJointdv</span>(<span class=SpellE>int</span> <span
+class=SpellE>obj</span>, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+double *val, <span class=SpellE>int</span> n);<br>
+void <span class=SpellE>bsdeSetJointdv</span>(<span class=SpellE>int</span> <span
+class=SpellE>obj</span>, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+double *val, <span class=SpellE>int</span> n);</p>
+
+<p class=MsoNormal>…</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<table class=MsoNormalTable border=1 cellpadding=0 width="91%"
+ style='width:91.7%;mso-cellspacing:1.5pt;mso-padding-alt:1.5pt 1.5pt 1.5pt 1.5pt'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Name</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>IO</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Description</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_STRENGTH<br>
+  BSDE_STRENGTH_0</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, F</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>The strength of a force/joint constraint</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_STRENGTH_1</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, F</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Second strength</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_STRENGTH_2</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, F</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Third strength</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_STRENGTH_3</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, F</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Fourth strength</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_CONSTANT_ATTENUATION</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, F</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Constant Attenuation (D)</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_LINEAR_ATTENUATION</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, F</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Linear Attenuation (C)</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:7'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_QUADRATIC_ATTENUATION</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, F</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Quadratic Attenuation (B)</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:8;mso-yfti-lastrow:yes'>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>BSDE_CUBIC_ATTENUATION</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>R/W, F</p>
+  </td>
+  <td valign=top style='padding:1.5pt 1.5pt 1.5pt 1.5pt'>
+  <p class=MsoNormal>Cubic <span class=SpellE>Attentuation</span> (A)<br>
+  Together these form a cubic: Ax<sup>3</sup>+Bx<sup>2</sup>+Cx+D</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2>Structured Construction</h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeBegin</span>(<span
+class=SpellE>int</span> type);<br>
+<span class=SpellE>int</span> <span class=SpellE>bsdeEnd</span>();<br>
+<br>
+Begin/End construction of something.<br>
+These may be nested for the construction of compound objects.<br>
+At the <span class=SpellE>toplevel</span>, <span class=SpellE><span
+class=GramE>bsdeEnd</span></span><span class=GramE>(</span>) will return the
+handle of the constructed object.<br>
+<br>
+At the time of this writing only BSP trees may be created in this way.<br>
+<br>
+void bsdeVertex3f(double x, double y, double z);<br>
+void bsdeVertex4f(double x, double y, double z, double w);<br>
+void bsdeVertex3d(double x, double y, double z);<br>
+void bsdeVertex4d(double x, double y, double z, double w);<br>
+void bsdeVertex3fv(float *v);<br>
+void bsdeVertex4fv(float *v);<br>
+void bsdeVertex3dv(double *v);<br>
+void bsdeVertex4dv(double *v);<br>
+void bsdeNormal3f(double x, double y, double z);<br>
+void bsdeNormal4f(double x, double y, double z, double w);<br>
+void bsdeNormal3d(double x, double y, double z);<br>
+void bsdeNormal4d(double x, double y, double z, double w);<br>
+void bsdeNormal3fv(float *v);<br>
+void bsdeNormal4fv(float *v);<br>
+void bsdeNormal3dv(double *v);<br>
+void bsdeNormal4dv(double *v);<br>
+<br>
+Pass a vertex or normal to be used in constructing an object.<br>
+Note that <span class=SpellE>normals</span> are treated like vertices, and not
+like an implicit property applied to vertices.<br>
+The exact meaning of a vertex or normal is context dependent.<br>
+<br>
+void <span class=SpellE>bsdeAttri</span>(<span class=SpellE>int</span> <span
+class=SpellE>var</span>, <span class=SpellE>int</span> <span class=SpellE>val</span>);<br>
+void <span class=SpellE>bsdeAttrf</span>(<span class=SpellE>int</span> <span
+class=SpellE>var</span>, double <span class=SpellE>val</span>);<br>
+void <span class=SpellE>bsdeAttriv</span>(<span class=SpellE>int</span> <span
+class=SpellE>var</span>, <span class=SpellE>int</span> *<span class=SpellE>val</span>,
+<span class=SpellE>int</span> n);<br>
+void <span class=SpellE>bsdeAttrfv</span>(<span class=SpellE>int</span> <span
+class=SpellE>var</span>, float *<span class=SpellE>val</span>, <span
+class=SpellE>int</span> n);<br>
+void <span class=SpellE>bsdeAttrdv</span>(<span class=SpellE>int</span> <span
+class=SpellE>var</span>, double *<span class=SpellE>val</span>, <span
+class=SpellE>int</span> n);</p>
+
+<p class=MsoNormal>…<br>
+<br>
+Pass an attribute to be used in object construction.<br>
+The meaning of an attribute may depend on context.<br style='mso-special-character:
+line-break'>
+<![if !supportLineBreakNewLine]><br style='mso-special-character:line-break'>
+<![endif]></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2>Object Binding</h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeBind</span>(<span
+class=SpellE>int</span> scope, <span class=SpellE>int</span> <span
+class=SpellE>hdl</span>);</p>
+
+<p class=MsoNormal>Set the current object to be manipulated.</p>
+
+<p class=MsoNormal>Scope identifies the address-space of the object to be
+manipulated, and <span class=SpellE><span class=GramE>hdl</span></span>
+specifies the specific object within this space.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Scope is one of:</p>
+
+<p class=MsoNormal><span style='mso-tab-count:1'>            </span>BSDE_SOLID</p>
+
+<p class=MsoNormal><span style='mso-tab-count:1'>            </span>BSDE_JOINT</p>
+
+<p class=MsoNormal><span style='mso-tab-count:1'>            </span>BSDE_PARTICLE</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h3>Get/Set</h3>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeGet</span>[/2/3/4][<span
+class=SpellE>i</span>/f/iv/fv/...]();</p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeSet</span>[/2/3/4][<span
+class=SpellE>i</span>/f/iv/fv/...]();</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE>int</span></span> <span
+class=SpellE>bsdeGeti</span>(<span class=SpellE>int</span> <span class=SpellE>var</span>);</p>
+
+<p class=MsoNormal><span class=GramE>double</span> <span class=SpellE>bsdeGetf</span>(<span
+class=SpellE>int</span> <span class=SpellE>var</span>);</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeGetiv</span>(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> *v, <span class=SpellE>int</span> n);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeGetfv</span>(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *v, <span class=SpellE>int</span> n);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeGet2iv(<span class=SpellE>int</span>
+num, <span class=SpellE>int</span> <span class=SpellE>var</span>, <span
+class=SpellE>int</span> *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeGet2fv(<span class=SpellE>int</span>
+num, <span class=SpellE>int</span> <span class=SpellE>var</span>, float *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeGet3iv(<span class=SpellE>int</span>
+num, <span class=SpellE>int</span> <span class=SpellE>var</span>, <span
+class=SpellE>int</span> *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeGet3fv(<span class=SpellE>int</span>
+num, <span class=SpellE>int</span> <span class=SpellE>var</span>, float *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeGet4iv(<span class=SpellE>int</span>
+num, <span class=SpellE>int</span> <span class=SpellE>var</span>, <span
+class=SpellE>int</span> *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeGet4fv(<span class=SpellE>int</span>
+num, <span class=SpellE>int</span> <span class=SpellE>var</span>, float *v);</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeSeti</span>(<span
+class=SpellE>int</span> <span class=SpellE>var</span>, <span class=SpellE>int</span>
+<span class=SpellE>val</span>);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeSetf</span>(<span
+class=SpellE>int</span> <span class=SpellE>var</span>, double <span
+class=SpellE>val</span>);</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeSet2i(<span class=SpellE>int</span>
+<span class=SpellE>var</span>, <span class=SpellE>int</span> x, <span
+class=SpellE>int</span> y);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeSet2f(<span class=SpellE>int</span>
+<span class=SpellE>var</span>, double x, double y);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeSet3i(<span class=SpellE>int</span>
+<span class=SpellE>var</span>, <span class=SpellE>int</span> x, <span
+class=SpellE>int</span> y, <span class=SpellE>int</span> z);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeSet3f(<span class=SpellE>int</span>
+<span class=SpellE>var</span>, double x, double y, double z);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeSet4i(<span class=SpellE>int</span>
+<span class=SpellE>var</span>, <span class=SpellE>int</span> x, <span
+class=SpellE>int</span> y, <span class=SpellE>int</span> z, <span class=SpellE>int</span>
+w);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeSet4f(<span class=SpellE>int</span>
+<span class=SpellE>var</span>, double x, double y, double z, double w);</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeSetiv</span>(<span
+class=SpellE>int</span> <span class=SpellE>var</span>, <span class=SpellE>int</span>
+*v, <span class=SpellE>int</span> n);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeSetfv</span>(<span
+class=SpellE>int</span> <span class=SpellE>var</span>, float *v, <span
+class=SpellE>int</span> n);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeSet2iv(<span class=SpellE>int</span>
+<span class=SpellE>var</span>, <span class=SpellE>int</span> *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeSet2fv(<span class=SpellE>int</span>
+<span class=SpellE>var</span>, float *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeSet3iv(<span class=SpellE>int</span>
+<span class=SpellE>var</span>, <span class=SpellE>int</span> *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeSet3fv(<span class=SpellE>int</span>
+<span class=SpellE>var</span>, float *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeSet4iv(<span class=SpellE>int</span>
+<span class=SpellE>var</span>, <span class=SpellE>int</span> *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeSet4fv(<span class=SpellE>int</span>
+<span class=SpellE>var</span>, float *v);</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Get or set a specific value within the currently bound
+object.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeIdxGet</span>[/2/3/4][<span
+class=SpellE>i</span>/f/iv/fv/...]();</p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeIdxSet</span>[/2/3/4][<span
+class=SpellE>i</span>/f/iv/fv/...]();</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE>int</span></span> <span
+class=SpellE>bsdeIdxGeti</span>(<span class=SpellE>int</span> num, <span
+class=SpellE>int</span> <span class=SpellE>var</span>);</p>
+
+<p class=MsoNormal><span class=GramE>double</span> <span class=SpellE>bsdeIdxGetf</span>(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>);</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeIdxGetiv</span>(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> *v, <span class=SpellE>int</span> n);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeIdxGetfv</span>(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *v, <span class=SpellE>int</span> n);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxGet2iv(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxGet2fv(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxGet3iv(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxGet3fv(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxGet4iv(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxGet4fv(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *v);</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeIdxSet</span>[<span
+class=SpellE>i</span>/f/iv/fv/...]();</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeIdxSeti</span>(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> <span class=SpellE>val</span>);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeIdxSetf</span>(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+double <span class=SpellE>val</span>);</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxSet2i(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> x, <span class=SpellE>int</span> y);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxSet2f(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+double x, double y);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxSet3i(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> x, <span class=SpellE>int</span> y, <span
+class=SpellE>int</span> z);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxSet3f(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+double x, double y, double z);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxSet4i(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> x, <span class=SpellE>int</span> y, <span
+class=SpellE>int</span> z, <span class=SpellE>int</span> w);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxSet4f(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,</p>
+
+<p class=MsoNormal><span style='mso-tab-count:1'>            </span><span
+class=GramE>double</span> x, double y, double z, double w);</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeIdxSetiv</span>(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> *v, <span class=SpellE>int</span> n);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeIdxSetfv</span>(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *v, <span class=SpellE>int</span> n);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxSet2iv(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxSet2fv(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxSet3iv(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxSet3fv(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxSet4iv(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+<span class=SpellE>int</span> *v);</p>
+
+<p class=MsoNormal><span class=GramE>void</span> bsdeIdxSet4fv(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>,
+float *v);</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Get and set index-attributes within a sub-object of the
+currently bound object (these will be used for some classes of objects, such as
+soft-bodies).</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeGetIdx</span>[/2/3/4][<span
+class=SpellE>i</span>/f/iv/fv/...]();</p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeSetIdx</span>[/2/3/4][<span
+class=SpellE>i</span>/f/iv/fv/...]();</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Get/Set attributes within an array.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE>int</span></span> <span
+class=SpellE>bsdeIdxGeti</span>(<span class=SpellE>int</span> num, <span
+class=SpellE>int</span> <span class=SpellE>var</span>);</p>
+
+<p class=MsoNormal><span class=GramE>double</span> <span class=SpellE>bsdeIdxGetf</span>(<span
+class=SpellE>int</span> num, <span class=SpellE>int</span> <span class=SpellE>var</span>);</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2>Particles</h2>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Particles will be free floating and will have a variable
+level of influence on other particles or objects. They will be separate from
+solids (in that they will have a separate handle address space).</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE>int</span></span>
+bsdeNewParticle3f(double x, double y, double z);</p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE>int</span></span>
+bsdeNewParticle3fv(float *v);</p>
+
+<p class=MsoNormal><span class=SpellE><span class=GramE>int</span></span>
+bsdeNewParticle3dv(double *v);</p>
+
+<p class=MsoNormal>Create particle at specific origin.</p>
+
+<p class=MsoNormal>...</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=GramE>void</span> <span class=SpellE>bsdeDestroyParticle</span>(<span
+class=SpellE>int</span> num);</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Destroy Particle.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none;mso-border-alt:solid windowtext .5pt;
+ mso-yfti-tbllook:480;mso-padding-alt:0in 5.4pt 0in 5.4pt;mso-border-insideh:
+ .5pt solid windowtext;mso-border-insidev:.5pt solid windowtext'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td valign=top style='border:solid windowtext 1.0pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Name</p>
+  </td>
+  <td valign=top style='border:solid windowtext 1.0pt;border-left:none;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>IO</p>
+  </td>
+  <td valign=top style='border:solid windowtext 1.0pt;border-left:none;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Description</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_ORIGIN</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>R/W,3f</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Origin of particle</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_VELOCITY</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>R/W,3f</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Velocity</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_MASS</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>R/<span class=SpellE>W,f</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Inertial mass</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_ACCELERATION</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>R/W,3f</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Continuous acceleration</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_FORCE</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>R/<span class=SpellE>W,f</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Force-effect of particle, impulse+=(mass*force)/(dist^2)</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6;mso-yfti-lastrow:yes'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_POLARITY</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>R/<span class=SpellE>W,f</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Particle polarity, impulse+=(<span class=SpellE>A.polarity</span>*<span
+  class=SpellE>B.polarity</span>)/(dist^2)</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span class=Heading2Char><span style='font-size:14.0pt'>Soft-Bodies</span></span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Soft bodies will occupy the same space as rigid bodies, but
+will differ greatly in terms of behavior and mechanics.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Soft bodies will consist of several arrays:</p>
+
+<p class=MsoNormal>Vertices, which will hold the <span class=GramE>current</span>
+object vertices;</p>
+
+<p class=MsoNormal>Springs, will hold a number of spring-like relations between
+vertices;</p>
+
+<p class=MsoNormal><span class=GramE>Faces,</span> will hold a number of faces
+giving an external structure to the mesh (these will serve as collision
+geometry).</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Vertices will each have their own position, velocity, and
+mass.</p>
+
+<p class=MsoNormal>Each vertex will have its coordinates stored in world space.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>When unconstrained, a vertex will move freely in space
+(subject to gravity, but otherwise non-solid).</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Vertex Array Properties (<span class=SpellE>IdxGet/IdxSet</span>):</p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none;mso-border-alt:solid windowtext .5pt;
+ mso-yfti-tbllook:480;mso-padding-alt:0in 5.4pt 0in 5.4pt;mso-border-insideh:
+ .5pt solid windowtext;mso-border-insidev:.5pt solid windowtext'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td valign=top style='border:solid windowtext 1.0pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Name</p>
+  </td>
+  <td valign=top style='border:solid windowtext 1.0pt;border-left:none;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>IO</p>
+  </td>
+  <td valign=top style='border:solid windowtext 1.0pt;border-left:none;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Description</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_VERTEX_ORIGIN</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>RW,3f</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Vertex origin</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_VERTEX_VELOCITY</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>RW,3f</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Vertex velocity</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3;mso-yfti-lastrow:yes'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_VERTEX_MASS</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,f</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Vertex mass</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Springs will relate 2, 3, or 4 vertices, and apply forces to
+them.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Springs with 2 vertices will generally have linear compression
+and expansion properties (flexing is not possible with 2 points).</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Springs with 3 vertices will have both compression and
+flexing.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Springs with 4 vertices will also have volume (they will
+form a tetrahedron with a defined volume).</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Springs with 2 vertices will be the same as 3 vertices but
+have -1 as the last vertex. Vertex 0 will be special and refer to the object's
+origin.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Spring Properties</p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none;mso-border-alt:solid windowtext .5pt;
+ mso-yfti-tbllook:480;mso-padding-alt:0in 5.4pt 0in 5.4pt;mso-border-insideh:
+ .5pt solid windowtext;mso-border-insidev:.5pt solid windowtext'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td valign=top style='border:solid windowtext 1.0pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Name</p>
+  </td>
+  <td valign=top style='border:solid windowtext 1.0pt;border-left:none;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>IO</p>
+  </td>
+  <td valign=top style='border:solid windowtext 1.0pt;border-left:none;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Description</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_SPRING_VERTEX</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>RW,2/3/4i</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Spring vertices</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_SPRING_VERTEX0</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,i</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Spring vertex 0</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_SPRING_VERTEX1</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,i</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Spring vertex 1</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_SPRING_VERTEX2</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,i</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Spring vertex 2</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_SPRING_VERTEX3</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,i</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Spring vertex 3</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:6'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_SPRING_LENGTH</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,f</span>/fv</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Spring length (Vertex 0-1/ABCDEF)</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:7'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_SPRING_LENGTH0</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,f</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Spring length (Vertex 0-1)</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:8'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_SPRING_LENGTH1</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,f</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Spring length (Vertex 1-2)</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:9'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_SPRING_LENGTH2</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,f</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Spring length (Vertex 2-0)</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:10'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_SPRING_LENGTH3</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,f</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Spring length (Vertex 0-3)</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:11'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_SPRING_LENGTH4</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,f</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Spring length (Vertex 1-3)</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:12'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_SPRING_LENGTH5</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,f</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Spring length (Vertex 2-3)</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:13'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_SPRING_AREA</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,f</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Triangle area</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:14'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_SPRING_VOLUME</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,f</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Simplex volume</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:15'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_SPRING_LENGTH_CONSTANT_ATTN</p>
+  <p class=MsoNormal>BSDE_SPRING_LENGTH_LINEAR_ATTN</p>
+  <p class=MsoNormal>BSDE_SPRING_LENGTH_QUADRATIC_ATTN</p>
+  <p class=MsoNormal>BSDE_SPRING_LENGTH_CUBIC_ATTN</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,f</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Attenuation factors used for maintaining the length of the
+  spring.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:16'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_SPRING_AREA_CONSTANT_ATTN</p>
+  <p class=MsoNormal>BSDE_SPRING_AREA_LINEAR_ATTN</p>
+  <p class=MsoNormal>BSDE_SPRING_AREA_QUADRATIC_ATTN</p>
+  <p class=MsoNormal>BSDE_SPRING_AREA_CUBIC_ATTN</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,f</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Attenuation factors used for maintaining the area of
+  triangular springs.</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:17;mso-yfti-lastrow:yes'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_SPRING_VOLUME_CONSTANT_ATTN</p>
+  <p class=MsoNormal>BSDE_SPRING_VOLUME_LINEAR_ATTN</p>
+  <p class=MsoNormal>BSDE_SPRING_VOLUME_QUADRATIC_ATTN</p>
+  <p class=MsoNormal>BSDE_SPRING_VOLUME_CUBIC_ATTN</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,f</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Attenuation factors used for maintaining the volume of
+  tetrahedral springs.</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>These will define the ideal shape of the spring. Note that
+area and volume will be aliased, and will be defined by the lengths in question.
+Many of these values will be computed when creating the spring.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>The attenuation factors will effect how strongly the <span
+class=SpellE>the</span> spring will attempt to retain its ideal shape.
+Likewise, the area and volume attenuations will be aliased.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Face Properties</p>
+
+<table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+ style='border-collapse:collapse;border:none;mso-border-alt:solid windowtext .5pt;
+ mso-yfti-tbllook:480;mso-padding-alt:0in 5.4pt 0in 5.4pt;mso-border-insideh:
+ .5pt solid windowtext;mso-border-insidev:.5pt solid windowtext'>
+ <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+  <td valign=top style='border:solid windowtext 1.0pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Name</p>
+  </td>
+  <td valign=top style='border:solid windowtext 1.0pt;border-left:none;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>IO</p>
+  </td>
+  <td valign=top style='border:solid windowtext 1.0pt;border-left:none;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Description</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_FACE_VERTEX</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>RW,2/3/4i</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Face vertices</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_FACE_VERTEX0</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,i</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Face vertex 0</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_FACE_VERTEX1</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,i</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Face vertex 1</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:4'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_FACE_VERTEX2</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,i</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Face vertex 2</p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:5;mso-yfti-lastrow:yes'>
+  <td valign=top style='border:solid windowtext 1.0pt;border-top:none;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>BSDE_FACE_VERTEX3</p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal><span class=SpellE>RW,i</span></p>
+  </td>
+  <td valign=top style='border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;
+  border-right:solid windowtext 1.0pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt'>
+  <p class=MsoNormal>Face vertex 3</p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>The faces will represent solid lines, triangles, or
+tetrahedrons.</p>
+
+<p class=MsoNormal>These will likewise use the convention of -1 indicating
+missing vertices. By default, these will inherit the <span class=SpellE>meterial</span>
+behavior from the base object (solid, <span class=GramE>fluid, ...)</span>.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>Soft-Bodies are likely to be constructed similarly to that
+of <span class=SpellE>BRep</span>-solids.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+</div>
+
+</body>
+
+</html>

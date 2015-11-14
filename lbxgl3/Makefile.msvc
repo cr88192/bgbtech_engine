@@ -1,0 +1,33 @@
+BUILD=.
+MKSUF=.msvc
+LIBSUF=.lib
+DLLSUF=.dll
+EXESUF=.exe
+OBJSUF=.obj
+BINSUF=.exe
+DLLPF=
+
+CC_OUTEXE=cl /Fe
+CC_OUTDLL=cl /LD /Fe
+CC_OUTOBJ=cl /c /Fo
+CC_OUTTOOL=cl /Fe
+
+BGBMETA=../bgbmeta$(BINSUF)
+BGBMETA_EXW=$(BGBMETA) /Fw
+BMETA_CFLAGS=/Iinclude /I../include
+
+BSPKG2C=../bspkg2c$(BINSUF)
+
+CFLAGS=/Iinclude /I../include /O2 /Zi /arch:SSE2 /MP
+DLL_CFLAGS=$(CFLAGS) /DLBXGL_DLL
+# LDFLAGS=bgbsvm.lib ../bgbgc.lib ../bgbdy.lib ../bgbasm.lib
+DLL_LDFLAGS=../btgecm.lib ../libpdgl.lib ../libpdglui.lib ../libbsde.lib \
+		../bgbasm.lib ../bgbgc.lib ../bgbdy.lib \
+		../bgbcc.lib ../libvecmath.lib ../bgbbtjpg.lib \
+		../libbgbmid.lib \
+		opengl32.lib gdi32.lib user32.lib winmm.lib vfw32.lib
+# ../libbsgen.lib
+# DLL_LDFLAGS2=libpdgl.lib $(DLL_LDFLAGS)
+
+include Makefile.inc
+

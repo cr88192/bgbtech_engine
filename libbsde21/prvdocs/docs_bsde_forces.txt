@@ -1,0 +1,20 @@
+PushVel
+Object is pushed in a certain direction, and accelerated in that direction so long as the velocity in that direction is below the pushvel.
+
+Intent is for use on things like characters or other objects that need to move at near a fixed speed regardless of forces like friction.
+
+Side issues:
+Forces perpendicular to this force (eg: gravity and horizontal forces).
+These may be desirable in many cases (that of characters), less so for some other objects.
+It may also make sense to weight this value, eg, since in some cases (eg: no contact with ground, being on ice, ...) would naturally effect movement of a character.
+
+This would imply a different force than one applied directly to an object, eg, one that is computed using friction as a propelling force. This would also allow, eg, trying to walk forward to generate a backwards force on an object being walked on. Likewise the force would be clamped to the collision plane as is the case for friction.
+
+Different forces may then be needed for in-air and on-contact variations, that or use of modifier flags.
+
+It may make sense to have different forces, eg, so both gravity and walking forces could be done if needed.
+Forces could also be used for conveyors on static objects...
+
+
+PushAccel
+A constant acceleration is provided in a particular direction.

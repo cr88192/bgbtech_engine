@@ -1,0 +1,5 @@
+// $flags voxel alpha nonsolid
+$flags voxel alpha nodepthwrite
+
+$vox_EmitBlock BTGE_Voxel_EmitBlock_RedstoneTorch
+$vox_BlockUpdate BTGE_VoxelPower_UpdateVoxel

@@ -1,0 +1,26 @@
+BUILD=.
+DLLPF=lib
+
+# CC_OUTEXE=gcc -o 
+# CC_OUTDLL=gcc -shared -o 
+# CC_OUTOBJ=gcc -c -o 
+
+# EXE = .elf
+# BIN = .bin
+
+BGBMETA=../bgbmeta$(BINSUF)
+BGBMETA_EXW=$(BGBMETA) /Fw
+BMETA_CFLAGS=/Iinclude /I../include
+
+CFLAGS=-Iinclude -I../include -g -Werror-implicit-function-declaration
+DLL_CFLAGS=$(CFLAGS) -DLBXGL_DLL
+LDFLAGS=-g -L.. -lbgbgc -lbgbdy -lbgbasm -lzpack -lm \
+	-lbsgen -lvecmath -lpdgl -lbgbbtjpg -lGL \
+	-Wl,-rpath,"$$ORIGIN"
+
+DLL_LDFLAGS=-g -L.. -lbgbgc -lbgbdy -lbgbasm -lzpack -lm -fPIC \
+	-lbsgen -lvecmath -lpdgl -lbgbbtjpg \
+	-Wl,-rpath,"$$ORIGIN"
+
+include Makefile.inc
+

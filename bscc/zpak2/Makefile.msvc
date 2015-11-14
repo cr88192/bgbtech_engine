@@ -1,0 +1,36 @@
+CFLAGS = /I. /DLIBZPACK_C /Z7
+
+ZPACK_SRCS = \
+	deflate.c \
+	inflate.c \
+	zpack_cache.c \
+	zpack_dir.c \
+	zpack_image.c \
+	zpack_io.c \
+	zpack_spans.c \
+	zpack_util.c \
+	zpack_misc.c
+
+ZPACK_OBJS = $(ZPACK_SRCS:.c=.obj)
+
+all: libs apps
+
+%.obj: %.c
+	cl /c /Fo$@ $< $(CFLAGS)
+
+# zpack.lib: $(ZPACK_OBJS)
+#	lib /out:zpack.lib $(ZPACK_OBJS)
+
+zpack.dll: $(ZPACK_SRCS)
+	cl /LD /Fezpack.dll $(ZPACK_SRCS) /I. /Z7 /DLIBZPACK_C /DZPACK_DLL
+
+zpack.exe: zpack.c libs
+	cl /Fezpack.exe zpack.c zpack.lib /I.
+
+# zpacksh.exe: zpacksh.c zpack.lib
+#	cl /Fezpacksh.exe zpacksh.c zpack.lib /I.
+
+includes:
+libs: zpack.dll
+apps: zpack.exe
+

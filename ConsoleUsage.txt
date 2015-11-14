@@ -1,0 +1,41 @@
+Console can be toggled via ALT + ~, and ALT + 0-9 can change between active consoles.
+
+
+A few useful console commands:
+
+map <mapname>
+Load up a given map.
+
+invul
+Don't take damage.
+
+notarget
+Be invisible to monsters.
+
+noclip
+Gain the ability to fly and pass through things.
+
+give all
+Gives all weapons.
+
+give <itemname>
+Give a given item.
+
+give <classname>
+Spawn an entity of the given class.
+
+
+placervox <blockname>
+Set placer voxel.
+
+placervox aux <bits>
+Set the auxilary bits for voxel placer.
+
+placervox value <value>
+Set value field for block placer.
+
+
+CVars:
+vox_flexform	enable/disable flexform terrain.
+r_usefbo		enable/disable FBO.
+r_usehdr		enable/disable HDR.

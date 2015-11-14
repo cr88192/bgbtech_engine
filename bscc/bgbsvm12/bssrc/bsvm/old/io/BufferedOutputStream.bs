@@ -1,0 +1,19 @@
+package bsvm.io;
+
+public class BufferedOutputStream extends FilterOutputStream
+{
+protected byte[] buf;
+protected int count;
+ 
+public BufferedOutputStream(OutputStream out)
+	{ this(out, 16); }
+public BufferedOutputStream(OutputStream out, int size)
+	{ super(out); }
+
+public void flush()
+	{}
+public void write(byte[] b, int off, int len)
+	{}
+public void write(int b)
+	{}
+}

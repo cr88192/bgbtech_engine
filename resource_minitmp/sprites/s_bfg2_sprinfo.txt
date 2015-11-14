@@ -1,0 +1,5 @@
+$sprite 4
+$spr_frame 0  32 32  64 64  sprites/bfg/s_bfg2_0.png
+$spr_frame 1  32 32  64 64  sprites/bfg/s_bfg2_1.png
+$spr_frame 2  32 32  64 64  sprites/bfg/s_bfg2_2.png
+$spr_frame 3  32 32  64 64  sprites/bfg/s_bfg2_3.png

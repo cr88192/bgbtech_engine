@@ -1,0 +1,60 @@
+package bsvm.lang;
+
+public final class Short extends Number
+{
+public static final int MAX_VALUE = 32767;
+public static final int MIN_VALUE = -32768;
+
+private final short value;
+
+public Short(short value)
+	{ this.value=value; }
+public Short(String s)
+	{ this(parseShort(s)); }
+
+public byte byteValue()
+	{ return (value as! byte); }
+
+public int compareTo(Object o)
+	{ return compareTo((Short)o); }
+public int compareTo(Short anotherShort)
+	{ return(this.value-anotherShort.value); }
+
+public static Short decode(String nm)
+	{ return valueOf(nm); }
+
+public double doubleValue()
+	{ return (double)value; }
+
+public boolean equals(Object obj)
+{
+	return (obj==this) ||
+		((obj instanceof Short) &&
+			(this.value==((Short)obj).value));
+}
+
+public float floatValue()
+	{ return (float)value; }
+public int hashCode()
+	{ return (int)value; }
+public int intValue()
+	{ return (int)value; }
+public long longValue()
+	{ return (long)value; }
+public static short parseShort(String s)
+	{ return parseShort(s, 10); }
+public static short parseShort(String s, int radix)
+	{ return (short)Integer.parseInt(s, radix); }
+
+public short shortValue()
+	{ return value; }
+public String toString()
+	{ return toString(value); }
+public static String toString(short s)
+	{ return Integer.toString((int)s); }
+public static Short valueOf(String s)
+	{ return new Short(s); }
+public static Short valueOf(String s, int radix)
+	{ return new Short(parseShort(s, radix)); }
+
+}

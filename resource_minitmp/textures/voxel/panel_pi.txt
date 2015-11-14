@@ -1,0 +1,4 @@
+$flags voxel alpha
+
+$video textures/voxel/panel_pi_anim0.avi
+// $vox_emit_sound sound/ambient/pi0_amb0 4.0 0

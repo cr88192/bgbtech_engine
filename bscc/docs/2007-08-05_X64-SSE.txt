@@ -1,0 +1,77 @@
+Update on X86-64 and SSE.
+These are now added (though both incomplete).
+
+For reference (GCC style vector extension):
+typedef int v4si __attribute__ ((vector_size (4*sizeof(int))));
+
+
+Considering a more specialized set of vector extensions:
+__v2f		2-float vector, 64 bits
+__v3f		3-float vector, 128 bits
+__v4f		4-float vector, 128 bits
+
+__v2d		2-double vector, 128 bits
+
+Along with:
+__int128	128-bit integer (SYS-V ABI)
+
+And, possible:
+__quat	4 float quaternion
+__m3f		9 float (3x3) matrix
+__m4f		16 float (4x4) matrix
+
+Operations:
+I will define that the operations used on vectors be geometric.
+
+Considering: I relocate some operations such that it avoids conflict with the array-processing view of vectors.
+
+A*B: vector element multiply
+A*B: quaternion product
+A/B: quaternion division (A*(B^-1))
+
+A^B: dot product
+A%B: cross product
+
+-A: negate vector/quaternion
+~A: quaternion conjugate
+
+FVecs will have implicit members, and these will be called x,y,z, and w.
+
+
+__fvec(...)
+Will be a a compiler special form for the creation of float vectors.
+May be used with 2, 3, or 4 arguments.
+
+__qvec(x,y,z,w)
+Compiler special for creating quaternions.
+
+
+
+vecnf.h
+
+v3f v;
+v=V3F(1,0,0);
+
+typedef struct {const float x,y;} v2f;
+typedef struct {const float x,y,z,w;} v3f;
+typedef struct {const float x,y,z,w;} v4f;
+
+
+V2F(x,y)
+V3F(x,y,z)
+V4F(x,y,z,w)
+QUAT(x,y,z,w)
+
+v3fdot(a,b)
+v3fcross(a,b)
+
+v3flen(a)
+v3fnorm(a)
+v3fscale(a,f)
+v3fdist(a,b)
+
+v3fadd(a,b)
+v3fsub(a,b)
+v3fmul(a,b)
+v3fdiv(a,b)
+

@@ -1,0 +1,4 @@
+Though WRT Project Organization:
+	BSDE (bsde), core library;
+	BSDE++ (bsdepp), C++ wrappers for BSDE core;
+	BSDE Draw (bsdedraw), basic set of rendering and utility code.

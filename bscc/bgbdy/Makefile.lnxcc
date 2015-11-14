@@ -1,0 +1,28 @@
+BUILD=.
+MKSUF=.lnx
+LIBSUF=.a
+DLLSUF=.so
+EXESUF=.elf
+OBJSUF=.o
+DLLPF=lib
+
+CC=$(TARG)-gcc
+CC_OUTEXE=$(CC) -o 
+CC_OUTDLL=$(CC) -shared -o 
+CC_OUTOBJ=$(CC) -c -o 
+CC_OUTTOOL=gcc -o 
+
+EXE = .elf
+BIN = .bin
+O = .o
+A = .a
+
+CFLAGS=-Iinclude -I../include -g -pg
+DLL_CFLAGS=$(CFLAGS) -DBGBDY_DLL
+LDFLAGS=-g -pg -L. -lbgbdy -L.. -lbgbgc -lbgbdy -lbgbasm -lzpack -lm \
+	-Wl,-rpath,"$$ORIGIN"
+DLL_LDFLAGS=-L.. -lbgbgc -lbgbasm -lzpack -lm -fPIC \
+	-Wl,-rpath,"$$ORIGIN"
+
+include Makefile.inc
+

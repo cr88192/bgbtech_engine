@@ -1,0 +1,2 @@
+$flags lightvol
+$lightvol 0.50

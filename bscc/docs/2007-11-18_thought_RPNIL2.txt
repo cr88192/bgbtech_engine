@@ -1,0 +1,67 @@
+RPNIL2
+
+Hypothetical Spec
+
+
+Major Changes:
+Consider somewhat reworking the syntax.
+
+Rather than having a strictly seperate parse and build phases, instead, the RPNIL language will represent a kind of compile-time interpreter.
+
+The general result of this interpretation process will be the code to be compiled.
+
+As such, the exact meaning of operations will depend on context and specifics (it is these specifics that determine operation).
+
+
+Toplevel and Blocks
+
+These will become primarily semantic distinctions, as both the interpreter and syntax will be uniform in both cases, with restrictions placed on what can be done.
+
+In the toplevel, no executable code may be produced, so for output only declarations and functions are allowed.
+
+
+The interpreter itself will be dynamically typed, but the produced code will be staticly typed.
+
+
+Types will be declared as tokens similar to how it was before.
+Much of the existing syntactic elements will remain the same.
+
+Variables, however, will no longer be part of fixed structures, but are to be declared.
+
+<name>:<type>	will be itself defined as a declaration syntax.
+=<name>:<type>	will also be a declaration syntax (initialized).
+/<name>:<type>	will be a soft-declaration
+
+[<vals>] will define an array.
+{<ops>} will define a block.
+
+^<name> will declare a compile-time variable (similar to /<name> def).
+
+/<name> and $<name> will be essentially synonyms.
+
+%<name> will still load
+<name> will also load, but with the difference that blocks and similar will be executed.
+
+
+For example:
+{ dup * } ^sqr
+
+Will bind a block, and later referencing this block will attempt to execute its contents (or, inline the operations, if it so happens it is used on actual values).
+
+
+Functions
+
+<var> <args> <block> func
+
+At the end of a function body there will be an implicit return, which will base its type on if a value remains on the stack.
+
+Note that a function will not be callable at compile time.
+
+
+Example:
+/sqr:d [ /x:d ] { x x * } func
+
+Also, in forming calls, arguments will be represented in left to right order.
+
+printf( "hello %s\n" , "world" , )
+

@@ -1,0 +1,173 @@
+general thoughts (my idea, basically, ideas I have been on and off 
+implementing for years in my previous languages):
+implement features based around the addition of a few new keywords and a few syntax tweaks.
+
+I am considering using a mix of parallelism and message-passing concurrency.
+
+
+ok, nevermind if all this is stupid or these ideas are horrid/unworkable...
+just comming up with crap here (and my amount of investigation into the 
+previously mentioned technologies could be improved...).
+
+
+likely the underlying structure will be based mostly around traditional 
+threading and synchronization, and is likely to involve the implicit use of 'workers' and 'work queues' (these will likely be the underlying 
+implementation, but some operations, such as joins, may sensibly co-opt the current thread with the the thread being joined, if the requested thread has not yet been spawned/serviced).
+
+another type of thread will be a 'process', which will likely exist in its own right (processes will reserialize on incomming messages, only handling messages in sequence).
+
+basically, some constructions will be allowed to branch implicitly, and 
+others will be less implicit.
+in many cases, branching, synchronization, and reserialization can be 
+accomplished via function calls.
+
+for now, I will assume a shared-memory model.
+
+
+syntax ideas (keywords are presumably implemented as defines):
+foo();
+will work like an ordinary function call. in general, calls will wait until completion before returning control to caller.
+
+foo!();
+will be a branching call or a message pass. it will not be specified exactly if/when the call to foo will be made.
+
+branch <body>
+works like a pass. body is to be executed, but if/when is not well defined.
+
+thread <body>
+will forcibly execute body in parallel (if a free-worker exists, it is used immediately, otherwise a new thread is created).
+
+pfor(<init>; <cond>; <step>) <body>
+a parallelizing for loop (will join with all the iterations, or operate 
+serially if branching does not make sense).
+
+bfor(<init>; <cond>; <step>) <body>
+branching for, differing primarily in that it will not join with the 
+iterations (each may be added to the work queue).
+
+thfor(<init>; <cond>; <step>) <body>
+threading for, like bfor, but threads rather than branches.
+
+
+int async foo() <body>
+each call to foo is allowed to branch.
+
+foo();
+will branch, but the caller will stall until foo completes 
+(implicit joining).
+
+foo!();
+will branch, and will not wait
+
+join(foo!()); //will be analogous to foo()
+
+join(th); //would be an intrinsic, with the same type as a branched 
+expression
+
+int async v; //asynchronous variable
+int i;
+
+v=foo!(); //branch
+//do stuff...
+i=join(v);
+
+
+void sync bar() <body>
+foo is syncronizing.
+
+bar(); //calls bar, and will block until after foo finishes
+bar!(); //calls bar, but will essentially pass a message to bar
+
+
+possible ('implicit' processes, a much more problematic idea):
+
+a process would effectively resemble a sync function, except that multiple 
+instances would exist (the process itself possibly being implicit).
+
+this could be implemented by making them look like syncronized function 
+pointers.
+
+void (sync *baz0)();
+sync function pointers would effectively syncronize on the pointer itself 
+(rather than on the function being called).
+this would make sense mostly if the function is being used like a method 
+(effectively preventing multiple instances from running on the same object 
+at the same time).
+
+obj->baz!();
+
+void sync (*baz1)();
+would indicate a pointer to a syncronizing function (will sync on the 
+pointed-to function).
+
+void (*sync *baz2)();
+pointer to a synced function pointer.
+
+
+similar rules could be applied to structs.
+
+implementation:
+
+
+idea:
+indirect syncronization.
+basically, we syncronize on pointers, regardless of wherever they point. a hash table is used to hash pointers, and thus find the appropriate lock or queue.
+
+though less efficient than fat pointers, this greatly simplifies managing locking on things.
+
+likely a 2 stage hash would work well:
+first, we hash and check several possible permutations;
+otherwise, we fall back to a chain-hash (slow last resort).
+
+when something is unlocked, simply its spot in the hash disappears.
+
+
+older ideas:
+likely a kind of "fat pointer" representation would be used for all 
+syncronizing pointers (in some cases, mutexes will be hidden in the 
+pointers, and in some cases in the pointed-to memory).
+
+of course, sync pointers could also be left out in the name of simplifying the implementation.
+
+
+the other possibility is that of making a process an explicit object, which messages are essentially passed through to the code or data on the other side (possibly requiring further bizarre type machinery but saving on the need for fat pointers).
+
+in this case, a pointer to a syncronizing function would effectively create an object itself containing a hidden mutex.
+
+yet another possibility, is to attach a thread or other worker structure to each process (making it more akin to the traditional definition of a process, but at the same time, likely somewhat increasing the per-process overhead, as an actual thread is, for example, far more expensive than a fat pointer and creative use of a work queue...).
+
+
+another idea I have used in the past is that of explicit message pipes 
+(however, integrating explicit message pipelines with C semantics could 
+itself be fairly problematic, as would be Erlang-style process semantics, unless of course we are willing to make a few sacrifices or severe tweaks in terms of language semantics or the implementation).
+
+another much simpler idea would be be that of sacrificing sync function 
+pointers and instead using sync structs (essentially, the struct becomes the process). problem: this would compromise a few assumptions often made about structs (memory layout, ...).
+
+typedef sync struct S_s S;
+struct S_s{
+void (*fa)(S *self);
+void (*fb)(S *self);
+};
+
+S *sp;
+
+sp=malloc(sizeof(S));
+memset(sp, 0, sizeof(S));
+
+sp->fa=foo;
+sp->fb=bar;
+
+sp->fa!(sp);
+sp->fb!(sp);
+
+either foo is called, followed by bar, or bar is called followed by foo.
+
+and so on...
+
+
+
+ok, all this is just a mass of vague ideas.
+
+
+

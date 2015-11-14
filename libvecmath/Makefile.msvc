@@ -1,0 +1,32 @@
+include Makefile.inc
+
+LIBVECMATH_OBJS = $(LIBVECMATH_SRCS:.c=.o)
+
+all: libvecmath.lib
+
+FORCE:
+
+%.o: %.c
+	cl /I. /c /Fo$@ $<
+
+autohead.exe: autohead.c
+	cl /Feautohead.exe autohead.c
+
+libvecmath_auto.h: autohead.exe $(LIBVECMATH_SRCS)
+	./autohead.exe -api VECMATH_API $(LIBVECMATH_SRCS) > libvecmath_auto.h
+
+# libvecmath.lib: libvecmath_auto.h $(LIBVECMATH_OBJS)
+#	lib /out:libvecmath.lib $(LIBVECMATH_OBJS)
+
+libvecmath.dll: $(LIBVECMATH_SRCS)
+	cl /LD /Felibvecmath.dll $(LIBVECMATH_SRCS) /I. /O2 /Zi \
+		/arch:SSE2 /DVECMATH_DLL
+#	cl /LD /Felibvecmath.dll $(LIBVECMATH_SRCS) /I. /Z7 /DVECMATH_DLL
+
+includes: libvecmath_auto.h
+
+libs: libvecmath.dll
+
+apps:
+
+clean:

@@ -1,0 +1,21 @@
+package bsvm.io;
+
+public class PipedOutputStream extends OutputStream
+{
+public PipedOutputStream()
+	{}
+public PipedOutputStream(PipedInputStream snk)
+	{}
+
+public void close()
+	{}
+public void connect(PipedInputStream snk)
+	{}
+public void flush()
+	{}
+public void write(byte[] b, int off, int len)
+	{}
+public void write(int b)
+	{}
+}
+

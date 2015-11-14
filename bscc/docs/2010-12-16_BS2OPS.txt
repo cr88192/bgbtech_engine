@@ -1,0 +1,274 @@
+//used for generating opcodes info
+//
+//RPNIL
+//
+//basic line layout is:
+//<opname> <opnum> [args [flow]]
+//
+//RPNIL opcodes will generally not have args or flow info.
+//Nearly all opcodes will be coded individually and any arguments
+//will be pulled from one of several stacks.
+//
+//Opcode Args
+//	I, integer (SVLI)
+//	F, float (UVLI, float index)
+//	S, symbol (symbol index)
+//	T, string (string index)
+//	B, block (block index)
+//	Z, in-place ASCIIz string.
+//	K, type
+//	O, OP
+//	V, literal index
+//
+
+//basic line layout is:
+//<opname> <opnum> [args [flow]]
+//where args is a string identifying what immediately follows the
+//opcode. this is one of:
+//	I, literal index
+//	A, relative address
+//	N, numeric index (stack items, ...)
+//	S, symbolic index (special case of I)
+//	T, string index (special case of I)
+//	C, 8 bit signed byte
+//	B, 8 bit unsigned byte
+//	W, 16 bit short
+//	H, 16 bit fixed-point value (100 based)
+//	L, 32-bit integer
+//	...
+//
+
+
+//The only real exceptions to this are opcodes used for indicating 
+//values to be pushed.
+//
+//flow:	in*=out*
+//	vv=v	Consumes 2 values and outputs a value
+//
+//flow specific values:
+//	a/b/c, bool;
+//	d/e;
+//	f/g/h, float;
+//	i/j/k, int;
+//	l/m/n, long;
+//	o;
+//	p/q/r, pointer;
+//	s/t/u, double;
+//	v/w;
+//	x/y/z, double.
+//
+//A generic type is assumed if the value appears alone, but specific if
+//another of the same type appears.
+//
+//'M' will refer to the mark, and '*' will refer to an undetermined
+//number of stack items
+//
+
+//flow:	in*=out*
+//	vv=v	Consumes 2 values and outputs a value
+//
+//flow types:
+//	v, generic variant value;
+//	i, generic fixnum;
+//	f, generic flonum;
+//	b, bool.
+//flow special values:
+//	x/y/z, named variant;
+//	j/k/l, named fixnum;
+//	g/h, named flonum.
+//
+//if args is absent, it is assumed that the opcode is coded by itself.
+
+
+//0-15 base ops
+NOP				0 - =		//do nothing
+BLOCK			1 - =		//blocks if limit!=0
+DBGMARK			2 -	=		//sets the filename and line number
+CGENAST			3 - =		//syntax to be passed to code generator
+FN				4 S =		//filename
+LN				5 I =		//line number
+LABEL			6 S =		//label
+
+//16-31, variable ops
+PUSH			16 V =v		//push an item on the stack
+POP				17 - v=		//pop an item from the stack
+LOAD			18 S =v		//load an item from a variable onto stack
+STORE			19 S v=		//store an item on stack into a variable
+BIND			20 S v=		//bind item on stack to new variable
+DYNBIND			21 S v=		//dynamically bind an item on the stack
+LEXBIND			22 S v=		//lexically bind an item on the stack
+LOADINDEX		23 - vv=v	//load an index into an object
+STOREINDEX		24 - vvv=	//store into an index in an object
+PUSH_SELF		25 - =v		//push 'self' onto stack
+CLEARENV		26 - =		//clear lexical bindings to mark
+BINDPATTERN		27 - vv=	//bind vars to a pattern
+LOADMINDEX		28 - -		//(deprecated?) load multi-index
+STOREMINDEX		29 - -		//(deprecated?) store multi-index
+LOADINDEX_I		30 I v=v	//load an index from an object
+STOREINDEX_I	31 I vv=	//store into an object index (val obj)
+
+//32-48 generic block ops
+MARK			32 - *=*M	//mark the current stack location
+CALL			33 - M*p=v	//call a given function
+CALL_S			34 S M*=v	//call a given function
+RET				35 - v=		//return from current function
+RET_V			36 - =		//return from current function
+TRYLOAD			37 S =v		//try to load an item
+CAST_S			38 S v=v	//cast to a specific type
+CAST			39 - uv=w	//cast an value to a given type
+EXCH_SELF		40 - x=y	//swap 'self' with value on stack
+BUILTIN			41 S M*=v	//invoke builtin
+OFFSETOF		42 SS =i	//offsetof (type, slot)
+SIZEOF			43 - v=i	//sizeof (exptression)
+SIZEOF_S		44 S =i		//sizeof (type)
+PUSH_NULL		45 - =p		//push a null ((void *)0)
+INC_S			46 S =		//increment variable
+DEC_S			47 S =		//decrement variable
+
+
+//48-63 stack ops
+DUP				48 - j=jj		//dup items on stack
+EXCH			49 - ij=ji	//swap items on stack
+INDEX			50 I =v		//refer to an item on stack
+RINDEX			51 I =v		//refer to an item relative to mark
+SETINDEX		52 I v=		//set an item on the stack
+SETRINDEX		53 I v=		//set an item on the stack rel mark
+BEGINU			54 - =		//begin union
+ENDU			55 - =		//end union
+SETU			56 - v=		//pop value into union
+NEW_S			57 S M*=v	//create new object instance
+LOADSLOT_S		58 S v=v	//load an index from an object
+STORESLOT_S		59 S vv=	//store into an object slot (val obj)
+LOADSLOTA_S		60 S v=v	//load address of struct slot
+LOADINDEXA		61 - vv=v	//load address of array index
+DEFER			62 - v=w	//
+LOADA			63 S =p		//push pointer to a variable
+
+
+//64-111 arithmetic ops
+ADD				64 ij=k	//
+SUB				65 ij=k	//
+MUL				66 ij=k	//
+DIV				67 ij=k	//
+MOD				68 ij=k	//
+AND				69 ij=k	//
+OR				70 ij=k	//
+XOR				71 ij=k	//
+SHL				72 ij=k	//
+SHR				73 ij=k	//
+SHRR			74 ij=k	//
+EXP				75 ij=k	//
+NAND			76 ij=k	//
+UNARYOP			77 u v=v	//unary operation
+BINARYOP		78 b vv=v	//binary operation
+CAR				79 - v=v	//head of a list
+CDR				80 - v=v	//tail of a list
+CAAR			81 - v=v	//list ops
+CDAR			82 - v=v	//list ops
+CADR			83 - v=v	//list ops
+CDDR			84 - v=v	//list ops
+//85..91
+INC				92 i=j	//
+INC2			93 i=j	//
+DEC				94 i=j	//
+DEC2			95 i=j	//
+NOT				96 i=j	//
+NEG				97 i=j	//
+LNOT			98 i=j	//
+CMP_EQ			99 ij=b
+CMP_NE			100 ij=b
+CMP_L			101 ij=b
+CMP_G			102 ij=b
+CMP_LE			103 ij=b
+CMP_GE			104 ij=b
+BOOLIFY			105 v=b	//
+
+
+
+//112-127 control flow ops
+JMP				112 S =		//jump to rel offset
+JMP_TRUE		113 S b=	//jump to rel offset if true
+JMP_FALSE		114 S b=	//jump to rel offset if false
+JMP_EQ			115 S ij=
+JMP_NE			116 S ij=
+JMP_L			117 S ij=
+JMP_G			118 S ij=
+JMP_LE			119 S ij=
+JMP_GE			120 S ij=
+JMP_LG			121 SS ij=	//trinary jump
+IF				122 IB=?	//compile-conditional
+IFELSE			123 IBB=?	//compile-conditional if(cond)then/else
+THROW			124 - x=	//throw exception
+BEGINTRY		125 - =		//begins the body of a try block
+ENDTRY			126 - =		//ends the body of a try block
+CATCH			127 SS =	//add exception handler
+
+
+//128-191: special opcodes
+
+PUSH_LI			128 I =I	//literal integer
+PUSH_LS			129 Z =S	//literal symbol (asciiz string)
+PUSH_RS			130 S =S	//reference literal symbol
+PUSH_I			131 I =i	//push integer
+PUSH_L			132 I =l	//push long
+PUSH_JI			133 I =I	//jump index
+PUSH_DI			134 I =I	//dictionary index (macros, ...)
+PUSH_RT			135 T =T	//reference literal string
+
+PUSH_F			136 F =f	//push float
+PUSH_D			137 F =x	//push double
+PUSH_RB			138 B =i	//push inline block
+PUSH_CTV		139 I =v	//push a special value
+
+PUSH_TRUE		140 - =v	//push a true
+PUSH_FALSE		141 - =v	//push a false
+PUSH_CF			142 - =v	//push current function
+CALL_CF			143 - M*=v	//call current function
+TAILCALL_CF		144 - M*=	//tailcall current function
+CLOSE			145 - v=v	//close over a block making a lambda
+CLOSE2			146 - v=v	//close, but have it bound in self (?)
+FLINK			147 - vv=v	//link functions together
+PUSHENV			148 - =		//push a new level of dynamic bindings
+POPENV			149 - =		//pop a level of dynamic bindings
+BEGINCC			150 S =v	//begin a block with the current continuation
+BEGINOBJ		151 S =		//begin a block with a new object
+FRAME			152 S =		//create a new frame
+
+//176..191: vectors and misc
+FVEC2			176 ff=v		//make VEC2
+FVEC3			177 fff=v		//make VEC3
+FVEC4			178 ffff=v		//make VEC4
+COMPLEX			179 ff=v		//make Complex
+QUAT			180 ffff=v		//make Quaternion
+INT128			181 S =v		//make int128
+ARRAY			182 - M*=v	//new array from values
+DICT			183 - M*=v	//new dict from values
+OBJECT			184 - M*=v	//new empty object
+VECTOR			185 - M*=v	//new vector from values
+TERMINAL		186 - -	//new terminal from value
+// COMPLEX			187 - -	//new complex from values
+MATRIX			188 - M*=v	//new matrix from values
+LIST			189 - M*=v	//new list from values
+COMPLEX_I		190 - f=f	//new imaginary number from flonum
+ATTR			191 - vv=v	//new attribute from name and value
+
+
+//256-512: Generic Extended Opcodes
+
+METHODCALL			256 - M*vv=v	//call a given method
+METHODCALL_S		257 S M*v=v	//call a given method
+TAILCALL			258 - M*v=	//tail call a given function
+TAILCALL_S			259 S M*=	//tail call a given function (named)
+METHODTAILCALL		260 - M*vv=	//tail-call a given method
+METHODTAILCALL_S	261 S M*v=	//tail-call a given method (named)
+VA_START			262 SS =v
+VA_END				263 S =
+VA_ARG				264 S =v
+VA_COPY				265 SS =
+
+
+
+
+
+
+

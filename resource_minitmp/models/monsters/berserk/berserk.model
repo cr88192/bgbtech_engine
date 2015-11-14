@@ -1,0 +1,53 @@
+//Berserk
+
+bones proto_bers0.bone
+
+vmesh proto_bers0.ac
+
+anim stand standa0.anim
+anim standb standb0.anim
+
+anim walk walk1.anim
+anim run runs0.anim
+
+anim att_a att_a0.anim
+anim att_b att_b0.anim
+anim att_c att_c0.anim
+
+anim r_atta r_atta0.anim
+anim r_attb r_attb0.anim
+
+anim slam slam0.anim
+
+anim duck duck0.anim
+anim fall fall0.anim
+
+anim painc pain1.anim
+anim painb pain2.anim
+
+anim death death1.anim
+anim deathc death3.anim
+
+// anim stand stand0.anim
+// anim run run0.anim
+
+// anim pain1 pain1.anim
+// anim pain2 pain2.anim
+
+// anim gun0 gun0.anim
+
+// anim duck duck0.anim
+
+// anim death1 death1.anim
+// anim death2 death2.anim
+// anim death3 death3.anim
+
+// anim block block0.anim
+
+// anim attak1 attack1.anim
+// anim attack2 attack2.anim
+
+
+origin 0 0 32
+scale 1 1 1
+xlat 0 0 4

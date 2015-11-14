@@ -1,0 +1,8 @@
+Internally, the basic unit of length will be the meter, the basic unit of volume the cubic meter, and the basic unit of mass the megagram.
+
+As such, the density of water will be calibrated at 1.
+
+By default, the external interface will represent the unit of length as the meter, the unit of volume as the liter, and the unit of mass as the kilogram (again, 1).
+
+Could stick to current definition:
+meter, cubic meter, and megagram.

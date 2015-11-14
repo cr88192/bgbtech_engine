@@ -1,0 +1,6 @@
+native package C {
+
+	var tstVar=4;
+
+function PdwCToPMxmreJdpEoc(x:int):int {  tstVar+x }
+}

@@ -1,0 +1,62 @@
+ARCH_CFLAGS=
+CFLAGS=/Iinclude $(ARCH_CFLAGS) /Z7
+LDFLAGS=bgbgc.lib /Z7
+
+#	base/memory2_2.obj \
+#	base/int128.obj \
+
+OBJS=\
+	base/th_api.obj \
+	base/th_queue.obj \
+	base/eh_throw.obj \
+	\
+	base/mm_lobj.obj \
+	base/mm_cell.obj \
+	base/mm_cons.obj \
+	base/mm_gc.obj \
+	base/mm_space.obj \
+	base/objtype.obj \
+	\
+	base/bgbgc_api.obj \
+	base/gcp_api.obj
+
+SRCS=$(OBJS:.obj=.c)
+
+DEP_HDRS=\
+	include/bgbgc_auto.h
+
+all: libs apps
+
+FORCE:
+
+libs: bgbgc.dll
+apps: gctst0.exe
+
+includes: $(DEP_HDRS)
+
+include/bgbgc_auto.h: autohead.exe $(SRCS)
+	./autohead -api BGBGC_API $(SRCS) > include/bgbgc_auto.h
+
+%.obj: %.c
+	cl /c /Fo$@ $< $(CFLAGS)
+
+bgbgc.dll: $(DEP_HDRS) $(SRCS)
+	cl /LD /Febgbgc.dll $(SRCS) /Iinclude /Z7 /DBGBGC_DLL
+
+# bgbgc.lib: $(DEP_HDRS) $(OBJS)
+#	lib /out:bgbgc.lib $(OBJS)
+
+autohead.exe: autohead.c
+	cl /Feautohead.exe autohead.c
+
+gctst0.exe: gctst0.c $(DEP_HDRS) libs
+	cl /Fegctst0.exe gctst0.c $(CFLAGS) $(LDFLAGS)
+
+tst_class0.exe: tst_class0.c $(DEP_HDRS) libs
+	cl /Fetst_class0.exe tst_class0.c $(CFLAGS) $(LDFLAGS)
+
+gatst0.exe: gatst0.c $(DEP_HDRS) libs
+	cl /Fegatst0.exe gatst0.c $(CFLAGS) $(LDFLAGS)
+
+clean:
+clean2:

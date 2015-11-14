@@ -1,0 +1,32 @@
+package bsvm.util;
+
+public final class BitSet extends Object implements Cloneable
+{
+public BitSet()
+	{}
+public BitSet(int nbits)
+	{}
+
+public void and(BitSet set)
+	{}
+public void clear(int bit)
+	{}
+public Object clone()
+	{ return null; }
+public boolean equals(Object obj)
+	{ return false; }
+public boolean get(int bit)
+	{ return false; }
+public int hashCode()
+	{ return 0; }
+public void or(BitSet set)
+	{}
+public void set(int bit)
+	{}
+public int size()
+	{ return 0; }
+public String toString()
+	{ return null; }
+public void xor(BitSet set)
+	{}
+}

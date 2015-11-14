@@ -1,0 +1,24 @@
+$dungeon 1 none
+
+$dungeon 4	hall_x_brick
+$dungeon 5	hall_y_brick
+$dungeon 6	hall_xy_brick
+$dungeon 7	break_nx_brick
+$dungeon 8	break_px_brick
+$dungeon 9	break_ny_brick
+$dungeon 10	break_py_brick
+$dungeon 11	hall_xy_mixbrick
+$dungeon 12	hall_x_stonebrick
+$dungeon 13	hall_y_stonebrick
+$dungeon 14	hall_xy_stonebrick
+$dungeon 15	break_nx_stonebrick
+$dungeon 16	break_px_stonebrick
+$dungeon 17	break_ny_stonebrick
+$dungeon 18	break_py_stonebrick
+
+$dungeon 19	room_xy_mixbrick
+$dungeon 20	spawnroom_xy_mixbrick
+
+$dungeon 21	ladderfloor_xy_mixbrick
+$dungeon 22	ladderceil_xy_mixbrick
+$dungeon 23	laddershaft_mixbrick

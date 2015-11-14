@@ -1,0 +1,11 @@
+$flags voxel alpha
+
+$vox_img_top textures/voxel/brick
+$vox_img_side textures/voxel/brick
+$vox_img_bot textures/voxel/brick
+
+$vox_EmitBlock BTGE_Voxel_EmitBlock_Stairs
+// $vox_BlockUpdate BTGE_VoxelPower_UpdateVoxel
+$vox_GetWorldVoxelBBoxList BTGE_VoxelStairs_GetWorldVoxelBBoxList
+$vox_mins 0 0 0
+$vox_maxs 32 32 16

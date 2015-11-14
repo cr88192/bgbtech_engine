@@ -1,0 +1,10 @@
+$flags voxel alpha slime warpst nowateroverlay
+
+$vox_img_top_scale 4
+
+$vox_vlight_val 5
+$vox_vlight_clr green
+
+$video textures/voxel/glowslime.avi
+
+// $video textures/voxel/slime_d.avi

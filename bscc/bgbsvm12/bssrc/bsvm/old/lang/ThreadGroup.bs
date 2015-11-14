@@ -1,0 +1,52 @@
+package bsvm.lang;
+
+public class ThreadGroup extends Object
+{
+public ThreadGroup(String name)
+	{}
+public ThreadGroup(ThreadGroup parent, String name)
+	{}
+
+public int activeCount()
+	{ return 0; }
+public int activeGroupCount()
+	{ return 0; }
+public void checkAccess()
+	{}
+public void destroy()
+	{}
+public int enumerate(Thread[] list)
+	{ return 0; }
+public int enumerate(Thread[] list, boolean recurse)
+	{ return 0; }
+public int enumerate(ThreadGroup[] list)
+	{ return 0; }
+public int enumerate(ThreadGroup[] list, boolean recurse)
+	{ return 0; }
+public int getMaxPriority()
+	{ return 0; }
+public String getName()
+	{ return null; }
+public ThreadGroup getParent()
+	{ return null; }
+public boolean isDaemon()
+	{ return false; }
+public void list()
+	{}
+public boolean parentOf(ThreadGroup g)
+	{ return false; }
+public void resume()
+	{}
+public void setDaemon(boolean daemon)
+	{}
+public void setMaxPriority(int pri)
+	{}
+public void stop()
+	{}
+public void suspend()
+	{}
+public String toString()
+	{ return null; }
+public void uncaughtException(Thread t, Throwable e)
+	{}
+}

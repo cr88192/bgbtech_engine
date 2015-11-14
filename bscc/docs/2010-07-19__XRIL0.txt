@@ -1,0 +1,106 @@
+XML RPNIL 0
+(Idea Spec)
+
+Prior two ideas imploded.
+
+So, idea:
+Map RPNIL to XML.
+
+<xril>
+	stuff...
+</xril>
+
+
+<func name="name" ret="ret">
+	<args> args... </args>
+	<vars> vars... </vars>
+	<body> opcode... </body>
+</func>
+
+<proto name="name" ret="type">
+	<args> args... </args>
+</proto>
+
+<s_proto name="name" ret="type">
+	<args> args... </args>
+</s_proto>
+
+<struct name="name">
+	<body> args... </body>
+</struct>
+
+<union name="name">
+	<body> args... </body>
+</union>
+
+<var name="name" type="type">
+	[ <attr> attr... </attr> ]
+	[ <value> value </value> ]
+</var>
+
+<extern name="name" type="type">
+	[ <attr> attr... </attr> ]
+</extern>
+
+<proc name="name">
+	<body> opcode... </body>
+</proc>
+
+
+This will use the ln/fn attributes convention, much like the AST's.
+
+Opcodes
+
+<name name="name"/>
+Push literal name / symbol.
+
+<string value="text"/>
+
+<int value="integer"/>
+<long value="integer"/>
+<int128 value="integer"/>
+
+<float value="real"/>
+<double value="real"/>
+
+<label name="name"/>
+<load name="name"/>
+<store name="name"/>
+<loada name="name"/>
+<loadslot name="name"/>
+<storeslot name="name"/>
+
+<cast type="type"/>
+
+<jmp_true name="name"/>
+<jmp_false name="name"/>
+<jmp name="name"/>
+
+<jmp_lg lt="name" gt="name"/>
+
+<block> opcode... </block>
+
+<call_s name="name">
+	<args>
+		( <arg> opcode... </arg> )*
+	</args>
+</call_s>
+
+<call>
+	<value> opcode...	</value>
+	<args>
+		( <arg> opcode... </arg> )*
+	</args>
+</call>
+
+<builtin name="name">
+	<args>
+		( <arg> opcode... </arg> )*
+	</args>
+</builtin>
+
+<unary op="op"/>
+<binary op="op"/>
+
+< opcode />
+Generic opcode, takes stack values and produces output values.

@@ -1,0 +1,11 @@
+package bsvm.lang;
+
+public class ClassFormatError extends LinkageError
+{
+// private static final long serialVersionUID = 2256477558314496007L;
+
+public ClassFormatError()
+	{ super(); }
+public ClassFormatError(String s)
+	{ super(s); }
+}

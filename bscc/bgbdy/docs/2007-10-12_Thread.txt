@@ -1,0 +1,10 @@
+Threads:
+I will define a 'th' interface.
+
+void *thMutex();
+void thLockMutex(void *p);
+void thTryLockMutex(void *p);
+void thUnlockMutex(void *p);
+
+void *thThread(int (*fcn)(void *ptr), void *ptr);
+

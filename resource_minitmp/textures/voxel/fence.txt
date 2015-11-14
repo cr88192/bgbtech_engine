@@ -1,0 +1,5 @@
+$flags voxel alpha
+
+$vox_img_top textures/voxel/wood
+$vox_img_side textures/voxel/wood
+$vox_img_bot textures/voxel/wood

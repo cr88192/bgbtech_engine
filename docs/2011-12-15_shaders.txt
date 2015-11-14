@@ -1,0 +1,22 @@
+Textures are collections of associated files, and are generally identified by
+the name of the "base image".
+
+Typically, this base image is required to exist, and also gives the image size
+(typically used in calculating ST coordinates).
+
+Other files:
+".txt", gives information about the texture;
+"_add.*" or "_luma.*", gives the glow map;
+"_norm.*" or "_local.*", gives the normal map;
+"_norm_alpha.*" or "_local_alpha.*", gives the height map;
+"_gloss.*", gives the specular color map;
+"_gloss_alpha.*", gives the specular exponent-scale map.
+
+Internally, the "_alpha" textures are loaded into the alpha channels of their
+associated images, and are assumed to be monochrome.
+
+
+Texture info:
+
+$flags
+Gives relevant flags about a texture.

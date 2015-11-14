@@ -1,0 +1,82 @@
+Header:
+#include <vecnf.h>
+
+Types: v2f, v3f, v4f, v2d, quat
+
+
+v3f v;
+v=V3F(1,0,0);
+
+In general, the types will behave semantically as if they were defined as:
+typedef struct {const float x,y;} v2f;
+typedef struct {const float x,y,z,w;} v3f;
+typedef struct {const float x,y,z,w;} v4f;
+
+Macros:
+	V2F(x,y)
+	V3F(x,y,z)
+	V4F(x,y,z,w)
+	V2D(x,y)
+	QUAT(w,x,y,z)
+
+Note that: QUAT(w,x,y,z) <= w + xi + yj + zk
+Internally, the representation may differ, and it can be viewed that 'w' is simply flipped from the end to the start.
+
+Support functions are provided for the various types.
+
+Example Builtins:
+	v3fdot(a,b)		Dot Product
+	v3fcross(a,b)	Cross Product
+
+	v3flen(a)		Vector Length
+	v3fnorm(a)		Normalized Vector
+	v3fscale(a,f)	Scale Vector
+	v3fdist(a,b)	Distance from A to B
+
+	v3fadd(a,b)		(Ax,Ay,Az)+(Bx,By,Bz)=(Ax+Bx,Ay+By,Az+Bz)
+	v3fsub(a,b)		(Ax,Ay,Az)-(Bx,By,Bz)=(Ax-Bx,Ay-By,Az-Bz)
+	v3fmul(a,b)		(Ax,Ay,Az)*(Bx,By,Bz)=(Ax*Bx,Ay*By,Az*Bz)
+	v3fdiv(a,b)		(Ax,Ay,Az)/(Bx,By,Bz)=(Ax/Bx,Ay/By,Az/Bz)
+
+	v3fneg(a)		(-Ax,-Ay,-Az)
+
+	qmul(a,b)		quaternion product
+	qdiv(a,b)		a*(b^-1)
+	qrdiv(a,b)		(b^-1)*a
+	qneg(a)		(-Ax,-Ay,-Az,-Aw)
+	qconj(a)		conjugate, (-Ax,-Ay,-Az,Aw)
+	qrcp(a)		a^-1, (-Ax/(A^A),-Ay/(A^A),-Az/(A^A),Aw/(A^A))
+
+	v2fcross(a,b)	AxBy-AyBx
+	v3fcross(a,b)	(AyBz-AzBy,AzBx-AxBz,AxBy-AyBx)
+	v4fcross(a,b)	(AyBz-AzBy,AzBx-AxBz,AxBy-AyBx,0)
+	qcross(a,b)		(AyBz-AzBy,AzBx-AxBz,AxBy-AyBx,0)
+
+Operations:
+I will define that the operations used on vectors be geometric.
+
+Considering: I relocate some operations such that it avoids conflict with the array-processing view of vectors.
+
+A*B: vector element multiply
+A*B: quaternion product
+A/B: quaternion division (A*(B^-1))
+
+A^B: dot product
+A%B: cross product
+
+-A: negate vector/quaternion
+~A: quaternion conjugate
+
+FVecs will have implicit members, and these will be called x,y,z, and w.
+
+
+__fvec(...)
+Will be a a compiler special form for the creation of float vectors.
+May be used with 2, 3, or 4 arguments.
+
+__qvec(x,y,z,w)
+Compiler special for creating quaternions.
+
+
+
+

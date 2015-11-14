@@ -1,0 +1,25 @@
+"_type_sig_t"
+{
+char *sig;
+}
+
+Type Signature object. This represents a type signature as a dynamic object, which can then be processed however is appropriate.
+
+
+"_type_boxval_t"
+{
+char *sig;
+byte data[];
+}
+
+This is a boxed value type, where sig identifies the type, and data gives the representation of the object.
+
+
+"_type_boxptr_t"
+{
+char *sig;
+void *ptr;
+}
+
+Boxed pointer of the type given in sig.
+

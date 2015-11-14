@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;
+      charset=ISO-8859-1">
+  </head>
+  <body>
+    <h1>BGBScript Object and Types Model</h1>
+    <br>
+    <br>
+    <h2>Unified Object Model</h2>
+    <br>
+    <br>
+    In an ideal sense, BGBScript will use a sort of unified
+    Class/Instance and Prototype OO like model.<br>
+    <br>
+    Class/Instance OO is a commonly used system, whereby one defines
+    classes, and then creates instances of them.<br>
+    <br>
+    BGBScipt will use a single-inheritence model with support for the
+    addition of interfaces. Multiple inheritence will not be directly
+    supported.<br>
+    <br>
+    Additionally, BGBScript will support "dynamic classes", which allow
+    the addition of fields and methods to objects on a per-instance
+    basis. Conceptually, these will be equivalent to prototype objects,
+    differing primarily in the existence of a base class (proper
+    prototype objects will not have a base class).<br>
+    <br>
+    Cloning and delegation may be used with any object, regardless of
+    whether it is a prototype or class/instance object, and regardless
+    of the dynamic modifer.<br>
+    <br>
+    <br>
+    When an object is cloned, a new object is created which contains the
+    same field values as the parent object, or essentially it is a copy
+    of the parent object. In BGBScript, by default, a parent object and
+    its cloned object are semantically-disjoint, as-in, modifications to
+    one will not effect the other.<br>
+    <br>
+    Cloning will be performed via the <span style="font-weight: bold;">clone()</span>
+    method.<br>
+    <br>
+    <br>
+    <h2>Static Binding or Dynamic Binding (Duck Typing)</h2>
+    <br>
+    The semantics of method binding will depend on the type of the
+    target object.<br>
+    <br>
+    If the type of an object is statically known and the method or field
+    is statically visible, then static binding will be used. Otherwise,
+    if the object is dynamic or the type is variant, then dynamic
+    binding will be used. Otherwise the field or method will be regarded
+    as undefined.<br>
+    <br>
+    Note that the type of binding used will depends on the types of
+    declarations, rather than the run-time object types.<br>
+    <br>
+    class Foo { ... function foo() ... }<br>
+    var obj1=new Foo();<br>
+    var obj2:Foo=new Foo();<br>
+    obj1.foo();<br>
+    obj2.foo();<br>
+    <br>
+    Despite the fact that the object is a static class-based type,
+    because obj1 is implicitly of a variant type, then binding will be
+    dynamic.<br>
+    However, in the case of obj2, static binding will be used for the
+    method call.<br>
+    <br>
+    <h3>Type Semantics</h3>
+    <br>
+    BGBScript will use a hybrid type model. In this model, both static
+    and dynamic type semantics may be used as-needed.<br>
+    <br>
+    If a type is declared with a variable, this will be the assumed
+    static type of the variable. If no type is given for a particular
+    variable, its type will be assumed to be variant.<br>
+    <br>
+    However, at present, the language may not necessarily enforce
+    type-safety with the use of statically-typed variables (the behavior
+    of expressions which are not type-safe is undefined). Ideally, the
+    compiler should catch and report these situations, however,
+    implementation may infact do little more than to treat the types of
+    declarations as an optimization hint (Update: this is partially
+    addressed, namely in many cases the VM will attempt to coerce the
+    value to the correct type).<br>
+    <br>
+    In other cases, the compiler may be allowed to use type-inference,
+    whereby a variable declared as variant, or with a type which is not
+    directly (lexically) visible from the point of reference may still
+    be inferred to be of a particular type. If and when this is done is
+    a matter left up to the implementation.<br>
+    <br>
+    Similarly, if and when implicit type-conversions are performed is
+    presently also a matter left to the implementation, and the behavior
+    of implicit conversions should not be relied upon (thus, and
+    necessary type conversions should be declared explicitly).<br>
+    <br>
+    Similarly, the exact physical representation of value types at any
+    given moment is additionally up to the implementation, and as such
+    the overhead or exact "native" range or accuracy some types will not
+    be gueranteed (Rationale: This is mostly to simplify the case of
+    using "fixnum" and "flonum" types, which may more cheaply store
+    values, but may in some cases shave off several bits from the type,
+    or may involve transparently "boxing" out-of-range values).<br>
+    <br>
+    <br>
+    <h2>Delegation</h2>
+    <br>
+    With delegation, fields may be created which link to other objects.
+    When an access is made to one object, but can't be directly handled
+    by said object, it may be delegated to the other objects which it
+    links to. This operation may take place recursively. The
+    implementation will implement a mechanism to prevent infinite
+    recursion (it will be considered an implementation requirement that
+    the search will not recurse through the same object more than once).<br>
+    <br>
+    When using delegation, the operation is to behave as if it were
+    taking place from the point of view of the original source object
+    for which the request was directed. In this way, a called method
+    will be called with "this" holding the original object, rather than
+    the object which actually contains the method (delegation will also
+    allow that any fields in the final object also be accessible from
+    the source object).<br>
+    <br>
+    Generally, delegate fields or variables will be indivated by use of
+    the <span style="font-weight: bold;">delegate </span>modifier.<br>
+    <br>
+    Note that delegate will also be allowed on lexical and dynamic
+    variables, and will serve to treat any referenced object as if it
+    were a part of the respective scope.<br>
+    <br>
+    <br>
+    Delegation Example:<br>
+    <br>
+    <div style="margin-left: 40px;">
+      <pre>class Foo<br>{<br>&nbsp;&nbsp;&nbsp; var x;<br>&nbsp;&nbsp;&nbsp; public function foo() { return x; }<br>}<br><br>class Bar<br>{<br>&nbsp;&nbsp;&nbsp; public delegate var lfoo;&nbsp;&nbsp;&nbsp; //this field delegates to another object<br>}<br><br>var ofoo=new Foo();<br>var obar=new Bar();<br><br>obar.lfoo=ofoo; //Links obar to ofoo.<br><br>obar.foo();<br>//calls foo(), where <span style="font-weight: bold;">this</span>==<span style="font-weight: bold;">obar</span>, but <span style="font-weight: bold;">this.x</span> will give the value of the field in <span style="font-weight: bold;">ofoo</span>.<br></pre>
+    </div>
+    <br>
+    <br>
+    <h2>Toplevel</h2>
+    <br>
+    The toplevel in BGBScript will be implemented through the use of
+    objects.<br>
+    A special variable <span style="font-weight: bold;">top </span>will
+
+    identify the current toplevel object. By default, the objects used
+    for implementing the toplevel and packages will be dynamic so as to
+    allow freely adding fields and methods to them.<br>
+    <br>
+    Note that even though the toplevel is implemented using objects,
+    this does not mean that methods existing at the toplevel or at
+    package scope levels will have a value for <span
+      style="font-weight: bold;">this</span>. Instead, accesses to the
+    toplevel will be through top, and both top and any package imports
+    will be regarded as a part of the lexical environment.<br>
+    <br>
+    Note that packages will be contained within the toplevel, and hence
+    package names will identify a path relative to the current toplevel
+    object. As a result, it will also be possible to execute code with
+    different toplevels and, hence, different package visibility.<br>
+    <br>
+    <br>
+    <h2>Permissions (optional)<br>
+    </h2>
+    <br>
+    BGBScript will support dynamic permission checking. Every thread
+    will implicitly have a UID which will identify which rights it has
+    and which may be used to determine what fields, methods, and objects
+    may be accessed by this thread. Permissions will be considered
+    disjoint from what is otherwise controlled by modifiers, as a
+    modifier will apply to everyone, whereas a permission will exist on
+    a per-user basis.<br>
+    <br>
+    Major permissions will be:<br>
+    &nbsp;&nbsp;&nbsp; Read (R);<br>
+    &nbsp;&nbsp;&nbsp; Write (W);<br>
+    &nbsp;&nbsp;&nbsp; Execute (X).<br>
+    <br>
+    Having Read access will mean the ability to retrieve the values of
+    fields or to get handles for methods. If a thread does not have read
+    access to an object, it will not be possible to retrieve the value
+    of any field or method within the object. Lacking read access to a
+    field or method will mean an inability access the particular field
+    or method.<br>
+    <br>
+    Write access will mean the ability to modify objects or fields. As
+    may be expected, an object without a write permission may not be
+    modified, and a field without write permission will be treated as if
+    it were read-only.<br>
+    <br>
+    Execute will mean the ability to call methods in an object, or to
+    execute particular function objects. Execute by itself does not
+    grant the right to hold the handle of a function object.<br>
+    <br>
+    Read/Write/Execute permission will also limit delegation traversal,
+    where lacking a permission for an object for a given operation will
+    also disallow delegation through the object regarding this
+    operation.<br>
+    <br>
+    Note that semantics will differ slightly for properties:<br>
+    Read or Write access will grant the ability to execute a given
+    get/set handler rather than this being handled by Execute.<br>
+    <br>
+    <br>
+    <h3>Keyring</h3>
+    <br>
+    The rights of a given UID may be specified via a keyring, which will
+    be a set of secondary UIDs associated with a primary UID. The
+    keyring will serve a similar purpose to an ACL. A given permission
+    will be granted to a UID if the permission is granted to any UID
+    within its keyring.<br>
+    <br>
+    <br>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+Slightly updated assembler syntax.
+
+Comments
+/* C-style comment */
+// line comment
+; also a line comment
+mov eax, 6	;terminal comment (needs preceding whitespace)
+
+
+Numbers
+'0x'[('0'..'9')|('A'..'F')|('a'..'f')]+				Hexadecimal
+'0'['0'..'7']+								Octal
+('1'..'9')['0'..'9']*							Decimal Int
+
+('0'..'9')[('0'..'9')|('A'..'F')|('a'..'f')]+('h'|'H')	Hexadecimal
+('0'..'1')+('b'|'B')							Binary
+
+
+Labels
+<name>':'
+Normal Label.
+
+<name> when followed by an operation in which a label is implied, such as db, dw, dd, or dq.
+
+'.'<name>':'
+Creates a label relative to the last normal label. This will be handled by forming a composite label such that in "foo: .bar:", the later label is treated as "foo.bar:".
+
+Labels will be treated as case sensitive.

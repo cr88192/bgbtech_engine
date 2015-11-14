@@ -1,0 +1,28 @@
+Binary Format for Metadata Databases.
+This is intended to be used along with ExWAD.
+
+This format will not try to represent an exact in-place usable image format, but will instead try to be reasonably compact.
+
+File Names:
+libname.mtstr	//metadata strings
+libname.mtdir	//metadata directory
+
+'mtstr' is basically just a strings table.
+Index 0 will always be an empty string.
+
+The directory will be a tree of nodes.
+
+BinMeta_Node
+{
+UVLI name;		//node name (string index)
+UVLI n_keys;	//number of keys
+UVLI n_ents;	//node sub-entries
+BinMeta_Key key[n_keys];
+BinMeta_Node ent[n_ents];
+}
+
+BinMeta_Key
+{
+UVLI name;		//key name (string index)
+UVLI value;		//key value (string/data index)
+}

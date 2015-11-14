@@ -1,0 +1,32 @@
+//RIL test
+
+/*
+
+STRUCT foo x:I y:I END
+
+BLOCK fib:L x:L
+BODY
+	%x 2 $.l0 jmp_le
+	mark %x dec $fib call_s
+	mark %x dec2 $fib call_s
+	add ret
+	.l0: 1 ret
+END
+
+BLOCK foo_f:I p:PXfoo;
+BODY
+	%p $x loadslot
+	%p $y loadslot
+	add ret
+END
+
+*/
+
+BLOCK fib:F x:F
+BODY
+	%x 2.0 $.l0 jmp_le
+	mark %x 1 sub $fib call_s
+	mark %x 2 sub $fib call_s
+	add ret
+	.l0: 1 ret
+END

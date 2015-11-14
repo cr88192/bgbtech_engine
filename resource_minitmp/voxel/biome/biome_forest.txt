@@ -1,0 +1,10 @@
+$flags trees8x
+
+$biome_id 4
+$biome_val_arcane 0
+$biome_val_temperature 0
+$biome_val_humidity 0
+
+$biome_clr_grass 255 224 192
+$biome_clr_water 255 255 255
+$biome_clr_sun 255 255 255

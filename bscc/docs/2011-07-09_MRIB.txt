@@ -1,0 +1,162 @@
+MRIB ByteCode
+
+Will be a modified x86-like bytecode.
+
+Unlike x86, it will have a modified ModRM encoding, called MRIB
+(Mode, Register, Index, Byte), which will encode each field as 4 bits.
+
+The default word-size will be 32-bits, and the default endianess as
+little-endian.
+
+Registers:
+	Registers will be roughly the same as in x86-64.
+	R0D	EAX
+	R1D	ECX
+	R2D EDX
+	R3D	EBX
+	R4D ESP
+	R5D EBP
+	R6D	ESI
+	R7D EDI
+	R8D
+	...
+	R15D
+
+Mode:
+	0000	[base+index*1]
+	0001	[base+index*2]
+	0010	[base+index*4]
+	0011	[base+index*8]
+	0100	[base+index*1+disp8]
+	0101	[base+index*2+disp8]
+	0110	[base+index*4+disp8]
+	0111	[base+index*8+disp8]
+	0100	[base+index*1+disp32]
+	1001	[base+index*2+disp32]
+	1010	[base+index*4+disp32]
+	1011	[base+index*8+disp32]
+	1100	base
+	1101	base, index
+	1110	resv
+	1111	resv
+	
+Opcodes:
+0x00..0xEF: Single-byte opcodes.
+0xF0..0xFF: Multi-byte opcodes.
+
+00/r	add rm8,r8
+01/r	add rm32,r32
+02/r	add r8,rm8
+03/r	add r32,rm32
+
+04..07	free
+
+08/r	or rm8,r8
+09/r	or rm32,r32
+0A/r	or r8,rm8
+0B/r	or r32,rm32
+
+0C..0F	free
+
+10/r	adc rm8,r8
+11/r	adc rm32,r32
+12/r	adc r8,rm8
+13/r	adc r32,rm32
+
+14..17	free
+
+18/r	sbb rm8,r8
+19/r	sbb rm32,r32
+1A/r	sbb r8,rm8
+1B/r	sbb r32,rm32
+
+1C..1F	free
+
+20/r	and rm8,r8
+21/r	and rm32,r32
+22/r	and r8,rm8
+23/r	and r32,rm32
+
+24..27	free
+
+28/r	sub rm8,r8
+29/r	sub rm32,r32
+2A/r	sub r8,rm8
+2B/r	sub r32,rm32
+
+2C..2F	free
+
+30/r	xor rm8,r8
+31/r	xor rm32,r32
+32/r	xor r8,rm8
+33/r	xor r32,rm32
+
+34..37	free
+
+38/r	cmp rm8,r8
+39/r	cmp rm32,r32
+3A/r	cmp r8,rm8
+3B/r	cmp r32,rm32
+
+3C..3F	free
+
+4x		unused
+5x		unused
+
+68,id	push i32
+6A,ib	push i8
+
+7x,rb	jcc ar8
+
+80/0	add r8,i8
+81/0	add r32,i32
+83/0	add r32,i8
+
+80/1	or r8,i8
+81/1	or r32,i32
+83/1	or r32,i8
+
+80/2	adc r8,i8
+81/2	adc r32,i32
+83/2	adc r32,i8
+
+80/3	sbb r8,i8
+81/3	sbb r32,i32
+83/3	sbb r32,i8
+
+80/4	and r8,i8
+81/4	and r32,i32
+83/4	and r32,i8
+
+80/5	sub r8,i8
+81/5	sub r32,i32
+83/5	sub r32,i8
+
+80/5	xor r8,i8
+81/5	xor r32,i32
+83/5	xor r32,i8
+
+80/7	cmp r8,i8
+81/7	cmp r32,i32
+83/7	cmp r32,i8
+
+88/r	mov rm8, r8
+89/r	mov rm32, r32
+8A/r	mov r8, rm8
+8B/r	mov r32, rm32
+
+8D/r	lea r32,rm32
+
+8F/0	pop rm32
+
+90		nop
+
+C3		ret
+C6/0	mov r8,i8
+C7/0	mov r32,i32
+
+E8,rd	call ar32
+E9,rb	jmp ar8
+EB,rd	jmp ar32
+
+F0FF	call rm32

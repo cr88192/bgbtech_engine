@@ -1,0 +1,509 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;
+      charset=ISO-8859-1">
+    <title></title>
+  </head>
+  <body>
+    <h1>BGBScript 2B</h1>
+    Goals:<br>
+    <ul>
+      <li> Possible: Reboot of BGBScript and BGBScript2 efforts. </li>
+      <li> Will be statically typed and performance oriented. </li>
+      <li> Will change the canonical declaration syntax. </li>
+      <li> Will use a class/instance object system. </li>
+    </ul>
+    <p><br>
+      Scope Levels: </p>
+    <ul>
+      <li> Global </li>
+      <li> Package </li>
+      <li> Class </li>
+      <li> Function/Method </li>
+      <li> (Possible) Lexical </li>
+    </ul>
+    <p><br>
+      Objects </p>
+    <ul>
+      <li> Single Inheritance </li>
+      <li> Interfaces </li>
+      <li> Reference and Value Classes </li>
+      <li> Reference and Value Structs </li>
+      <li> COM-like Object System
+        <ul>
+          <li> Objects may be exported to C as structs </li>
+          <li> Will have C-callable VTables
+            <ul>
+              <li> A trick will be used to make this work for plain C
+                interpreters. </li>
+              <li> VM internal VTables may be separate. </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <p>VM </p>
+    <ul>
+      <li> Statically-Typed Register IR </li>
+    </ul>
+    <p><br>
+    </p>
+    <h3><span class="editsection"></span><span class="mw-headline"
+        id="Syntax">Syntax </span></h3>
+    <br>
+    PackageStatement:
+    <table border="1" cellpadding="2" cellspacing="2" width="100%">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;"><i>modifier</i>* <b>class</b>
+            <i>classname</i> [ <b>extends</b> <i>superclass </i>] [ <b>implements</b>
+            <i>interfaces </i>] <span style="font-style: italic;">declarationblock</span><span
+              style="font-weight: bold;"></span></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><i>modifier</i>* <b>import</b>
+            <i>package</i><span style="font-weight: bold;">;</span></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><i>modifier</i>* <b>interface</b>
+            <i>classname</i> [<b>extends</b> <i>interface</i>]&nbsp;<span
+              style="font-style: italic;">declarationblock</span><span
+              style="font-weight: bold;"></span><span
+              style="font-weight: bold;"></span></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td><i>modifier</i>* <b>package</b> <i>qname</i> <span
+              style="font-weight: bold;">{</span> <i>package-statement</i>*
+            <span style="font-weight: bold;">}</span></td>
+          <td style="vertical-align: top;">Package<br>
+          </td>
+        </tr>
+        <tr>
+          <td><i>modifier</i>* <b>struct</b> <i>classname</i> <span
+              style="font-style: italic;">declarationblock</span><span
+              style="font-weight: bold;"></span></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td><i>declaration</i></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p><br>
+    </p>
+    DeclarationBlock:<br>
+    <table style=" text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">{</span> <span style="font-style: italic;">declaration</span>*
+            <span style="font-weight: bold;">}</span></td>
+          <td style="vertical-align: top;">A block of declarations.<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p><br>
+    </p>
+    Declaration:
+    <table border="1" cellpadding="2" cellspacing="2" width="100%">
+      <tbody>
+        <tr>
+          <td><i>modifier</i>* <i>typeexpression</i> <i>declname</i> [
+            '<span style="font-weight: bold;">=</span>' <i>expression</i>
+            ] <span style="font-weight: bold;">;</span></td>
+          <td style="vertical-align: top;">Variable Declaration<br>
+          </td>
+        </tr>
+        <tr>
+          <td><i>modifier</i>* <i>typeexpression</i> <i>declname</i> <span
+              style="font-weight: bold;">(</span> <i>argslist</i> <span
+              style="font-weight: bold;">)</span> <i>block</i></td>
+          <td style="vertical-align: top;">Method Declaration<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    TypeExpression:
+    <table border="1" cellpadding="2" cellspacing="2" width="100%">
+      <tbody>
+        <tr>
+          <td><i>typename</i></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td><b style="font-weight: bold;">*</b><span
+              style="font-weight: bold;"></span><i>typeexpression</i></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td><i>typeexpression</i> <span style="font-weight: bold;">[
+              ]</span></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td><i>typeexpression</i> <span style="font-weight: bold;">[</span>
+            <i>size</i> <span style="font-weight: bold;">]</span></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p> </p>
+    <br>
+    TypeName:
+    <table border="1" cellpadding="2" cellspacing="2" width="100%">
+      <tbody>
+        <tr>
+          <td><i>qname</i></td>
+          <td style="vertical-align: top;">Qualified Name<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>int</b></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>uint</b></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>long</b></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>ulong</b></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>float</b></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>double</b></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>byte</b></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>sbyte</b></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>short</b></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>ushort</b></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>char</b></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>void</b></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p><br>
+    </p>
+    Modifiers:
+    <table border="1" cellpadding="2" cellspacing="2" width="100%">
+      <tbody>
+        <tr>
+          <td><b>abstract</b></td>
+          <td style="vertical-align: top;">Method is incomplete.<br>
+            Class can't be instantiated directly, but must be
+            overloaded.<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>const</b></td>
+          <td style="vertical-align: top;">Value is immutable.<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>dynamic</b></td>
+          <td style="vertical-align: top;">Class: May allow addition of
+            new members.<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>extern</b></td>
+          <td style="vertical-align: top;">Reserved<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>final</b></td>
+          <td style="vertical-align: top;">Class: May not be overloaded.<br>
+            Variable is immutable.<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>native</b></td>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">import</span>: Specifies a native library.<br>
+            <span style="font-weight: bold;">package</span>: Specifies a
+            package to be exported.<br>
+            <span style="font-weight: bold;">class </span>or <span
+              style="font-weight: bold;">struct</span>: Should be
+            exportable to C.<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>private</b></td>
+          <td style="vertical-align: top;">Only accessible from the same
+            class.<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>protected</b></td>
+          <td style="vertical-align: top;">Only accessible from the same
+            class or child classes.<br>
+            Default access type in <span style="font-weight: bold;">class</span>.<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>public</b></td>
+          <td style="vertical-align: top;">Accessible globally.<br>
+            Default access type for <span style="font-weight: bold;">struct</span>.<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>register</b></td>
+          <td style="vertical-align: top;">Reserved<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>static</b></td>
+          <td style="vertical-align: top;">Fields: Will share the same
+            value between all instances.<br>
+            Method: Method does not depend on or use the object
+            instance.<br>
+            Locals: The local will be shared between all calls to this
+            function or method.<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>synchronized</b></td>
+          <td style="vertical-align: top;">Lock accesses with a mutex.<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>virtual</b></td>
+          <td style="vertical-align: top;">Method may be overloaded.<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>volatile</b></td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <p> </p>
+    Block:
+    <table border="1" cellpadding="2" cellspacing="2" width="100%">
+      <tbody>
+        <tr>
+          <td><i>block-statement</i></td>
+          <td style="vertical-align: top;">A single unwrapped statement.<br>
+          </td>
+        </tr>
+        <tr>
+          <td><span style="font-style: italic;">statement-block</span></td>
+          <td style="vertical-align: top;">A block of statements.<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    StatementBlock:<br>
+    <table style=" text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">{</span> <span style="font-style: italic;">block</span><i>-statement</i>*
+            <span style="font-weight: bold;">}</span></td>
+          <td style="vertical-align: top;">A block of statements.<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p><br>
+    </p>
+    BlockStatement:
+    <table border="1" cellpadding="2" cellspacing="2" width="100%">
+      <tbody>
+        <tr>
+          <td><i>declaration</i> </td>
+          <td style="vertical-align: top;">Declaration<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">labelname</span><span style="font-weight: bold;">
+              :</span></td>
+          <td style="vertical-align: top;">Label</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">case </span><span style="font-style: italic;">value</span><span
+              style="font-weight: bold;"> :</span><br>
+          </td>
+          <td style="vertical-align: top;">Case label for switch.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">default :</span><br>
+          </td>
+          <td style="vertical-align: top;">Default label for switch.<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>do</b> <i>block</i> <b>while</b><span
+              style="font-weight: bold;"> ( </span><i>cond</i><span
+              style="font-weight: bold;"> ) ;</span></td>
+          <td style="vertical-align: top;">Do/While Block<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>for </b><span style="font-weight: bold;">( </span><i>init
+
+
+
+
+
+
+            </i><span style="font-weight: bold;">;</span><i> cond </i><span
+              style="font-weight: bold;">;</span> <i>step </i><span
+              style="font-weight: bold;">)</span> <i>block</i></td>
+          <td style="vertical-align: top;">For Loop<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>if ( </b><i>cond-expression</i><span
+              style="font-weight: bold;"> )</span> <i>then-block</i><br>
+            <b>if (</b><i> cond-expression </i><span
+              style="font-weight: bold;">)</span> <i>then-block</i> <b>else</b>
+            <i>else-block</i><br>
+          </td>
+          <td style="vertical-align: top;">If/Else<br>
+          </td>
+        </tr>
+        <tr>
+          <td><b>switch ( </b><i>index-expression </i><span
+              style="font-weight: bold;">)</span> <i>block</i></td>
+          <td style="vertical-align: top;">Switch<br>
+          </td>
+        </tr>
+        <tr>
+          <td><span style="font-weight: bold;">while (</span><i>
+              cond-expression</i><span style="font-weight: bold;"> )</span>
+            <i>block</i></td>
+          <td style="vertical-align: top;">While Loop<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><i>modifier</i>* <span
+              style="font-style: italic;">statement-block</span><br>
+          </td>
+          <td style="vertical-align: top;">Modifier-Statement Block<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">statement </span><span style="font-weight:
+              bold;">;</span><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p><br>
+    </p>
+    Statement:
+    <table style=" text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">break</span><br>
+          </td>
+          <td style="vertical-align: top;">Break<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">continue</span><br>
+          </td>
+          <td style="vertical-align: top;">Continue<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">goto </span><span style="font-style: italic;">labelname</span><br>
+          </td>
+          <td style="vertical-align: top;">Goto (Don't Use)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">return</span><br>
+            <span style="font-weight: bold;">return </span><span
+              style="font-style: italic;">value</span><br>
+          </td>
+          <td style="vertical-align: top;">Return<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-style:
+              italic;">expression</span><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+  </body>
+</html>

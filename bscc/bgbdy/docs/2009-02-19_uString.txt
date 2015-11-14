@@ -1,0 +1,20 @@
+uString:
+Will be an extra compact representation usable for some strings.
+A string will be encoded as a uString if it fits within the requirements, but will otherwise be encoded as an ordinary string.
+
+The basic idea here will be that very short strings may be encoded directly into references, saving the need for any heap-based storage to be used for them. Other space-saving tricks may be also used for encoding strings if applicable.
+
+In-reference storage will use a reduced character set, where for now a 24-bit space will be used, holding up to 4 chars (6-bits will be used per-char).
+
+Char-Set:
+ABCDEFGHIJKLMNOP
+QRSTUVWXYZabcdef
+ghijklmnopqrstuv
+wxyz0123456789_~
+
+Where, in the above, '~' will actually indicate the terminator.
+
+Chars will be packed into the value with the low bits holding the first char and following bits holding latter chars. Any bits following the terminator are to be 0.
+
+As a special case, if the first char is a terminator, the remaining bits may be used to encode literal chars using the full 8-bit range (allowing up to 2 raw ASCII chars).
+

@@ -1,0 +1,27 @@
+package bsvm.util;
+
+public class Observable extends Object
+{
+public Observable()
+	{}
+
+public void addObserver(Observer o)
+	{}
+protected void clearChanged()
+	{}
+public int countObservers()
+	{ return 0; }
+public void deleteObserver(Observer o)
+	{}
+public void deleteObservers()
+	{}
+public boolean hasChanged()
+	{ return false; }
+public void notifyObservers()
+	{}
+public void notifyObservers(Object arg)
+	{}
+protected void setChanged()
+	{}
+
+}

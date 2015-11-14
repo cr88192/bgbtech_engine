@@ -1,0 +1,43 @@
+Possible: 1 Bit Image.
+
+Purpose:
+
+Image Data is stored at 1 bit per pixel, and may be quickly decoded.
+This could be a cheaper option (than JPEG images) for storing Alpha data for images where pixels are either fully transparent or fully opaque.
+
+Sub-Goal: Should try to avoid generating 0xFF bytes.
+
+
+Format:
+
+Split image into 8x8 pixel blocks (64 bits).
+
+Use Block-Pack from BTIC.
+
+Special Commands:
+254, 0: Block, All Bits 0
+254, 1: Block, All Bits 1
+254, 2: Image XSize, YSize
+
+FMT12/APP12, "BP1B"
+
+
+Alternative:
+8x8 pixel blocks are represented raw and then deflated.
+Pixel bits are packed into each byte starting with the MSB.
+
+Needs to be stored between the SOF0 and SOS markers.
+
+FMT12/APP12, "BA1Z"
+
+
+Also Possible:
+Do like the above, but use Grey Coding and RLE.
+
+"BA1R"
+
+
+Possible: "BA8Z"
+Possible, 8-Bit Alpha.
+
+Stored basically similarly to BA1Z, except using 8bits/pixel, and Paeth filtered.

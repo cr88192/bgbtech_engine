@@ -1,0 +1,21 @@
+BUILD=.
+DLLPF=lib
+
+# CC_OUTEXE=gcc -o 
+# CC_OUTDLL=gcc -shared -o 
+# CC_OUTOBJ=gcc -c -o 
+
+BGBMETA=../bgbmeta$(BINSUF)
+BGBMETA_EXW=$(BGBMETA) /Fw
+BMETA_CFLAGS=/Iinclude /I../include
+
+CFLAGS=-Iinclude -I../include -g
+DLL_CFLAGS=$(CFLAGS) -DBGBBTJ_DLL
+LDFLAGS=-g -lbgbbtjpg -L.. -lbgbdy -lbgbgc -lbgbasm -lzpack -lm \
+	-Wl,-rpath,"$$ORIGIN"
+
+DLL_LDFLAGS=-g -pg -L.. -lbgbdy -lbgbgc -lbgbasm -lzpack -lm -fPIC \
+	-Wl,-rpath,"$$ORIGIN"
+
+include Makefile.inc
+

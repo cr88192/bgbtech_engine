@@ -1,0 +1,2 @@
+$flags voxel
+// $flags voxel lightmat

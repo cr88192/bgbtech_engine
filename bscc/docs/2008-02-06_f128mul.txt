@@ -1,0 +1,202 @@
+ESI=two Float128 values (0, 16)
+
+//move A, high 16 bits=0
+mov word [esp-2], 0
+mov ax, [esi+12]
+mov [esp-4], ax
+mov eax, [esi+8]
+mov [esp-8], eax
+mov eax, [esi+4]
+mov [esp-12], eax
+mov eax, [esi+0]
+mov [esp-16], eax
+
+//mov B, shl 16
+mov ax, [esi+28]
+mov [esp-18], ax
+mov eax, [esi+24]
+mov [esp-22], eax
+mov eax, [esi+20]
+mov [esp-26], eax
+mov eax, [esi+16]
+mov [esp-30], eax
+mov word [esp-32], 0
+
+//basic mul idea, needs order change/carry handling
+mov eax, [esp-4]; mov ecx, [esp-20]; mul ecx
+mov [esp-36], edx
+mov [esp-40], eax
+mov eax, [esp-8]; mul ecx
+add [esp-40], edx
+mov [esp-44], eax
+mov eax, [esp-12]; mul ecx
+add [esp-44], edx
+mov [esp-48], eax
+mov eax, [esp-16]; mul ecx
+add [esp-48], edx
+
+mov eax, [esp-4]; mov ecx, [esp-24]; mul ecx
+add [esp-40], edx
+add [esp-44], eax
+mov eax, [esp-8]; mul ecx
+add [esp-44], edx
+add [esp-48], eax
+mov eax, [esp-12]; mul ecx
+add [esp-48], edx
+
+mov eax, [esp-4]; mov ecx, [esp-28]; mul ecx
+add [esp-44], edx
+add [esp-48], eax
+mov eax, [esp-8]; mul ecx
+add [esp-48], edx
+
+mov eax, [esp-4]; mov ecx, [esp-32]; mul ecx
+add [esp-48], edx
+
+//because of shift, high 16 bits of result are 0
+
+//add exponents
+mov ax, [esi+14]
+add ax, [esi+30]
+and ax, 0x7FFF
+mov [esp-34], ax
+
+mov ax, [esi+14]
+xor ax, [esi+30]
+bt ax, 15
+jnc .l0
+or word [esp-34], 0x8000
+.l0:
+
+
+
+alternative:
+do not copy, just use 16 bits for MSW mul
+
+//handle edge cases
+mov cx, [esi+14]
+cmp cx, 0x7FFF; je .nan
+cmp cx, 0xFFFF; je .nan
+
+mov cx, [esi+30]
+cmp cx, 0x7FFF; je .nan
+cmp cx, 0xFFFF; je .nan
+
+
+movzx ecx, word [esi+28]
+movzx eax, word [esi+12]
+
+mul ecx
+mov [ebp-4], eax
+
+mov eax, [esi+8]; mul ecx
+mov [ebp-8], eax
+add [ebp-4], edx
+
+mov eax, [esi+4]; mul ecx
+mov [ebp-12], eax
+add [ebp-8], edx
+adc [ebp-4], 0
+
+mov eax, [esi+0]; mul ecx
+mov [ebp-16], eax
+add [ebp-12], edx
+adc [ebp-8], 0
+adc [ebp-4], 0
+
+
+mov ecx, [esi+24]
+movzx eax, word [esi+12]
+mul ecx
+add [ebp-8], eax
+adc [ebp-4], edx
+
+mov eax, [esi+8]; mul ecx
+add [ebp-12], eax
+adc [ebp-8], edx
+adc [ebp-4], 0
+
+mov eax, [esi+4]; mul ecx
+add [ebp-16], eax
+adc [ebp-12], edx
+adc [ebp-8], 0
+adc [ebp-4], 0
+
+mov eax, [esi+0]; mul ecx
+add [ebp-16], edx
+adc [ebp-12], 0
+adc [ebp-8], 0
+adc [ebp-4], 0
+
+
+mov ecx, [esi+20]
+movzx eax, word [esi+12]
+mul ecx
+add [ebp-12], eax
+adc [ebp-8], edx
+adc [ebp-4], 0
+
+mov eax, [esi+8]; mul ecx
+add [ebp-16], eax
+adc [ebp-12], edx
+adc [ebp-8], 0
+adc [ebp-4], 0
+
+mov eax, [esi+4]; mul ecx
+add [ebp-16], edx
+adc [ebp-12], 0
+adc [ebp-8], 0
+adc [ebp-4], 0
+
+
+mov ecx, [esi+16]
+movzx eax, word [esi+12]
+mul ecx
+add [ebp-16], eax
+adc [ebp-12], edx
+adc [ebp-8], 0
+adc [ebp-4], 0
+
+mov eax, [esi+8]; mul ecx
+add [ebp-16], edx
+adc [ebp-12], 0
+adc [ebp-8], 0
+adc [ebp-4], 0
+
+
+//add exponents
+mov cx, [esi+14]; and cx, 0x7FFF; jz .l0; sub cx, 16383; .l0:
+mov dx, [esi+30]; and dx, 0x7FFF; jz .l1; sub dx, 16383; .l1:
+add cx, dx
+
+mov dx, [esi+14]; xor dx, [esi+30]
+
+//adjust for denormals
+.l2:
+bt [ebp-4], 31
+jc .l3
+shl [ebp-16], 1
+rol [ebp-12], 1
+rol [ebp-8], 1
+rol [ebp-4], 1
+dec cx
+jmp .l2
+.l3:
+
+//now, [ebp-16] contains 128 bits of mantissa
+//unaligned copy into output
+
+mov eax, [ebp-14]
+mov [esi+0], eax
+mov eax, [ebp-10]
+mov [esi+4], eax
+mov eax, [ebp-6]
+mov [esi+8], eax
+mov eax, [ebp-2]
+mov [esi+12], eax
+
+and cx, cx; jz .l4; add cx, 16383; .l4:
+bt dx, 15; jnc .l5; or cx, 0x8000; .l5:
+
+mov [esi+14], cx
+

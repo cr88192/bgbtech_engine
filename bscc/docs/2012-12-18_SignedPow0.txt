@@ -1,0 +1,30 @@
+A Case for Signed Roots and Powers
+
+These operations are hardly original, but then again, I also suspect few people have ever heard of them.
+
+What are they?...
+A signed power is essentially a power-curve which is folded over, such that both positives and negatives look the same (symmetric relative to origin).
+
+Examples:
+double ssqr(double x)               //signed square
+    { return((x>=0)?(x*x):(-x*x)); }
+double ssqrt(double x)              //signed square root
+    { return((x>=0)?sqrt(x):(-sqrt(-x))); }
+double spow(double x, double y)     //signed power
+    { return((x>=0)?pow(x, y):(-pow(-x, y))); }
+
+
+Reasons:
+These can map all reals to all reals;
+Dealing with powers and roots of negative numbers need not involve
+imaginary numbers.
+
+Although imaginary numbers are the "proper" way of understanding these 
+things, they aren't really all that useful for computers or for typical 
+signal processing tasks, where in this case there is a decided advantage of 
+being able to stay within the bounds of the real-number line.
+
+More so, it is just inconvinient to have ones values potentially waving 
+around all over the place in imaginary land when values become negative
+(or, more typically, the values turn into NaNs).
+

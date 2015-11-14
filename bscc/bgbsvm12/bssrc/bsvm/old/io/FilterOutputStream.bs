@@ -1,0 +1,21 @@
+package bsvm.io;
+
+public class FilterOutputStream extends OutputStream
+{
+protected OutputStream out;
+
+public FilterOutputStream(OutputStream out)
+	{}
+
+public void close()
+	{}
+public void flush()
+	{}
+public void write(byte[] b)
+	{}
+public void write(byte[] b, int off, int len)
+	{}
+public void write(int b)
+	{}
+
+}

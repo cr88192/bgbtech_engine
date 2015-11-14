@@ -1,0 +1,30 @@
+Persistent Store and DSM
+
+This will define my current ideas for the addition of persistent storage and DSM.
+
+This system is likely to exist behind the wide pointer system, however, an interface will be provided which does not assume the ability to make use of this system.
+
+As such, the backend of the store system will provide an API-driven interface to both the persistency mechanism and shared memory.
+
+
+Store
+'image/'
+
+XXXXXX.dat		Main Image
+
+XXXXXX_XX.dat	Image Segments
+
+The Image files will have a structure vaguely resembling the X86 page tables, with Page 0 giving the page-table root, and Page 1 the bitmap root.
+
+The main page tables will be 4-levels deep, and will consist of 32 bit entries (thus, a 4kB page contains 1024 entries). This page table structure will cover an address space of 2^52 bits.
+
+Each entry will use the lower 24 bits as a page number (allowing a max store size of 2^36 bytes, or 64GB). The page number 0 will be special, and including this in part of a table will indicate a hole.
+
+The bitmap tables will be 1 level deep, which would cover 2^37 bytes.
+
+If larger than 1GB, the image will be segmented into 1GB chunks, with segments starting at '01' encoding subsequent parts of the image.
+
+
+Change:
+Consider page 0 is a header, which points to the page table root and bitmap root. Potentially, these roots could encode a height (allowing a little more flexibility).
+

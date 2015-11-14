@@ -1,0 +1,135 @@
+Generic Data Intermediate Language
+
+This will be a bytecoded IL, which will be run via a JIT compiler.
+
+The bytecode will be RPN based, and will be loosely derived from RPNIL.
+
+Arguments and local variables will generally be identified by index rather than by name, however, type information will be provided for each variable.
+
+'Generic Data' will be used as the basis of any relevant structures.
+Structures will thus be defined using a C-style notation, but are to be interpreted in the generic data form.
+
+Signatures will be as always, for example:
+"Foo/bar(ii)v" will identify a function scoped under Foo which accepts 2 integers and returns void.
+
+Similarly:
+"Foo/baz:Pv" will identify a variable with the type 'void *'.
+
+In signature globs, all of the types are lumped together, and they are parsed in series. Conceptually, these lists will be 1-based (the first type represents item 1), with 0 being reserved as a 'NULL' value.
+
+
+struct Info_s {
+FOURCC magic;	//identifies info-type
+u16 ver, sz;	//identifies structural version, and info size
+};
+
+Note that 'sz' will include the magic and itself, so the minimum size (for an empty chunk) is 8. Special values: 0=invalid, 1=32-bit size follows, 2=64 bit size follows.
+
+
+struct LinkInfo_s {
+FOURCC magic;	//identifies info-type
+u16 ver, sz;	//identifies structural version, and info size
+Info *next;		//next info
+Info *first;	//first contained info
+Info *parent;	//containing info
+};
+
+
+struct ScopeInfo_s {
+FOURCC magic;	//'ENV '
+u16 ver, sz;	//0, ?
+LinkInfo *next;	//next info
+LinkInfo *first;	//first contained info
+LinkInfo *parent;	//containing info
+};
+
+struct FuncInfo_s {
+FOURCC magic;	//'FUNC'
+u16 ver, sz;	//0, ?
+
+LinkInfo *next;	//next info
+LinkInfo *first;	//first contained info
+LinkInfo *parent;	//containing info
+
+char *name_sig;	//function name+signature
+char *local_sig;	//signature glob for locals
+byte *body;		//pointer to function body (bytecode)
+int sz_body;	//size of body
+};
+
+struct VarInfo_s {
+FOURCC magic;	//'VAR '
+u16 ver, sz;	//0, ?
+
+LinkInfo *next;	//next info
+LinkInfo *first;	//first contained info
+LinkInfo *parent;	//containing info
+
+char *name_sig;	//var name+signature
+void *value;	//initial value
+};
+
+
+
+Change:
+Consider a mostly strings-based representation as opposed to a mostly binary one.
+
+Name-signatures will remain the same as before.
+
+Consider vars-list, which will be an array of name-signatures.
+"x:i,y:i,z:d,p:Pv"
+The ',' will indicate that another item follows, and so the absence of ',' would indicate the end of the list.
+
+Additionally, '=' followed by a literal would allow providing an initialization value ("x:i=144").
+
+Using a name for an initializer will mean that the value is identified by name, and presumably visible within the present scope.
+
+For example, "z:d=System/Math/PI" would attempt to look up "System/Math/PI" for use as an initialization value.
+
+
+Possible:
+Overall structure is based on the metadata database structure.
+
+Add:
+'func'/'method' node types will add several fields:
+	args (vars-list), will further specify aruments (must match sig WRT ordering and types);
+	locals (vars-list), will specify local variables used;
+	body, will contain the body of the function (textual RPNIL for now);
+	catch (catch-list), will define the exception handling for the function.
+
+'var' subnodes may be used to further expand upon args and locals.
+
+
+The 'catch-list' type will be a collection of items:
+'<try_start>,<try_end>,<catch_target>,<catch_type>'
+'<try_start>,<try_end>,<catch_target>'
+
+Where try_start, try_end, and catch_target are labels.
+The catch_type field will identify the exception type, and will be a QName (presumably identifying a class). In the form with catch_type omitted, this will be the 'default' case, and so control will be passed to catch-target.
+
+They will be placed end-to-end and separated by whitespace. Exceptions will be dispatched in a left-to-right order.
+
+
+Alteration:
+Allow RPNIL to omit whitespace when not-needed, and allow ';' to be used as a separator (in many cases in place of whitespace). When encountered ';' will be treated as no-op (as well as its role as a terminator for opcodes accepting arguments).
+
+'#' may also be used for an enable an alternate 'escape coding', whereby given opcode(s) may be represented in a shorthand form:
+current defined space: a..z A(a..z)2 B(a..z)3
+
+aafgAczBreh...
+
+This mode will be terminated via an unexpected ';'.
+In this mode, ';' will also be used to escape name tokens (for load/store operations, ...).
+
+
+
+
+
+Example:
+[foo]
+	_=func
+	sig=(ii)v
+	args=a:i,b:i
+	locals=c:i
+	body=%a%b+;=c;ret_v
+

@@ -1,0 +1,111 @@
+Idle thoughts:
+C compiler.
+
+Likely implement a subset of C99.
+
+Will probably use a 2-stage process:
+Parse-Trees -> Bytecode;
+Bytecode -> Assembler.
+
+
+Preprocessor:
+Generic, buffer->buffer.
+Will skim tokens and interpret commands.
+May work a line at a time, dunno.
+
+
+Bytecode
+1-2 byte opcodes (consider fixed 12-bit);
+16-bit jumps;
+type annotations;
+stack machine (possible regs).
+
+
+possible layout:
+16-bit "base word":
+	high 8 base opcode;
+	low 8, depends on opcode.
+
+In an opcode not using the low bits, they are to be set to 0.
+
+Opcodes with the top 2 MSB set to 1 (0xC0..0xFF) will be interpreted as a single 14 bit opcode, and those with the MSB set to 1 will be a single 12-bit opcode.
+
+From this, one will derive an opcode number, may use conditional masking to derive this.
+0x0000..0x7FFF & 0xFF00
+0x8000..0xBFFF & 0xFFF0
+0xC000..0xFFFF & 0xFFFF
+
+
+Generic Types
+
+Independent of specific types, and used in cases where the exact type is unimportant.
+
+Types are represented in a 4 bit field:
+	0, unknown, void;
+	1=char/byte;
+	2=short/ushort;
+	3=int/uint;
+	4=long/unlong (64 bit);
+	5=float;
+	6=double;
+	7=pointer (32 or 64 bit arch).
+
+In general, operations will assume type agreement. In some cases, the type of an argument will be assumed, and as such the type for an opcode will define the type of the other.
+
+If present, types will be stored in the low 4 bits of the opcode.
+
+
+Operators and Conditions
+
+Operators and conditionals will be another 4-bit field.
+
+Binary Conditionals:
+	0=invalid
+	1=equal
+	2=less
+	3=greater
+	4=(reserved)
+	5=not-equal
+	6=greater-equal
+	7=less-equal
+
+In opcodes with both a type and an operator, the type will be in the low 4 bits, and the operator in the next 4 bits.
+
+
+Regs
+
+Considering, some issues such as the word-size and number of regs will be tunable in the compiler.
+
+In general, I will define that there are up to 16 (directly usable) regs, and for a given category will be assumed homogenous.
+
+on x86 for integer regs, it will likely be mapped as such (ordered in terms of "stability"):
+0=esi
+1=edi
+2=ebx
+3=ecx
+4=edx
+5=eax
+
+or, I could define it differently:
+there are 2 extremes, and a conceptually variable number (overflowing to the stack), where starting from 0 are assumed most volatile, and 15 most stable (mapping resolved at native code generation).
+
+
+Or, it could be a stack machine.
+
+Also Possible:
+There is a set of variables, where each variable is assigned a "register" number (a type is specified, but is not considered in the upper compiler).
+
+There is a set of registers (ie, temporary variables), which is fairly small and generally rotates. Values are initially stored in CPU regs, but are then moved to memory if needed. It may make sense to flags regs that are used multiple times.
+
+Destructive operations will serve to invalidate regs.
+
+
+Vars and Jumps
+
+Vars will be indexed.
+Globals and locals may be distinguished (or maybe not).
+
+Rather than pointing to a specific address, jumps and similar will point to a name. This name, in turn, may point to an address.
+
+Indices are likely to be 16 bits.
+

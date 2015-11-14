@@ -1,0 +1,41 @@
+This spec will attempt to define the AST structure used in the BS1 compiler.
+
+ASTs will be based on a Lisp-like representation.
+
+The compiler will have 3 meaningfully different contexts: statement (stmt); expression (expr); and tail-expression (texp).
+
+(goto name)
+(label name)
+(for init cond step body)
+(while cond body)
+(for var obj body)
+(do_while cond body)
+(quote expr)
+(return expr)
+
+(set! var expr)
+(setindex! obj idx val)
+(getindex obj idx)
+(objref obj name)
+(objset! obj name val)
+
+(preinc! var)
+(predec! var)
+(postinc! var)
+(postdec! var)
+
+(if cond then)
+(if cond then else)
+
+(begin stmt* texp)
+(and exp+)
+(or exp+)
+
+(define var val)
+(define (fcn arg*) body+)
+(defun def args body+)
+(vars type (var+))
+	where var=name | (name expr)
+
+(lambda args body+)
+(rlambda def args body+)

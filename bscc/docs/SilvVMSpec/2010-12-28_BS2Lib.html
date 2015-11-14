@@ -1,0 +1,562 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+</head>
+<body>
+BGBScript 2 Library<br>
+<br>
+Packages<br>
+<br>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Package<br>
+      </td>
+      <td style="vertical-align: top;">Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">bs2vm<br>
+      </td>
+      <td style="vertical-align: top;">BGBScript2 VM<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">bs2vm.lang<br>
+      </td>
+      <td style="vertical-align: top;">BS2 core language classes<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">bs2vm.io<br>
+      </td>
+      <td style="vertical-align: top;">BS2 IO classes<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">bs2vm.util<br>
+      </td>
+      <td style="vertical-align: top;">BS2 Utility classes<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">bs2vm.except<br>
+      </td>
+      <td style="vertical-align: top;">BS2 Exceptions<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+Package bs2vm.lang<br>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Classname<br>
+      </td>
+      <td style="vertical-align: top;">Extends<br>
+      </td>
+      <td style="vertical-align: top;">Implements<br>
+      </td>
+      <td style="vertical-align: top;">Aliased Type<br>
+      </td>
+      <td style="vertical-align: top;">Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Boolean<br>
+      </td>
+      <td style="vertical-align: top;">Object<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">bool<br>
+boolean<br>
+      </td>
+      <td style="vertical-align: top;">Aliased base class for boolean<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Byte<br>
+      </td>
+      <td style="vertical-align: top;">Number<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">byte<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Character<br>
+      </td>
+      <td style="vertical-align: top;">Object<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">char<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Class<br>
+      </td>
+      <td style="vertical-align: top;">Object<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">Indirect base for classes<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Double<br>
+      </td>
+      <td style="vertical-align: top;">Number<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">double<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Float<br>
+      </td>
+      <td style="vertical-align: top;">Number<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">float<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Float128<br>
+      </td>
+      <td style="vertical-align: top;">Number<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">float128<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Int<br>
+      </td>
+      <td style="vertical-align: top;">Number<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">int<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Int128<br>
+      </td>
+      <td style="vertical-align: top;">Number<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">int128<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Long<br>
+      </td>
+      <td style="vertical-align: top;">Number<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">long<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Math<br>
+      </td>
+      <td style="vertical-align: top;">Object<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Number<br>
+      </td>
+      <td style="vertical-align: top;">Object<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Object<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">object<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">SByte<br>
+      </td>
+      <td style="vertical-align: top;">Number<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">sbyte<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Short<br>
+      </td>
+      <td style="vertical-align: top;">Number<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">short<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">String<br>
+      </td>
+      <td style="vertical-align: top;">Object<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">string<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Struct<br>
+      </td>
+      <td style="vertical-align: top;">Object<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">Indirect base for all struct
+types<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">System<br>
+      </td>
+      <td style="vertical-align: top;">Object<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">UInt<br>
+      </td>
+      <td style="vertical-align: top;">Number<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">uint<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">UInt128<br>
+      </td>
+      <td style="vertical-align: top;">Number<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">uint128<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">ULong<br>
+      </td>
+      <td style="vertical-align: top;">Number<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">ulong<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">UShort<br>
+      </td>
+      <td style="vertical-align: top;">Number<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">ushort<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Void<br>
+      </td>
+      <td style="vertical-align: top;">Object<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">void<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+Aliased Types<br>
+A base type may be aliased to a class or struct, which means that this
+class will be used to handle operations on said type, and said type may
+behave as if it were an instance of said class.<br>
+<br>
+Aliasing will work by creating a new instance of the class or struct
+and calling the constructor with the aliased value, followed by
+invoking whatever method is needed, and if applicable, deleting the
+object.<br>
+<br>
+<br>
+bs2vm.lang.Object<br>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Definition<br>
+      </td>
+      <td style="vertical-align: top;">Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">public object clone();<br>
+      </td>
+      <td style="vertical-align: top;">Make a duplicate of a given
+object.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">public boolean equals(object obj);<br>
+      </td>
+      <td style="vertical-align: top;">Determine if object is equal to
+another object.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">protected void finalize();<br>
+      </td>
+      <td style="vertical-align: top;">For any last-moment cleanup.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">public Class getClass();<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">public int hashCode();<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">public string toString();<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">public void wait();<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">public void wait(long timeout);<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+bs2vm.lang.Number<br>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Definition<br>
+      </td>
+      <td style="vertical-align: top;">Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">public abstract double
+doubleValue();<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">public abstract float
+floatValue();<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">public abstract int intValue();<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">public abstract long longValue();<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+bs2vm.except<br>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Name<br>
+      </td>
+      <td style="vertical-align: top;">Extends<br>
+      </td>
+      <td style="vertical-align: top;">Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Exception<br>
+      </td>
+      <td style="vertical-align: top;">Object<br>
+      </td>
+      <td style="vertical-align: top;">Generic exception. Represents
+the root class of throwable exceptions.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">InvalidCastException<br>
+      </td>
+      <td style="vertical-align: top;">Exception<br>
+      </td>
+      <td style="vertical-align: top;">A cast has failed.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">NullReferenceException<br>
+      </td>
+      <td style="vertical-align: top;">Exception<br>
+      </td>
+      <td style="vertical-align: top;">A null reference has been used
+in an unacceptable way.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">ArrayBoundsCheckException<br>
+      </td>
+      <td style="vertical-align: top;">Exception<br>
+      </td>
+      <td style="vertical-align: top;">An array access was out of
+bounds.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">TypeCheckException<br>
+      </td>
+      <td style="vertical-align: top;">Exception<br>
+      </td>
+      <td style="vertical-align: top;">An operation can't be performed
+on the given type(s).<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</body>
+</html>

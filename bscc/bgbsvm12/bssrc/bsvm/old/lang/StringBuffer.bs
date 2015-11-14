@@ -1,0 +1,113 @@
+package bsvm.lang;
+
+public final class StringBuffer extends Object
+{
+
+private char[] buffer;
+private int count;
+
+public StringBuffer()
+	{ this(16); }
+public StringBuffer(int length)
+	{ buffer=new char[length]; }
+public StringBuffer(String str)
+{
+	buffer=new char[str.length()];
+	str.getChars(0, str.length(), buffer, 0);
+}
+
+public StringBuffer append(boolean b)
+	{ return append(String.valueOf(b)); }
+public StringBuffer append(char c)
+	{ return append(String.valueOf(c)); }
+public StringBuffer append(char[] str)
+	{ return append(String.valueOf(str)); }
+public StringBuffer append(char[] str, int offset, int len)
+	{ return append(String.valueOf(str, offset, len)); }
+public StringBuffer append(double d)
+	{ return append(String.valueOf(d)); }
+public StringBuffer append(float f)
+	{ return append(String.valueOf(f)); }
+public StringBuffer append(int i)
+	{ return append(String.valueOf(i)); }
+public StringBuffer append(long l)
+	{ return append(String.valueOf(l)); }
+public StringBuffer append(Object obj)
+	{ return append(String.valueOf(obj)); }
+
+public StringBuffer append(String str)
+{
+	int n = str.length();
+	ensureCapacity(count+n);
+	str.getChars(0, n, buffer, count);
+	count=count+n;
+	return this;
+}
+
+public int capacity()
+	{ return buffer.length; }
+public char charAt(int index)
+	{ return buffer[index]; }
+
+public void ensureCapacity(int minimumCapacity)
+{
+	char[] buf;
+
+	if(minimumCapacity>buffer.length)
+	{
+		buf=new char[minimumCapacity];
+		System.arraycopy(buffer, 0, buf, 0, buffer.length);
+		buffer=buf;
+		return;
+	}
+}
+
+public void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin)
+{
+	System.arraycopy(buffer, srcBegin, dst, dstBegin, srcEnd-srcBegin);
+}
+
+public StringBuffer insert(int offset, boolean b)
+	{ return this; }
+public StringBuffer insert(int offset, char c)
+	{ return this; }
+public StringBuffer insert(int offset, char[] str)
+	{ return this; }
+public StringBuffer insert(int offset, double d)
+	{ return this; }
+public StringBuffer insert(int offset, float f)
+	{ return this; }
+public StringBuffer insert(int offset, int i)
+	{ return this; }
+public StringBuffer insert(int offset, long l)
+	{ return this; }
+public StringBuffer insert(int offset, Object obj)
+	{ return this; }
+public StringBuffer insert(int offset, String str)
+	{ return this; }
+
+public int length() { return count; }
+
+public StringBuffer reverse()
+	{ return this; }
+
+public void setCharAt(int index, char ch)
+	{ buffer[index]=ch; }
+
+public void setLength(int newLength)
+{
+	char[] buf;
+
+	if(newLength>buffer.length)
+	{
+		buf=new char[newLength];
+		System.arraycopy(buffer, 0, buf, 0, buffer.length);
+		buffer=buf;
+		return;
+	}
+}
+
+public String toString()
+	{ return new String(buffer, 0, count); }
+}
+

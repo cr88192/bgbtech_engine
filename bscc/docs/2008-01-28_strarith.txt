@@ -1,0 +1,42 @@
+String Arithmetic
+
+Basically, represents numbers as decimal strings, and implements functions for doing arithmetic on strings as if they were numbers.
+
+In general, these functions will have to handle large values, and will be exact for integer operations (potentially, there may be an upper limit to string length, likely with the return value being NULL if the result would be too large). Fractional parts will be automatically truncated to a certain number of digits.
+
+Speed will not be a terribly high priority.
+
+Internal:
+The representation will be a flat (signs-stripped) 10s complement representation.
+
+Likely, the limit will be 256 chars, or approx 850 bits of precision.
+
+
+Funcs
+
+char *dysAdd(char *s0, char *s1);
+char *dysSub(char *s0, char *s1);
+char *dysMul(char *s0, char *s1);
+char *dysDiv(char *s0, char *s1);
+
+char *dysShl(char *s, int v);
+char *dysShl10(char *s, int v);
+
+Shift left the value by a power-of-2 or a power-of-10 factor.
+Shl10 may operate by moving the decimal point rather than shifting the value in some cases.
+
+
+char *dysShr(char *s, int v);
+char *dysShr10(char *s, int v);
+char *dysShr10F(char *s, int v);
+
+Shift right the value by a power of 2 or a power of 10 factor.
+This Shr10 will lose any values falling below the rightmost digit.
+Shr10F will differ in that it will move the decimal point rather than discard the digits.
+
+int dysCmp(char *s0, char *s1);
+
+Compare two numeric strings.
+Returns -1 if s0<s1, 0 if s0==s1, and 1 if s0>s1.
+
+

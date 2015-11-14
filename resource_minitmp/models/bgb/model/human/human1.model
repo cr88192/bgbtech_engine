@@ -1,0 +1,24 @@
+//Basic Human Definition
+
+bones bones.bone
+
+mesh Hip hip0.ac			[  1 0 0  0 1 0  0 0 1   0 -4   0 ]
+mesh LHip thigh0.ac		[  1 0 0  0 1 0  0 0 1   0  0 -15 ]
+mesh LKnee shin0.ac		[  1 0 0  0 1 0  0 0 1   0  0 -15 ]
+mesh LAnkle foot0.ac		[  1 0 0  0 1 0  0 0 1   0  0  -4 ]
+mesh RHip thigh0.ac		[  1 0 0  0 1 0  0 0 1   0  0 -15 ]
+mesh RKnee shin0.ac		[  1 0 0  0 1 0  0 0 1   0  0 -15 ]
+mesh RAnkle foot0.ac		[  1 0 0  0 1 0  0 0 1   0  0  -4 ]
+mesh Spine midriff0.ac		[  1 0 0  0 1 0  0 0 1   0 -2   0 ]
+mesh Spine2 chest0.ac		[  1 0 0  0 1 0  0 0 1   0 -2   0 ]
+mesh LShoulder uarm0.ac		[  1 0 0  0 1 0  0 0 1  -5  0   0 ]
+mesh LElbow larm0.ac		[  1 0 0  0 1 0  0 0 1  -4  0   0 ]
+mesh RShoulder uarm0.ac		[ -1 0 0  0 1 0  0 0 1   5  0   0 ]
+mesh RElbow larm0.ac		[ -1 0 0  0 1 0  0 0 1   4  0   0 ]
+mesh Head head0.ac		[  1 0 0  0 1 0  0 0 1   0  0  -6 ]
+
+mesh LWrist hand3.ac		[  0 0 -3  3 0 0  0 3 0  -3  0   0 ]
+mesh RWrist hand3.ac		[  0 0 -3 -3 0 0  0 3 0   3  0   0 ]
+
+//mesh LAttach sword0.ac		[  1 0 0  0 1 0  0 0 1   0  0  0 ]
+//mesh RAttach sword0.ac		[  1 0 0  0 1 0  0 0 1   0  0  0 ]

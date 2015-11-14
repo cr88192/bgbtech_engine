@@ -1,0 +1,33 @@
+BUILD=.
+MKSUF=.lnx
+LIBSUF=.a
+DLLSUF=.so
+EXESUF=.elf
+OBJSUF=.o
+DLLPF=lib
+
+CC_OUTEXE=gcc -o 
+CC_OUTDLL=gcc -shared -o 
+CC_OUTOBJ=gcc -c -o 
+CC_OUTTOOL=gcc -o 
+
+EXE = .elf
+BIN = .bin
+O = .o
+A = .a
+
+BGBMETA=../bgbmeta$(EXE)
+BGBMETA_EXW=$(BGBMETA) /Fw
+BMETA_CFLAGS=/Iinclude /I../include
+
+CFLAGS=-Iinclude -I../include -g -pg
+DLL_CFLAGS=$(CFLAGS) -DBGBSVM_DLL
+LDFLAGS=-g -pg -L. -lbgbsvm -L.. -lbgbgc -lbgbdy -lbgbasm -lzpack -lm \
+	-Wl,-rpath,"$$ORIGIN"
+DLL_LDFLAGS=-g -pg -L.. -lbgbgc -lbgbdy -lbgbasm -lzpack -lm -fPIC \
+	-Wl,-rpath,"$$ORIGIN"
+
+BS_SRCS = $(shell find bssrc -name \*.bs)
+
+include Makefile.inc
+

@@ -1,0 +1,11 @@
+Idea:
+There is a need for C-based exception handling.
+
+Maybe have this related to threads, where a thread local variable holds the handler frame.
+
+void thThrow(char *name);
+void thTryCatch(void *data,
+	void (*try)(void *data),
+	void (*catch)(void *data, char *name));
+
+

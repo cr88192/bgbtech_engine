@@ -1,0 +1,136 @@
+ARCH_CFLAGS=
+CFLAGS=/Iinclude /I../include $(ARCH_CFLAGS) /Z7
+
+LDFLAGS=bgbdy.lib ../bgbgc.lib ../bgbasm.lib ../zpack.lib /Z7
+
+#	base/memory2_2.obj \
+#	base/int128.obj \
+
+#	base/dyll_frame.obj \
+#	base/dyll_frame_x86.obj \
+#	base/dyll_frame_x64.obj \
+#	base/dyc_rcit.obj \
+
+OBJS=\
+	base/prng.obj \
+	base/int128.obj \
+	\
+	base/vfile2.obj \
+	base/vfile2_dir.obj \
+	base/vfile2_zip.obj \
+	base/vfile2_zpak.obj \
+	base/inflate.obj \
+	base/deflate.obj \
+	\
+	base/netval.obj \
+	\
+	base/dyll_func.obj \
+	base/dyll_sig.obj \
+	base/dyll_sig_arg.obj \
+	base/dyll_addr.obj \
+	base/dyll_sigcache.obj \
+	base/dyll_metapath.obj \
+	base/dyll_catch.obj \
+	base/dyll_thunk.obj \
+	base/dyll_typebox.obj \
+	base/dyll_mrbc2.obj \
+	base/dyll_iface.obj \
+	\
+	base/sqlite3.c \
+	base/dyll_sql.obj \
+	\
+	base/ty_complex.obj \
+	base/ty_quat.obj \
+	base/ty_matrix.obj \
+	\
+	base/dy_wref.obj \
+	base/dy_strarith.obj \
+	base/dy_chan.obj \
+	base/dy_dytf.obj \
+	\
+	base/dy_method.obj \
+	base/dy_oo.obj \
+	base/dy_dyo.obj \
+	\
+	base/dyc_class.obj \
+	base/dyc_lookup.obj \
+	base/dyc_hash.obj \
+	base/dyc_proto.obj \
+	base/dyc_struct.obj \
+	base/dyc_ns.obj \
+	base/dyc_array.obj \
+	base/dyc_api.obj \
+	base/dyc_dyii.obj \
+	\
+	base/dyc_jni_fcn.obj \
+	base/dyc_jni_iface.obj \
+	base/dyc_jvmti_fcn.obj \
+	base/dyc_jvmti_iface.obj \
+	\
+	base/dy_opr.obj \
+	base/dy_cons.obj \
+	base/dy_sparse.obj \
+	base/dy_smxl.obj \
+	base/dy_array.obj \
+	\
+	base/dy_xml.obj \
+	base/dy_print.obj \
+	base/dys_parse.obj \
+	base/dys_print.obj \
+	base/dyx_parse.obj \
+	base/dyx_print.obj \
+	base/dyx_sbxe.obj \
+	\
+	base/bgbdy_api.obj \
+	\
+	bgal/bgal_main.obj \
+	bgal/bgal_interp.obj \
+	bgal/bgal_neuron.obj
+
+SRCS=$(OBJS:.obj=.c)
+
+DEP_HDRS = \
+	include/bgbdy_auto.h \
+	include/bgbdy_autoi.h \
+	include/dyc_auto.h
+
+all: libs apps
+
+FORCE:
+
+libs: bgbdy.dll
+apps: dytst0.exe tst_class0.exe gatst0.exe
+
+includes: $(DEP_HDRS)
+
+include/bgbdy_auto.h: autohead.exe $(SRCS)
+	./autohead.exe -apionly BGBDY_API $(SRCS) > include/bgbdy_auto.h
+include/bgbdy_autoi.h: autohead.exe $(SRCS)
+	./autohead.exe -noapi BGBDY_API $(SRCS) > include/bgbdy_autoi.h
+
+include/dyc_auto.h: autohead.exe base/dyc_api.c base/dyc_array.c
+	./autohead.exe -api BGBDY_API base/dyc_api.c base/dyc_array.c > include/dyc_auto.h
+
+%.obj: %.c
+	cl /c /Fo$@ $< $(CFLAGS)
+
+# bgbdy.lib: $(DEP_HDRS) $(OBJS)
+#	lib /out:bgbdy.lib $(OBJS)
+
+bgbdy.dll: $(DEP_HDRS) $(SRCS)
+	cl /LD /Febgbdy.dll $(SRCS) /Iinclude /I../include /Z7 /DBGBDY_DLL \
+		../bgbgc.lib ../bgbasm.lib ../zpack.lib
+
+autohead.exe: autohead.c
+	cl /Feautohead.exe autohead.c
+
+dytst0.exe: dytst0.c $(DEP_HDRS) libs
+	cl /Fedytst0.exe dytst0.c $(CFLAGS) $(LDFLAGS)
+
+tst_class0.exe: tst_class0.c $(DEP_HDRS) libs
+	cl /Fetst_class0.exe tst_class0.c $(CFLAGS) $(LDFLAGS)
+
+gatst0.exe: gatst0.c $(DEP_HDRS) libs
+	cl /Fegatst0.exe gatst0.c $(CFLAGS) $(LDFLAGS)
+
+clean:

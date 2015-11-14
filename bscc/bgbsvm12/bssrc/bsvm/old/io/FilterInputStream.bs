@@ -1,0 +1,30 @@
+package bsvm.io;
+
+public class FilterInputStream extends InputStream
+{
+protected InputStream in;
+
+protected FilterInputStream(InputStream in)
+	{ this.in=in; }
+
+public int available()
+	{ return 0; }
+public void close()
+	{}
+public void mark(int readlimit)
+	{}
+public boolean markSupported()
+	{ return false; }
+public int read()
+	{ return 0; }
+public int read(byte[] b)
+	{ return 0; }
+public int read(byte[] b, int off, int len)
+	{ return 0; }
+public void reset()
+	{}
+public long skip(long n)
+	{ return 0; }
+
+}
+

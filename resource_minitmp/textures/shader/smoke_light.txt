@@ -1,0 +1,2 @@
+$flags window
+$drawfunc shader_smoke_light

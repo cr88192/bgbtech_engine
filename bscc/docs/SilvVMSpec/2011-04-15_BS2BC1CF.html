@@ -1,0 +1,587 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+</head>
+<body>
+BGBScript2 ByteCode 1<br>
+IL Container Format Largely reused.<br>
+<br>
+At this point, I will split the IL-bytecode and IL container format
+into separate specs.<br>
+<br>
+<br>
+Note:<br>
+UVLI is a variable length integer format, which follows the following
+pattern.<br>
+<br>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Low<br>
+      </td>
+      <td style="vertical-align: top;">High<br>
+      </td>
+      <td style="vertical-align: top;">Pattern<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0<br>
+      </td>
+      <td style="vertical-align: top;">127<br>
+      </td>
+      <td style="vertical-align: top;">0xxxxxxx<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">128<br>
+      </td>
+      <td style="vertical-align: top;">16383<br>
+      </td>
+      <td style="vertical-align: top;">10xxxxxx xxxxxxxx<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">16384<br>
+      </td>
+      <td style="vertical-align: top;">2097151<br>
+      </td>
+      <td style="vertical-align: top;">110xxxxx xxxxxxxx xxxxxxxx</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">2097152<br>
+      </td>
+      <td style="vertical-align: top;">268435455<br>
+      </td>
+      <td style="vertical-align: top;">1110xxxx xxxxxxxx xxxxxxxx
+xxxxxxxx</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">268435456<br>
+      </td>
+      <td style="vertical-align: top;">34359738367<br>
+      </td>
+      <td style="vertical-align: top;">11110xxx xxxxxxxx xxxxxxxx
+xxxxxxxx xxxxxxxx</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">34359738368<br>
+      </td>
+      <td style="vertical-align: top;">...<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">...<br>
+      </td>
+      <td style="vertical-align: top;">...<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+SVLI uses the same basic encoding as above, but encodes a sign into the
+LSB.<br>
+Thus, SVLI follows the pattern: 0, -1, 1, -2, 2, -3, 3, ...<br>
+<br>
+FVLI<br>
+<br>
+Will encode a floating-point number in a VLI-like format.<br>
+Basic format will be:<br>
+struct FVLI<br>
+{<br>
+SVLI exp;&nbsp;&nbsp;&nbsp; //exponent<br>
+SVLI frac;&nbsp;&nbsp;&nbsp; //fractional part (bit transposed)<br>
+}<br>
+<br>
+The fraction is stored transposed mostly so that simpler numbers will
+result in smaller fractional parts, and to simplify encoding/decoding.<br>
+<br>
+The value will be 2^exp*(1.0+nfrac), where nfrac will be the transposed
+and normalized form of frac.<br>
+<br>
+<br>
+With an exponent of 0, an additional bit will be present in the LSB
+(after decoding the SVLI), which will function as a hidden bit: if set,
+indicates a normal value.<br>
+<br>
+If clear, indicates one of several special cases (encoded in low 4
+bits):<br>
+&nbsp;&nbsp;&nbsp; frac%16=0, encodes a literal value 0.0<br>
+&nbsp;&nbsp;&nbsp; frac%16= +/- 2, encodes +/- NaN<br>
+&nbsp;&nbsp;&nbsp; frac%16= +/- 4, encodes +/- Inf<br>
+&nbsp;&nbsp;&nbsp; Other values are currently reserved.<br>
+<br>
+The values in any additional bits will be reserved for now.<br>
+<br>
+<br>
+ByteCode opcodes will be encoded using a different scheme:<br>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Low<br>
+      </td>
+      <td style="vertical-align: top;">High<br>
+      </td>
+      <td style="vertical-align: top;">Pattern<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0<br>
+      </td>
+      <td style="vertical-align: top;">191<br>
+      </td>
+      <td style="vertical-align: top;">00xxxxxx<br>
+01xxxxxx<br>
+10xxxxxx<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">192<br>
+      </td>
+      <td style="vertical-align: top;">12287<br>
+      </td>
+      <td style="vertical-align: top;">1100xxxx xxxxxxxx<br>
+1101xxxx xxxxxxxx<br>
+1110xxxx xxxxxxxx<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">12288<br>
+      </td>
+      <td style="vertical-align: top;">786431<br>
+      </td>
+      <td style="vertical-align: top;">111100xx xxxxxxxx xxxxxxxx<br>
+111101xx xxxxxxxx xxxxxxxx<br>
+111110xx xxxxxxxx xxxxxxxx<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">...<br>
+      </td>
+      <td style="vertical-align: top;">...<br>
+      </td>
+      <td style="vertical-align: top;">...<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+Rationale: I have long since been using the above encoding, and also
+because it can be assumed that opcodes tend to be strongly clustered
+around smaller values. This scheme allows a greater number of
+single-byte opcodes at the cost of higher overhead for larger numbers.<br>
+<br>
+In this spec, it will be assumed that bytecodes be referred to by
+nmonic or by their opcode number, rather than by their byte encoding.<br>
+<br>
+<table width="100%" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td>Name</td>
+      <td>Description</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">BYTE<br>
+      </td>
+      <td style="vertical-align: top;">8bit byte<br>
+      </td>
+    </tr>
+    <tr>
+      <td>WORD</td>
+      <td>16bit word, little endian<br>
+      </td>
+    </tr>
+    <tr>
+      <td>DWORD</td>
+      <td style="vertical-align: top;">32bit dword, little endian<br>
+      </td>
+    </tr>
+    <tr>
+      <td>QWORD</td>
+      <td style="vertical-align: top;">64bit dword, little endian<br>
+      </td>
+    </tr>
+    <tr>
+      <td>OWORD</td>
+      <td style="vertical-align: top;">128bit oword, little endian<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">FLOAT32<br>
+      </td>
+      <td style="vertical-align: top;">32bit IEEE float, little endian<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">FLOAT64<br>
+      </td>
+      <td style="vertical-align: top;">64bit IEEE float, little endian<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">FLOAT128<br>
+      </td>
+      <td style="vertical-align: top;">128bit IEEE float, little endian<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+Literal Table entry 0 is NULL, and is not encoded.<br>
+All literals will be identified by their table index.<br>
+The image will be simply all entries in the literal table packed
+end-to-end.<br>
+<br>
+<br>
+struct Lump<br>
+{<br>
+UVLI type;<br>
+UVLI size;<br>
+byte data[size];<br>
+}<br>
+<br>
+struct NullLump<br>
+{<br>
+UVLI type=0;<br>
+UVLI size=0;<br>
+}<br>
+<br>
+The NullLump entry will terminate the literal table.<br>
+<br>
+struct CommentLump<br>
+{<br>
+UVLI type=0;<br>
+UVLI size;<br>
+byte data[size];<br>
+}<br>
+<br>
+All lumps with (type=0) and (size!=0) will be
+non-entries, and will not take up space in the literal table. They may
+not be referenced by other entries, nor may they constitute structural
+values (image data or metadata). Their role then will be similar to
+comments, and they may store
+ancillary data (such as about the image). They may begin with an ASCIIZ
+string, and any data
+following this string will depend on the string (and a comment lump
+starting with 0 will be padding). The default behavior will be to
+ignore them when loading the image.<br>
+<br>
+Allow for a file-magic entry:<br>
+struct FileMagicLump<br>
+{<br>
+UVLI type=0;<br>
+UVLI size=6;<br>
+byte data[size]="BS2BC1";<br>
+}<br>
+<br>
+If present, this entry will be a special case of a comment entry,
+serving mostly to identify that the file is a BS2BC image.<br>
+<br>
+<br>
+<br>
+Lump Types are UTF8 Strings, also encoded as lumps.<br>
+<br>
+For now, lump type names are required to follow the "C identifier"
+rules, in particular:<br>
+Must begin with a letter or an underscore, and may only contain
+numbers, letters, and underscores (all other characters are presently
+reserved).<br>
+<br>
+The case of the first letter will also determine its semantics, where
+an upper-case letter will indicate a "must understand" lump (failure to
+understand such a lump should result in the image being rejected). A
+lump with the first letter as lower-case or an underscore is an
+optional lump, and is to be ignored if not understood (although, if
+appropriate, a warning may be used to notify the user of this fact).<br>
+<br>
+<br>
+"UTF8": UTF8 String.<br>
+The lump for the string "UTF8" will just point at itself WRT the type.<br>
+<br>
+UTF8 Strings may optionally encode the 0 byte, which will serve as a
+string terminator.<br>
+The 0 byte will not be a valid character in strings, however a 0
+codepoint may be
+encoded by using an overlong encoding ("\xC0\x80").<br>
+Codepoints &gt;= 65536 are also not allowed, and instead these
+codepoints will be encoded as surrogate pairs.<br>
+<br>
+If a 0 byte is present, bytes may still appear after this byte and are
+required to form valid UTF8 codepoints with the final byte in the lump
+being 0. However, these extended bytes are not a part of the string's
+value. Currently, these are reserved for use as extended lump-type
+information, and are not to be used with UTF8 strings intended as
+string values.<br>
+<br>
+"NullEntry": Unused/Null Entry<br>
+A NullEnty will encode an unused literal index. Any data associated
+with a NullEntry is to be ignored and should be zeroed.<br>
+<br>
+"Blob": unstructured blob of bytes.<br>
+<br>
+lump Symbol<br>
+{<br>
+UTF8 name;<br>
+}<br>
+<br>
+Declares a symbol. A symbol is used as the name of an item. Note that
+only one symbol is allowed for any given string value, however, a
+symbol may have its name set to NULL, which indicates that the symbol
+is anonymous, and so will serve as an unnamed handle. This feature is
+intended to allow for symbol scrubbing while still allowing for the
+proper identification of the referenced entities via a symbolic handle.
+Note that symbols which reference or are referenced by external
+entities may not be scrubbed.<br>
+<br>
+Note that it is allowed for a symbol to be used as a literal value, in
+which case it may not be safe to scrub a symbol even if it is not
+related to external linkage, unless it can be determined that a given
+symbol is never used in the context of external linkage.<br>
+<br>
+<br>
+lump Keyword<br>
+{<br>
+UTF8 name;<br>
+}<br>
+<br>
+Declares a keyword. A keyword is essentially a special type of symbol.
+The difference between keywords and symbols is that they will have
+different identity despite having the same string, and that keywords
+may be used differently by a language.<br>
+<br>
+<br>
+lump String<br>
+{<br>
+UTF8 text;&nbsp;&nbsp;&nbsp; //string literal<br>
+}<br>
+<br>
+Declares a literal string value.<br>
+<br>
+lump Int32<br>
+{<br>
+SVLI value;<br>
+}<br>
+<br>
+lump Int64<br>
+{<br>
+SVLI value;<br>
+}<br>
+<br>
+lump Int128<br>
+{<br>
+SVLI value;<br>
+}<br>
+<br>
+These encode literal integer values.<br>
+<br>
+<br>
+lump Float32<br>
+{<br>
+FVLI value;<br>
+}<br>
+<br>
+lump Float64<br>
+{<br>
+FVLI value;<br>
+}<br>
+<br>
+lump Float128<br>
+{<br>
+FVLI value;<br>
+}<br>
+<br>
+These encode literal floating-point values.<br>
+<br>
+<br>
+lump CatchInfo<br>
+{<br>
+Symbol begin;&nbsp;&nbsp;&nbsp; //start of try block<br>
+Symbol end;&nbsp;&nbsp;&nbsp; &nbsp; //end of try block<br>
+Symbol target;&nbsp;&nbsp;&nbsp; &nbsp; //target of handler<br>
+ClassRef catch;&nbsp;&nbsp;&nbsp; //class of caught exception<br>
+}<br>
+<br>
+lump Label<br>
+{<br>
+Symbol name;<br>
+UVLI offs;<br>
+UTF8 lblty;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //label type string
+(usage depends on bcver field, default=NULL).<br>
+}<br>
+<br>
+lump Block<br>
+{<br>
+UTF8 blkFlags;&nbsp;&nbsp;&nbsp; //block flags<br>
+ScopeInfo scope;&nbsp;&nbsp;&nbsp; //containing scope<br>
+Blob code;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //bytecode<br>
+UTF8 rtype;&nbsp;&nbsp;&nbsp; //return type<br>
+UTF8 bcver;&nbsp;&nbsp;&nbsp; //ByteCode version-type string<br>
+List&lt;Label&gt; lbls;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp; //labels<br>
+List&lt;FieldInfo&gt; args;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+//arguments<br>
+List&lt;FieldInfo&gt; vars;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+//local variables<br>
+List&lt;CatchInfo&gt; seh;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+//exception handlers<br>
+List&lt;Lump&gt; attr;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp; //code
+block attributes<br>
+}<br>
+<br>
+Blocks represent executable bytecode.<br>
+The bcver field may allow multiple bytecode types in a single image.<br>
+Note: bcver="x86" and "x64" will mean native x86 or x86-64 machine
+code, with lblty being used primarily to indicate the relocation type
+(both labels and relocations will be stored here).<br>
+<br>
+Note that a label entry is not required if the label is not externally
+visible, and indirect access to the label is not necessary (say, in the
+case of a relative jump).<br>
+<br>
+<br>
+lump MethodInfo<br>
+{<br>
+UTF8 accFlags;<br>
+NameType name;<br>
+Block code;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //code-block<br>
+List&lt;Lump&gt; attr;<br>
+}<br>
+<br>
+lump FieldInfo<br>
+{<br>
+UTF8 accFlags;<br>
+NameType name;<br>
+Lump value;<br>
+List&lt;Lump&gt; attr;<br>
+}<br>
+<br>
+lump ClassInfo<br>
+{<br>
+UTF8 accFlags;<br>
+ScopeInfo scope;<br>
+ClassRef this_class;<br>
+ClassRef super_class;<br>
+List&lt;ClassRef&gt; ifaces;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //interfaces<br>
+List&lt;FieldInfo&gt; fields;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //fields<br>
+List&lt;MethodInfo&gt; methods;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; //methods<br>
+List&lt;Lump&gt; attr;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //attributes<br>
+}<br>
+<br>
+lump PackageInfo<br>
+{<br>
+UTF8 accFlags;<br>
+ScopeInfo scope;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //resolution
+scope<br>
+PackageRef this_pkg;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp; //current package<br>
+List&lt;ClassInfo&gt; classes;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp; //contained classes<br>
+List&lt;FieldInfo&gt; gvars;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; //global variables<br>
+List&lt;MethodInfo&gt; gfcns;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; //global
+functions<br>
+List&lt;Lump&gt; attr;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //attributes<br>
+}<br>
+<br>
+lump ScopeInfo<br>
+{<br>
+ScopeInfo chain;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //parent scope<br>
+Lump object;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; //object
+in question<br>
+List&lt;NamedRef&gt; imports;&nbsp;&nbsp;&nbsp; //visible packages<br>
+List&lt;Lump&gt; attr;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //attributes<br>
+}<br>
+<br>
+A Scope represents a set of nested lexical binding environments which
+may be searched when resolving types or bindings. This is needed since
+references may be resolved during linkage or JIT, in which case it may
+not be known in advance where something will be located. The object
+field will indicate what sort of object exists at this scoping level
+(such as a class or method) which may be in-turn searched for
+references.<br>
+<br>
+The imports field will represent any imported packages or classes.<br>
+<br>
+<br>
+lump List&lt;T&gt;<br>
+{<br>
+UVLI nIdx;<br>
+T idx[nIdx];<br>
+}<br>
+<br>
+lump NameType<br>
+{<br>
+Symbol name;<br>
+UTF8 type;<br>
+}<br>
+<br>
+lump TypeRef<br>
+{<br>
+ScopeInfo scope;&nbsp;&nbsp;&nbsp; //resolution scope<br>
+UTF8 type;&nbsp;&nbsp;&nbsp; //type signature<br>
+}<br>
+<br>
+lump ClassRef<br>
+{<br>
+ScopeInfo scope;&nbsp;&nbsp;&nbsp; //resolution scope<br>
+Symbol classname;&nbsp;&nbsp;&nbsp; //name for
+class<br>
+}<br>
+<br>
+lump PackageRef<br>
+{<br>
+ScopeInfo scope;&nbsp;&nbsp;&nbsp; //resolution scope<br>
+Symbol pkgname;&nbsp;&nbsp;&nbsp; //name for package<br>
+}<br>
+<br>
+<br>
+lump FieldRef<br>
+{<br>
+ClassRef cref;<br>
+NameType name;<br>
+}<br>
+<br>
+lump MethodRef<br>
+{<br>
+ClassRef cref;<br>
+NameType name;<br>
+}<br>
+<br>
+lump NamedRef<br>
+{<br>
+UTF8 accFlags;&nbsp;&nbsp;&nbsp; //modifiers<br>
+ScopeInfo scope;&nbsp;&nbsp;&nbsp; //resolution scope<br>
+Symbol name;&nbsp;&nbsp;&nbsp; //full qname for named entity<br>
+List&lt;Lump&gt; attr;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //attributes<br>
+}<br>
+<br>
+lump NamedAttribute<br>
+{<br>
+ScopeInfo scope;&nbsp;&nbsp;&nbsp; //resolution scope<br>
+Symbol name;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;
+//attribute name<br>
+List&lt;Lump&gt; args;&nbsp;&nbsp;&nbsp; //attribute arguments<br>
+}<br>
+<br>
+<br>
+</body>
+</html>

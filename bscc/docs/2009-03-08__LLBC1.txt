@@ -1,0 +1,42 @@
+LLBC1:
+Low Level ByteCode (1)
+
+Purpose:
+Will be a bytecode for representing control flow and value flow in terms of an abstract bytecode, but will be generally not too far removed from the processor.
+
+It should be signed such to largely abstract away architecture issues, while not providing an entirely new model.
+
+For the most part, it will be value-typed rather than opcode-typed, but the typesystem will be highly simplified.
+
+
+Registers:
+LLBC will use a virual register set, where registers will be identified by number.
+
+Registers will have finite lifetimes, and effectively be created and destroyed through register lifetime analysis (a register will die once it is no longer referenced).
+
+A register will be bound as the result of an operation.
+
+LLBC need not be in SSA form.
+
+
+Opcodes will be encoded as VLI values with 0 or more oprands.
+Oprands and immediates will be similarly be coded with VLI.
+
+
+uvli: unsigned variable-length-integer
+0-127				0xxxxxxx
+128-16383			10xxxxxx xxxxxxxx
+16384-2097151		110xxxxx xxxxxxxx xxxxxxxx
+2097152-268435455		1110xxxx xxxxxxxx xxxxxxxx xxxxxxxx
+268435456-34359738367	11110xxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
+
+2^35 - 2^42			111110xx xxxxxxxx(x5)
+2^42 - 2^49			1111110x xxxxxxxx(x6)
+2^49 - 2^56			11111110 xxxxxxxx(x7)
+2^56 - 2^63			11111111 0xxxxxxx xxxxxxxx(x7)
+2^63 - 2^70			11111111 10xxxxxx xxxxxxxx(x8)
+
+svli: signed variable length integer
+Will use the same basic encoding as uvli but will fold the sign into the LSB and offset negatives by 1.
+ 0=>0		-1=>1		 1=>2		-2=>3		2=>4	...
+

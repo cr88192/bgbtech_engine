@@ -1,0 +1,177 @@
+SMPL: Simple Modular Programming Language
+	(not to be confused with SiMPLE...).
+
+Idea:
+Variant JavaScript-family syntax;
+Static typing;
+Modular scoping;
+No OO or other facilities in the language core (these are "extensions").
+
+Core and Extensions:
+The idea will be that the "core" will be kept simple, and as such hopefully easy to implement. However, the core may be extended, and even though these extensions will be specified as such, they are not actually required to be implemented (maybe, "optional features" would be a better term?...).
+
+The goal will also include keeping the syntax as context dependent and fairly regular, as to ease the implementation of 3rd-party tools (it should be "reasonable" for a tool to unambiguously parse the syntax, even with only a partial understanding of the language).
+
+
+The syntax will also have a normalized XML-based AST, however, this will be more structural/semantic, than that of requiring a particular in-memory representation.
+
+This XML will be a subset, in that only tags (standalone and nested) and attributes will be required to be supported.
+
+
+Elements:
+
+Alpha = 'a'..'z' | 'A'..'Z'
+Num = '0'..'9'
+HexNum = Num | 'A'..'F' | 'a'..'f'
+AlphaNum = Alpha | Num
+
+HexNumber = '0x' HexNum*
+IntNumber = ('1'..'9') Num*
+RealNumber = IntNumber (('.' Num*)|(('e'|'E')['+'|'-']IntNumber))
+Integer = HexNumber | IntNumber
+Number = HexNumber | IntNumber | RealNumber
+
+Hex2=HexNum HexNum
+Hex4=Hex2 Hex2
+Hex8=Hex4 Hex4
+
+HexEscape = '\x' Hex2
+UnicodeEscape = '\u' Hex4 | '\U' Hex8
+
+CharEscape = '\r'|'\n'|'\t'| ... | HexEscape | UnicodeEscape
+
+Name = ('_'|Alpha) ('_'|AlphaNum|UnicodeEscape)*
+
+String = '"' (Character|CharEscape)* '"'
+CharString = '\'' (Character|CharEscape)* '\''
+
+These are considered informative rather than normative (for example, names may also include unicode escapes and/or a long list of unicode characters).
+
+
+Basic Expressions
+
+<Name>		<ref name="name"/>
+<Integer>		<int value="number"/>
+<RealNumber>	<real value="number"/>
+<String>		<string value="string"/>
+<CharString>	<charstring value="charstring"/>
+
+
+
+Compound Expressions
+
+<left:expr> <operator> <right:rxpr>
+	<binary op="operator">
+		<left>left...</left>
+		<right>right...</right>
+	</binary>
+
+<name> '(' <argslist> ')'
+	<funcall name="name">
+		<args>args...</args>
+	</funcall>
+
+<name> '(' <argslist> ')' <block>
+	<funblock name="name">
+		<args>args...</args>
+		<body>statement...</body>
+	</funcall>
+
+<name> '(' <argslist> ')' <expr>
+	<funexpr name="name">
+		<args>args...</args>
+		<expr>expr</expr>
+	</funcall>
+
+<expr> '(' <argslist> ')'
+	<funcall>
+		<func>expr</func>
+		<args>args...</args>
+	</funcall>
+
+
+++<expr>	<preinc> <expr/> </preinc>
+--<expr>	<predec> <expr/> </predec>
+<expr>++	<postinc> <expr/> </postinc>
+<expr>--	<postdec> <expr/> </postdec>
+
+<expr> ':' <tyexpr>
+	<cast>
+		<tyexpr/>
+		<value/>
+	</cast>
+
+
+<left:expr> '=' <right:expr>
+	<assign>
+		<left/>
+		<right/>
+	</assign>
+
+
+AssignOp = '+='|'-='|'*='|'/='|'%='|'&='|'|='|'^='|'<<='|'>>='
+-> Op = '+'|'-'|'*'|'/'|'%'|'&'|'|'|'^'|'<<'|'>>'
+
+<expr> <assignop> <expr>
+	<assign op="op">
+		<left/>
+		<right/>
+	</assign>
+
+<expr> '.' <name>
+	<objref name="slot">
+		<value/>
+	</objref>
+
+<array:expr> '[' <index:expr> ']'
+	<getindex>
+		<array/>
+		<index/>
+	</getindex>
+
+'(' <expr> (',' <expr>)* ')'
+	<begin>
+		expr...
+	</begin>
+
+
+Statement
+
+'goto' <Name>;	<goto name="name"/>
+<Name> ':' 		<label name="name"/>
+
+'return' <expr>
+	<return>
+		<value>expr</value>
+	</return>
+
+'return'
+	<return/>
+
+'continue'
+	<continue/>
+'break'
+	<break/>
+
+
+'if' '(' <cond:expr> ')' <then:expr> [ 'else' <else:expr> ]
+	<if> <cond/> <then/> <else/> </if>
+
+'for' '(' <init:expr> ';' <cond:expr> ';' <step:expr> ')' <body:block>
+	<for> <init/> <cond/> <step/> <body/> </for>
+
+'while' '(' <cond:expr> ')' <body:block>
+	<while> <cond/> <body/> </while>
+
+'do' <body:block> 'while' '(' <cond:expr> ')'
+	<dowhile> <cond/> <body/> </dowhile>
+
+
+<function name="name" type="type">
+	<args>
+		vars...
+	</args>
+	<body>
+		statements...
+	</body>
+</function>

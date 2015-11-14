@@ -1,0 +1,9 @@
+void *dycGetMethodAddr(dycClass inf, dycMethod idx);
+
+Get a function pointer which can be called directly with an object of a given class.
+
+If inf is an interface or NULL, then the returned function will attempt to call a given method with any object it is given, but may fail (via throwing an exception) if the method does not exist for a given object.
+
+void *dycGetMethodAddrSig(dycClass inf, char *name, char *sig);
+
+void *dycGetIfaceVTable(dycClass inf);

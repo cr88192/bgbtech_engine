@@ -1,0 +1,177 @@
+BGBScript2 idea revival:
+
+nameinitialchar = '$' | '_' | 'A'..'Z' | 'a'..'z'
+namechar = nameinitialchar | '0'..'9'
+name = nameinitialchar namechar*
+qname = name ['.' name]*
+
+...
+
+
+package <qname>
+{
+	...
+}
+
+import <qname>;
+
+<modifier*> class <name> [extends <qname>] [implements <typelist>]
+{
+	...
+}
+
+<modifier*> <typename> <name>;	//var declaration
+
+<modifier*> <typename> <name>(<argslist>)
+{
+	...
+}
+
+<modifier*> struct <name>
+{
+	...
+}
+
+Struct will be a value type, and so values of type struct will be copied on assignment.
+
+<modifier*> <typename> <name>
+{
+	get { ... }
+	set { ... }
+}
+
+...
+
+#<name>		//symbol
+obj.name	//direct field
+obj[#name]	//indirect field
+
+
+Base Types
+
+void		//no type
+char		//char16
+string		//string type
+var		//dynamic type (any type)
+
+sbyte		//signed byte
+byte		//unsigned byte
+short		//signed 16bit
+ushort		//unsigned 16bit
+int		//signed 32bit
+uint		//unsigned 32bit
+long		//signed 64bit
+ulong		//unsigned 64bit
+
+int128		//signed 128bit
+uint128		//unsigned 128bit
+
+
+float		//float 32bit
+double		//float 64bit
+decimal		//float 128bit
+
+
+Modifiers
+
+public
+private
+protected
+
+static
+native
+
+
+ByteCode
+
+stack machine;
+typeless opcodes;
+...
+
+bytecode images use a large literal table;
+blocks are part of the literal table, as are class definitions.
+
+Literal Table entry 0 is NULL.
+All literals will be identified by their table index.
+The image will be simply all entries in the literal table packed end-to-end.
+
+Lump
+{
+uvli type;
+uvli size;
+byte data[size];
+}
+
+NullLump
+{
+uvli type=0;
+uvli size=0;
+}
+
+Lump Types are UTF8 strings, also encoded as lumps.
+Strings will not encode the 0 byte.
+
+"UTF8": UTF8 string.
+The lump for the string "UTF8" will just point at itself WRT the type.
+
+"Blob": unstructured blob of bytes.
+
+Block
+{
+Blob code;
+UTF8 sig;	//signature
+UTF8 locals;	//local variables
+}
+
+MethodInfo
+{
+uvli flags;
+NameType name;
+Block code;
+List attr;
+}
+
+FieldInfo
+{
+uvli flags;
+NameType name;
+Index value;
+List attr;
+}
+
+ClassInfo
+{
+uvli flags;
+ClassRef this_class;
+ClassRef super_class;
+List contents;	//fields, methods, interfaces, ...
+}
+
+List
+{
+int nIdx;
+Index idx[nIdx];
+}
+
+NameType
+{
+UTF8 name;
+UTF8 type;
+}
+
+ClassRef
+{
+UFT8 classname;		//full qname for class
+}
+
+FieldRef
+{
+ClassRef cref;
+NameType name;
+}
+
+MethodRef
+{
+ClassRef cref;
+NameType name;
+}

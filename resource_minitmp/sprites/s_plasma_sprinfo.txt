@@ -1,0 +1,6 @@
+$sprite 4
+$spr_frame 0  12 12  24 24  sprites/plasma/s_plasma_0.png
+$spr_frame 1  12 12  24 24  sprites/plasma/s_plasxp_1.png
+$spr_frame 2  12 12  24 24  sprites/plasma/s_plasxp_2.png
+$spr_frame 3  12 12  24 24  sprites/plasma/s_plasxp_3.png
+$spr_frame 4  12 12  24 24  sprites/plasma/s_plasxp_4.png

@@ -1,0 +1,19 @@
+WALPNG_SRCS = \
+	inflate.c \
+	deflate.c \
+	png.c \
+	pcx.c \
+	tga.c \
+	wal.c \
+	jpg1.c
+
+all: wallpng walcsc genpng
+
+wallpng: $(WALPNG_SRCS) walpng.c
+	gcc -o wallpng -I. $(WALPNG_SRCS) walpng.c
+	
+walcsc: $(WALPNG_SRCS)
+	gcc -o walcsc -I. $(WALPNG_SRCS) walcsc.c
+
+genpng: $(WALPNG_SRCS) genpng.c
+	gcc -o genpng -I. $(WALPNG_SRCS) genpng.c

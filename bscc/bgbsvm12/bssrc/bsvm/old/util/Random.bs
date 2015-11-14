@@ -1,0 +1,35 @@
+package bsvm.util
+{
+	public class Random extends Object
+	{
+	private static final long multiplier = 4294967291L;
+	private long seed;
+
+	public Random()
+		{ this(bgbrng_genvalue()); }
+	public Random(long seed)
+		{ setSeed(seed); }
+
+	protected int next(int bits)
+	{
+		seed=seed*multiplier+1;
+		return ((seed>>>(64-bits))&((1L<<bits)-1) as int);
+	}
+
+	public double nextDouble()
+		{ return((next(24) as double)/16777216.0); }
+	public float nextFloat()
+		{ return((next(24) as float)/16777216.0); }
+
+	public double nextGaussian()
+		{ return(nextDouble()*nextDouble()); }
+
+	public int nextInt()
+		{ return(next(32)); }
+	public long nextLong()
+		{ return(((next(32) as long)<<32)+next(32)); }
+
+	public void setSeed(long seed2)
+		{ seed=seed2*multiplier+1; }
+	}
+}

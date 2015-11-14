@@ -1,0 +1,587 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 11.45      0.32     0.32 12582924     0.00     0.00  dylonglongp
+  4.36      0.43     0.12 12582922     0.00     0.00  dytruep
+  4.00      0.55     0.11                             dygep
+  3.27      0.64     0.09 12582924     0.00     0.00  dylep
+  3.27      0.72     0.09                             dyfloatp
+  2.00      0.78     0.06                             BGBGC_LookupLObjS
+  1.82      0.83     0.05                             gcsetfinal
+  1.82      0.88     0.05                             main
+  1.45      0.92     0.04 16777236     0.00     0.00  dyPrintBuf
+  1.45      0.96     0.04                             BGBGC_SpaceAllocSafeP
+  1.09      0.99     0.03  8388614     0.00     0.00  dydoublep
+  1.09      1.02     0.03                             dyFreeList
+  0.73      1.04     0.02                             dylongp
+  0.73      1.06     0.02                             gcatomic
+  0.36      1.07     0.01 12582922     0.00     0.00  gcsetmark
+  0.36      1.08     0.01  4194309     0.00     0.00  dylist8s
+  0.36      1.09     0.01        5     2.00     2.00  dyrealp
+  0.36      1.10     0.01                             BGBGC_SpaceAlloc
+  0.36      1.11     0.01                             dylist2
+  0.36      1.12     0.01                             gcalloc
+  0.36      1.13     0.01                             gcsetpreserve
+  0.36      1.14     0.01                             tst_mutex
+  0.18      1.15     0.01  4194306     0.00     0.00  BGBGC_ShiftLObj
+  0.18      1.15     0.01                             dyflonump
+  0.00      1.15     0.00  4194306     0.00     0.00  dyFreeCons
+  0.00      1.15     0.00  4194305     0.00     0.00  heapstress
+  0.00      1.15     0.00      272     0.00     0.00  dyvec2fv
+  0.00      1.15     0.00       79     0.00     0.00  BGBDY_TrySetSlot
+  0.00      1.15     0.00       78     0.00     0.00  BGBGC_Alloc
+  0.00      1.15     0.00       44     0.00     0.00  BGBDY_UnwrapBool
+  0.00      1.15     0.00       37     0.00     0.00  BGBDY_UnwrapFloat
+  0.00      1.15     0.00       35     0.00     0.00  dyvec3
+  0.00      1.15     0.00       35     0.00     0.00  dyvec4
+  0.00      1.15     0.00       35     0.00     0.00  iv128_mulw
+  0.00      1.15     0.00       32     0.00     0.00  BGBDY_TypeP
+  0.00      1.15     0.00       27     0.00     0.00  bgdy_weak_mark
+  0.00      1.15     0.00       16     0.00     0.00  BGBDY_Apply
+  0.00      1.15     0.00       12     0.00     0.00  BGBGC_SetLockObj
+  0.00      1.15     0.00        9     0.00     0.00  dyvecv3fv
+  0.00      1.15     0.00        7     0.00     0.00  BGBDY_UnwrapInt64
+  0.00      1.15     0.00        7     0.00     0.00  BGBGC_EmitChar
+  0.00      1.15     0.00        7     0.00     0.00  BGBGC_MarkObj
+  0.00      1.15     0.00        5     0.00     0.00  BGBGC_Mark
+  0.00      1.15     0.00        4     0.00     0.00  BGBGC_AllocExec
+  0.00      1.15     0.00        4     0.00     0.00  dyvecv4dv
+  0.00      1.15     0.00        3     0.00     0.00  dycons7
+  0.00      1.15     0.00        3     0.00     0.00  dyfcomplexp
+  0.00      1.15     0.00        3     0.00     0.00  gctallocu
+  0.00      1.15     0.00        3     0.00     0.00  log2up
+  0.00      1.15     0.00        2     0.00     0.00  BGBDY_GetSize
+  0.00      1.15     0.00        2     0.00     0.00  BGBDY_GetVType
+  0.00      1.15     0.00        2     0.00     0.00  BGBGC_AllocCBlk
+  0.00      1.15     0.00        2     0.00     0.00  BGBGC_FreeChk
+  0.00      1.15     0.00        2     0.00     0.00  __cpu_features_init
+  0.00      1.15     0.00        2     0.00     0.00  dyfloatv
+  0.00      1.15     0.00        2     0.00     0.00  dylist1s
+  0.00      1.15     0.00        2     0.00     0.00  dywstringv
+  0.00      1.15     0.00        2     0.00     0.00  iv256_shl
+  0.00      1.15     0.00        2     0.00     0.00  iv256_zero
+  0.00      1.15     0.00        1     0.00     0.00  BGBDY_InitTypes
+  0.00      1.15     0.00        1     0.00     0.00  BGBDY_NewType
+  0.00      1.15     0.00        1     0.00     0.00  BGBGC_MarkAtomic
+  0.00      1.15     0.00        1     0.00     0.00  dycadddr
+  0.00      1.15     0.00        1     0.00     0.00  dycddddddddr
+  0.00      1.15     0.00        1     0.00     0.00  dycddddr
+  0.00      1.15     0.00        1     0.00     0.00  dysetcar
+  0.00      1.15     0.00        1     0.00     0.00  dyvec2
+  0.00      1.15     0.00        1     0.00     0.00  garble
+  0.00      1.15     0.00        1     0.00     0.00  gcgetsize
+  0.00      1.15     0.00        1     0.00     0.00  gcgettype
+  0.00      1.15     0.00        1     0.00     0.00  gctatomic
+  0.00      1.15     0.00        1     0.00     0.00  gctexec
+  0.00      1.15     0.00        1     0.00     0.00  iv256_cmp_l
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+ 
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this 
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 4 byte(s) for 0.87% of 1.15 seconds
+
+index % time    self  children    called     name
+                                   2             dyPrintBuf [1]
+                0.00    0.00       1/16777236     entropytst [35]
+                0.00    0.00       1/16777236     dycddddr [33]
+                0.00    0.00       1/16777236     dysetcar [34]
+                0.00    0.00       2/16777236     dylist2s [28]
+                0.00    0.00       2/16777236     dylist3s [29]
+                0.00    0.00       2/16777236     iv128_neg [30]
+                0.00    0.00       3/16777236     heapstress [27]
+                0.00    0.00       4/16777236     tst_dy0 [25]
+                0.01    0.13 4194304/16777236     main [6]
+                0.01    0.13 4194304/16777236     gcatomic [7]
+                0.02    0.27 8388612/16777236     dyFreeList [4]
+[1]     50.0    0.04    0.53 16777236+2       dyPrintBuf [1]
+                0.12    0.41 12582922/12582922     dytruep [2]
+                0.00    0.00       2/2           BGBGC_AllocCBlk [67]
+                                   2             dyPrintBuf [1]
+-----------------------------------------------
+                0.12    0.41 12582922/12582922     dyPrintBuf [1]
+[2]     46.5    0.12    0.41 12582922         dytruep [2]
+                0.09    0.31 12582922/12582924     dylep [3]
+                0.01    0.00 12582922/12582922     gcsetmark [17]
+-----------------------------------------------
+                0.00    0.00       2/12582924     dygep [8]
+                0.09    0.31 12582922/12582924     dytruep [2]
+[3]     35.2    0.09    0.32 12582924         dylep [3]
+                0.32    0.00 12582924/12582924     dylonglongp [5]
+-----------------------------------------------
+                                                 <spontaneous>
+[4]     27.6    0.03    0.29                 dyFreeList [4]
+                0.02    0.27 8388612/16777236     dyPrintBuf [1]
+-----------------------------------------------
+                0.32    0.00 12582924/12582924     dylep [3]
+[5]     27.4    0.32    0.00 12582924         dylonglongp [5]
+-----------------------------------------------
+                                                 <spontaneous>
+[6]     16.8    0.05    0.14                 main [6]
+                0.01    0.13 4194304/16777236     dyPrintBuf [1]
+-----------------------------------------------
+                                                 <spontaneous>
+[7]     14.2    0.02    0.14                 gcatomic [7]
+                0.01    0.13 4194304/16777236     dyPrintBuf [1]
+-----------------------------------------------
+                                                 <spontaneous>
+[8]     10.4    0.11    0.01                 dygep [8]
+                0.01    0.00       5/5           dyrealp [19]
+                0.00    0.00       2/12582924     dylep [3]
+-----------------------------------------------
+                                                 <spontaneous>
+[9]     10.4    0.09    0.03                 dyfloatp [9]
+                0.03    0.00 8388614/8388614     dydoublep [13]
+-----------------------------------------------
+                                                 <spontaneous>
+[10]     4.8    0.06    0.00                 BGBGC_LookupLObjS [10]
+-----------------------------------------------
+                                                 <spontaneous>
+[11]     4.3    0.05    0.00                 gcsetfinal [11]
+-----------------------------------------------
+                                                 <spontaneous>
+[12]     3.5    0.04    0.00                 BGBGC_SpaceAllocSafeP [12]
+-----------------------------------------------
+                0.03    0.00 8388614/8388614     dyfloatp [9]
+[13]     2.6    0.03    0.00 8388614         dydoublep [13]
+-----------------------------------------------
+                                                 <spontaneous>
+[14]     1.7    0.02    0.00                 dylongp [14]
+-----------------------------------------------
+                                                 <spontaneous>
+[15]     1.7    0.01    0.01                 tst_mutex [15]
+                0.01    0.00 4194304/4194309     dylist8s [18]
+                0.00    0.00 4194304/4194306     dyFreeCons [41]
+-----------------------------------------------
+                                                 <spontaneous>
+[16]     1.3    0.01    0.01                 dylist2 [16]
+                0.01    0.00 4194306/4194306     BGBGC_ShiftLObj [23]
+-----------------------------------------------
+                0.01    0.00 12582922/12582922     dytruep [2]
+[17]     0.9    0.01    0.00 12582922         gcsetmark [17]
+-----------------------------------------------
+                0.00    0.00       2/4194309     tst_largeint [36]
+                0.00    0.00       3/4194309     tst_dy1 [26]
+                0.01    0.00 4194304/4194309     tst_mutex [15]
+[18]     0.9    0.01    0.00 4194309         dylist8s [18]
+-----------------------------------------------
+                0.01    0.00       5/5           dygep [8]
+[19]     0.9    0.01    0.00       5         dyrealp [19]
+-----------------------------------------------
+                                                 <spontaneous>
+[20]     0.9    0.01    0.00                 BGBGC_SpaceAlloc [20]
+-----------------------------------------------
+                                                 <spontaneous>
+[21]     0.9    0.01    0.00                 gcalloc [21]
+-----------------------------------------------
+                                                 <spontaneous>
+[22]     0.9    0.01    0.00                 gcsetpreserve [22]
+-----------------------------------------------
+                0.01    0.00 4194306/4194306     dylist2 [16]
+[23]     0.4    0.01    0.00 4194306         BGBGC_ShiftLObj [23]
+-----------------------------------------------
+                                                 <spontaneous>
+[24]     0.4    0.01    0.00                 dyflonump [24]
+-----------------------------------------------
+                                                 <spontaneous>
+[25]     0.0    0.00    0.00                 tst_dy0 [25]
+                0.00    0.00       4/16777236     dyPrintBuf [1]
+                0.00    0.00       1/1           dycddddddddr [32]
+                0.00    0.00       2/3           dycons7 [61]
+-----------------------------------------------
+                                                 <spontaneous>
+[26]     0.0    0.00    0.00                 tst_dy1 [26]
+                0.00    0.00 4194304/4194305     heapstress [27]
+                0.00    0.00       3/4194309     dylist8s [18]
+                0.00    0.00       1/3           dycons7 [61]
+-----------------------------------------------
+                0.00    0.00       1/4194305     gcrealloc [37]
+                0.00    0.00 4194304/4194305     tst_dy1 [26]
+[27]     0.0    0.00    0.00 4194305         heapstress [27]
+                0.00    0.00       3/16777236     dyPrintBuf [1]
+                0.00    0.00       1/1           dycadddr [31]
+                0.00    0.00       2/2           dylist1s [71]
+                0.00    0.00       2/4194306     dyFreeCons [41]
+-----------------------------------------------
+                                                 <spontaneous>
+[28]     0.0    0.00    0.00                 dylist2s [28]
+                0.00    0.00       2/16777236     dyPrintBuf [1]
+-----------------------------------------------
+                                                 <spontaneous>
+[29]     0.0    0.00    0.00                 dylist3s [29]
+                0.00    0.00       2/16777236     dyPrintBuf [1]
+-----------------------------------------------
+                                                 <spontaneous>
+[30]     0.0    0.00    0.00                 iv128_neg [30]
+                0.00    0.00       2/16777236     dyPrintBuf [1]
+-----------------------------------------------
+                0.00    0.00       1/1           heapstress [27]
+[31]     0.0    0.00    0.00       1         dycadddr [31]
+                0.00    0.00       1/1           dycddddr [33]
+-----------------------------------------------
+                0.00    0.00       1/1           tst_dy0 [25]
+[32]     0.0    0.00    0.00       1         dycddddddddr [32]
+                0.00    0.00       1/1           dysetcar [34]
+-----------------------------------------------
+                0.00    0.00       1/1           dycadddr [31]
+[33]     0.0    0.00    0.00       1         dycddddr [33]
+                0.00    0.00       1/16777236     dyPrintBuf [1]
+-----------------------------------------------
+                0.00    0.00       1/1           dycddddddddr [32]
+[34]     0.0    0.00    0.00       1         dysetcar [34]
+                0.00    0.00       1/16777236     dyPrintBuf [1]
+-----------------------------------------------
+                                                 <spontaneous>
+[35]     0.0    0.00    0.00                 entropytst [35]
+                0.00    0.00       1/16777236     dyPrintBuf [1]
+-----------------------------------------------
+                                                 <spontaneous>
+[36]     0.0    0.00    0.00                 tst_largeint [36]
+                0.00    0.00       2/4194309     dylist8s [18]
+-----------------------------------------------
+                                                 <spontaneous>
+[37]     0.0    0.00    0.00                 gcrealloc [37]
+                0.00    0.00       1/4194305     heapstress [27]
+                0.00    0.00       1/9           dyvecv3fv [54]
+                0.00    0.00       1/272         dyvec2fv [42]
+                0.00    0.00       1/1           garble [79]
+                0.00    0.00       1/1           gcgettype [81]
+                0.00    0.00       1/1           gctatomic [82]
+                0.00    0.00       1/1           gcgetsize [80]
+                0.00    0.00       1/1           gctexec [83]
+-----------------------------------------------
+[38]     0.0    0.00    0.00       3+5       <cycle 1 as a whole> [38]
+                0.00    0.00       4             BGBGC_AllocExec <cycle 1> [59]
+                0.00    0.00       2             dywstringv <cycle 1> [72]
+-----------------------------------------------
+                0.00    0.00       2/4194306     heapstress [27]
+                0.00    0.00 4194304/4194306     tst_mutex [15]
+[41]     0.0    0.00    0.00 4194306         dyFreeCons [41]
+-----------------------------------------------
+                0.00    0.00       1/272         gcrealloc [37]
+                0.00    0.00     271/272         BGBGC_AllocExec <cycle 1> [59]
+[42]     0.0    0.00    0.00     272         dyvec2fv [42]
+-----------------------------------------------
+                0.00    0.00      35/79          BGBDY_UnwrapFloat [46]
+                0.00    0.00      44/79          BGBDY_UnwrapBool [45]
+[43]     0.0    0.00    0.00      79         BGBDY_TrySetSlot [43]
+-----------------------------------------------
+                0.00    0.00       1/78          iv128_udiv [486]
+                0.00    0.00      77/78          iv128_mulw [49]
+[44]     0.0    0.00    0.00      78         BGBGC_Alloc [44]
+-----------------------------------------------
+                0.00    0.00       7/44          BGBDY_UnwrapInt64 [55]
+                0.00    0.00      37/44          BGBDY_UnwrapFloat [46]
+[45]     0.0    0.00    0.00      44         BGBDY_UnwrapBool [45]
+                0.00    0.00      44/79          BGBDY_TrySetSlot [43]
+-----------------------------------------------
+                                  35             BGBDY_UnwrapFloat [46]
+                0.00    0.00       2/37          BGBDY_NewType [76]
+                0.00    0.00       7/37          dyvecv4fv [441]
+                0.00    0.00       7/37          BGBGC_MarkObj [57]
+                0.00    0.00      21/37          dyvecv3fv [54]
+[46]     0.0    0.00    0.00      37+35      BGBDY_UnwrapFloat [46]
+                0.00    0.00      37/44          BGBDY_UnwrapBool [45]
+                0.00    0.00      35/79          BGBDY_TrySetSlot [43]
+                0.00    0.00      35/35          iv128_mulw [49]
+                0.00    0.00       7/7           BGBDY_UnwrapInt64 [55]
+                                  35             BGBDY_UnwrapFloat [46]
+-----------------------------------------------
+                0.00    0.00      35/35          iv128_mulw [49]
+[47]     0.0    0.00    0.00      35         dyvec3 [47]
+-----------------------------------------------
+                0.00    0.00       1/35          iv128_udiv [486]
+                0.00    0.00      34/35          iv128_mulw [49]
+[48]     0.0    0.00    0.00      35         dyvec4 [48]
+-----------------------------------------------
+                0.00    0.00      35/35          BGBDY_UnwrapFloat [46]
+[49]     0.0    0.00    0.00      35         iv128_mulw [49]
+                0.00    0.00      77/78          BGBGC_Alloc [44]
+                0.00    0.00      35/35          dyvec3 [47]
+                0.00    0.00      34/35          dyvec4 [48]
+                0.00    0.00      27/27          bgdy_weak_mark [51]
+-----------------------------------------------
+                0.00    0.00      32/32          BGBDY_GetSize [65]
+[50]     0.0    0.00    0.00      32         BGBDY_TypeP [50]
+-----------------------------------------------
+                0.00    0.00      27/27          iv128_mulw [49]
+[51]     0.0    0.00    0.00      27         bgdy_weak_mark [51]
+-----------------------------------------------
+                                  16             BGBDY_Apply [52]
+                0.00    0.00      16/16          BGBGC_Free [170]
+[52]     0.0    0.00    0.00      16+16      BGBDY_Apply [52]
+                                  16             BGBDY_Apply [52]
+-----------------------------------------------
+                0.00    0.00       5/12          dyhashget [376]
+                0.00    0.00       7/12          dyhashp [377]
+[53]     0.0    0.00    0.00      12         BGBGC_SetLockObj [53]
+                0.00    0.00       7/7           BGBGC_MarkObj [57]
+                0.00    0.00       5/5           BGBGC_Mark [58]
+-----------------------------------------------
+                0.00    0.00       1/9           gcrealloc [37]
+                0.00    0.00       1/9           gcatomicp [456]
+                0.00    0.00       1/9           BGBGC_Mark [58]
+                0.00    0.00       1/9           BGBGC_MarkObj [57]
+                0.00    0.00       5/9           gctypep [467]
+[54]     0.0    0.00    0.00       9         dyvecv3fv [54]
+                0.00    0.00      21/37          BGBDY_UnwrapFloat [46]
+                0.00    0.00       1/2           BGBGC_FreeChk [68]
+                0.00    0.00       1/1           iv256_cmp_l [84]
+                0.00    0.00       1/2           BGBDY_GetVType [66]
+                0.00    0.00       1/1           BGBGC_MarkAtomic [77]
+-----------------------------------------------
+                0.00    0.00       7/7           BGBDY_UnwrapFloat [46]
+[55]     0.0    0.00    0.00       7         BGBDY_UnwrapInt64 [55]
+                0.00    0.00       7/44          BGBDY_UnwrapBool [45]
+-----------------------------------------------
+                0.00    0.00       7/7           garble [79]
+[56]     0.0    0.00    0.00       7         BGBGC_EmitChar [56]
+-----------------------------------------------
+                0.00    0.00       7/7           BGBGC_SetLockObj [53]
+[57]     0.0    0.00    0.00       7         BGBGC_MarkObj [57]
+                0.00    0.00       7/37          BGBDY_UnwrapFloat [46]
+                0.00    0.00       1/9           dyvecv3fv [54]
+                0.00    0.00       1/4           dyvecv4dv [60]
+-----------------------------------------------
+                0.00    0.00       5/5           BGBGC_SetLockObj [53]
+[58]     0.0    0.00    0.00       5         BGBGC_Mark [58]
+                0.00    0.00       1/9           dyvecv3fv [54]
+                0.00    0.00       1/4           dyvecv4dv [60]
+-----------------------------------------------
+                                   1             dywstringv <cycle 1> [72]
+                0.00    0.00       1/3           BGBGC_Free [170]
+                0.00    0.00       2/3           dyintv [381]
+[59]     0.0    0.00    0.00       4         BGBGC_AllocExec <cycle 1> [59]
+                0.00    0.00     271/272         dyvec2fv [42]
+                                   2             dyfloatv <cycle 1> [70]
+-----------------------------------------------
+                0.00    0.00       1/4           BGBGC_Mark [58]
+                0.00    0.00       1/4           BGBGC_MarkObj [57]
+                0.00    0.00       2/4           dyvec2v [429]
+[60]     0.0    0.00    0.00       4         dyvecv4dv [60]
+                0.00    0.00       2/2           iv256_shl [73]
+-----------------------------------------------
+                0.00    0.00       1/3           tst_dy1 [26]
+                0.00    0.00       2/3           tst_dy0 [25]
+[61]     0.0    0.00    0.00       3         dycons7 [61]
+-----------------------------------------------
+                0.00    0.00       3/3           BGBGC_AllocCBlk [67]
+[62]     0.0    0.00    0.00       3         dyfcomplexp [62]
+-----------------------------------------------
+                0.00    0.00       3/3           BGBGC_AllocCBlk [67]
+[63]     0.0    0.00    0.00       3         gctallocu [63]
+-----------------------------------------------
+                0.00    0.00       3/3           BGBGC_AllocCBlk [67]
+[64]     0.0    0.00    0.00       3         log2up [64]
+-----------------------------------------------
+                0.00    0.00       2/2           iv256_shl [73]
+[65]     0.0    0.00    0.00       2         BGBDY_GetSize [65]
+                0.00    0.00      32/32          BGBDY_TypeP [50]
+-----------------------------------------------
+                0.00    0.00       1/2           dyvecv3fv [54]
+                0.00    0.00       1/2           BGBDY_CallMethod [86]
+[66]     0.0    0.00    0.00       2         BGBDY_GetVType [66]
+-----------------------------------------------
+                0.00    0.00       2/2           dyPrintBuf [1]
+[67]     0.0    0.00    0.00       2         BGBGC_AllocCBlk [67]
+                0.00    0.00       3/3           gctallocu [63]
+                0.00    0.00       3/3           dyfcomplexp [62]
+                0.00    0.00       3/3           log2up [64]
+-----------------------------------------------
+                0.00    0.00       1/2           dyvecv3fv [54]
+                0.00    0.00       1/2           BGBDY_CallMethod [86]
+[68]     0.0    0.00    0.00       2         BGBGC_FreeChk [68]
+-----------------------------------------------
+                0.00    0.00       2/2           dylist4s [388]
+[69]     0.0    0.00    0.00       2         __cpu_features_init [69]
+-----------------------------------------------
+                                   2             BGBGC_AllocExec <cycle 1> [59]
+[70]     0.0    0.00    0.00       2         dyfloatv <cycle 1> [70]
+                                   2             dywstringv <cycle 1> [72]
+-----------------------------------------------
+                0.00    0.00       2/2           heapstress [27]
+[71]     0.0    0.00    0.00       2         dylist1s [71]
+-----------------------------------------------
+                                   2             dyfloatv <cycle 1> [70]
+[72]     0.0    0.00    0.00       2         dywstringv <cycle 1> [72]
+                                   1             BGBGC_AllocExec <cycle 1> [59]
+-----------------------------------------------
+                0.00    0.00       2/2           dyvecv4dv [60]
+[73]     0.0    0.00    0.00       2         iv256_shl [73]
+                0.00    0.00       2/2           BGBDY_GetSize [65]
+-----------------------------------------------
+                0.00    0.00       1/2           dycdddddr [337]
+                0.00    0.00       1/2           dysetcdr [414]
+[74]     0.0    0.00    0.00       2         iv256_zero [74]
+-----------------------------------------------
+                0.00    0.00       1/1           BGBDY_CallMethod [86]
+[75]     0.0    0.00    0.00       1         BGBDY_InitTypes [75]
+-----------------------------------------------
+                0.00    0.00       1/1           BGBDY_CallMethod [86]
+[76]     0.0    0.00    0.00       1         BGBDY_NewType [76]
+                0.00    0.00       2/37          BGBDY_UnwrapFloat [46]
+-----------------------------------------------
+                0.00    0.00       1/1           dyvecv3fv [54]
+[77]     0.0    0.00    0.00       1         BGBGC_MarkAtomic [77]
+-----------------------------------------------
+                0.00    0.00       1/1           BGBGC_Free [170]
+[78]     0.0    0.00    0.00       1         dyvec2 [78]
+-----------------------------------------------
+                0.00    0.00       1/1           gcrealloc [37]
+[79]     0.0    0.00    0.00       1         garble [79]
+                0.00    0.00       7/7           BGBGC_EmitChar [56]
+-----------------------------------------------
+                0.00    0.00       1/1           gcrealloc [37]
+[80]     0.0    0.00    0.00       1         gcgetsize [80]
+-----------------------------------------------
+                0.00    0.00       1/1           gcrealloc [37]
+[81]     0.0    0.00    0.00       1         gcgettype [81]
+-----------------------------------------------
+                0.00    0.00       1/1           gcrealloc [37]
+[82]     0.0    0.00    0.00       1         gctatomic [82]
+-----------------------------------------------
+                0.00    0.00       1/1           gcrealloc [37]
+[83]     0.0    0.00    0.00       1         gctexec [83]
+-----------------------------------------------
+                0.00    0.00       1/1           dyvecv3fv [54]
+[84]     0.0    0.00    0.00       1         iv256_cmp_l [84]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+
+Index by function name
+
+  [52] BGBDY_Apply            [41] dyFreeCons             [48] dyvec4
+  [65] BGBDY_GetSize           [4] dyFreeList             [54] dyvecv3fv
+  [66] BGBDY_GetVType          [1] dyPrintBuf             [60] dyvecv4dv
+  [75] BGBDY_InitTypes        [31] dycadddr               [72] dywstringv
+  [76] BGBDY_NewType          [32] dycddddddddr           [79] garble
+  [43] BGBDY_TrySetSlot       [33] dycddddr               [21] gcalloc
+  [50] BGBDY_TypeP            [61] dycons7                 [7] gcatomic
+  [45] BGBDY_UnwrapBool       [13] dydoublep              [80] gcgetsize
+  [46] BGBDY_UnwrapFloat      [62] dyfcomplexp            [81] gcgettype
+  [55] BGBDY_UnwrapInt64       [9] dyfloatp               [11] gcsetfinal
+  [44] BGBGC_Alloc            [70] dyfloatv               [17] gcsetmark
+  [67] BGBGC_AllocCBlk        [24] dyflonump              [22] gcsetpreserve
+  [59] BGBGC_AllocExec         [8] dygep                  [63] gctallocu
+  [56] BGBGC_EmitChar          [3] dylep                  [82] gctatomic
+  [68] BGBGC_FreeChk          [71] dylist1s               [83] gctexec
+  [10] BGBGC_LookupLObjS      [16] dylist2                [27] heapstress
+  [58] BGBGC_Mark             [18] dylist8s               [49] iv128_mulw
+  [77] BGBGC_MarkAtomic        [5] dylonglongp            [84] iv256_cmp_l
+  [57] BGBGC_MarkObj          [14] dylongp                [73] iv256_shl
+  [53] BGBGC_SetLockObj       [19] dyrealp                [74] iv256_zero
+  [23] BGBGC_ShiftLObj        [34] dysetcar               [64] log2up (mm_cons.c)
+  [20] BGBGC_SpaceAlloc        [2] dytruep                 [6] main
+  [12] BGBGC_SpaceAllocSafeP  [78] dyvec2                 [15] tst_mutex
+  [69] __cpu_features_init    [42] dyvec2fv               [38] <cycle 1>
+  [51] bgdy_weak_mark (objtype.c) [47] dyvec3

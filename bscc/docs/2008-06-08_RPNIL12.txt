@@ -1,0 +1,519 @@
+RPN-Based Intermediate Language
+
+Goals:
+an RPN based language existing for the purpose of developing the VM.
+
+The goal of the language will be to compile to assembler and make use of the C calling convention. This will not be a language intended for users to use directly, rather more likely as the output of a compiler frontend.
+
+This language may include multiple stacks, some of which may or may not exist at runtime.
+
+Some of these stacks may or may not be interlaced, and so, code is to properly maintain a correct LIFO ordering (as if they were a single stack). It is not alowed to assume such decoupling (for example, by using an operation presumably targeted for a different stack).
+
+An example of this is ints and floats, where at any given time, a value may be stored on the cpu stack, on a specialized stack (for example, the x87 fpu stack), in a reg (for example, a GPR or SSE reg), ...
+
+Conversion operators will be required in some cases. In many cases, the lang will implicitly convert between types.
+
+
+Oragnization
+
+This language, rather than consisting of a single instruction stream, will be organized into a sequence of blocks. Each block will correspond to a function, method, or anything else needing a block.
+
+A block will define any args or locals, and will then contain a sequence of instructions.
+
+The file will be parsed as a linear token stream. In this language, each token will be regarded as a sequence of non-whitespace characters, and seperated by whitespace. Quoted strings, however, will be treated as a single token, and comments will be simply ignored.
+
+Comments will follow the C conventions:
+// ... <newline>
+/* stuff... */
+
+
+Args and Variables
+
+Each arg or var will be given as a single token, with a suffix giving the type ('name:type'). In the case where there is no name, the symbol '_' will be reserved as a place holder (eg, '_:Pi').
+
+For local variables, a '~' suffix on a name will indicate that it is static. For example, 'init~:i' would indicate that 'init' is a static int.
+
+Qualifiers:
+	P*, pointer to type
+	R*, reference to type
+	C*, complex type (f,d,e,g,k)
+	G*, imaginary type (f,d,e,g,k)
+	U*, extended type qualifier
+
+	X*, compound type (struct or union), followed by '<name>;'.
+	T*, will specify a tagged type.
+	W*, Wide pointer type
+	L*, class reference, followed by '<name>;'.
+
+	A*, B*, used for basic extension types
+
+Basic Types:
+	a, signed char
+	b, bool
+	c, char
+	d, double
+	e, long double
+	f, float
+	g, 128-bit float
+	h, unsigned char/byte
+	i, int
+	j, unsigned int
+	k, hfloat (16-bit float)
+	l, long
+	m, unsigned long
+	n, 128-bit int
+	o, unsigned 128-bit int
+	p, (reserved)
+	q, (reserved)
+	r, variant (dynamicly typed reference)
+	s, short
+	t, unsigned short
+	u, custom type
+	v, void
+	w, wchar/short
+	x, long long
+	y, unsigned long long
+	z, ... (varargs, ...)
+
+Prototype Form:
+	'(' <type*> ')' <type> [';']
+
+Prototype Form encodes function prototypes in an inline form.
+The final ';' will be optionally present and used to resolve ambiguities (array of functions vs function returning array).
+
+Example: P(ii)d	//double(*)(int,int)
+
+If the type is followed by a number (vars only), it indicates that this is an array, with a comma allowing multidimensional arrays.
+
+Example:
+bar:PXfoo;4,4
+struct foo *bar[4][4];
+
+Extended Types:
+	m64,	64-bit raw SSE vector
+	m128, 128-bit raw SSE vector
+	quat, quaternion
+	hquat, hyperbolic quaternion
+	vec2, 2-elem geometric vector
+	vec3, 3-elem geometric vector
+	vec4, 4-elem geometric vector
+	mat2, 2x2 matrix
+	mat3, 3x3 matrix
+	mat4, 4x4 matrix
+	v2f, 2-elem raw vector
+	v3f, 3-elem raw vector
+	v4f, 4-elem raw vector
+	v2d, 2-elem raw vector (double)
+	va, va_list
+
+Example:
+Uvec4;16
+Array of 16 4-vectors.
+
+
+Tagged Types
+
+2008-06-08: deprecated
+The compiler will now use only static types and built-in variants.
+Variants may infact represent dynamically typed values, however, the compiler will be allowed to compile these to static types if it can be proven that this is safe.
+
+
+Definitions
+
+
+BLOCK <name> <args> VARS <vars> BODY <ops> END
+FUNC <name> <args> VARS <vars> BODY <ops> END
+
+These will be used for declaring functions and blocks.
+
+Function Modifiers
+These will be placed at the end of the args list, and will alter the behavior or implementation of the function.
+
+'...': immediately follows the last arg, indicates that a function accepts a variable number of arguments.
+
+$stdcall: x86, indicates the use of the WIN32 stdcall convention
+$cdecl: x86, indicates the use of the cdecl convention (default)
+$alignpad: x86-64, use alignment padding (? forgot what I meant by this)
+$static: function is static (aka: hidden from other modules)
+$inline: function is inlinable
+$proxy: function has a proxy (can be modified absent relinking)
+
+
+PROTO <name> <args> END
+
+A function prototype (maybe used for type conversion and returns).
+If not specified, on a call each arg will be assumed to be whatever type is passed to it, and the return value will be assumed to be an integer of the default size.
+
+
+S_PROTO <name> <args> END
+Very similar to a prototype, but instead of declaring a callable function, it declares a function type. These may be used in much the same way as structs or unions, except that variables which are pointers to this type can be called as functions.
+
+
+STRUCT <name> <body> END
+UNION <name> <body> END
+
+Declares a structure or union type, where each body element is a variable.
+
+Example: STRUCT foo x:i y:i END
+
+Note that definitions may not be nested and anonymous structs are not allowed, requiring any anonymous structs to be formally given a type.
+
+Members with '_' as a name will be either placeholders, or will implicitly inline the contents of another type (in the case of struct or union members).
+
+
+CLASS <name> <super> <iface>* BODY <body> END
+IFACE <name> <super> BODY <body> END
+
+Declare a class or interface type.
+These will be similar to structs, but will inherit a from a super class/interface.
+
+Methods will be declared as slots with function-types.
+
+
+VAR <attr*> <name>[ '=' <value>]
+
+Declare a top-level variable.
+If present, value will indicate how to initialize the variable.
+This may be a numerical literal or a string.
+If a variable name, it will indicate a pointer to that variable.
+
+Syntax Changes:
+Value may infact be a collection of values, as needed for initializing some types. For array types, 'END' markers will be used to end arrays or sub-arrays.
+
+Vectors will be represented as small arrays.
+Matrices will be treated as a 1D array of values.
+'END' markers will not be used on vector or matrix types.
+
+Example: VAR foo:Umat3; = 1 0 0 0 1 0 0 0 1
+
+Struct/Union initialization will linearly specify members, where '_' will be used for uninialized members, and 'END' will terminate the definition.
+
+
+ARR <attr*> <name> <body> END
+
+Declare an initialized array.
+Functionality has been absorbed into var.
+
+
+EXTERN <attr*> <name>
+
+Declare an external variable.
+
+
+CLASSEXTERN <classname>
+
+Declare an external class. The class will be assumed to be declared in the external object system, and will be imported and made visible. Note that classname is to be given in quotes.
+
+Example: CLASSEXTERN "myapp/myclass"
+
+A class would be referenced using the 'L<name>;' type form.
+
+Example: VAR obj:Lmyapp/myclass;
+
+This form will be used for both classes and interfaces.
+
+
+Variable Attributes
+$static: variable is static
+
+
+BINARYOP <name> <lt> <rt> <op>
+UNARYOP <name> <ty> <op>
+
+Declare an overloaded operator.
+This will give the name of a function (the operator handler), the arg types, and the operator to overload.
+
+
+PROC <name> <body> END
+
+Declares a "procedure" block which will be executed/inlined dierectly.
+The name of this block can be inserted into another block (including itself) and the contents of the block will be inlined at that location.
+
+The block may safely use the stack just as if it were a part of the caller, and may leave items on the stack when returning.
+
+
+FILE <filename>
+LINE <linenum>
+FLINE <filename> <linenum>
+
+Indicates the current file name and line number for the input source.
+
+
+Function Body Syntax
+
+Officially, each token will be space-seperated.
+
+$<name>	Name Literal, pushed onto the stack.
+$<string>	String Literal, pushed onto the stack.
+<name>	Generally an opcode name.
+<string>	String Value, pushed as 'char *' value.
+<int>		Integer, pushed onto stack.
+<int>L	Long integer, pushed onto stack.
+<int>IL	Int128, pushed onto stack.
+<float>F	Float value.
+<float>D	Double.
+<name>:	Label.
+
+%<name>	Shorthand for '$<name> load'
+=<name>	Shorthand for '$<name> store'
+&<name>	Shorthand for '$<name> loada'
+.<name>	Shorthand for '$<name> loadslot'
+=.<name>	Shorthand for '$<name> storeslot'
+:<name>	Shorthand for '$<name> cast'
+
+?<name>	Jump if true
+!<name>	Jump if false
+*<name>	Jump
+
+'<>'<lt>,<gt>	Trinary Jump
+
+
+{ <body> }	Inlinable block
+
+<name>(	Begin Function Call ('$<name> mark_s')
+)		Function call (name) ('call_s')
+(		Mark
+*)		Function call (expr) ('call')
+<cmp><name>	Conditional jump to name
+,		Indicates an argument ('arg')
+
+foo( %x )
+
+
+Some operators will have builtin shorthands:
+	+ - * / % & | ^ (add sub mul div mod and or xor)
+
+Compare operators
+	== != < > <= >=
+
+Unary Operators
+	++ -- +++ ---
+
+
+Value and Control Flow Semantics
+
+Within the language, it will be viewed that value flow and control flow will occure at different times (for example, value flow will occure at compile time, wheras control flow will occure at runtime).
+
+In this sense, a jump will more indicate that control flow will be changed at runtime, and it will be viewed as invalid to use jumps in a way which would risk comprimising proper value flow (determined by a linear forwards scan).
+
+For example, "$x load $y load $L1 jmp exch L1:" would be considered invalid, since a linear forwards scan would give the impression that the exch is executed, when in-fact, it is unreachable.
+
+A similar example, "$x load $y load $L0 jmp_le $x load $L1 jmp L0: $y load L1:", which is invalid on the grounds that which item is on the stack at L1 would depend solely on the branch taken. A simple forwards scan, however, would be given the false impression that there will be 2 values on the stack, which is not correct in this case.
+
+There will be multiple ways to deal with this issue:
+The use of variables, which will be assumed to be self-synchronizing;
+The use of the union stack.
+
+
+Union Stack
+
+beginu: pushes a new union to the union stack;
+endu: pops the union value and pushes it onto the value stack;
+setu: moves the value from the top of the value stack into the top value of the union stack.
+
+The union stack is called as such because it will serve to "merge" multiple values into a single location, and as such allow multiple branches to direct their output into a single value in the flow graph. It is required that all values assigned into a union have the same type.
+
+In effect, these operations will not exist at runtime, but will instead serve to allow the value flow to be kept in sync.
+
+An example: "beginu $x load $y load $L0 jmp_le $x load setu $L1 jmp L0: $y load setu L1: endu".
+
+
+Labels
+
+Labels will be viewed as "syncronization points", in that as a general rule, any intermediate values stored in registers will be forced into variables or onto the stack prior to the label and prior to executing a jump.
+
+At present, the exact state of a variable's flow graph will be undefined immediately following a label or jump (unless the compiler can safely conclude otherwise, such as the variable never having been modified in any code that can potentially loop back to this point).
+
+
+
+Basic Opcodes
+
+NOP --				Do nothing.
+<litstring> FN --			Source Filename.
+<litint> LN --				Source Line Number.
+MARK -- <mark>			Push a mark.
+
+<symbol> MARK_S -- <s_mark>
+Push a mark, but is given a function name hint.
+
+<mark> * <fptr> CALL -- <value>
+<mark> * <name> CALL_S -- <value>
+Call a function.
+
+CALL_S may be used to call static functions, in which case the name will be given as '<classname>.<name>[<sig>]'.
+
+
+<mark> * <obj> <value>		METHODCALL -- <value>
+<mark> * <obj> <name>		METDOMCALL_S -- <value>
+Call a virtual method.
+
+The former will expect the name as a runtime string.
+The latter will expect the name as a constant.
+
+The name will take the form '<name>[<sig>]' where sig is in prototype form.
+
+
+<value> RET --			Return value from function.
+RET_V --				Return void.
+
+<value> ARG	-- <value>		The last item is an argument.
+<name> LARG -- <value>		Load a variable as an argument.
+
+<value> <name> CAST -- <value>
+Cast an value to a given type.
+
+<mark> <args*> <name> BUILTIN	-- <value>
+Call a compiler builtin.
+
+
+<typename> <slot> OFFSETOF -- <int>
+<value> SIZEOF -- <int>
+<typename> SIZEOF_T -- <int>
+
+Get the offset of a slot, or the size of a value or type.
+
+PUSH_NULL -- <null>		//push NULL (void *)
+<name> INC_S --			//increment variable
+<name> DEC_S --			//decrement variable
+
+<value> DUP	-- <value> <value>
+Duplicate item on stack.
+
+<valuea> <valueb> EXCH -- <valueb> <valuea>
+Swap items on stack.
+
+
+<value> POP --			Pop item from stack.
+
+BEGINU --				Begin union
+ENDU -- <value>			End union
+<value> SETU --			Pop value into union
+
+<name> LOAD -- <value>		Load value from variable
+<value> <name> STORE --		Store value to variable
+<name> LOADA -- <ptr>		Load a pointer to a variable
+
+<ptr> DEFER <value>		Deference a pointer
+
+<obj> <slot> LOADSLOT -- <value>	Load generic value from a struct.
+<value> <obj> <slot> STORESLOT --	Store generic value into a struct.
+<obj> <idx> LOADINDEX -- <value>	Load generic value from an array.
+<value> <obj> <idx> STOREINDEX --	Store generic value into an array.
+
+<obj> <slot> LOADSLOTA -- <ptr>	Load slot address.
+<obj> <idx> LOADINDEXA -- <ptr>	Load index address.
+
+
+<obj> <idx> LOADINDEX_BC -- <value>
+	Load generic value from an array (bounds check).
+<value> <obj> <idx> STOREINDEX_BC --
+	Store generic value into an array (bounds check).
+<obj> <idx> <value> STOREINDEX_RBC --
+	Store generic value into an array (bounds check, value at end).
+
+
+<left> <right> <OP> -- <value>
+ADD, SUB, MUL, DIV, MOD,
+AND, OR, XOR, SHL, SHR
+ADD1, SUB1, MUL1, DIV1, MOD1, 
+AND1, OR1, XOR1, EXP
+ADD2, SUB2, MUL2, DIV2, MOD2, 
+AND2, OR2, XOR2, NAND
+
+SSHR, USHR	//specifies type (SHR will depend on type)
+
+Arithmetic operators.
+The '<op>1' and '<op>2' forms represent alternative versions.
+
+
+<value> <OP> -- <value>
+INC, INC2, DEC, DEC2
+NOT, NEG, LNOT
+
+Unary operators, INC2/DEC2 actually add or subtract 2 from value.
+
+
+<left> <right> <OP> -- <bool>
+CMP_EQ, CMP_NE, CMP_L, CMP_G, CMP_LE, CMP_GE
+
+Perform a logical comparrison of arguments.
+
+
+<value> BOOLIFY -- <bool>
+
+Convert a value into a boolean.
+
+
+<name> JMP --
+<bool> <name> JMP_TRUE --
+<bool> <name> JMP_FALSE --
+
+Jump to name, always, if true, and if false.
+
+
+<left> <right> <name> <OP> --
+JMP_EQ, JMP_NE, JMP_L, JMP_G, JMP_LE, JMP_GE
+
+Compare values and jump if true.
+
+
+<left> <right> <less> <greater> JMP_LG --
+
+Compare a value and perform a trinary jump.
+Jump to less if left<right, and jump to greater if left>right, otherwise not jumping.
+
+
+<value> <value> FVEC2 -- <vec2>
+<value> <value> <value> FVEC3 -- <vec3>
+<value> <value> <value> <value> FVEC4 -- <vec4>
+
+Create a vector of the given size.
+
+
+<real> <imag> COMPLEX -- <value>
+<real> <i> <j> <k> QUAT -- <value>
+<litstring> INT128 -- <value>
+
+Create values of indicated types.
+
+
+<cond> <block> IF --
+<cond> <then> <else> IFELSE --
+
+Cond needs to be a literal value which is either true (nonzero) or false (zero).
+In the case of IF, if 'cond' is true, then 'block' is executed, otherwise it is popped and ignored.
+
+IFELSE evaluates one block or another depending on cond.
+
+
+<left> <right> CMPL -- <int>
+<left> <right> CMPG -- <int>
+
+Tri-State compare.
+-1 if left<right
+1 if left>right
+0 if left==right
+
+L and G differ in what is the result if the compare fails:
+L gives -1, G gives 1
+
+// <bool> <name> JMP_POS --
+// <bool> <name> JMP_NEG --
+// <bool> <name> JMP_ZERO --
+Jump if positive, negative, or zero (JMP_ZERO will be more or less equivalent to JMP_FALSE).
+
+<name> JSR --
+Jump (while pushing return addr to stack).
+
+<ptr> JMP_PTR --
+
+Jump to the address given in a pointer.
+
+
+<lst> <arg> VA_START
+<lst> VA_END
+<lst> <type> VA_ARG
+<dlst> <slst> VA_COPY
+
+These will be special ops implementing varargs.
+

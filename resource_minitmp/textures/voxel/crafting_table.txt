@@ -1,0 +1,3 @@
+$flags voxel
+
+$video textures/voxel/crafting_table0.avi

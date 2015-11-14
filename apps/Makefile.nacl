@@ -1,0 +1,25 @@
+BUILD=.
+DLLPF=lib
+
+# CC_OUTEXE=gcc -o 
+# CC_OUTDLL=gcc -shared -o 
+# CC_OUTOBJ=gcc -c -o 
+
+# EXE = .elf
+# BIN = .bin
+# O = .o
+# A = .a
+
+CFLAGS=-Iinclude -I../include -g -pg
+DLL_CFLAGS=$(CFLAGS) -DBGBDY_DLL
+LDFLAGS=-g -pg -L.. -lbgbdy -lbgbgc -lbgbdy -lbgbasm -lzpack -lm \
+	 -lbgbsvm \
+	-llbxgl2 -lpdglui -lpdgl \
+	-lbtgecm -lbgbnet -lbgbbtjpg \
+	-lbsde -lvecmath -lbsgen -lbgbmid -ltrem \
+	-ldl -lppapi_gles2 -lppapi -lpthread \
+	-Wl,-rpath,'$$ORIGIN'
+
+
+include Makefile.inc
+

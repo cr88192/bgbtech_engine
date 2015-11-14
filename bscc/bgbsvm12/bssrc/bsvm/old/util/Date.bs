@@ -1,0 +1,166 @@
+/*
+Written 2010-02-27 By Brendan G Bohannon
+This is released under the public domain.
+
+Uses code from PDPCLIB written by Paul Edwards, and in turn using code
+from Ray Gardner.
+ */
+
+package bsvm.util;
+
+public class Date extends Object
+{
+private int year = 0;
+private int month = 0;
+private int day = 0;
+private int hour = 0;
+private int min = 0;
+private int sec = 0;
+private int millis = 0;
+
+public Date()
+	{}
+public Date(int year, int month, int day)
+	{ this(year, month, day, 0, 0, 0); }
+public Date(int year, int month, int day, int hour, int min)
+	{ this(year, month, day, hour, min, 0); }
+public Date(int year, int month, int date, int hour, int min, int sec)
+	{ this.year=year; this.month=month; this.day=date;
+		this.hour=hour; this.min=min; this.sec=sec; }
+
+public Date(long date)
+	{ setTime(date); }
+
+private static boolean isleap(int yr)
+	{ return yr % 400 == 0 || (yr % 4 == 0 && yr % 100 != 0); }
+private static int months_to_days(int month)
+	{ return (month * 3057 - 3007) / 100; }
+private static long years_to_days (int yr)
+	{ return yr * 365L + yr / 4 - yr / 100 + yr / 400; }
+
+private static long ymd_to_scalar(int yr, int mo, int day)
+{
+	long scalar;
+
+	scalar = day + months_to_days(mo);
+	if ( mo > 2 )                         /* adjust if past February */
+		scalar -= isleap(yr) ? 1 : 2;
+	yr--;
+	scalar += years_to_days(yr);
+	return (scalar);
+}
+
+private static int day_of_week(long y, long m, long d)
+{
+	return (int)
+		((((((m)+9)%12+1)<<4)%27 + (d) + 1 +
+		((y)%400+400) + ((y)%400+400)/4 - ((y)%400+400)/100 +
+		(((m)<=2) ? (
+		(((((y)%4)==0) && (((y)%100)!=0)) || (((y)%400)==0))
+		? 5 : 6) : 0)) % 7);
+}
+
+
+public Date(String s)
+	{}
+
+public boolean after(Date when)
+	{ return false; }
+public boolean before(Date when)
+	{ return false; }
+public boolean equals(Object obj)
+	{ return false; }
+public int getDate()
+	{ return day; }
+public int getDay()
+	{ return day_of_week(year+1900, month, day); }
+public int getHours()
+	{ return hour; }
+public int getMinutes()
+	{ return min; }
+public int getMonth()
+	{ return month; }
+public int getSeconds()
+	{ return sec; }
+
+public long getTime()
+{
+	return UTC(year, month, day, hour, min, sec) + millis;
+}
+
+public int getTimezoneOffset()
+	{ return 0; }
+public int getYear()
+	{ return 0; }
+public int hashCode()
+	{ return 0; }
+
+public static long parse(String s)
+	{ return 0; }
+
+public void setDate(int date)
+	{ this.day=date; }
+public void setHours(int hours)
+	{ this.hour=hours; }
+public void setMinutes(int minutes)
+	{ this.min=minutes; }
+public void setMonth(int month)
+	{ this.month=month; }
+public void setSeconds(int seconds)
+	{ this.sec=seconds; }
+
+public void setTime(long time)
+{
+	long date;
+	int n;
+
+	date=time+2206008000000L;
+
+	millis=(int)(date%1000); date/=1000;
+	sec=(int)(date%60); date/=60;
+	min=(int)(date%60); date/=60;
+	hour=(int)(date%24); date/=24;
+
+	n = (int)((date * 400L) / 146097L);
+	while (years_to_days(n) < date)
+		n++;
+	year = n;
+	n = (int) (date - years_to_days(n-1));
+	if(n>5)
+	{
+		// adjust if past February
+		n += 2;
+		if ( isleap(year) )
+			n -= n > 62 ? 1 : 2;
+	}
+	month = (n * 100 + 3007) / 3057;
+	day = n - months_to_days(month);
+}
+
+public void setYear(int year)
+	{ this.year=year; }
+
+public String toGMTString()
+	{ return null; }
+public String toLocaleString()
+	{ return null; }
+public String toString()
+	{ return null; }
+
+public static long UTC(int year, int month, int day,
+		int hour, int min, int sec)
+{
+	long date;
+
+	date=ymd_to_scalar(year, month, day);
+	date=(date*24)+hour;
+	date=(date*60)+min;
+	date=(date*60)+sec;
+	date=(date*1000)+0;
+
+	date-=2206008000000L;	//adjust for 1900->1970
+
+	return date;
+}
+
+}

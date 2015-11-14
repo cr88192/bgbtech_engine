@@ -1,0 +1,6 @@
+Experiment with hulls in a standalone manner to attempt to figure out better means to deal with contacts.
+
+Things like inertia may be approximated by use of a scalar moment of inertia.
+
+Attempt to find:
+decent algos for generating "best" contact info between hulls.

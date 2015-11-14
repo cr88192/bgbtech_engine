@@ -1,0 +1,4 @@
+// $flags voxel unbreakable alpha nodraw
+$flags voxel unbreakable alpha
+
+// $video textures/voxel/ponyboost0.avi

@@ -1,0 +1,182 @@
+CmdLine: '"F:\bgb.proj.pdsys53\btanim2d\anim2d.exe" '
+Th 000000BC 5912 00A01FFA
+SpaceNew(0): _flonum_t C0000000..D0000000
+SpaceNew(1): _fixint_t D0000000..E0000000
+SpaceNew(2): _ustring_t E0000000..E1000000
+SpaceNew(3): _usymbol_t E1000000..E2000000
+SpaceNew(4): _char_t E2000000..E2010000
+mounting F:\bgb.proj.pdsys53\btanim2d as /
+mounting F:\bgb.proj.pdsys53\btanim2d\resource as /
+vfexwad_vfmount: No Module Data anim2d.exe
+DYLL_MetaPath_LoadDB2: anim2d_meta.txt anim2d
+Load DB 'anim2d_meta.txt': fail
+vfexwad_vfmount: No Module Data ntdll.dll
+DYLL_MetaPath_LoadDB2: ntdll_meta.txt ntdll
+Load DB 'ntdll_meta.txt': fail
+vfexwad_vfmount: No Module Data snxhk.dll
+DYLL_MetaPath_LoadDB2: snxhk_meta.txt snxhk
+Load DB 'snxhk_meta.txt': fail
+vfexwad_vfmount: No Module Data KERNEL32.dll
+DYLL_MetaPath_LoadDB2: KERNEL32_meta.txt KERNEL32
+Load DB 'KERNEL32_meta.txt': fail
+vfexwad_vfmount: No Module Data KERNELBASE.dll
+DYLL_MetaPath_LoadDB2: KERNELBASE_meta.txt KERNELBASE
+Load DB 'KERNELBASE_meta.txt': fail
+vfexwad_vfmount: No Module Data btanim2d.dll
+DYLL_MetaPath_LoadDB2: btanim2d_meta.txt btanim2d
+Load DB 'btanim2d_meta.txt': fail
+vfexwad_vfmount: No Module Data libpdgl.dll
+DYLL_MetaPath_LoadDB2: libpdgl_meta.txt libpdgl
+DYLL_MetaPath_LoadDB2: pdgl_meta.txt libpdgl
+Load DB 'libpdgl_meta.txt': fail
+vfexwad_vfmount: No Module Data bgbasm.dll
+DYLL_MetaPath_LoadDB2: bgbasm_meta.txt bgbasm
+Load DB 'bgbasm_meta.txt': fail
+vfexwad_vfmount: No Module Data bgbgc.dll
+DYLL_MetaPath_LoadDB2: bgbgc_meta.txt bgbgc
+Load DB 'bgbgc_meta.txt': fail
+vfexwad_vfmount: No Module Data bgbdy.dll
+DYLL_MetaPath_LoadDB2: bgbdy_meta.txt bgbdy
+Load DB 'bgbdy_meta.txt': fail
+vfexwad_vfmount: No Module Data zpack.dll
+DYLL_MetaPath_LoadDB2: zpack_meta.txt zpack
+Load DB 'zpack_meta.txt': fail
+vfexwad_vfmount: No Module Data libbgbmid.dll
+DYLL_MetaPath_LoadDB2: libbgbmid_meta.txt libbgbmid
+DYLL_MetaPath_LoadDB2: bgbmid_meta.txt libbgbmid
+Load DB 'libbgbmid_meta.txt': fail
+vfexwad_vfmount: No Module Data libvecmath.dll
+DYLL_MetaPath_LoadDB2: libvecmath_meta.txt libvecmath
+DYLL_MetaPath_LoadDB2: vecmath_meta.txt libvecmath
+Load DB 'libvecmath_meta.txt': fail
+vfexwad_vfmount: No Module Data WINMM.dll
+DYLL_MetaPath_LoadDB2: WINMM_meta.txt WINMM
+Load DB 'WINMM_meta.txt': fail
+vfexwad_vfmount: No Module Data msvcrt.dll
+DYLL_MetaPath_LoadDB2: msvcrt_meta.txt msvcrt
+Load DB 'msvcrt_meta.txt': fail
+vfexwad_vfmount: No Module Data USER32.dll
+DYLL_MetaPath_LoadDB2: USER32_meta.txt USER32
+Load DB 'USER32_meta.txt': fail
+vfexwad_vfmount: No Module Data GDI32.dll
+DYLL_MetaPath_LoadDB2: GDI32_meta.txt GDI32
+Load DB 'GDI32_meta.txt': fail
+vfexwad_vfmount: No Module Data LPK.dll
+DYLL_MetaPath_LoadDB2: LPK_meta.txt LPK
+Load DB 'LPK_meta.txt': fail
+vfexwad_vfmount: No Module Data USP10.dll
+DYLL_MetaPath_LoadDB2: USP10_meta.txt USP10
+Load DB 'USP10_meta.txt': fail
+vfexwad_vfmount: No Module Data ADVAPI32.dll
+DYLL_MetaPath_LoadDB2: ADVAPI32_meta.txt ADVAPI32
+Load DB 'ADVAPI32_meta.txt': fail
+vfexwad_vfmount: No Module Data sechost.dll
+DYLL_MetaPath_LoadDB2: sechost_meta.txt sechost
+Load DB 'sechost_meta.txt': fail
+vfexwad_vfmount: No Module Data RPCRT4.dll
+DYLL_MetaPath_LoadDB2: RPCRT4_meta.txt RPCRT4
+Load DB 'RPCRT4_meta.txt': fail
+vfexwad_vfmount: No Module Data SspiCli.dll
+DYLL_MetaPath_LoadDB2: SspiCli_meta.txt SspiCli
+Load DB 'SspiCli_meta.txt': fail
+vfexwad_vfmount: No Module Data CRYPTBASE.dll
+DYLL_MetaPath_LoadDB2: CRYPTBASE_meta.txt CRYPTBASE
+Load DB 'CRYPTBASE_meta.txt': fail
+vfexwad_vfmount: No Module Data bgbbtjpg.dll
+DYLL_MetaPath_LoadDB2: bgbbtjpg_meta.txt bgbbtjpg
+Load DB 'bgbbtjpg_meta.txt': fail
+Got Module Data 08DE0020 876544
+DYLL_MetaPath_LoadDB2: btgecm_meta.txt btgecm
+DYLL_MetaPath_LoadDB2: exwad/btgecm/meta.txt btgecm
+DYLL_MetaPath_LoadDB2: exwad/btgecm/meta.txt btgecm (13245 keys, 47458 lines)
+Load DB 'exwad/btgecm/meta.txt': pass
+Got Module Data 090B0020 1101824
+DYLL_MetaPath_LoadDB2: bgbsvm_meta.txt bgbsvm
+DYLL_MetaPath_LoadDB2: exwad/bgbsvm/meta.txt bgbsvm
+DYLL_MetaPath_LoadDB2: exwad/bgbsvm/meta.txt bgbsvm (9811 keys, 34953 lines)
+Load DB 'exwad/bgbsvm/meta.txt': pass
+vfexwad_vfmount: No Module Data bgbnet.dll
+DYLL_MetaPath_LoadDB2: bgbnet_meta.txt bgbnet
+Load DB 'bgbnet_meta.txt': fail
+vfexwad_vfmount: No Module Data WSOCK32.dll
+DYLL_MetaPath_LoadDB2: WSOCK32_meta.txt WSOCK32
+Load DB 'WSOCK32_meta.txt': fail
+vfexwad_vfmount: No Module Data WS2_32.dll
+DYLL_MetaPath_LoadDB2: WS2_32_meta.txt WS2_32
+Load DB 'WS2_32_meta.txt': fail
+vfexwad_vfmount: No Module Data NSI.dll
+DYLL_MetaPath_LoadDB2: NSI_meta.txt NSI
+Load DB 'NSI_meta.txt': fail
+vfexwad_vfmount: No Module Data ole32.dll
+DYLL_MetaPath_LoadDB2: ole32_meta.txt ole32
+Load DB 'ole32_meta.txt': fail
+vfexwad_vfmount: No Module Data OPENGL32.dll
+DYLL_MetaPath_LoadDB2: OPENGL32_meta.txt OPENGL32
+Load DB 'OPENGL32_meta.txt': fail
+vfexwad_vfmount: No Module Data GLU32.dll
+DYLL_MetaPath_LoadDB2: GLU32_meta.txt GLU32
+Load DB 'GLU32_meta.txt': fail
+vfexwad_vfmount: No Module Data DDRAW.dll
+DYLL_MetaPath_LoadDB2: DDRAW_meta.txt DDRAW
+Load DB 'DDRAW_meta.txt': fail
+vfexwad_vfmount: No Module Data DCIMAN32.dll
+DYLL_MetaPath_LoadDB2: DCIMAN32_meta.txt DCIMAN32
+Load DB 'DCIMAN32_meta.txt': fail
+vfexwad_vfmount: No Module Data SETUPAPI.dll
+DYLL_MetaPath_LoadDB2: SETUPAPI_meta.txt SETUPAPI
+Load DB 'SETUPAPI_meta.txt': fail
+vfexwad_vfmount: No Module Data CFGMGR32.dll
+DYLL_MetaPath_LoadDB2: CFGMGR32_meta.txt CFGMGR32
+Load DB 'CFGMGR32_meta.txt': fail
+vfexwad_vfmount: No Module Data OLEAUT32.dll
+DYLL_MetaPath_LoadDB2: OLEAUT32_meta.txt OLEAUT32
+Load DB 'OLEAUT32_meta.txt': fail
+vfexwad_vfmount: No Module Data DEVOBJ.dll
+DYLL_MetaPath_LoadDB2: DEVOBJ_meta.txt DEVOBJ
+Load DB 'DEVOBJ_meta.txt': fail
+vfexwad_vfmount: No Module Data dwmapi.dll
+DYLL_MetaPath_LoadDB2: dwmapi_meta.txt dwmapi
+Load DB 'dwmapi_meta.txt': fail
+vfexwad_vfmount: No Module Data libpdglui.dll
+DYLL_MetaPath_LoadDB2: libpdglui_meta.txt libpdglui
+DYLL_MetaPath_LoadDB2: pdglui_meta.txt libpdglui
+Load DB 'libpdglui_meta.txt': fail
+vfexwad_vfmount: No Module Data IMM32.DLL
+DYLL_MetaPath_LoadDB2: IMM32_meta.txt IMM32
+Load DB 'IMM32_meta.txt': fail
+vfexwad_vfmount: No Module Data MSCTF.dll
+DYLL_MetaPath_LoadDB2: MSCTF_meta.txt MSCTF
+Load DB 'MSCTF_meta.txt': fail
+DYLL_MetaPath_LoadDB2: cc_usr/metapath.txt (null)
+Vendor=ATI Technologies Inc.
+Renderer=AMD Radeon HD 7800 Series
+Version=4.2.12217 Compatibility Profile Context 12.104.0.0
+PDGL: Startup
+mounting F:\bgb.proj.pdsys53\btanim2d\resource as /
+mounting F:\bgb.proj.pdsys53\btanim2d\resource_dev as /
+mounting F:\bgb.proj.pdsys53\btanim2d\../resource as /
+mounting F:\bgb.proj.pdsys53\btanim2d\../resource_dev as /
+loading font 'unicode':'fonts/unifont.bfn'
+loading font 'fixed_B':'fonts/fixed_b.bfn'
+loading font 'fixed_16px':'fonts/fixed_cp437_16px.bfn'
+loading font 'fixed_32px':'fonts/fixed_32px.bfn'
+loading font 'fixed_64px':'fonts/fixed_64px.bfn'
+loading font 'fixed':'fonts/fixed_cp437_8px.bfn'
+loading font 'fixed_cp437_8px':'fonts/fixed_cp437_8px.bfn'
+loading font 'gfx':'fonts/gfx.bfn'
+PDGL: Main
+PDGL: Textures Init
+new frag
+RNG Init
+Th 0000028C 6292 00A0494E
+screenshot to scrnshot/shot_5A7F5ABC.png
+store png scrnshot/shot_5A7F5ABC.png
+screenshot to scrnshot/shot_A1A83A4E.png
+store png scrnshot/shot_A1A83A4E.png
+screenshot to scrnshot/shot_EBDFDC6E.png
+store png scrnshot/shot_EBDFDC6E.png
+PDGL: Main Break
+shutdown
+BGBGC_DeinitThread
+GC: Termination Request (bgbgc_spawngc<0)
+GC: Collect Loop Exited

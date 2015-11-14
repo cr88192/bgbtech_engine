@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.0  (Win32)">
+	<META NAME="CREATED" CONTENT="20100113;14151100">
+	<META NAME="CHANGED" CONTENT="20100113;14364500">
+	<META NAME="Info 1" CONTENT="">
+	<META NAME="Info 2" CONTENT="">
+	<META NAME="Info 3" CONTENT="">
+	<META NAME="Info 4" CONTENT="">
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<P STYLE="margin-bottom: 0in">BGBCCC: BGB C Compiler Core</P>
+<P STYLE="margin-bottom: 0in">This is the component implementing the
+front-end of the C compiler.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">API</P>
+<P STYLE="margin-bottom: 0in">void ccBindKey(char *key, char *val);</P>
+<P STYLE="margin-bottom: 0in">char *ccLookupKey(char *key);</P>
+<P STYLE="margin-bottom: 0in">Bind a key or set a key in the Metadata
+Database.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void ccAddInclude(char *path);</P>
+<P STYLE="margin-bottom: 0in">void ccAddLibrary(char *path);</P>
+<P STYLE="margin-bottom: 0in">void ccAddSource(char *path);</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Add a path to be checked for the given
+file types: header includes, libraries, or source-files.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int ccLoadModule(char *file);</P>
+<P STYLE="margin-bottom: 0in">Load a module.</P>
+<P STYLE="margin-bottom: 0in">For source files, they will be compiled
+and linked into the running images.</P>
+<P STYLE="margin-bottom: 0in">Libraries will be loaded.</P>
+<P STYLE="margin-bottom: 0in">Headers will be mined for declarations
+(all info will go into the metadata database).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int ccLoadModuleMulti(char *name, char
+**args);</P>
+<P STYLE="margin-bottom: 0in">Load a group of modules (currently
+limited to C source files, but other homogeneous groups could also be
+supported), where optimizations are used to attempt to speed up the
+loading (in the C case, this is lumping them all together as to avoid
+redundant header loads).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int ccCompileModule(char *file, char
+*out);</P>
+<P STYLE="margin-bottom: 0in">Compile a module and store the
+resulting object into the given output file.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int ccLoadLibrary(char *name);</P>
+<P STYLE="margin-bottom: 0in">Load a library. This may go about
+figuring out how to get the library loaded if needed.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int ccPrecompileModule(char *file);</P>
+<P STYLE="margin-bottom: 0in">Originally, this would precompile
+headers, ... for faster subsequent loads.</P>
+<P STYLE="margin-bottom: 0in">Currently this is no-op (there is no
+&quot;good&quot; way at present to precompile headers, and
+object-module caching is automatic).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int ccLoadCompilerScript(char *file);</P>
+<P STYLE="margin-bottom: 0in">Load a compiler script and follow
+commands. A compiler scripts basically gives commands as to how to
+get code loaded.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int ccSubmitCSource(char *name, char
+*buf);</P>
+<P STYLE="margin-bottom: 0in">Submit C code in a buffer to be
+compiled and linked into the running image.</P>
+<P STYLE="margin-bottom: 0in">This can be used to approximate &quot;eval&quot;,
+but with the downside that the code has to be a well-formed C source
+module (rather than isolated statements or expressions).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note: the compiler may support silently
+importing missing top-level bindings from the global top-level
+(allowing headers to be absent if the used variables/functions are
+visible). However, this does not extend to types or preprocessor
+directives, which still require using headers.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *ccGetAddr(char *sym);</P>
+<P STYLE="margin-bottom: 0in">void ccSetAddr(char *sym, void *ptr);</P>
+<P STYLE="margin-bottom: 0in">Get or set the address of a global
+binding.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void *ccGetPtr(char *sym);</P>
+<P STYLE="margin-bottom: 0in">void ccSetPtr(char *sym, void *v);</P>
+<P STYLE="margin-bottom: 0in">Get or set a pointer variable (not the
+address of the variable).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int ccGetInt(char *sym);</P>
+<P STYLE="margin-bottom: 0in">void ccSetInt(char *sym, int v);</P>
+<P STYLE="margin-bottom: 0in">s64 ccGetLongLong(char *sym);</P>
+<P STYLE="margin-bottom: 0in">void ccSetLongLong(char *sym, s64 v);</P>
+<P STYLE="margin-bottom: 0in">float ccGetFloat(char *sym);</P>
+<P STYLE="margin-bottom: 0in">void ccSetFloat(char *sym, float v);</P>
+<P STYLE="margin-bottom: 0in">double ccGetDouble(char *sym);</P>
+<P STYLE="margin-bottom: 0in">void ccSetDouble(char *sym, double v);</P>
+<P STYLE="margin-bottom: 0in">Get or set a variable of the given
+types.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+</BODY>
+</HTML>

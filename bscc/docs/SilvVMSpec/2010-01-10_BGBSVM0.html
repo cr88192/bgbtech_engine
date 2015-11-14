@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.0  (Win32)">
+	<META NAME="CREATED" CONTENT="20100110;15373800">
+	<META NAME="CHANGED" CONTENT="20100110;17111700">
+	<META NAME="Info 1" CONTENT="">
+	<META NAME="Info 2" CONTENT="">
+	<META NAME="Info 3" CONTENT="">
+	<META NAME="Info 4" CONTENT="">
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<H1>BGBSVM: BGB Script VM</H1>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">This component is a script VM which
+uses a JavaScript-like syntax, and also uses the BGBDY typesystem and
+Prototype-OO facilities.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">This component has not been well used
+or well-tested (actually, it is a hack over my older BS1 VM, starting
+as an attempt mostly to move it more in the direction of being a
+JavaScript VM, but I guess I partly lost much motivation and
+interest).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Basically, the parser goes and parses
+the front-end syntax into a vaguely Scheme-like form, which is what
+is then compiled to bytecode and interpreted by the VM.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note that the VM will plug itself into
+the dynamic typesystem such that an attempt to call one of its
+methods directly via the Prototype-OO API will redirect the call back
+into the interpreter.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2>API</H2>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BSVM_Init();</P>
+<P STYLE="margin-bottom: 0in">Initialization function for the VM.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void BSVM_AddBuiltin(char *name, char
+*desc,dyt (*fcn)(BSVM_SVMState *ctx, dyt args), int nargs);</P>
+<P STYLE="margin-bottom: 0in">void BSVM_AddBuiltin2(char *name, char
+*desc,dyt (*fcn)(BSVM_SVMState *ctx, dyt args), int nargs);</P>
+<P STYLE="margin-bottom: 0in">Declare a built-in function.</P>
+<P STYLE="margin-bottom: 0in">Name is the function name, and desc is
+a textual description. A function pointer is passed, which is given
+the present interpreter context as well as an arguments list, and the
+function is declared with a valid number of arguments (values &gt;=0
+indicate a fixed number of arguments, and values &lt;0 indicate a
+number of fixed arguments followed by a list for all the remaining
+arguments).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Name is in dotted form, where the dots
+indicate where in the namespace the function is located.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">These differ in how they handle the
+toplevel, where the basic form skips over the namespace (it is
+regarded as informative), instead binding the function at the
+top-level.</P>
+<P STYLE="margin-bottom: 0in">The alternate form creates objects as
+needed, binding the function in an object following from a given path
+from the top-level.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void BSVM_AddBinding(char *name, dyt
+val);</P>
+<P STYLE="margin-bottom: 0in">void BSVM_AddBinding2(char *name, dyt
+val);</P>
+<P STYLE="margin-bottom: 0in">Bind a variable in the top-level, with
+the basic and alternate forms following the semantics as above.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt BSVM_GetTop(char *name);</P>
+<P STYLE="margin-bottom: 0in">Get a top-level binding, following the
+given path from the top-level.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void BSVM_SetTop(char *name, dyt val);</P>
+<P STYLE="margin-bottom: 0in">Bind a value in the top-level at a
+given path from the top-level.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt BSVM_NewState();</P>
+<P STYLE="margin-bottom: 0in">Create a new interpreter context.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void BSVM_DestroyState(BSVM_SVMState
+*ctx);</P>
+<P STYLE="margin-bottom: 0in">Free an interpreter context.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void BSVM_SetOpCnt(int i);</P>
+<P STYLE="margin-bottom: 0in">int BSVM_GetOpCnt();</P>
+<P STYLE="margin-bottom: 0in">Set or Get the current opcode counter.
+This may be used mostly to have an idea how fast the interpreter runs
+in terms of opcodes, or how many opcodes are used in the course of
+evaluating an expression or calling a function.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt BSVM_EvalExprsObj(dyt exp, dyt
+obj);</P>
+<P STYLE="margin-bottom: 0in">Evaluate the given expressions (in
+S-Exp form) within the context of a given object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt BSVM_EvalStringS(char *str);</P>
+<P STYLE="margin-bottom: 0in">Evaluate a string in the form of an
+S-Expression.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt BSVM_EvalString(char *str);</P>
+<P STYLE="margin-bottom: 0in">Evaluate a string in the form of the
+script syntax.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt BSVM_EvalStringObj(char *str, dyt
+obj);</P>
+<P STYLE="margin-bottom: 0in">Evaluate a string in the form of the
+script syntax within the context of a given object.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt BSVM_CallFuncObj(dyt obj, dyt fcn,
+dyt args);</P>
+<P STYLE="margin-bottom: 0in">Call a given function with a given
+object and args.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt BSVMP_Expression(char **str);</P>
+<P STYLE="margin-bottom: 0in">Parse an expression from a string.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BSVMP_AddExpression(char *name, dyt
+(*func)(char **s));</P>
+<P STYLE="margin-bottom: 0in">Add an expression type. Name is a magic
+identifier which identifies the expression. The parsed expression is
+to be returned as an S-Expression.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int BSVMP_AddStatement(char *name, dyt
+(*func)(char **s));</P>
+<P STYLE="margin-bottom: 0in">Add a statement type. This may be
+parsed in a statement context, and similarly will be identified via a
+magic identifier.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt BSVMP_BlockStatement(char **str);</P>
+<P STYLE="margin-bottom: 0in">Parse a block statement, where this
+statement basically includes raw statements and expressions which may
+appear in statement context. Statements are generally separated by
+semicolons, which will also be &quot;eaten&quot; as a result of
+parsing statements.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt BSVMP_Block(char **str);</P>
+<P STYLE="margin-bottom: 0in">Parse a block of statements, which will
+end as a result of either the end of the string or a '}' token, which
+will be eaten.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">dyt BSVMP_BlockStatement2(char **str);</P>
+<P STYLE="margin-bottom: 0in">Parse a statement or a block.</P>
+<P STYLE="margin-bottom: 0in">A block begins with a '{' token, and
+includes a list of statements terminated with a '}' token.</P>
+<P STYLE="margin-bottom: 0in">In the case of a block, this will be
+parsed as a &quot;begin&quot; followed by the statements in question.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+</BODY>
+</HTML>

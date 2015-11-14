@@ -1,0 +1,113 @@
+<html>
+<body>
+<h2>Contents</h2>
+<a href='#lbxgl'>lbxgl</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href='#lbxglCamera'>Camera</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href='#lbxglEvent'>Event</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href='#lbxglEntity'>Entity</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='#lbxglEntitySequence'>Sequence</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='#lbxglEntityQuery'>Query</a><br>
+<br>
+<a name='#lbxgl'></a><h2>lbxgl</h2><a name='#lbxglCamera'></a><h2>Camera</h2><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_SetCamEntity(LBXGL_Entity *ent);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;geom/camera.c:13<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Sets the entity for the camera.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;This can be used by various subsystems to gain info about the camera.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_SetCamOrigin(double x, double y, double z);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_SetCamOriginF(float *org);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_SetCamOriginD(double *org);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;geom/camera.c:26<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Tells LBXGL where the camera is at.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;This can be used by various subsystems to gain info about the camera.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_SetCamAngles(double x, double y, double z);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_SetCamAnglesF(float *ang);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_SetCamAnglesD(double *ang);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;geom/camera.c:60<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Tells LBXGL where the camera is at.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;This can be used by various subsystems to gain info about the camera.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_SetCamVelocity(double x, double y, double z);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_SetCamVelocityF(float *vel);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_SetCamVelocityD(double *vel);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;geom/camera.c:100<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Tells LBXGL where the camera is at.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;This can be used by various subsystems to gain info about the camera.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;LBXGL_Entity *LBXGL_GetCamEntity();<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;geom/camera.c:133<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Fetches previously set info about the camera.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;This can be used by various subsystems to gain info about the camera.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_GetCamOriginF(float *org);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_GetCamOriginD(double *org);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;geom/camera.c:146<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Fetches previously set info about the camera.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;This can be used by various subsystems to gain info about the camera.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_GetCamAnglesF(float *ang);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_GetCamAnglesD(double *ang);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;geom/camera.c:169<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Fetches previously set info about the camera.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;This can be used by various subsystems to gain info about the camera.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_GetCamVelocityF(float *vel);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_GetCamVelocityD(double *vel);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;geom/camera.c:192<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Fetches previously set info about the camera.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;This can be used by various subsystems to gain info about the camera.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_GetCamVectorsF(float *fw, float *rt, float *up);&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_GetCamVectorsD(double *fw, double *rt, double *up);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;geom/camera.c:215<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Fetches previously set info about the camera.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;This can be used by various subsystems to gain info about the camera.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_GetBBoxExtentsF(float *mins, float *maxs, float *dir, float *min, float *max);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;void LBXGL_GetBBoxExtentsD(double *mins, double *maxs, double *dir, double *min, double *max);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;geom/camera.c:273<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Get The extents of a bounding box along a line.<br><br><a name='#lbxglEvent'></a><h2>Event</h2>2004-12-13:<br>
+General &quot;Events&quot; level stuff.<br>
+An event is not necissarily a message, and may or may not be directed at an entity (possibilities include using events to allow communication, eg, with the physics system, anim sequencer, sound code, ...).<br>
+Events will be more of a broadcast system, and multiple subsystems may handle an event.<br>
+<br>
+&lt;target&gt; &lt;event&gt; &lt;args*&gt;<br>
+<br>
+target is optionally the name of a particular target (eg: subsystem) intended to handle this message. messages will be sent to all targets with a matching name.<br>
+<br>
+event is a general event name, which will be sent to all handlers for a particular event.<br>
+<br>
+for target and event handlers, a null name will mean &quot;recieve all&quot;.<br>
+for events, a null target or event name will send it only to those with null names.<br>
+<br>
+it is reasonable for unknown messages or those intended for a different subsystem to show up in some cases.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Event_RegisterHandler(char *target, char *event, int (*func)(void *data, char *target, char *event, void **msgdata), void *data);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/event.c:25<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Registers a handler for the event system.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;target and event specify the events this handler is to recieve, or NULL as an indicator that any are acceptable.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;func is the callback function, and data is a pointer to be passed back to the callback.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Normally the callback should return 0, but may return -1 to indicate that it should be removed.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;On calls msgdata is a NULL terminated array of message specific data items (pdlib type system).<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Event_SendEvent(char *target, char *event, void **args);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/event.c:55<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Sends an event message.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;args is a NULL terminated array of message specific data items (pdlib type system).<br><br><a name='#lbxglEntity'></a><h2>Entity</h2><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;void *LBXGL_Entity_GetProperty(LBXGL_Entity *ent, char *name);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/entity.c:36<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Gets a property associated with an entity.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Returns NULL if the property is not present.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_SetProperty(LBXGL_Entity *ent, char *name, void *value);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/entity.c:69<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Sets a property for an entity.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Value is a value in the 'ObjType' system.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;char *LBXGL_Entity_GetPropertyString(LBXGL_Entity *ent, char *name);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;double LBXGL_Entity_GetPropertyFloat(LBXGL_Entity *ent, char *name);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_GetPropertyBool(LBXGL_Entity *ent, char *name);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_GetPropertyFVector(LBXGL_Entity *ent, char *name, float *vec, int num);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_GetPropertyDVector(LBXGL_Entity *ent, char *name, double *vec, int num);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/entity.c:111<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Specialized get functions for entities.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_SetPropertyString(LBXGL_Entity *ent, char *name, char *value);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_SetPropertyFloat(LBXGL_Entity *ent, char *name, double value);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_SetPropertyBool(LBXGL_Entity *ent, char *name, int value);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_SetPropertyFVector(LBXGL_Entity *ent, char *name, float *value, int num);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_SetPropertyDVector(LBXGL_Entity *ent, char *name, double *value, int num);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/entity.c:204<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Specialized set functions for entities.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_SendMessage(LBXGL_Entity *ent, char *name, void **msgdata);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/entity.c:277<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Sends a given message to an entity.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Msgdata is an array of message specific data items (pdlib type system, NULL terminated).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Returns 0 if the message was successfully handled, -1 otherwise.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_SendMessageAll(LBXGL_Entity *ents, char *name, void **msgdata);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/entity.c:295<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Sends a message to all entities in a list.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;This is intended to be used for, eg, init messages or others related<br>
+&nbsp;&nbsp;&nbsp;&nbsp;the general world state/some occurance.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_Render(LBXGL_Entity *ent);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/entity.c:317<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Render an entity.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_RenderEnts(LBXGL_Entity *lst);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/entity.c:416<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Render a list of entities.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_Init();<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/entity.c:440<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Init function for the entity system.<br><br><a name='#lbxglEntitySequence'></a><h2>Sequence</h2><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;void **LBXGL_Sequence_GetFrame(void *seqs, char *seq, char *seqfr);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/sequence.c:19<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Looks up a particular sequence/frame in a sequences array.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Sequence_ScanFrame(char **seq, char **seqfr, char *frame);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/sequence.c:49<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Parses the sequence and frame out of a frame name.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;seq may not be modified, eg, if the name does not contain a sequence.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Sequence_SetEntitySequence(LBXGL_Entity *ent, char *seq, char *seqfr);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/sequence.c:91<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Changes the entity to having a specific sequence/frame (eg: animation jump).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;This also invokes any function associated with that frame.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Sequence_SequenceEntity(LBXGL_Entity *ent, float dt);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/sequence.c:148<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Steps the entity along for the number of frames for the time given in dt. This does nothing if &quot;sequence&quot; is NULL.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;All functions for the associated frames are invoked.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Sequence_SequenceEntities(LBXGL_Entity *ents, float dt);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/sequence.c:254<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Step along a list of entities, handling the sequencing for all entities in the list.<br><br><a name='#lbxglEntityQuery'></a><h2>Query</h2><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;double LBXGL_Entity_GetRadius(LBXGL_Entity *ent);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/query.c:69<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Get the radius associated with an entity.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The radius is computed via the bounding boxes, and will fully enclose the box.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_QueryRadius(LBXGL_Entity *ents, LBXGL_Entity **array, int max, double *origin, double radius);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/query.c:91<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Query all entities in list withn the sphere defined by origin and radius.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;array is used to hold the query results, and max is the maximal number of entities that can be placed in array (at least max+1 entries should exist within array to handle the trailing NULL).<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_QueryLine(LBXGL_Entity *ents, LBXGL_Entity **array, int max, double *start, double *end);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/query.c:133<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Query entities which intersect with the line defined by start and end.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_QueryProperty(LBXGL_Entity *ents, LBXGL_Entity **array, int max, char *name, void *value);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/query.c:192<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Query entities for which the property 'name' is equal to value.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;int LBXGL_Entity_QueryProperties(LBXGL_Entity *ents, LBXGL_Entity **array, int max, char **names, char **ops, void **values);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/query.c:229<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Query all entities in the list where each property named, compared with the associated operator and value, is true.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The names list is NULL terminated, this signifies the end of the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;comparisions list.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;LBXGL_Entity *LBXGL_Entity_QueryRadiusNext(LBXGL_Entity *ents, double *origin, double radius);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/query.c:276<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Finds the first entity in the list of ents within the radius, and returns that entity.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;LBXGL_Entity *LBXGL_Entity_QueryLineNext(LBXGL_Entity *ents, double *start, double *end);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/query.c:312<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Query entities which intersect with the line defined by start and end.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;LBXGL_Entity *LBXGL_Entity_QueryPropertyNext(LBXGL_Entity *ents, char *name, void *value);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/query.c:365<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Query entities for which the property 'name' is equal to value.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;LBXGL_Entity *LBXGL_Entity_QueryPropertiesNext(LBXGL_Entity *ents, char **names, char **ops, void **values);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/query.c:393<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Query all entities in the list where each property named, compared with the associated operator and value, is true.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The names list is NULL terminated, this signifies the end of the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;comparisions list.<br><br><b>Form</b><br>&nbsp;&nbsp;&nbsp;&nbsp;LBXGL_Entity *LBXGL_Entity_QueryStringPropertyNext(LBXGL_Entity *ents, char *name, char *value);<br><b>DocPos</b><br>&nbsp;&nbsp;&nbsp;&nbsp;entity/query.c:430<br>
+<b>Description</b><br>&nbsp;&nbsp;&nbsp;&nbsp;Query entities for which the property 'name' is equal to value.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Assumes name, if present, is a string.<br><br></body>
+</html>

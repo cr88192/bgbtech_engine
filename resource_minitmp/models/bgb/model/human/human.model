@@ -1,0 +1,21 @@
+//Basic Human Definition
+
+bones bones.bone
+
+mesh Hip hip0.tri			[  1 0 0  0 1 0  0 0 1   0 -4   0 ]
+mesh LHip thigh0.tri		[  1 0 0  0 1 0  0 0 1   0  0 -15 ]
+mesh LKnee shin0.tri		[  1 0 0  0 1 0  0 0 1   0  0 -15 ]
+mesh LAnkle foot0.tri		[  1 0 0  0 1 0  0 0 1   0  0  -4 ]
+mesh RHip thigh0.tri		[  1 0 0  0 1 0  0 0 1   0  0 -15 ]
+mesh RKnee shin0.tri		[  1 0 0  0 1 0  0 0 1   0  0 -15 ]
+mesh RAnkle foot0.tri		[  1 0 0  0 1 0  0 0 1   0  0  -4 ]
+mesh Spine midriff0.tri		[  1 0 0  0 1 0  0 0 1   0 -2   0 ]
+mesh Spine2 chest0.tri		[  1 0 0  0 1 0  0 0 1   0 -2   0 ]
+mesh LShoulder uarm0.tri	[  1 0 0  0 1 0  0 0 1  -5  0   0 ]
+mesh LElbow larm0.tri		[  1 0 0  0 1 0  0 0 1  -4  0   0 ]
+mesh RShoulder uarm0.tri	[ -1 0 0  0 1 0  0 0 1   5  0   0 ]
+mesh RElbow larm0.tri		[ -1 0 0  0 1 0  0 0 1   4  0   0 ]
+mesh Head head0.ac		[  1 0 0  0 1 0  0 0 1   0  0  -6 ]
+
+mesh LAttach sword0.tri		[  1 0 0  0 1 0  0 0 1   0  0  0 ]
+mesh RAttach sword0.tri		[  1 0 0  0 1 0  0 0 1   0  0  0 ]

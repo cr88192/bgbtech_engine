@@ -1,0 +1,167 @@
+BGBTech Video Codec1
+
+Goal: Very fast decoding for video maps.
+Should be able to directly encode/decode DXTn images.
+
+Basic format derived from BTJ-NBCES.
+Will use deflate for compression.
+
+Multibyte values will be big-endian.
+
+
+=== Markers ===
+
+<0xFF:BYTE> <marker:BYTE> <size:WORD> <data:BYTE[size-2]>
+
+<0xFF:BYTE> <marker:BYTE> <0x0000:WORD>
+	<size:DWORD> <data:BYTE[size-6]>
+
+Marker:
+	Escape:			0x00-0x0F	Levels 0-15
+	EscapeChain:	0x10		Levels 16+
+	Reserved:		0x11-0xBF
+	ReservedJPEG:	0xC0-0xDF	JPEG Markers, Not Used
+	APP0-APP15:		0xE0-0xEF	Application Markers
+	FMT0-FMT13:		0xF0-0xFD	Markers, Must Understand
+	COM:			0xFE		Comment Marker, Ignored
+
+Data within a marker will be 0xFF escaped.
+This will mean any literal 0xFF bytes will be replaced with an escape marker (initially 0x00, but for nested-structures, escape-levels are used).
+
+Data within an unknown APPn marker should be silently ignored.
+Data within an unknown FMTn marker should result in the image being rejected.
+
+
+=== APP11 / FMT11 ===
+
+<tag: ASCIIZ> <args:ASCIIZ[]>
+
+
+=== APP12 / FMT12 ===
+
+<tag: FOURCC> <data:BYTE[]>
+
+
+=== FMT13 ===
+
+<tag: ASCIIZ> <data:BYTE[]>
+
+
+=== BTVC1 Header ===
+
+FMT13: "BTVC1"
+	<frame-width:DWORD>
+	<frame-height:DWORD>
+	<method:WORD>
+...
+
+Method:
+	0: Store
+	8: Deflate
+	9: Deflate64
+
+Which is then followed by:
+
+FMT12: "IDAT"
+Image Data (compressed, optional for store, where image data will directly follow the main header).
+
+
+=== BTVC1 Image ===
+
+FMT12: "TEXI" (Image)
+	<headsz:DWORD>		Header Size (Offset to start of data).
+	<width:DWORD>		Image Width
+	<height:DWORD>		Image Height
+	<imgtype:WORD>		Image Type
+	<miplevel:WORD>		MipMap Level
+	<filtmode:WORD>		Filter Types
+	<clrtype:WORD>		Colorspace Type
+	...
+	<data:BYTE[]>		Image Data
+
+Image Types:
+	0	RGBA
+	1	RGB
+	2	-
+	3	BGRA
+	4	BGR
+	5	YUVA
+	6	YUV
+	7	Y
+	8	YA
+	...
+	16	BC1 / DXT1
+	17	BC2 / DXT3
+	18	BC3 / DXT5
+	19	BC4
+	20	BC5
+	21	BC6
+	22	BC7
+	23	BC1F / DXT1F
+	24	BC3F / DXT5F
+	25	BC1A / DXT1A (DXT1 + Alpha)
+
+Filter Types:
+	0	None
+	1	Scanline Filtering
+	2	Simple Block Filtering
+	3	Plane Block Filtering (8x8, Plane Image)
+	4	Plane Block Filtering (16x16 4:2:0, Plane Image)
+
+Clrtype:
+	0	RGB(A)
+	1	GUV (Green, Blue-Green, Red-Green)
+	2	YCbCr
+	3	RCT
+
+For BCn / DXTn, Filters and Colorspaces are N/A, and are to be set to 0. These describe the transformation of RGBA or YUVA data.
+
+If-used, filters will work similarly to those in PNG.
+These may be per-scanline, or applied to each block of pixels.
+
+Pixels:
+	C A
+	B x
+
+Filters:
+	0	None	(P=0)
+	1	Left	(P=B)
+	2	Up		(P=A)
+	3	Average	(P=(A+B)/2)
+	4	Paeth	(...)
+	5	Linear	(P=A+B-C)
+
+Plane Block Only (Possible):
+	16	Hadamard Block Transform
+		DC Coefficient will use Paeth
+	17	DCT
+
+Paeth:
+	P0=A+B-C
+	Pick P value closest to P0.
+
+Hadamard:
+	A'=(A+B+1)/2
+	or: A'=(A+B)/2
+	B'=A-B
+
+	B=(2A'-B')/2
+	or: B=(2A'-B'+1)/2
+	A=B'+B
+
+
+Filter Types:
+Scanline filtering will work similar to PNG.
+Components will be filtered per-scanline.
+Each scanline will be preceded by the filter.
+
+Simple Block Filtering will be similar, with the difference being that filters will be applied block by block. The image-size will be required to be a multiple of the block size. Blocks will be encoded in raster-order.
+
+In both of these modes, the pixel components will be raw bytes
+
+
+Plane-Block Mode will be different.
+
+The image will be split up into multiple planes, which will be followed by each other (All Y blocks, all U blocks, and all V blocks).
+
+Values within each block will be SVLI encoded.

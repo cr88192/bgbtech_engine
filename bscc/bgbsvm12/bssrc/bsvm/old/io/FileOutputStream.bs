@@ -1,0 +1,27 @@
+package bsvm.io;
+
+public class FileOutputStream extends OutputStream
+{
+
+public FileOutputStream(File file)
+	{}
+public FileOutputStream(FileDescriptor fdObj)
+	{}
+public FileOutputStream(String name)
+	{}
+
+public void close()
+	{}
+protected void finalize()
+	{}
+public FileDescriptor getFD()
+	{ return null; }
+public void write(byte[] b)
+	{}
+public void write(byte[] b, int off, int len)
+	{}
+public void write(int b)
+	{}
+
+}
+

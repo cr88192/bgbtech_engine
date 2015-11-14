@@ -1,0 +1,51 @@
+CFLAGS = -I. -DLIBBMID_C
+
+BMID_SRCS = \
+	bm_util.c \
+	bm_wave.c \
+	bm_patch.c \
+	bm_synth.c \
+	bm_file.c \
+	bm_api.c
+
+BMID_OBJS = $(BMID_SRCS:.c=.o)
+
+# EXE=.elf
+# DLL=.so
+# CC_OUTEXE=gcc -o 
+# CC_OUTDLL=gcc -shared -o 
+
+DLL_CFLAGS=-I. -DLIBBMID_C -DBGBMID_DLL -g
+DLL_LDFLAGS=-lm -fPIC -Wl,-rpath,"$$ORIGIN"
+CFLAGS=-I. -g
+LDFLAGS=-L. -lbgbmid -lm -fPIC -Wl,-rpath,"$$ORIGIN"
+
+all: includes libs apps
+
+autohead$(BINSUF): autohead.c
+	$(CC_OUTTOOL)autohead$(BINSUF) autohead.c
+
+bgbmid_auto.h: autohead$(BINSUF) $(BMID_SRCS)
+	./autohead$(BINSUF) -api BMID_API $(BMID_SRCS) > bgbmid_auto.h
+
+$(DLLPF)bgbmid$(DLLSUF): bgbmid_auto.h $(BMID_SRCS)
+	$(CC_OUTDLL)$(DLLPF)bgbmid$(DLLSUF) $(BMID_SRCS) $(DLL_CFLAGS) $(DLL_LDFLAGS)
+
+dmid2$(EXESUF): dmid2.c libbgbmid$(DLLSUF)
+	$(CC_OUTEXE)dmid2$(EXESUF) dmid2.c $(CFLAGS) $(LDFLAGS)
+
+mid2asc$(EXESUF): mid2asc.c libbgbmid$(DLLSUF)
+	$(CC_OUTEXE)mid2asc$(EXESUF) mid2asc.c $(CFLAGS) $(LDFLAGS)
+
+asc2mid$(EXESUF): asc2mid.c libbgbmid$(DLLSUF)
+	$(CC_OUTEXE)asc2mid$(EXESUF) asc2mid.c $(CFLAGS) $(LDFLAGS)
+
+tfmid$(EXESUF): tfmid0.c libbgbmid$(DLLSUF)
+	$(CC_OUTEXE)tfmid$(EXESUF) tfmid0.c $(CFLAGS) $(LDFLAGS)
+
+clean:
+
+includes:
+libs: $(DLLPF)bgbmid$(DLLSUF)
+apps: dmid2$(EXESUF) mid2asc$(EXESUF) asc2mid$(EXESUF) tfmid$(EXESUF)
+

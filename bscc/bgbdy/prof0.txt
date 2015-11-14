@@ -1,0 +1,1797 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 10.17      1.11     1.11 33554434     0.00     0.00  BASM_LenSig
+  8.34      2.02     0.91 33554434     0.00     0.00  dyllApplyRawFuncV
+  8.16      2.91     0.89 16777226     0.00     0.00  BGBDYC_CalcHashNameSig
+  6.69      3.64     0.73 16777230     0.00     0.00  BGBDYC_CheckHashMethodSig
+  6.51      4.35     0.71 33554434     0.00     0.00  BGBGC_CheckCons
+  5.55      4.96     0.60 33554434     0.00     0.00  BASM_CallSig
+  4.90      5.49     0.54 33554434     0.00     0.00  BGBGC_TryGetBase
+  4.22      5.95     0.46 33554434     0.00     0.00  BGBDYC_GetStaticMinfFunc
+  3.67      6.35     0.40 33554434     0.00     0.00  dyllRepackBufSigV
+  3.57      6.74     0.39 33554434     0.00     0.00  dyApplyMethodV
+  3.16      7.08     0.34 67108868     0.00     0.00  BGBDY_GetVType
+  3.07      7.42     0.34 33554434     0.00     0.00  dygettype
+  3.02      7.75     0.33 33554437     0.00     0.00  BGBGC_GetChunk
+  2.61      8.04     0.28 33554434     0.00     0.00  BGBDY_GetTypeName
+  2.43      8.30     0.27 16777220     0.00     0.00  dycCallSigV
+  2.38      8.56     0.26 16777220     0.00     0.00  BGBDYC_LookupMethodSigRA
+  2.02      8.78     0.22        1     0.22    10.25  tst_methods
+  1.88      8.98     0.20 33554438     0.00     0.00  gcralloc
+  1.88      9.19     0.20 16777216     0.00     0.00  dycCallV
+  1.83      9.39     0.20 16777217     0.00     0.00  dycCallSigd
+  1.74      9.58     0.19 16777223     0.00     0.00  BGBDYC_LookupMethodSig
+  1.47      9.74     0.16 16777216     0.00     0.00  dycCalld
+  0.92      9.84     0.10 33554434     0.00     0.00  BGBGC_ConsP
+  0.82      9.93     0.09 16777221     0.00     0.00  dycIdxObjMethod
+  0.82     10.02     0.09 16777217     0.00     0.00  dycCallSigVd
+  0.73     10.10     0.08 33554434     0.00     0.00  BGBDYC_GetMinfFunc
+  0.73     10.18     0.08                             tst_method_foo
+  0.64     10.25     0.07        2     0.04     0.04  BGBDYC_SetStaticMinfFunc
+  0.55     10.31     0.06 16777248     0.00     0.00  thLockFastMutex
+  0.46     10.36     0.05 16777248     0.00     0.00  thUnlockFastMutex
+  0.46     10.41     0.05       18     0.00     0.00  BGBDY_HashSymbol
+  0.37     10.45     0.04                             dycCallU
+  0.37     10.49     0.04                             thTryLockFastMutex
+  0.32     10.53     0.04                             dycCallSig
+  0.32     10.56     0.04                             dyllApplyRawFuncU
+  0.27     10.59     0.03                             BGBDY_GetSize
+  0.27     10.62     0.03                             dycCallSigUr
+  0.27     10.65     0.03                             strcmp
+  0.23     10.68     0.03 33554434     0.00     0.00  BASM_InitSig
+  0.23     10.70     0.03                             BASM_CreateStub
+  0.23     10.72     0.03                             gcrgets
+  0.18     10.74     0.02        1     0.02     0.02  thFastMutex
+  0.18     10.77     0.02                             tst_method_tst2
+  0.14     10.78     0.01                             BGBDY_GetType
+  0.14     10.79     0.01                             BGBDY_IsPRange
+  0.14     10.81     0.01                             BGBGC_GetBase
+  0.14     10.82     0.01                             dyllApplyRawFuncD
+  0.14     10.84     0.01                             gcrstrdup
+  0.09     10.85     0.01        4     0.00     0.00  dycGetSlotPtr
+  0.09     10.86     0.01        2     0.01     0.01  BGBDYC_AddHashMethod
+  0.09     10.87     0.01                             BGBDYC_LookupClassMethodSig
+  0.09     10.88     0.01                             BGBDYC_SortHashItems_Swap
+  0.09     10.89     0.01                             BGBGC_ChunkGetEnt
+  0.09     10.90     0.01                             dytypep
+  0.05     10.90     0.01                             BASM_CallSigStd
+  0.05     10.91     0.01                             dycCallSigf
+  0.00     10.91     0.00    32182     0.00     0.00  basm_stricmp
+  0.00     10.91     0.00     2860     0.00     0.00  thSleep
+  0.00     10.91     0.00      940     0.00     0.00  BASM_Parse_EatWhite
+  0.00     10.91     0.00      940     0.00     0.00  BASM_Parse_Token
+  0.00     10.91     0.00      768     0.00     0.00  BASM_OpArchP
+  0.00     10.91     0.00      648     0.00     0.00  BASM_OpArgRegP
+  0.00     10.91     0.00      340     0.00     0.00  hexval
+  0.00     10.91     0.00      274     0.00     0.00  BASM_OpRegRegP
+  0.00     10.91     0.00      233     0.00     0.00  BASM_OutByte
+  0.00     10.91     0.00      205     0.00     0.00  BASM_OpRegMemP
+  0.00     10.91     0.00      200     0.00     0.00  BASM_OpArgMemP
+  0.00     10.91     0.00      170     0.00     0.00  hexbyte
+  0.00     10.91     0.00      164     0.00     0.00  BASM_Parse_IsLineBreak
+  0.00     10.91     0.00      153     0.00     0.00  BASM_OpMemRegP
+  0.00     10.91     0.00      134     0.00     0.00  BGBDY_Init
+  0.00     10.91     0.00      131     0.00     0.00  BASM_UnmangleName
+  0.00     10.91     0.00      115     0.00     0.00  BASM_ParseReg
+  0.00     10.91     0.00      114     0.00     0.00  BASM_OpSingleP
+  0.00     10.91     0.00      113     0.00     0.00  BASM_ParseArg
+  0.00     10.91     0.00      102     0.00     0.00  BASM_ParseOpcode
+  0.00     10.91     0.00       94     0.00     0.00  BASM_ParseSpecial
+  0.00     10.91     0.00       92     0.00     0.00  BASM_AddrOverride
+  0.00     10.91     0.00       92     0.00     0.00  BASM_OpOnlySingleP
+  0.00     10.91     0.00       92     0.00     0.00  BASM_OutBodyBytes
+  0.00     10.91     0.00       92     0.00     0.00  BASM_Reg16P
+  0.00     10.91     0.00       92     0.00     0.00  BASM_Reg32P
+  0.00     10.91     0.00       76     0.00     0.00  BASM_OutModRM
+  0.00     10.91     0.00       76     0.00     0.00  BASM_OutSufBytes
+  0.00     10.91     0.00       73     0.00     0.00  BGBDY_FindType
+  0.00     10.91     0.00       70     0.00     0.00  BASM_RegREXW
+  0.00     10.91     0.00       67     0.00     0.00  BASM_FetchSymIndex
+  0.00     10.91     0.00       67     0.00     0.00  BASM_FetchSymIndex2
+  0.00     10.91     0.00       67     0.00     0.00  BASM_OpRegP
+  0.00     10.91     0.00       66     0.00     0.00  BASM_Parse_MatchTokenListLen
+  0.00     10.91     0.00       66     0.00     0.00  BASM_Parse_OpChar
+  0.00     10.91     0.00       63     0.00     0.00  BGBDY_FetchType
+  0.00     10.91     0.00       61     0.00     0.00  BGBDY_New
+  0.00     10.91     0.00       61     0.00     0.00  BGBGC_Alloc
+  0.00     10.91     0.00       61     0.00     0.00  BGBGC_CollectPause
+  0.00     10.91     0.00       61     0.00     0.00  BGBGC_TryMarkSafe
+  0.00     10.91     0.00       61     0.00     0.00  thLockMutex
+  0.00     10.91     0.00       61     0.00     0.00  thUnlockMutex
+  0.00     10.91     0.00       58     0.00     0.00  basm_strdup
+  0.00     10.91     0.00       53     0.00     0.00  BASM_FetchSymHash
+  0.00     10.91     0.00       53     0.00     0.00  BGBGC_AllocChk
+  0.00     10.91     0.00       48     0.00     0.00  BASM_FetchSym
+  0.00     10.91     0.00       42     0.00     0.00  BASM_ModRM
+  0.00     10.91     0.00       40     0.00     0.00  BASM_Init
+  0.00     10.91     0.00       39     0.00     0.00  BASM_OutOpGeneric1
+  0.00     10.91     0.00       37     0.00     0.00  BASM_OutOpGeneric2
+  0.00     10.91     0.00       33     0.00     0.00  BASM_OutOpReg
+  0.00     10.91     0.00       33     0.00     0.00  BASM_OutOpStrReg
+  0.00     10.91     0.00       32     0.00     0.00  BASM_LookupLabelOS
+  0.00     10.91     0.00       32     0.00     0.00  BGBGC_ChunkSetEnt
+  0.00     10.91     0.00       29     0.00     0.00  BASM_LookupLabel
+  0.00     10.91     0.00       28     0.00     0.00  gcalloc
+  0.00     10.91     0.00       27     0.00     0.00  BASM_GetRegWidth
+  0.00     10.91     0.00       27     0.00     0.00  BASM_OpRegImmP
+  0.00     10.91     0.00       26     0.00     0.00  BASM_OpMemP
+  0.00     10.91     0.00       26     0.00     0.00  BASM_OutMOffs
+  0.00     10.91     0.00       26     0.00     0.00  BASM_SegOverride
+  0.00     10.91     0.00       26     0.00     0.00  basm_atoi
+  0.00     10.91     0.00       20     0.00     0.00  BASM_OutOpStrRegMem
+  0.00     10.91     0.00       19     0.00     0.00  BASM_GetSymIndex
+  0.00     10.91     0.00       18     0.00     0.00  BGBDY_WrapSymbol
+  0.00     10.91     0.00       18     0.00     0.00  dysymbol
+  0.00     10.91     0.00       16     0.00     0.00  BASM_OutOpRegReg
+  0.00     10.91     0.00       16     0.00     0.00  BASM_OutOpSingle
+  0.00     10.91     0.00       16     0.00     0.00  BASM_OutOpStr
+  0.00     10.91     0.00       16     0.00     0.00  BASM_OutOpStrRegReg
+  0.00     10.91     0.00       16     0.00     0.00  BGBDYC_CheckHashSlot
+  0.00     10.91     0.00       16     0.00     0.00  BGBGC_NewBlock
+  0.00     10.91     0.00       16     0.00     0.00  log2up
+  0.00     10.91     0.00       15     0.00     0.00  BGBDYC_CalcHashName
+  0.00     10.91     0.00       15     0.00     0.00  gctalloc
+  0.00     10.91     0.00       13     0.00     0.00  BASM_OutOpRegMem
+  0.00     10.91     0.00       12     0.00     0.00  BGBDYC_GetObjectSlotIdxPtrTH
+  0.00     10.91     0.00       12     0.00     0.00  BGBDYC_LookupSlot
+  0.00     10.91     0.00       12     0.00     0.00  BGBDYC_LookupSlotR
+  0.00     10.91     0.00       10     0.00     0.00  BASM_AddSym
+  0.00     10.91     0.00       10     0.00     0.00  BASM_LinkRefChain
+  0.00     10.91     0.00       10     0.00     0.00  BASM_OutDWord
+  0.00     10.91     0.00       10     0.00     0.00  BASM_UnlinkRefChain
+  0.00     10.91     0.00       10     0.00     0.00  BGBDY_NewType
+  0.00     10.91     0.00        9     0.00     0.00  BASM_AddSymRef
+  0.00     10.91     0.00        9     0.00     0.00  BASM_EmitGoto
+  0.00     10.91     0.00        9     0.00     0.00  BASM_EmitGotoPos
+  0.00     10.91     0.00        9     0.00     0.00  BASM_LinkReference
+  0.00     10.91     0.00        8     0.00     0.00  BASM_AssignSym
+  0.00     10.91     0.00        8     0.00     0.00  BASM_EmitLabel
+  0.00     10.91     0.00        8     0.00     0.00  BASM_EmitLabelPos
+  0.00     10.91     0.00        8     0.00     0.00  BGBGC_AllocLObj
+  0.00     10.91     0.00        8     0.00     0.00  BGBGC_CollectUnpause
+  0.00     10.91     0.00        7     0.00     0.00  BASM_LabelDisp
+  0.00     10.91     0.00        7     0.00     0.00  BASM_OutOpMemReg
+  0.00     10.91     0.00        7     0.00     0.00  BGBDYC_AddHashSlot
+  0.00     10.91     0.00        6     0.00     0.00  BASM_OutOpMem
+  0.00     10.91     0.00        6     0.00     0.00  BASM_OutOpStrMem
+  0.00     10.91     0.00        6     0.00     0.00  BGBDYC_FindClassQName
+  0.00     10.91     0.00        6     0.00     0.00  BGBDYC_Init
+  0.00     10.91     0.00        6     0.00     0.00  BGBDY_HashString
+  0.00     10.91     0.00        6     0.00     0.00  BGBDY_HashSymbolQuick
+  0.00     10.91     0.00        6     0.00     0.00  dycIdxSlot
+  0.00     10.91     0.00        6     0.00     0.00  dystring
+  0.00     10.91     0.00        5     0.00     0.00  BASM_GetPtr
+  0.00     10.91     0.00        5     0.00     0.00  dycGetd
+  0.00     10.91     0.00        4     0.00     0.00  BGBDYC_TouchMinfMethod
+  0.00     10.91     0.00        4     0.00     0.00  BGBGC_InitSpace
+  0.00     10.91     0.00        4     0.00     0.00  dycGetClass
+  0.00     10.91     0.00        4     0.00     0.00  dycIdxObjSlot
+  0.00     10.91     0.00        4     0.00     0.00  dycSetSlotd
+  0.00     10.91     0.00        4     0.00     0.00  dyllSigSetPtrDouble
+  0.00     10.91     0.00        3     0.00     0.00  BASM_OpArgImmP
+  0.00     10.91     0.00        3     0.00     0.00  BASM_ParseOpcodeList
+  0.00     10.91     0.00        3     0.00     0.01  BGBDYC_AddSlot
+  0.00     10.91     0.00        3     0.00     0.01  BGBDYC_AddSlotAbstract
+  0.00     10.91     0.00        3     0.00     0.00  BGBDYC_AlignClassLength
+  0.00     10.91     0.00        3     0.00     0.00  BGBDYC_CheckAddSlot
+  0.00     10.91     0.00        3     0.00     0.01  BGBDYC_CreateClass
+  0.00     10.91     0.00        3     0.00     0.00  BGBDYC_CreateInstance
+  0.00     10.91     0.00        3     0.00     0.00  BGBDYC_LookupClassQName
+  0.00     10.91     0.00        3     0.00     0.00  BGBDYC_LookupMethodSigRB
+  0.00     10.91     0.00        3     0.00     0.00  BGBDYC_LookupMethodSigRS
+  0.00     10.91     0.00        3     0.00     0.00  BGBGC_SpaceAlloc
+  0.00     10.91     0.00        3     0.00     0.00  dycAlloc
+  0.00     10.91     0.00        3     0.00     0.01  dycBeginClass
+  0.00     10.91     0.00        3     0.00     0.00  dycEndClass
+  0.00     10.91     0.00        3     0.00     0.00  dycSetd
+  0.00     10.91     0.00        3     0.00     0.01  dycSlotBasic
+  0.00     10.91     0.00        3     0.00     0.00  dyllSigSizeAlign
+  0.00     10.91     0.00        2     0.00     0.00  BASM_AllocChunkBuffer
+  0.00     10.91     0.00        2     0.00     0.00  BASM_AllocDataSz
+  0.00     10.91     0.00        2     0.00     0.00  BASM_AllocTextSz
+  0.00     10.91     0.00        2     0.00     0.00  BASM_BeginAssembly
+  0.00     10.91     0.00        2     0.00     0.00  BASM_EndAssemblyQuiet
+  0.00     10.91     0.00        2     0.00     0.00  BASM_InitRand
+  0.00     10.91     0.00        2     0.00     0.00  BASM_LinkModule
+  0.00     10.91     0.00        2     0.00     0.00  BASM_RegisterPtr
+  0.00     10.91     0.00        2     0.00     0.01  BGBDYC_AddMethodSig
+  0.00     10.91     0.00        2     0.00     0.00  BGBDYC_CheckAddMinf
+  0.00     10.91     0.00        2     0.00     0.01  BGBDYC_GetMethodSig
+  0.00     10.91     0.00        2     0.00     0.00  BGBDYC_GetObjectSlotIdxPtr
+  0.00     10.91     0.00        2     0.00     0.00  BGBDYC_InheritSingle
+  0.00     10.91     0.00        2     0.00     0.00  BGBDY_InitTypes
+  0.00     10.91     0.00        2     0.00     0.00  BGBGC_Init
+  0.00     10.91     0.00        2     0.00     0.00  BGBGC_LookupLObj
+  0.00     10.91     0.00        2     0.00     0.00  BGBGC_SetLockObj
+  0.00     10.91     0.00        2     0.00     0.00  basm_puts
+  0.00     10.91     0.00        2     0.00     0.00  bgbgc_thread_init
+  0.00     10.91     0.00        2     0.00     0.00  dyRawMethodData
+  0.00     10.91     0.00        2     0.00     0.00  dySetStatus
+  0.00     10.91     0.00        2     0.00     0.00  dycAllocClass
+  0.00     10.91     0.00        2     0.00     0.00  dycGetSlotd
+  0.00     10.91     0.00        2     0.00     0.04  dycMethodCSelfData
+  0.00     10.91     0.00        2     0.00     0.04  dycMethodVirtual
+  0.00     10.91     0.00        2     0.00     0.00  dycNewInitClass
+  0.00     10.91     0.00        2     0.00     0.00  dyllSigGetPtrDouble
+  0.00     10.91     0.00        2     0.00     0.00  dyllSigRet
+  0.00     10.91     0.00        2     0.00     0.00  dyo_init
+  0.00     10.91     0.00        2     0.00     0.00  gclock
+  0.00     10.91     0.00        2     0.00     0.00  gcrsplit
+  0.00     10.91     0.00        2     0.00     0.00  thGetTlsValue
+  0.00     10.91     0.00        2     0.00     0.00  thThread
+  0.00     10.91     0.00        1     0.00     0.00  BASM_AllocDataChunk
+  0.00     10.91     0.00        1     0.00     0.00  BASM_AllocTextChunk
+  0.00     10.91     0.00        1     0.00     0.00  BASM_InitLink
+  0.00     10.91     0.00        1     0.00     0.00  BASM_NewContext
+  0.00     10.91     0.00        1     0.00     0.00  BASM_OutImm
+  0.00     10.91     0.00        1     0.00     0.00  BASM_OutOpRegImm
+  0.00     10.91     0.00        1     0.00     0.00  BASM_OutOpStrRegImm
+  0.00     10.91     0.00        1     0.00     0.00  BGBDYC_DumpMinfHash
+  0.00     10.91     0.00        1     0.00     0.00  BGBDYC_DumpSlotHash
+  0.00     10.91     0.00        1     0.00     0.00  BGBDYC_InitHash
+  0.00     10.91     0.00        1     0.00     0.00  BGBDYC_MinfHashSize
+  0.00     10.91     0.00        1     0.00     0.00  BGBDYC_MinfHashUsed
+  0.00     10.91     0.00        1     0.00     0.00  BGBDYC_SlotHashSize
+  0.00     10.91     0.00        1     0.00     0.00  BGBDYC_SlotHashUsed
+  0.00     10.91     0.00        1     0.00     0.00  BGBDY_SetMark
+  0.00     10.91     0.00        1     0.00     0.00  BGBDY_SetPreserve
+  0.00     10.91     0.00        1     0.00     0.00  BGBGC_AddMarkHandler
+  0.00     10.91     0.00        1     0.00     0.00  BGBGC_AllocCBlk
+  0.00     10.91     0.00        1     0.00     0.00  BGBGC_CollectLoop
+  0.00     10.91     0.00        1     0.00     0.00  BGBGC_InitCons
+  0.00     10.91     0.00        1     0.00     0.00  BGBGC_InitLow
+  0.00     10.91     0.00        1     0.00     0.00  BGBGC_MarkAtomic
+  0.00     10.91     0.00        1     0.00     0.00  BGBGC_SpaceAllocSafeP
+  0.00     10.91     0.00        1     0.00     0.00  BGBGC_SpawnThread
+  0.00     10.91     0.00        1     0.00     0.00  BGBGC_StackBase
+  0.00     10.91     0.00        1     0.00     0.00  BGBGC_StartCollectLoop
+  0.00     10.91     0.00        1     0.00     0.00  basm_genseed
+  0.00     10.91     0.00        1     0.00     0.00  basm_print
+  0.00     10.91     0.00        1     0.00     0.00  dycNew
+  0.00     10.91     0.00        1     0.00     0.00  dycNewClass
+  0.00     10.91     0.00        1     0.00     0.00  dycNewInit
+  0.00     10.91     0.00        1     0.00     0.00  dyopr_init
+  0.00     10.91     0.00        1     0.00     0.00  gc_init
+  0.00     10.91     0.00        1     0.00     0.00  gcatomic
+  0.00     10.91     0.00        1     0.00     0.00  thAllocTls
+  0.00     10.91     0.00        1     0.00     0.00  thMutex
+  0.00     10.91     0.00        1     0.00     0.01  tst_basics
+  0.00     10.91     0.00        1     0.00     0.13  tst_initclass
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+ 
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this 
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 4 byte(s) for 0.09% of 10.91 seconds
+
+index % time    self  children    called     name
+                                                 <spontaneous>
+[1]     95.2    0.00   10.39                 main [1]
+                0.22   10.03       1/1           tst_methods [2]
+                0.00    0.13       1/1           tst_initclass [28]
+                0.00    0.01       1/1           tst_basics [71]
+                0.00    0.00       1/1           gc_init [260]
+                0.00    0.00       1/2860        thSleep [100]
+                0.00    0.00       1/1           BGBDYC_SlotHashSize [244]
+                0.00    0.00       1/1           BGBDYC_SlotHashUsed [245]
+                0.00    0.00       1/1           BGBDYC_DumpSlotHash [240]
+                0.00    0.00       1/1           BGBDYC_MinfHashSize [242]
+                0.00    0.00       1/1           BGBDYC_MinfHashUsed [243]
+                0.00    0.00       1/1           BGBDYC_DumpMinfHash [239]
+-----------------------------------------------
+                0.22   10.03       1/1           main [1]
+[2]     94.0    0.22   10.03       1         tst_methods [2]
+                0.20    6.05 16777217/16777217     dycCallSigd [4]
+                0.16    3.62 16777216/16777216     dycCalld [7]
+                0.00    0.00       1/2           dycNewInitClass [76]
+                0.00    0.00       1/16777221     dycIdxObjMethod [11]
+-----------------------------------------------
+                0.19    2.95 16777216/33554434     dycCallV [8]
+                0.20    2.95 16777218/33554434     dycCallSigV [6]
+[3]     57.6    0.39    5.89 33554434         dyApplyMethodV [3]
+                0.91    2.34 33554434/33554434     dyllApplyRawFuncV [9]
+                0.34    2.30 33554434/33554434     dygettype [10]
+-----------------------------------------------
+                0.20    6.05 16777217/16777217     tst_methods [2]
+[4]     57.3    0.20    6.05 16777217         dycCallSigd [4]
+                0.09    5.96 16777217/16777217     dycCallSigVd [5]
+-----------------------------------------------
+                0.09    5.96 16777217/16777217     dycCallSigd [4]
+[5]     55.5    0.09    5.96 16777217         dycCallSigVd [5]
+                0.26    5.70 16777217/16777220     dycCallSigV [6]
+-----------------------------------------------
+                0.00    0.00       1/16777220     dycNewInit [79]
+                0.00    0.00       2/16777220     dycNewInitClass [76]
+                0.26    5.70 16777217/16777220     dycCallSigVd [5]
+[6]     54.7    0.27    5.70 16777220         dycCallSigV [6]
+                0.20    2.95 16777218/33554434     dyApplyMethodV [3]
+                0.09    2.19 16777220/16777221     dycIdxObjMethod [11]
+                0.04    0.23 16777218/33554434     BGBDYC_GetMinfFunc [22]
+                0.00    0.01       2/2           dySetStatus [70]
+-----------------------------------------------
+                0.16    3.62 16777216/16777216     tst_methods [2]
+[7]     34.6    0.16    3.62 16777216         dycCalld [7]
+                0.20    3.41 16777216/16777216     dycCallV [8]
+-----------------------------------------------
+                0.20    3.41 16777216/16777216     dycCalld [7]
+[8]     33.2    0.20    3.41 16777216         dycCallV [8]
+                0.19    2.95 16777216/33554434     dyApplyMethodV [3]
+                0.04    0.23 16777216/33554434     BGBDYC_GetMinfFunc [22]
+-----------------------------------------------
+                0.91    2.34 33554434/33554434     dyApplyMethodV [3]
+[9]     29.8    0.91    2.34 33554434         dyllApplyRawFuncV [9]
+                0.60    1.14 33554434/33554434     BASM_CallSig [14]
+                0.40    0.00 33554434/33554434     dyllRepackBufSigV [24]
+                0.20    0.00 33554434/33554438     gcralloc [27]
+-----------------------------------------------
+                0.34    2.30 33554434/33554434     dyApplyMethodV [3]
+[10]    24.2    0.34    2.30 33554434         dygettype [10]
+                0.28    1.85 33554434/33554434     BGBDY_GetTypeName [12]
+                0.17    0.00 33554434/67108868     BGBDY_GetVType [25]
+-----------------------------------------------
+                0.00    0.00       1/16777221     tst_methods [2]
+                0.09    2.19 16777220/16777221     dycCallSigV [6]
+[11]    20.9    0.09    2.19 16777221         dycIdxObjMethod [11]
+                0.19    1.89 16777221/16777223     BGBDYC_LookupMethodSig [13]
+                0.06    0.00 16777221/16777248     thLockFastMutex [33]
+                0.05    0.00 16777221/16777248     thUnlockFastMutex [37]
+-----------------------------------------------
+                0.28    1.85 33554434/33554434     dygettype [10]
+[12]    19.5    0.28    1.85 33554434         BGBDY_GetTypeName [12]
+                0.54    0.33 33554434/33554434     BGBGC_TryGetBase [18]
+                0.10    0.71 33554434/33554434     BGBGC_ConsP [19]
+                0.17    0.00 33554434/67108868     BGBDY_GetVType [25]
+-----------------------------------------------
+                0.00    0.00       2/16777223     BGBDYC_GetMethodSig [61]
+                0.19    1.89 16777221/16777223     dycIdxObjMethod [11]
+[13]    19.1    0.19    1.89 16777223         BGBDYC_LookupMethodSig [13]
+                0.26    0.73 16777220/16777220     BGBDYC_LookupMethodSigRA [16]
+                0.89    0.00 16777220/16777226     BGBDYC_CalcHashNameSig [17]
+                0.00    0.01       3/3           BGBDYC_LookupMethodSigRS [72]
+                0.00    0.01       3/3           BGBDYC_LookupMethodSigRB [73]
+-----------------------------------------------
+                0.60    1.14 33554434/33554434     dyllApplyRawFuncV [9]
+[14]    15.9    0.60    1.14 33554434         BASM_CallSig [14]
+                1.11    0.00 33554434/33554434     BASM_LenSig [15]
+                0.03    0.00 33554434/33554434     BASM_InitSig [48]
+-----------------------------------------------
+                1.11    0.00 33554434/33554434     BASM_CallSig [14]
+[15]    10.2    1.11    0.00 33554434         BASM_LenSig [15]
+-----------------------------------------------
+                                   6             BGBDYC_LookupMethodSigRA [16]
+                0.26    0.73 16777220/16777220     BGBDYC_LookupMethodSig [13]
+[16]     9.1    0.26    0.73 16777220+6       BGBDYC_LookupMethodSigRA [16]
+                0.73    0.00 16777226/16777230     BGBDYC_CheckHashMethodSig [20]
+                                   6             BGBDYC_LookupMethodSigRA [16]
+-----------------------------------------------
+                0.00    0.00       2/16777226     BGBDYC_AddMethodSig [62]
+                0.00    0.00       4/16777226     BGBDYC_LookupMethodSigRS [72]
+                0.89    0.00 16777220/16777226     BGBDYC_LookupMethodSig [13]
+[17]     8.2    0.89    0.00 16777226         BGBDYC_CalcHashNameSig [17]
+-----------------------------------------------
+                0.54    0.33 33554434/33554434     BGBDY_GetTypeName [12]
+[18]     7.9    0.54    0.33 33554434         BGBGC_TryGetBase [18]
+                0.33    0.00 33554434/33554437     BGBGC_GetChunk [26]
+-----------------------------------------------
+                0.10    0.71 33554434/33554434     BGBDY_GetTypeName [12]
+[19]     7.4    0.10    0.71 33554434         BGBGC_ConsP [19]
+                0.71    0.00 33554434/33554434     BGBGC_CheckCons [21]
+-----------------------------------------------
+                0.00    0.00       4/16777230     BGBDYC_LookupMethodSigRS [72]
+                0.73    0.00 16777226/16777230     BGBDYC_LookupMethodSigRA [16]
+[20]     6.7    0.73    0.00 16777230         BGBDYC_CheckHashMethodSig [20]
+-----------------------------------------------
+                0.71    0.00 33554434/33554434     BGBGC_ConsP [19]
+[21]     6.5    0.71    0.00 33554434         BGBGC_CheckCons [21]
+-----------------------------------------------
+                0.04    0.23 16777216/33554434     dycCallV [8]
+                0.04    0.23 16777218/33554434     dycCallSigV [6]
+[22]     4.9    0.08    0.46 33554434         BGBDYC_GetMinfFunc [22]
+                0.46    0.00 33554434/33554434     BGBDYC_GetStaticMinfFunc [23]
+-----------------------------------------------
+                0.46    0.00 33554434/33554434     BGBDYC_GetMinfFunc [22]
+[23]     4.2    0.46    0.00 33554434         BGBDYC_GetStaticMinfFunc [23]
+-----------------------------------------------
+                0.40    0.00 33554434/33554434     dyllApplyRawFuncV [9]
+[24]     3.7    0.40    0.00 33554434         dyllRepackBufSigV [24]
+-----------------------------------------------
+                0.17    0.00 33554434/67108868     dygettype [10]
+                0.17    0.00 33554434/67108868     BGBDY_GetTypeName [12]
+[25]     3.2    0.34    0.00 67108868         BGBDY_GetVType [25]
+-----------------------------------------------
+                0.00    0.00       1/33554437     BGBGC_MarkAtomic [93]
+                0.00    0.00       2/33554437     BGBGC_SetLockObj [85]
+                0.33    0.00 33554434/33554437     BGBGC_TryGetBase [18]
+[26]     3.0    0.33    0.00 33554437         BGBGC_GetChunk [26]
+-----------------------------------------------
+                0.00    0.00       4/33554438     gcrsplit [84]
+                0.20    0.00 33554434/33554438     dyllApplyRawFuncV [9]
+[27]     1.9    0.20    0.00 33554438         gcralloc [27]
+-----------------------------------------------
+                0.00    0.13       1/1           main [1]
+[28]     1.2    0.00    0.13       1         tst_initclass [28]
+                0.00    0.08       2/2           dycMethodCSelfData [29]
+                0.00    0.04       3/3           dycBeginClass [40]
+                0.00    0.02       3/3           dycSlotBasic [53]
+                0.00    0.00       3/3           dycEndClass [208]
+-----------------------------------------------
+                0.00    0.08       2/2           tst_initclass [28]
+[29]     0.7    0.00    0.08       2         dycMethodCSelfData [29]
+                0.00    0.08       2/2           dycMethodVirtual [30]
+                0.00    0.00       2/2           dyRawMethodData [92]
+-----------------------------------------------
+                0.00    0.08       2/2           dycMethodCSelfData [29]
+[30]     0.7    0.00    0.08       2         dycMethodVirtual [30]
+                0.07    0.00       2/2           BGBDYC_SetStaticMinfFunc [32]
+                0.00    0.01       2/2           BGBDYC_GetMethodSig [61]
+                0.00    0.00       2/16777248     thLockFastMutex [33]
+                0.00    0.00       2/16777248     thUnlockFastMutex [37]
+                0.00    0.00       2/4           BGBDYC_TouchMinfMethod [198]
+-----------------------------------------------
+                                                 <spontaneous>
+[31]     0.7    0.08    0.00                 tst_method_foo [31]
+-----------------------------------------------
+                0.07    0.00       2/2           dycMethodVirtual [30]
+[32]     0.6    0.07    0.00       2         BGBDYC_SetStaticMinfFunc [32]
+-----------------------------------------------
+                0.00    0.00       2/16777248     dycMethodVirtual [30]
+                0.00    0.00       2/16777248     dycGetSlotd [88]
+                0.00    0.00       3/16777248     dycBeginClass [40]
+                0.00    0.00       3/16777248     dycSlotBasic [53]
+                0.00    0.00       3/16777248     dycAlloc [87]
+                0.00    0.00       4/16777248     dycGetClass [81]
+                0.00    0.00       4/16777248     dycIdxObjSlot [82]
+                0.00    0.00       6/16777248     dycIdxSlot [80]
+                0.06    0.00 16777221/16777248     dycIdxObjMethod [11]
+[33]     0.5    0.06    0.00 16777248         thLockFastMutex [33]
+-----------------------------------------------
+                0.05    0.00      18/18          BGBDY_WrapSymbol [35]
+[34]     0.5    0.05    0.00      18         BGBDY_HashSymbol [34]
+                0.00    0.00       1/2           gclock [86]
+                0.00    0.00      11/61          BGBDY_New [135]
+                0.00    0.00       1/28          gcalloc [154]
+-----------------------------------------------
+                0.00    0.05      18/18          dysymbol [36]
+[35]     0.5    0.00    0.05      18         BGBDY_WrapSymbol [35]
+                0.05    0.00      18/18          BGBDY_HashSymbol [34]
+-----------------------------------------------
+                0.00    0.01       2/18          dySetStatus [70]
+                0.00    0.01       4/18          BGBDYC_AddMethodSig [62]
+                0.00    0.02       6/18          BGBDYC_CreateClass [46]
+                0.00    0.02       6/18          BGBDYC_AddSlotAbstract [55]
+[36]     0.5    0.00    0.05      18         dysymbol [36]
+                0.00    0.05      18/18          BGBDY_WrapSymbol [35]
+-----------------------------------------------
+                0.00    0.00       2/16777248     dycMethodVirtual [30]
+                0.00    0.00       2/16777248     dycGetSlotd [88]
+                0.00    0.00       3/16777248     dycBeginClass [40]
+                0.00    0.00       3/16777248     dycSlotBasic [53]
+                0.00    0.00       3/16777248     dycAlloc [87]
+                0.00    0.00       4/16777248     dycGetClass [81]
+                0.00    0.00       4/16777248     dycIdxObjSlot [82]
+                0.00    0.00       6/16777248     dycIdxSlot [80]
+                0.05    0.00 16777221/16777248     dycIdxObjMethod [11]
+[37]     0.5    0.05    0.00 16777248         thUnlockFastMutex [37]
+-----------------------------------------------
+                                                 <spontaneous>
+[38]     0.4    0.04    0.00                 dycCallU [38]
+-----------------------------------------------
+                                                 <spontaneous>
+[39]     0.4    0.04    0.00                 thTryLockFastMutex [39]
+-----------------------------------------------
+                0.00    0.04       3/3           tst_initclass [28]
+[40]     0.3    0.00    0.04       3         dycBeginClass [40]
+                0.00    0.03       3/3           BGBDYC_CreateClass [46]
+                0.00    0.01       3/6           BGBDYC_Init [51]
+                0.00    0.00       3/16777248     thLockFastMutex [33]
+                0.00    0.00       3/16777248     thUnlockFastMutex [37]
+-----------------------------------------------
+                                                 <spontaneous>
+[41]     0.3    0.04    0.00                 dycCallSig [41]
+-----------------------------------------------
+                                                 <spontaneous>
+[42]     0.3    0.04    0.00                 dyllApplyRawFuncU [42]
+-----------------------------------------------
+                                                 <spontaneous>
+[43]     0.3    0.03    0.00                 BGBDY_GetSize [43]
+-----------------------------------------------
+                                                 <spontaneous>
+[44]     0.3    0.03    0.00                 dycCallSigUr [44]
+-----------------------------------------------
+                                                 <spontaneous>
+[45]     0.3    0.03    0.00                 strcmp [45]
+-----------------------------------------------
+                0.00    0.03       3/3           dycBeginClass [40]
+[46]     0.2    0.00    0.03       3         BGBDYC_CreateClass [46]
+                0.00    0.02       6/18          dysymbol [36]
+                0.00    0.01       3/6           BGBDYC_Init [51]
+                0.00    0.00       2/2           gcrsplit [84]
+                0.00    0.00       6/28          gcalloc [154]
+                0.00    0.00       3/15          gctalloc [171]
+                0.00    0.00       2/6           BGBDYC_FindClassQName [195]
+                0.00    0.00       2/2           BGBDYC_InheritSingle [221]
+-----------------------------------------------
+                                                 <spontaneous>
+[47]     0.2    0.02    0.01                 tst_method_tst2 [47]
+                0.00    0.01       2/4           dycSetSlotd [63]
+-----------------------------------------------
+                0.03    0.00 33554434/33554434     BASM_CallSig [14]
+[48]     0.2    0.03    0.00 33554434         BASM_InitSig [48]
+                0.00    0.00       4/7           BASM_GetPtr <cycle 2> [196]
+                0.00    0.00       1/7           BASM_Init <cycle 2> [146]
+                0.00    0.00       1/7           BASM_BeginAssembly <cycle 2> [214]
+                0.00    0.00       1/2           basm_puts [225]
+                0.00    0.00       1/7           BASM_EndAssemblyQuiet <cycle 2> [215]
+-----------------------------------------------
+                                                 <spontaneous>
+[49]     0.2    0.03    0.00                 BASM_CreateStub [49]
+-----------------------------------------------
+                                                 <spontaneous>
+[50]     0.2    0.03    0.00                 gcrgets [50]
+-----------------------------------------------
+                0.00    0.01       3/6           dycBeginClass [40]
+                0.00    0.01       3/6           BGBDYC_CreateClass [46]
+[51]     0.2    0.00    0.02       6         BGBDYC_Init [51]
+                0.02    0.00       1/1           thFastMutex [52]
+                0.00    0.00       1/1           BGBDYC_InitHash [241]
+-----------------------------------------------
+                0.02    0.00       1/1           BGBDYC_Init [51]
+[52]     0.2    0.02    0.00       1         thFastMutex [52]
+                0.00    0.00       1/1           gcatomic [94]
+-----------------------------------------------
+                0.00    0.02       3/3           tst_initclass [28]
+[53]     0.2    0.00    0.02       3         dycSlotBasic [53]
+                0.00    0.02       3/3           BGBDYC_AddSlot [54]
+                0.00    0.00       3/16777248     thLockFastMutex [33]
+                0.00    0.00       3/16777248     thUnlockFastMutex [37]
+-----------------------------------------------
+                0.00    0.02       3/3           dycSlotBasic [53]
+[54]     0.2    0.00    0.02       3         BGBDYC_AddSlot [54]
+                0.00    0.02       3/3           BGBDYC_AddSlotAbstract [55]
+                0.00    0.00       3/3           dyllSigSizeAlign [210]
+                0.00    0.00       3/3           BGBDYC_AlignClassLength [203]
+-----------------------------------------------
+                0.00    0.02       3/3           BGBDYC_AddSlot [54]
+[55]     0.2    0.00    0.02       3         BGBDYC_AddSlotAbstract [55]
+                0.00    0.02       6/18          dysymbol [36]
+                0.00    0.00       3/3           BGBDYC_CheckAddSlot [204]
+                0.00    0.00       3/15          gctalloc [171]
+                0.00    0.00       3/15          BGBDYC_CalcHashName [170]
+-----------------------------------------------
+                                                 <spontaneous>
+[56]     0.1    0.01    0.00                 BGBDY_GetType [56]
+-----------------------------------------------
+                                                 <spontaneous>
+[57]     0.1    0.01    0.00                 BGBDY_IsPRange [57]
+-----------------------------------------------
+                                                 <spontaneous>
+[58]     0.1    0.01    0.00                 BGBGC_GetBase [58]
+-----------------------------------------------
+                                                 <spontaneous>
+[59]     0.1    0.01    0.00                 dyllApplyRawFuncD [59]
+-----------------------------------------------
+                                                 <spontaneous>
+[60]     0.1    0.01    0.00                 gcrstrdup [60]
+-----------------------------------------------
+                0.00    0.01       2/2           dycMethodVirtual [30]
+[61]     0.1    0.00    0.01       2         BGBDYC_GetMethodSig [61]
+                0.00    0.01       2/2           BGBDYC_AddMethodSig [62]
+                0.00    0.00       2/16777223     BGBDYC_LookupMethodSig [13]
+                0.00    0.00       2/4           BGBDYC_TouchMinfMethod [198]
+-----------------------------------------------
+                0.00    0.01       2/2           BGBDYC_GetMethodSig [61]
+[62]     0.1    0.00    0.01       2         BGBDYC_AddMethodSig [62]
+                0.00    0.01       4/18          dysymbol [36]
+                0.00    0.00       2/16777226     BGBDYC_CalcHashNameSig [17]
+                0.00    0.00       2/2           BGBDYC_CheckAddMinf [219]
+                0.00    0.00       2/15          gctalloc [171]
+-----------------------------------------------
+                0.00    0.01       2/4           tst_method_tst2 [47]
+                0.00    0.01       2/4           tst_basics [71]
+[63]     0.1    0.00    0.01       4         dycSetSlotd [63]
+                0.01    0.00       4/4           dycGetSlotPtr [64]
+                0.00    0.00       4/4           dycIdxObjSlot [82]
+                0.00    0.00       4/4           dyllSigSetPtrDouble [200]
+-----------------------------------------------
+                0.01    0.00       4/4           dycSetSlotd [63]
+[64]     0.1    0.01    0.00       4         dycGetSlotPtr [64]
+                0.00    0.00       4/12          BGBDYC_GetObjectSlotIdxPtrTH [173]
+-----------------------------------------------
+                0.01    0.00       1/2           BGBDYC_LookupMethodSigRB [73]
+                0.01    0.00       1/2           BGBDYC_LookupMethodSigRS [72]
+[65]     0.1    0.01    0.00       2         BGBDYC_AddHashMethod [65]
+-----------------------------------------------
+                                                 <spontaneous>
+[66]     0.1    0.01    0.00                 BGBDYC_LookupClassMethodSig [66]
+-----------------------------------------------
+                                                 <spontaneous>
+[67]     0.1    0.01    0.00                 BGBDYC_SortHashItems_Swap [67]
+-----------------------------------------------
+                                                 <spontaneous>
+[68]     0.1    0.01    0.00                 BGBGC_ChunkGetEnt [68]
+-----------------------------------------------
+                                                 <spontaneous>
+[69]     0.1    0.01    0.00                 dytypep [69]
+-----------------------------------------------
+                0.00    0.01       2/2           dycCallSigV [6]
+[70]     0.1    0.00    0.01       2         dySetStatus [70]
+                0.00    0.01       2/18          dysymbol [36]
+                0.00    0.00       2/2           dyo_init [229]
+                0.00    0.00       2/2           thGetTlsValue [230]
+                0.00    0.00       2/28          gcalloc [154]
+-----------------------------------------------
+                0.00    0.01       1/1           main [1]
+[71]     0.0    0.00    0.01       1         tst_basics [71]
+                0.00    0.01       2/4           dycSetSlotd [63]
+                0.00    0.00       1/1           dycNewClass [77]
+                0.00    0.00       1/1           dycNew [78]
+                0.00    0.00       6/6           dycIdxSlot [80]
+                0.00    0.00       2/2           dycGetSlotd [88]
+                0.00    0.00       2/4           dycGetClass [81]
+                0.00    0.00       5/5           dycGetd [197]
+                0.00    0.00       3/3           dycSetd [209]
+-----------------------------------------------
+                                   1             BGBDYC_LookupMethodSigRS [72]
+                0.00    0.01       3/3           BGBDYC_LookupMethodSig [13]
+[72]     0.0    0.00    0.01       3+1       BGBDYC_LookupMethodSigRS [72]
+                0.01    0.00       1/2           BGBDYC_AddHashMethod [65]
+                0.00    0.00       4/16777226     BGBDYC_CalcHashNameSig [17]
+                0.00    0.00       4/16777230     BGBDYC_CheckHashMethodSig [20]
+                                   1             BGBDYC_LookupMethodSigRS [72]
+-----------------------------------------------
+                                   4             BGBDYC_LookupMethodSigRB [73]
+                0.00    0.01       3/3           BGBDYC_LookupMethodSig [13]
+[73]     0.0    0.00    0.01       3+4       BGBDYC_LookupMethodSigRB [73]
+                0.01    0.00       1/2           BGBDYC_AddHashMethod [65]
+                                   4             BGBDYC_LookupMethodSigRB [73]
+-----------------------------------------------
+                                                 <spontaneous>
+[74]     0.0    0.01    0.00                 BASM_CallSigStd [74]
+-----------------------------------------------
+                                                 <spontaneous>
+[75]     0.0    0.01    0.00                 dycCallSigf [75]
+-----------------------------------------------
+                0.00    0.00       1/2           tst_methods [2]
+                0.00    0.00       1/2           dycNewClass [77]
+[76]     0.0    0.00    0.00       2         dycNewInitClass [76]
+                0.00    0.00       2/16777220     dycCallSigV [6]
+                0.00    0.00       2/2           dycAllocClass [83]
+-----------------------------------------------
+                0.00    0.00       1/1           tst_basics [71]
+[77]     0.0    0.00    0.00       1         dycNewClass [77]
+                0.00    0.00       1/2           dycNewInitClass [76]
+-----------------------------------------------
+                0.00    0.00       1/1           tst_basics [71]
+[78]     0.0    0.00    0.00       1         dycNew [78]
+                0.00    0.00       1/1           dycNewInit [79]
+-----------------------------------------------
+                0.00    0.00       1/1           dycNew [78]
+[79]     0.0    0.00    0.00       1         dycNewInit [79]
+                0.00    0.00       1/16777220     dycCallSigV [6]
+                0.00    0.00       1/3           dycAlloc [87]
+-----------------------------------------------
+                0.00    0.00       6/6           tst_basics [71]
+[80]     0.0    0.00    0.00       6         dycIdxSlot [80]
+                0.00    0.00       6/16777248     thLockFastMutex [33]
+                0.00    0.00       6/16777248     thUnlockFastMutex [37]
+                0.00    0.00       6/12          BGBDYC_LookupSlot [174]
+-----------------------------------------------
+                0.00    0.00       2/4           tst_basics [71]
+                0.00    0.00       2/4           dycAllocClass [83]
+[81]     0.0    0.00    0.00       4         dycGetClass [81]
+                0.00    0.00       4/16777248     thLockFastMutex [33]
+                0.00    0.00       4/16777248     thUnlockFastMutex [37]
+                0.00    0.00       4/6           BGBDYC_FindClassQName [195]
+-----------------------------------------------
+                0.00    0.00       4/4           dycSetSlotd [63]
+[82]     0.0    0.00    0.00       4         dycIdxObjSlot [82]
+                0.00    0.00       4/16777248     thLockFastMutex [33]
+                0.00    0.00       4/16777248     thUnlockFastMutex [37]
+                0.00    0.00       4/12          BGBDYC_LookupSlot [174]
+-----------------------------------------------
+                0.00    0.00       2/2           dycNewInitClass [76]
+[83]     0.0    0.00    0.00       2         dycAllocClass [83]
+                0.00    0.00       2/4           dycGetClass [81]
+                0.00    0.00       2/3           dycAlloc [87]
+-----------------------------------------------
+                0.00    0.00       2/2           BGBDYC_CreateClass [46]
+[84]     0.0    0.00    0.00       2         gcrsplit [84]
+                0.00    0.00       4/33554438     gcralloc [27]
+-----------------------------------------------
+                0.00    0.00       2/2           gclock [86]
+[85]     0.0    0.00    0.00       2         BGBGC_SetLockObj [85]
+                0.00    0.00       2/33554437     BGBGC_GetChunk [26]
+                0.00    0.00       2/2           BGBGC_LookupLObj [224]
+-----------------------------------------------
+                0.00    0.00       1/2           BGBDY_HashSymbol [34]
+                0.00    0.00       1/2           BGBDY_HashSymbolQuick [90]
+[86]     0.0    0.00    0.00       2         gclock [86]
+                0.00    0.00       2/2           BGBGC_SetLockObj [85]
+-----------------------------------------------
+                0.00    0.00       1/3           dycNewInit [79]
+                0.00    0.00       2/3           dycAllocClass [83]
+[87]     0.0    0.00    0.00       3         dycAlloc [87]
+                0.00    0.00       3/16777248     thLockFastMutex [33]
+                0.00    0.00       3/16777248     thUnlockFastMutex [37]
+                0.00    0.00       3/3           BGBDYC_CreateInstance [205]
+-----------------------------------------------
+                0.00    0.00       2/2           tst_basics [71]
+[88]     0.0    0.00    0.00       2         dycGetSlotd [88]
+                0.00    0.00       2/16777248     thLockFastMutex [33]
+                0.00    0.00       2/16777248     thUnlockFastMutex [37]
+                0.00    0.00       2/12          BGBDYC_LookupSlot [174]
+                0.00    0.00       2/2           BGBDYC_GetObjectSlotIdxPtr [220]
+                0.00    0.00       2/2           dyllSigGetPtrDouble [227]
+-----------------------------------------------
+                0.00    0.00       6/6           dystring [91]
+[89]     0.0    0.00    0.00       6         BGBDY_HashString [89]
+                0.00    0.00       6/6           BGBDY_HashSymbolQuick [90]
+-----------------------------------------------
+                0.00    0.00       6/6           BGBDY_HashString [89]
+[90]     0.0    0.00    0.00       6         BGBDY_HashSymbolQuick [90]
+                0.00    0.00       1/2           gclock [86]
+                0.00    0.00       6/61          BGBDY_New [135]
+                0.00    0.00       1/28          gcalloc [154]
+-----------------------------------------------
+                0.00    0.00       6/6           dyRawMethodData [92]
+[91]     0.0    0.00    0.00       6         dystring [91]
+                0.00    0.00       6/6           BGBDY_HashString [89]
+-----------------------------------------------
+                0.00    0.00       2/2           dycMethodCSelfData [29]
+[92]     0.0    0.00    0.00       2         dyRawMethodData [92]
+                0.00    0.00       6/6           dystring [91]
+                0.00    0.00       2/15          gctalloc [171]
+                0.00    0.00       2/2           dyllSigRet [228]
+-----------------------------------------------
+                0.00    0.00       1/1           gcatomic [94]
+[93]     0.0    0.00    0.00       1         BGBGC_MarkAtomic [93]
+                0.00    0.00       1/33554437     BGBGC_GetChunk [26]
+-----------------------------------------------
+                0.00    0.00       1/1           thFastMutex [52]
+[94]     0.0    0.00    0.00       1         gcatomic [94]
+                0.00    0.00       1/1           BGBGC_MarkAtomic [93]
+                0.00    0.00       1/61          BGBDY_New [135]
+-----------------------------------------------
+[95]     0.0    0.00    0.00     122+160     <cycle 1 as a whole> [95]
+                0.00    0.00     134             BGBDY_Init <cycle 1> [113]
+                0.00    0.00      73             BGBDY_FindType <cycle 1> [127]
+                0.00    0.00      63             BGBDY_FetchType <cycle 1> [134]
+                0.00    0.00      10             BGBDY_NewType <cycle 1> [180]
+                0.00    0.00       1             BGBDY_SetPreserve <cycle 1> [247]
+-----------------------------------------------
+[96]     0.0    0.00    0.00       7+84      <cycle 2 as a whole> [96]
+                0.00    0.00      40             BASM_Init <cycle 2> [146]
+                0.00    0.00      29             BASM_LookupLabel <cycle 2> [153]
+                0.00    0.00       8             BASM_AssignSym <cycle 2> [185]
+                0.00    0.00       5             BASM_GetPtr <cycle 2> [196]
+                0.00    0.00       2             BASM_EndAssemblyQuiet <cycle 2> [215]
+                0.00    0.00       2             BASM_LinkModule <cycle 2> [217]
+                0.00    0.00       2             BASM_BeginAssembly <cycle 2> [214]
+                0.00    0.00       1             basm_print <cycle 2> [258]
+-----------------------------------------------
+                0.00    0.00      66/32182       BASM_Parse_Token [102]
+                0.00    0.00     365/32182       BASM_ParseArg [117]
+                0.00    0.00    2624/32182       BASM_ParseSpecial [119]
+                0.00    0.00   14144/32182       BASM_ParseOpcode [118]
+                0.00    0.00   14983/32182       BASM_ParseReg [115]
+[99]     0.0    0.00    0.00   32182         basm_stricmp [99]
+-----------------------------------------------
+                0.00    0.00       1/2860        main [1]
+                0.00    0.00    2859/2860        BGBGC_CollectLoop [250]
+[100]    0.0    0.00    0.00    2860         thSleep [100]
+-----------------------------------------------
+                0.00    0.00     940/940         BASM_Parse_Token [102]
+[101]    0.0    0.00    0.00     940         BASM_Parse_EatWhite [101]
+-----------------------------------------------
+                0.00    0.00       2/940         BASM_ParseSpecial [119]
+                0.00    0.00     269/940         BASM_ParseArg [117]
+                0.00    0.00     669/940         BASM_ParseOpcode [118]
+[102]    0.0    0.00    0.00     940         BASM_Parse_Token [102]
+                0.00    0.00     940/940         BASM_Parse_EatWhite [101]
+                0.00    0.00      66/66          BASM_Parse_MatchTokenListLen [132]
+                0.00    0.00      66/66          BASM_Parse_OpChar [133]
+                0.00    0.00      66/32182       basm_stricmp [99]
+-----------------------------------------------
+                0.00    0.00      16/768         BASM_OutOpSingle [164]
+                0.00    0.00      26/768         BASM_OutOpMem [193]
+                0.00    0.00      27/768         BASM_OutOpRegImm [237]
+                0.00    0.00      67/768         BASM_OutOpReg [149]
+                0.00    0.00     153/768         BASM_OutOpMemReg [191]
+                0.00    0.00     205/768         BASM_OutOpRegMem [172]
+                0.00    0.00     274/768         BASM_OutOpRegReg [163]
+[103]    0.0    0.00    0.00     768         BASM_OpArchP [103]
+-----------------------------------------------
+                0.00    0.00      27/648         BASM_OpRegImmP [156]
+                0.00    0.00      45/648         BASM_OpMemRegP [112]
+                0.00    0.00      67/648         BASM_OpRegP [131]
+                0.00    0.00     205/648         BASM_OpRegMemP [108]
+                0.00    0.00     304/648         BASM_OpRegRegP [106]
+[104]    0.0    0.00    0.00     648         BASM_OpArgRegP [104]
+-----------------------------------------------
+                0.00    0.00     340/340         hexbyte [110]
+[105]    0.0    0.00    0.00     340         hexval [105]
+-----------------------------------------------
+                0.00    0.00     274/274         BASM_OutOpRegReg [163]
+[106]    0.0    0.00    0.00     274         BASM_OpRegRegP [106]
+                0.00    0.00     304/648         BASM_OpArgRegP [104]
+-----------------------------------------------
+                0.00    0.00      37/233         BASM_ParseSpecial [119]
+                0.00    0.00      40/233         BASM_OutDWord [178]
+                0.00    0.00      60/233         BASM_ModRM [145]
+                0.00    0.00      96/233         BASM_OutBodyBytes [122]
+[107]    0.0    0.00    0.00     233         BASM_OutByte [107]
+-----------------------------------------------
+                0.00    0.00     205/205         BASM_OutOpRegMem [172]
+[108]    0.0    0.00    0.00     205         BASM_OpRegMemP [108]
+                0.00    0.00     205/648         BASM_OpArgRegP [104]
+                0.00    0.00      21/200         BASM_OpArgMemP [109]
+-----------------------------------------------
+                0.00    0.00      21/200         BASM_OpRegMemP [108]
+                0.00    0.00      26/200         BASM_OpMemP [157]
+                0.00    0.00     153/200         BASM_OpMemRegP [112]
+[109]    0.0    0.00    0.00     200         BASM_OpArgMemP [109]
+-----------------------------------------------
+                0.00    0.00     170/170         BASM_OutBodyBytes [122]
+[110]    0.0    0.00    0.00     170         hexbyte [110]
+                0.00    0.00     340/340         hexval [105]
+-----------------------------------------------
+                0.00    0.00     164/164         BASM_ParseOpcode [118]
+[111]    0.0    0.00    0.00     164         BASM_Parse_IsLineBreak [111]
+-----------------------------------------------
+                0.00    0.00     153/153         BASM_OutOpMemReg [191]
+[112]    0.0    0.00    0.00     153         BASM_OpMemRegP [112]
+                0.00    0.00     153/200         BASM_OpArgMemP [109]
+                0.00    0.00      45/648         BASM_OpArgRegP [104]
+-----------------------------------------------
+                                  73             BGBDY_FindType <cycle 1> [127]
+                0.00    0.00      61/122         BGBDY_New [135]
+[113]    0.0    0.00    0.00     134         BGBDY_Init <cycle 1> [113]
+                0.00    0.00       1/2           BGBGC_Init [223]
+                0.00    0.00       1/2           BGBDY_InitTypes [222]
+                                   1             BGBDY_SetMark <cycle 1> [246]
+                                   1             BGBDY_SetPreserve <cycle 1> [247]
+-----------------------------------------------
+                0.00    0.00      11/131         BASM_GetSymIndex [162]
+                0.00    0.00      53/131         BASM_FetchSymHash [142]
+                0.00    0.00      67/131         BASM_FetchSymIndex [129]
+[114]    0.0    0.00    0.00     131         BASM_UnmangleName [114]
+-----------------------------------------------
+                0.00    0.00       1/115         BASM_ParseSpecial [119]
+                0.00    0.00     114/115         BASM_ParseArg [117]
+[115]    0.0    0.00    0.00     115         BASM_ParseReg [115]
+                0.00    0.00   14983/32182       basm_stricmp [99]
+-----------------------------------------------
+                0.00    0.00      16/114         BASM_OutOpSingle [164]
+                0.00    0.00      98/114         BASM_OpOnlySingleP [121]
+[116]    0.0    0.00    0.00     114         BASM_OpSingleP [116]
+-----------------------------------------------
+                0.00    0.00     113/113         BASM_ParseOpcode [118]
+[117]    0.0    0.00    0.00     113         BASM_ParseArg [117]
+                0.00    0.00     365/32182       basm_stricmp [99]
+                0.00    0.00     269/940         BASM_Parse_Token [102]
+                0.00    0.00     114/115         BASM_ParseReg [115]
+                0.00    0.00      25/26          basm_atoi [160]
+                0.00    0.00       9/58          basm_strdup [141]
+-----------------------------------------------
+                0.00    0.00     102/102         BASM_ParseOpcodeList [202]
+[118]    0.0    0.00    0.00     102         BASM_ParseOpcode [118]
+                0.00    0.00   14144/32182       basm_stricmp [99]
+                0.00    0.00     669/940         BASM_Parse_Token [102]
+                0.00    0.00     164/164         BASM_Parse_IsLineBreak [111]
+                0.00    0.00     113/113         BASM_ParseArg [117]
+                0.00    0.00      94/94          BASM_ParseSpecial [119]
+                0.00    0.00      92/92          BASM_OpOnlySingleP [121]
+                0.00    0.00      39/39          BASM_OutOpGeneric1 [147]
+                0.00    0.00      37/37          BASM_OutOpGeneric2 [148]
+                0.00    0.00      16/16          BASM_OutOpSingle [164]
+                0.00    0.00       8/58          basm_strdup [141]
+                0.00    0.00       8/8           BASM_EmitLabel [186]
+-----------------------------------------------
+                0.00    0.00      94/94          BASM_ParseOpcode [118]
+[119]    0.0    0.00    0.00      94         BASM_ParseSpecial [119]
+                0.00    0.00    2624/32182       basm_stricmp [99]
+                0.00    0.00      37/233         BASM_OutByte [107]
+                0.00    0.00       2/940         BASM_Parse_Token [102]
+                0.00    0.00       1/26          basm_atoi [160]
+                0.00    0.00       1/115         BASM_ParseReg [115]
+                0.00    0.00       1/10          BASM_OutDWord [178]
+-----------------------------------------------
+                0.00    0.00       1/92          BASM_OutOpStrRegImm [238]
+                0.00    0.00       6/92          BASM_OutOpStrMem [194]
+                0.00    0.00      16/92          BASM_OutOpStr [165]
+                0.00    0.00      16/92          BASM_OutOpStrRegReg [166]
+                0.00    0.00      20/92          BASM_OutOpStrRegMem [161]
+                0.00    0.00      33/92          BASM_OutOpStrReg [150]
+[120]    0.0    0.00    0.00      92         BASM_AddrOverride [120]
+                0.00    0.00      92/92          BASM_Reg16P [123]
+                0.00    0.00      92/92          BASM_Reg32P [124]
+-----------------------------------------------
+                0.00    0.00      92/92          BASM_ParseOpcode [118]
+[121]    0.0    0.00    0.00      92         BASM_OpOnlySingleP [121]
+                0.00    0.00      98/114         BASM_OpSingleP [116]
+-----------------------------------------------
+                0.00    0.00       1/92          BASM_OutOpStrRegImm [238]
+                0.00    0.00       6/92          BASM_OutOpStrMem [194]
+                0.00    0.00      16/92          BASM_OutOpStr [165]
+                0.00    0.00      16/92          BASM_OutOpStrRegReg [166]
+                0.00    0.00      20/92          BASM_OutOpStrRegMem [161]
+                0.00    0.00      33/92          BASM_OutOpStrReg [150]
+[122]    0.0    0.00    0.00      92         BASM_OutBodyBytes [122]
+                0.00    0.00     170/170         hexbyte [110]
+                0.00    0.00      96/233         BASM_OutByte [107]
+-----------------------------------------------
+                0.00    0.00      92/92          BASM_AddrOverride [120]
+[123]    0.0    0.00    0.00      92         BASM_Reg16P [123]
+-----------------------------------------------
+                0.00    0.00      92/92          BASM_AddrOverride [120]
+[124]    0.0    0.00    0.00      92         BASM_Reg32P [124]
+-----------------------------------------------
+                0.00    0.00       1/76          BASM_OutOpStrRegImm [238]
+                0.00    0.00       6/76          BASM_OutOpStrMem [194]
+                0.00    0.00      16/76          BASM_OutOpStrRegReg [166]
+                0.00    0.00      20/76          BASM_OutOpStrRegMem [161]
+                0.00    0.00      33/76          BASM_OutOpStrReg [150]
+[125]    0.0    0.00    0.00      76         BASM_OutModRM [125]
+                0.00    0.00      42/42          BASM_ModRM [145]
+-----------------------------------------------
+                0.00    0.00       1/76          BASM_OutOpStrRegImm [238]
+                0.00    0.00       6/76          BASM_OutOpStrMem [194]
+                0.00    0.00      16/76          BASM_OutOpStrRegReg [166]
+                0.00    0.00      20/76          BASM_OutOpStrRegMem [161]
+                0.00    0.00      33/76          BASM_OutOpStrReg [150]
+[126]    0.0    0.00    0.00      76         BASM_OutSufBytes [126]
+-----------------------------------------------
+                                  10             BGBDY_NewType <cycle 1> [180]
+                                  63             BGBDY_FetchType <cycle 1> [134]
+[127]    0.0    0.00    0.00      73         BGBDY_FindType <cycle 1> [127]
+                                  73             BGBDY_Init <cycle 1> [113]
+-----------------------------------------------
+                0.00    0.00       1/70          BASM_OutOpStrRegImm [238]
+                0.00    0.00      16/70          BASM_OutOpStrRegReg [166]
+                0.00    0.00      20/70          BASM_OutOpStrRegMem [161]
+                0.00    0.00      33/70          BASM_OutOpStrReg [150]
+[128]    0.0    0.00    0.00      70         BASM_RegREXW [128]
+-----------------------------------------------
+                0.00    0.00      19/67          BASM_GetSymIndex [162]
+                0.00    0.00      48/67          BASM_FetchSym [144]
+[129]    0.0    0.00    0.00      67         BASM_FetchSymIndex [129]
+                0.00    0.00      67/67          BASM_FetchSymIndex2 [130]
+                0.00    0.00      67/131         BASM_UnmangleName [114]
+-----------------------------------------------
+                0.00    0.00      67/67          BASM_FetchSymIndex [129]
+[130]    0.0    0.00    0.00      67         BASM_FetchSymIndex2 [130]
+-----------------------------------------------
+                0.00    0.00      67/67          BASM_OutOpReg [149]
+[131]    0.0    0.00    0.00      67         BASM_OpRegP [131]
+                0.00    0.00      67/648         BASM_OpArgRegP [104]
+-----------------------------------------------
+                0.00    0.00      66/66          BASM_Parse_Token [102]
+[132]    0.0    0.00    0.00      66         BASM_Parse_MatchTokenListLen [132]
+-----------------------------------------------
+                0.00    0.00      66/66          BASM_Parse_Token [102]
+[133]    0.0    0.00    0.00      66         BASM_Parse_OpChar [133]
+-----------------------------------------------
+                                   1             BGBDY_SetMark <cycle 1> [246]
+                                   1             BGBDY_SetPreserve <cycle 1> [247]
+                0.00    0.00      61/122         BGBDY_New [135]
+[134]    0.0    0.00    0.00      63         BGBDY_FetchType <cycle 1> [134]
+                                  63             BGBDY_FindType <cycle 1> [127]
+                                  10             BGBDY_NewType <cycle 1> [180]
+-----------------------------------------------
+                0.00    0.00       1/61          gcatomic [94]
+                0.00    0.00       6/61          BGBDY_HashSymbolQuick [90]
+                0.00    0.00      11/61          BGBDY_HashSymbol [34]
+                0.00    0.00      15/61          gctalloc [171]
+                0.00    0.00      28/61          gcalloc [154]
+[135]    0.0    0.00    0.00      61         BGBDY_New [135]
+                0.00    0.00      61/122         BGBDY_Init <cycle 1> [113]
+                0.00    0.00      61/122         BGBDY_FetchType <cycle 1> [134]
+                0.00    0.00      61/61          BGBGC_Alloc [136]
+-----------------------------------------------
+                0.00    0.00      61/61          BGBDY_New [135]
+[136]    0.0    0.00    0.00      61         BGBGC_Alloc [136]
+                0.00    0.00      61/61          thLockMutex [139]
+                0.00    0.00      61/61          BGBGC_CollectPause [137]
+                0.00    0.00      61/61          thUnlockMutex [140]
+                0.00    0.00      61/61          BGBGC_TryMarkSafe [138]
+                0.00    0.00      53/53          BGBGC_AllocChk [143]
+                0.00    0.00       8/8           BGBGC_AllocLObj [188]
+                0.00    0.00       8/8           BGBGC_CollectUnpause [189]
+-----------------------------------------------
+                0.00    0.00      61/61          BGBGC_Alloc [136]
+[137]    0.0    0.00    0.00      61         BGBGC_CollectPause [137]
+-----------------------------------------------
+                0.00    0.00      61/61          BGBGC_Alloc [136]
+[138]    0.0    0.00    0.00      61         BGBGC_TryMarkSafe [138]
+-----------------------------------------------
+                0.00    0.00      61/61          BGBGC_Alloc [136]
+[139]    0.0    0.00    0.00      61         thLockMutex [139]
+-----------------------------------------------
+                0.00    0.00      61/61          BGBGC_Alloc [136]
+[140]    0.0    0.00    0.00      61         thUnlockMutex [140]
+-----------------------------------------------
+                0.00    0.00       2/58          BASM_BeginAssembly <cycle 2> [214]
+                0.00    0.00       8/58          BASM_EmitLabelPos [187]
+                0.00    0.00       8/58          BASM_ParseOpcode [118]
+                0.00    0.00       9/58          BASM_EmitGotoPos [183]
+                0.00    0.00       9/58          BASM_ParseArg [117]
+                0.00    0.00      22/58          BASM_GetSymIndex [162]
+[141]    0.0    0.00    0.00      58         basm_strdup [141]
+-----------------------------------------------
+                0.00    0.00      53/53          BASM_LookupLabel <cycle 2> [153]
+[142]    0.0    0.00    0.00      53         BASM_FetchSymHash [142]
+                0.00    0.00      53/131         BASM_UnmangleName [114]
+-----------------------------------------------
+                0.00    0.00      53/53          BGBGC_Alloc [136]
+[143]    0.0    0.00    0.00      53         BGBGC_AllocChk [143]
+-----------------------------------------------
+                0.00    0.00      48/48          BASM_LookupLabel <cycle 2> [153]
+[144]    0.0    0.00    0.00      48         BASM_FetchSym [144]
+                0.00    0.00      48/67          BASM_FetchSymIndex [129]
+-----------------------------------------------
+                0.00    0.00      42/42          BASM_OutModRM [125]
+[145]    0.0    0.00    0.00      42         BASM_ModRM [145]
+                0.00    0.00      60/233         BASM_OutByte [107]
+                0.00    0.00       7/7           BASM_LabelDisp [190]
+-----------------------------------------------
+                                   1             basm_print <cycle 2> [258]
+                                   2             BASM_RegisterPtr <cycle 2> [218]
+                                   2             BASM_BeginAssembly <cycle 2> [214]
+                                   5             BASM_GetPtr <cycle 2> [196]
+                                  29             BASM_LookupLabel <cycle 2> [153]
+                0.00    0.00       1/7           BASM_InitSig [48]
+[146]    0.0    0.00    0.00      40         BASM_Init <cycle 2> [146]
+                0.00    0.00       1/1           BASM_InitLink [234]
+                0.00    0.00       1/2           BASM_InitRand [216]
+                0.00    0.00       1/1           BASM_NewContext [235]
+                0.00    0.00       1/3           BASM_ParseOpcodeList [202]
+                                   2             BASM_RegisterPtr <cycle 2> [218]
+                                   1             BASM_BeginAssembly <cycle 2> [214]
+                                   1             basm_print <cycle 2> [258]
+                                   1             BASM_EndAssemblyQuiet <cycle 2> [215]
+                                   1             BASM_GetPtr <cycle 2> [196]
+-----------------------------------------------
+                0.00    0.00      39/39          BASM_ParseOpcode [118]
+[147]    0.0    0.00    0.00      39         BASM_OutOpGeneric1 [147]
+                0.00    0.00      33/33          BASM_OutOpReg [149]
+                0.00    0.00       6/6           BASM_OutOpMem [193]
+-----------------------------------------------
+                0.00    0.00      37/37          BASM_ParseOpcode [118]
+[148]    0.0    0.00    0.00      37         BASM_OutOpGeneric2 [148]
+                0.00    0.00      16/16          BASM_OutOpRegReg [163]
+                0.00    0.00      13/13          BASM_OutOpRegMem [172]
+                0.00    0.00       7/7           BASM_OutOpMemReg [191]
+                0.00    0.00       1/1           BASM_OutOpRegImm [237]
+-----------------------------------------------
+                0.00    0.00      33/33          BASM_OutOpGeneric1 [147]
+[149]    0.0    0.00    0.00      33         BASM_OutOpReg [149]
+                0.00    0.00      67/768         BASM_OpArchP [103]
+                0.00    0.00      67/67          BASM_OpRegP [131]
+                0.00    0.00      33/33          BASM_OutOpStrReg [150]
+-----------------------------------------------
+                0.00    0.00      33/33          BASM_OutOpReg [149]
+[150]    0.0    0.00    0.00      33         BASM_OutOpStrReg [150]
+                0.00    0.00      33/92          BASM_AddrOverride [120]
+                0.00    0.00      33/70          BASM_RegREXW [128]
+                0.00    0.00      33/92          BASM_OutBodyBytes [122]
+                0.00    0.00      33/76          BASM_OutModRM [125]
+                0.00    0.00      33/76          BASM_OutSufBytes [126]
+-----------------------------------------------
+                0.00    0.00      32/32          BASM_LookupLabel <cycle 2> [153]
+[151]    0.0    0.00    0.00      32         BASM_LookupLabelOS [151]
+-----------------------------------------------
+                0.00    0.00      32/32          BGBGC_NewBlock [168]
+[152]    0.0    0.00    0.00      32         BGBGC_ChunkSetEnt [152]
+-----------------------------------------------
+                                   5             BASM_GetPtr <cycle 2> [196]
+                                  24             BASM_AssignSym <cycle 2> [185]
+[153]    0.0    0.00    0.00      29         BASM_LookupLabel <cycle 2> [153]
+                0.00    0.00      53/53          BASM_FetchSymHash [142]
+                0.00    0.00      48/48          BASM_FetchSym [144]
+                0.00    0.00      32/32          BASM_LookupLabelOS [151]
+                                  29             BASM_Init <cycle 2> [146]
+-----------------------------------------------
+                0.00    0.00       1/28          BGBDY_HashSymbol [34]
+                0.00    0.00       1/28          BGBDY_HashSymbolQuick [90]
+                0.00    0.00       2/28          BGBDYC_InheritSingle [221]
+                0.00    0.00       2/28          dySetStatus [70]
+                0.00    0.00       3/28          BGBDYC_CheckAddMinf [219]
+                0.00    0.00       3/28          BGBDYC_CreateInstance [205]
+                0.00    0.00       4/28          BGBDYC_CheckAddSlot [204]
+                0.00    0.00       6/28          BGBDYC_InitHash [241]
+                0.00    0.00       6/28          BGBDYC_CreateClass [46]
+[154]    0.0    0.00    0.00      28         gcalloc [154]
+                0.00    0.00      28/61          BGBDY_New [135]
+-----------------------------------------------
+                0.00    0.00      27/27          BASM_OpRegImmP [156]
+[155]    0.0    0.00    0.00      27         BASM_GetRegWidth [155]
+-----------------------------------------------
+                0.00    0.00      27/27          BASM_OutOpRegImm [237]
+[156]    0.0    0.00    0.00      27         BASM_OpRegImmP [156]
+                0.00    0.00      27/27          BASM_GetRegWidth [155]
+                0.00    0.00      27/648         BASM_OpArgRegP [104]
+                0.00    0.00       3/3           BASM_OpArgImmP [201]
+-----------------------------------------------
+                0.00    0.00      26/26          BASM_OutOpMem [193]
+[157]    0.0    0.00    0.00      26         BASM_OpMemP [157]
+                0.00    0.00      26/200         BASM_OpArgMemP [109]
+-----------------------------------------------
+                0.00    0.00       6/26          BASM_OutOpStrMem [194]
+                0.00    0.00      20/26          BASM_OutOpStrRegMem [161]
+[158]    0.0    0.00    0.00      26         BASM_OutMOffs [158]
+                0.00    0.00       1/10          BASM_OutDWord [178]
+                0.00    0.00       1/9           BASM_EmitGoto [182]
+-----------------------------------------------
+                0.00    0.00       6/26          BASM_OutOpStrMem [194]
+                0.00    0.00      20/26          BASM_OutOpStrRegMem [161]
+[159]    0.0    0.00    0.00      26         BASM_SegOverride [159]
+-----------------------------------------------
+                0.00    0.00       1/26          BASM_ParseSpecial [119]
+                0.00    0.00      25/26          BASM_ParseArg [117]
+[160]    0.0    0.00    0.00      26         basm_atoi [160]
+-----------------------------------------------
+                0.00    0.00       7/20          BASM_OutOpMemReg [191]
+                0.00    0.00      13/20          BASM_OutOpRegMem [172]
+[161]    0.0    0.00    0.00      20         BASM_OutOpStrRegMem [161]
+                0.00    0.00      20/26          BASM_SegOverride [159]
+                0.00    0.00      20/92          BASM_AddrOverride [120]
+                0.00    0.00      20/70          BASM_RegREXW [128]
+                0.00    0.00      20/92          BASM_OutBodyBytes [122]
+                0.00    0.00      20/76          BASM_OutModRM [125]
+                0.00    0.00      20/26          BASM_OutMOffs [158]
+                0.00    0.00      20/76          BASM_OutSufBytes [126]
+-----------------------------------------------
+                0.00    0.00       9/19          BASM_AddSymRef [181]
+                0.00    0.00      10/19          BASM_AddSym [176]
+[162]    0.0    0.00    0.00      19         BASM_GetSymIndex [162]
+                0.00    0.00      22/58          basm_strdup [141]
+                0.00    0.00      19/67          BASM_FetchSymIndex [129]
+                0.00    0.00      11/131         BASM_UnmangleName [114]
+-----------------------------------------------
+                0.00    0.00      16/16          BASM_OutOpGeneric2 [148]
+[163]    0.0    0.00    0.00      16         BASM_OutOpRegReg [163]
+                0.00    0.00     274/768         BASM_OpArchP [103]
+                0.00    0.00     274/274         BASM_OpRegRegP [106]
+                0.00    0.00      16/16          BASM_OutOpStrRegReg [166]
+-----------------------------------------------
+                0.00    0.00      16/16          BASM_ParseOpcode [118]
+[164]    0.0    0.00    0.00      16         BASM_OutOpSingle [164]
+                0.00    0.00      16/768         BASM_OpArchP [103]
+                0.00    0.00      16/114         BASM_OpSingleP [116]
+                0.00    0.00      16/16          BASM_OutOpStr [165]
+-----------------------------------------------
+                0.00    0.00      16/16          BASM_OutOpSingle [164]
+[165]    0.0    0.00    0.00      16         BASM_OutOpStr [165]
+                0.00    0.00      16/92          BASM_AddrOverride [120]
+                0.00    0.00      16/92          BASM_OutBodyBytes [122]
+-----------------------------------------------
+                0.00    0.00      16/16          BASM_OutOpRegReg [163]
+[166]    0.0    0.00    0.00      16         BASM_OutOpStrRegReg [166]
+                0.00    0.00      16/92          BASM_AddrOverride [120]
+                0.00    0.00      16/70          BASM_RegREXW [128]
+                0.00    0.00      16/92          BASM_OutBodyBytes [122]
+                0.00    0.00      16/76          BASM_OutModRM [125]
+                0.00    0.00      16/76          BASM_OutSufBytes [126]
+-----------------------------------------------
+                0.00    0.00      16/16          BGBDYC_LookupSlotR [175]
+[167]    0.0    0.00    0.00      16         BGBDYC_CheckHashSlot [167]
+-----------------------------------------------
+                0.00    0.00      16/16          BGBGC_Init [223]
+[168]    0.0    0.00    0.00      16         BGBGC_NewBlock [168]
+                0.00    0.00      32/32          BGBGC_ChunkSetEnt [152]
+                0.00    0.00      16/16          log2up [169]
+-----------------------------------------------
+                0.00    0.00      16/16          BGBGC_NewBlock [168]
+[169]    0.0    0.00    0.00      16         log2up [169]
+-----------------------------------------------
+                0.00    0.00       3/15          BGBDYC_AddSlotAbstract [55]
+                0.00    0.00      12/15          BGBDYC_LookupSlot [174]
+[170]    0.0    0.00    0.00      15         BGBDYC_CalcHashName [170]
+-----------------------------------------------
+                0.00    0.00       2/15          BGBDYC_AddMethodSig [62]
+                0.00    0.00       2/15          BGBDYC_TouchMinfMethod [198]
+                0.00    0.00       2/15          dyRawMethodData [92]
+                0.00    0.00       3/15          BGBDYC_CreateClass [46]
+                0.00    0.00       3/15          BGBDYC_AddSlotAbstract [55]
+                0.00    0.00       3/15          BGBDYC_CreateInstance [205]
+[171]    0.0    0.00    0.00      15         gctalloc [171]
+                0.00    0.00      15/61          BGBDY_New [135]
+-----------------------------------------------
+                0.00    0.00      13/13          BASM_OutOpGeneric2 [148]
+[172]    0.0    0.00    0.00      13         BASM_OutOpRegMem [172]
+                0.00    0.00     205/768         BASM_OpArchP [103]
+                0.00    0.00     205/205         BASM_OpRegMemP [108]
+                0.00    0.00      13/20          BASM_OutOpStrRegMem [161]
+-----------------------------------------------
+                0.00    0.00       3/12          dycSetd [209]
+                0.00    0.00       4/12          dycGetSlotPtr [64]
+                0.00    0.00       5/12          dycGetd [197]
+[173]    0.0    0.00    0.00      12         BGBDYC_GetObjectSlotIdxPtrTH [173]
+-----------------------------------------------
+                0.00    0.00       2/12          dycGetSlotd [88]
+                0.00    0.00       4/12          dycIdxObjSlot [82]
+                0.00    0.00       6/12          dycIdxSlot [80]
+[174]    0.0    0.00    0.00      12         BGBDYC_LookupSlot [174]
+                0.00    0.00      12/15          BGBDYC_CalcHashName [170]
+                0.00    0.00      12/12          BGBDYC_LookupSlotR [175]
+-----------------------------------------------
+                                   4             BGBDYC_LookupSlotR [175]
+                0.00    0.00      12/12          BGBDYC_LookupSlot [174]
+[175]    0.0    0.00    0.00      12+4       BGBDYC_LookupSlotR [175]
+                0.00    0.00      16/16          BGBDYC_CheckHashSlot [167]
+                0.00    0.00       7/7           BGBDYC_AddHashSlot [192]
+                                   4             BGBDYC_LookupSlotR [175]
+-----------------------------------------------
+                0.00    0.00       2/10          BASM_RegisterPtr <cycle 2> [218]
+                0.00    0.00       8/10          BASM_AssignSym <cycle 2> [185]
+[176]    0.0    0.00    0.00      10         BASM_AddSym [176]
+                0.00    0.00      10/19          BASM_GetSymIndex [162]
+                0.00    0.00      10/10          BASM_UnlinkRefChain [179]
+                0.00    0.00      10/10          BASM_LinkRefChain [177]
+-----------------------------------------------
+                0.00    0.00      10/10          BASM_AddSym [176]
+[177]    0.0    0.00    0.00      10         BASM_LinkRefChain [177]
+-----------------------------------------------
+                0.00    0.00       1/10          BASM_OutImm [236]
+                0.00    0.00       1/10          BASM_OutMOffs [158]
+                0.00    0.00       1/10          BASM_ParseSpecial [119]
+                0.00    0.00       7/10          BASM_LabelDisp [190]
+[178]    0.0    0.00    0.00      10         BASM_OutDWord [178]
+                0.00    0.00      40/233         BASM_OutByte [107]
+-----------------------------------------------
+                0.00    0.00      10/10          BASM_AddSym [176]
+[179]    0.0    0.00    0.00      10         BASM_UnlinkRefChain [179]
+-----------------------------------------------
+                                  10             BGBDY_FetchType <cycle 1> [134]
+[180]    0.0    0.00    0.00      10         BGBDY_NewType <cycle 1> [180]
+                                  10             BGBDY_FindType <cycle 1> [127]
+-----------------------------------------------
+                0.00    0.00       9/9           BASM_LinkModule <cycle 2> [217]
+[181]    0.0    0.00    0.00       9         BASM_AddSymRef [181]
+                0.00    0.00       9/19          BASM_GetSymIndex [162]
+                0.00    0.00       9/9           BASM_LinkReference [184]
+-----------------------------------------------
+                0.00    0.00       1/9           BASM_OutImm [236]
+                0.00    0.00       1/9           BASM_OutMOffs [158]
+                0.00    0.00       7/9           BASM_LabelDisp [190]
+[182]    0.0    0.00    0.00       9         BASM_EmitGoto [182]
+                0.00    0.00       9/9           BASM_EmitGotoPos [183]
+-----------------------------------------------
+                0.00    0.00       9/9           BASM_EmitGoto [182]
+[183]    0.0    0.00    0.00       9         BASM_EmitGotoPos [183]
+                0.00    0.00       9/58          basm_strdup [141]
+-----------------------------------------------
+                0.00    0.00       9/9           BASM_AddSymRef [181]
+[184]    0.0    0.00    0.00       9         BASM_LinkReference [184]
+-----------------------------------------------
+                                   8             BASM_LinkModule <cycle 2> [217]
+[185]    0.0    0.00    0.00       8         BASM_AssignSym <cycle 2> [185]
+                0.00    0.00       8/10          BASM_AddSym [176]
+                                  24             BASM_LookupLabel <cycle 2> [153]
+-----------------------------------------------
+                0.00    0.00       8/8           BASM_ParseOpcode [118]
+[186]    0.0    0.00    0.00       8         BASM_EmitLabel [186]
+                0.00    0.00       8/8           BASM_EmitLabelPos [187]
+-----------------------------------------------
+                0.00    0.00       8/8           BASM_EmitLabel [186]
+[187]    0.0    0.00    0.00       8         BASM_EmitLabelPos [187]
+                0.00    0.00       8/58          basm_strdup [141]
+-----------------------------------------------
+                0.00    0.00       8/8           BGBGC_Alloc [136]
+[188]    0.0    0.00    0.00       8         BGBGC_AllocLObj [188]
+-----------------------------------------------
+                0.00    0.00       8/8           BGBGC_Alloc [136]
+[189]    0.0    0.00    0.00       8         BGBGC_CollectUnpause [189]
+-----------------------------------------------
+                0.00    0.00       7/7           BASM_ModRM [145]
+[190]    0.0    0.00    0.00       7         BASM_LabelDisp [190]
+                0.00    0.00       7/10          BASM_OutDWord [178]
+                0.00    0.00       7/9           BASM_EmitGoto [182]
+-----------------------------------------------
+                0.00    0.00       7/7           BASM_OutOpGeneric2 [148]
+[191]    0.0    0.00    0.00       7         BASM_OutOpMemReg [191]
+                0.00    0.00     153/768         BASM_OpArchP [103]
+                0.00    0.00     153/153         BASM_OpMemRegP [112]
+                0.00    0.00       7/20          BASM_OutOpStrRegMem [161]
+-----------------------------------------------
+                0.00    0.00       7/7           BGBDYC_LookupSlotR [175]
+[192]    0.0    0.00    0.00       7         BGBDYC_AddHashSlot [192]
+-----------------------------------------------
+                0.00    0.00       6/6           BASM_OutOpGeneric1 [147]
+[193]    0.0    0.00    0.00       6         BASM_OutOpMem [193]
+                0.00    0.00      26/768         BASM_OpArchP [103]
+                0.00    0.00      26/26          BASM_OpMemP [157]
+                0.00    0.00       6/6           BASM_OutOpStrMem [194]
+-----------------------------------------------
+                0.00    0.00       6/6           BASM_OutOpMem [193]
+[194]    0.0    0.00    0.00       6         BASM_OutOpStrMem [194]
+                0.00    0.00       6/26          BASM_SegOverride [159]
+                0.00    0.00       6/92          BASM_AddrOverride [120]
+                0.00    0.00       6/92          BASM_OutBodyBytes [122]
+                0.00    0.00       6/76          BASM_OutModRM [125]
+                0.00    0.00       6/26          BASM_OutMOffs [158]
+                0.00    0.00       6/76          BASM_OutSufBytes [126]
+-----------------------------------------------
+                0.00    0.00       2/6           BGBDYC_CreateClass [46]
+                0.00    0.00       4/6           dycGetClass [81]
+[195]    0.0    0.00    0.00       6         BGBDYC_FindClassQName [195]
+                0.00    0.00       3/3           BGBDYC_LookupClassQName [206]
+-----------------------------------------------
+                                   1             BASM_Init <cycle 2> [146]
+                0.00    0.00       4/7           BASM_InitSig [48]
+[196]    0.0    0.00    0.00       5         BASM_GetPtr <cycle 2> [196]
+                                   5             BASM_Init <cycle 2> [146]
+                                   5             BASM_LookupLabel <cycle 2> [153]
+-----------------------------------------------
+                0.00    0.00       5/5           tst_basics [71]
+[197]    0.0    0.00    0.00       5         dycGetd [197]
+                0.00    0.00       5/12          BGBDYC_GetObjectSlotIdxPtrTH [173]
+-----------------------------------------------
+                0.00    0.00       2/4           dycMethodVirtual [30]
+                0.00    0.00       2/4           BGBDYC_GetMethodSig [61]
+[198]    0.0    0.00    0.00       4         BGBDYC_TouchMinfMethod [198]
+                0.00    0.00       2/15          gctalloc [171]
+-----------------------------------------------
+                0.00    0.00       1/4           BGBGC_SpaceAllocSafeP [253]
+                0.00    0.00       3/4           BGBGC_SpaceAlloc [207]
+[199]    0.0    0.00    0.00       4         BGBGC_InitSpace [199]
+-----------------------------------------------
+                0.00    0.00       4/4           dycSetSlotd [63]
+[200]    0.0    0.00    0.00       4         dyllSigSetPtrDouble [200]
+-----------------------------------------------
+                0.00    0.00       3/3           BASM_OpRegImmP [156]
+[201]    0.0    0.00    0.00       3         BASM_OpArgImmP [201]
+-----------------------------------------------
+                0.00    0.00       1/3           BASM_Init <cycle 2> [146]
+                0.00    0.00       2/3           BASM_EndAssemblyQuiet <cycle 2> [215]
+[202]    0.0    0.00    0.00       3         BASM_ParseOpcodeList [202]
+                0.00    0.00     102/102         BASM_ParseOpcode [118]
+-----------------------------------------------
+                0.00    0.00       3/3           BGBDYC_AddSlot [54]
+[203]    0.0    0.00    0.00       3         BGBDYC_AlignClassLength [203]
+-----------------------------------------------
+                0.00    0.00       3/3           BGBDYC_AddSlotAbstract [55]
+[204]    0.0    0.00    0.00       3         BGBDYC_CheckAddSlot [204]
+                0.00    0.00       4/28          gcalloc [154]
+-----------------------------------------------
+                0.00    0.00       3/3           dycAlloc [87]
+[205]    0.0    0.00    0.00       3         BGBDYC_CreateInstance [205]
+                0.00    0.00       3/15          gctalloc [171]
+                0.00    0.00       3/28          gcalloc [154]
+-----------------------------------------------
+                0.00    0.00       3/3           BGBDYC_FindClassQName [195]
+[206]    0.0    0.00    0.00       3         BGBDYC_LookupClassQName [206]
+-----------------------------------------------
+                0.00    0.00       3/3           BGBDY_InitTypes [222]
+[207]    0.0    0.00    0.00       3         BGBGC_SpaceAlloc [207]
+                0.00    0.00       3/4           BGBGC_InitSpace [199]
+-----------------------------------------------
+                0.00    0.00       3/3           tst_initclass [28]
+[208]    0.0    0.00    0.00       3         dycEndClass [208]
+-----------------------------------------------
+                0.00    0.00       3/3           tst_basics [71]
+[209]    0.0    0.00    0.00       3         dycSetd [209]
+                0.00    0.00       3/12          BGBDYC_GetObjectSlotIdxPtrTH [173]
+-----------------------------------------------
+                0.00    0.00       3/3           BGBDYC_AddSlot [54]
+[210]    0.0    0.00    0.00       3         dyllSigSizeAlign [210]
+-----------------------------------------------
+                0.00    0.00       1/2           BASM_AllocTextChunk [233]
+                0.00    0.00       1/2           BASM_AllocDataChunk [232]
+[211]    0.0    0.00    0.00       2         BASM_AllocChunkBuffer [211]
+-----------------------------------------------
+                0.00    0.00       2/2           BASM_LinkModule <cycle 2> [217]
+[212]    0.0    0.00    0.00       2         BASM_AllocDataSz [212]
+-----------------------------------------------
+                0.00    0.00       2/2           BASM_LinkModule <cycle 2> [217]
+[213]    0.0    0.00    0.00       2         BASM_AllocTextSz [213]
+-----------------------------------------------
+                                   1             BASM_Init <cycle 2> [146]
+                0.00    0.00       1/7           BASM_InitSig [48]
+[214]    0.0    0.00    0.00       2         BASM_BeginAssembly <cycle 2> [214]
+                0.00    0.00       2/58          basm_strdup [141]
+                                   2             BASM_Init <cycle 2> [146]
+-----------------------------------------------
+                                   1             BASM_Init <cycle 2> [146]
+                0.00    0.00       1/7           BASM_InitSig [48]
+[215]    0.0    0.00    0.00       2         BASM_EndAssemblyQuiet <cycle 2> [215]
+                0.00    0.00       2/3           BASM_ParseOpcodeList [202]
+                                   2             BASM_LinkModule <cycle 2> [217]
+-----------------------------------------------
+                0.00    0.00       1/2           BASM_Init <cycle 2> [146]
+                0.00    0.00       1/2           BASM_InitLink [234]
+[216]    0.0    0.00    0.00       2         BASM_InitRand [216]
+                0.00    0.00       1/1           basm_genseed [257]
+-----------------------------------------------
+                                   2             BASM_EndAssemblyQuiet <cycle 2> [215]
+[217]    0.0    0.00    0.00       2         BASM_LinkModule <cycle 2> [217]
+                0.00    0.00       9/9           BASM_AddSymRef [181]
+                0.00    0.00       2/2           BASM_AllocTextSz [213]
+                0.00    0.00       2/2           BASM_AllocDataSz [212]
+                                   8             BASM_AssignSym <cycle 2> [185]
+-----------------------------------------------
+                                   2             BASM_Init <cycle 2> [146]
+[218]    0.0    0.00    0.00       2         BASM_RegisterPtr <cycle 2> [218]
+                0.00    0.00       2/10          BASM_AddSym [176]
+                                   2             BASM_Init <cycle 2> [146]
+-----------------------------------------------
+                0.00    0.00       2/2           BGBDYC_AddMethodSig [62]
+[219]    0.0    0.00    0.00       2         BGBDYC_CheckAddMinf [219]
+                0.00    0.00       3/28          gcalloc [154]
+-----------------------------------------------
+                0.00    0.00       2/2           dycGetSlotd [88]
+[220]    0.0    0.00    0.00       2         BGBDYC_GetObjectSlotIdxPtr [220]
+-----------------------------------------------
+                0.00    0.00       2/2           BGBDYC_CreateClass [46]
+[221]    0.0    0.00    0.00       2         BGBDYC_InheritSingle [221]
+                0.00    0.00       2/28          gcalloc [154]
+-----------------------------------------------
+                0.00    0.00       1/2           gc_init [260]
+                0.00    0.00       1/2           BGBDY_Init <cycle 1> [113]
+[222]    0.0    0.00    0.00       2         BGBDY_InitTypes [222]
+                0.00    0.00       3/3           BGBGC_SpaceAlloc [207]
+                0.00    0.00       1/1           BGBGC_SpaceAllocSafeP [253]
+-----------------------------------------------
+                0.00    0.00       1/2           gc_init [260]
+                0.00    0.00       1/2           BGBDY_Init <cycle 1> [113]
+[223]    0.0    0.00    0.00       2         BGBGC_Init [223]
+                0.00    0.00      16/16          BGBGC_NewBlock [168]
+                0.00    0.00       1/1           BGBGC_InitLow [252]
+                0.00    0.00       1/1           BGBGC_InitCons [251]
+                0.00    0.00       1/1           thMutex [262]
+                0.00    0.00       1/1           BGBGC_SpawnThread [254]
+-----------------------------------------------
+                0.00    0.00       2/2           BGBGC_SetLockObj [85]
+[224]    0.0    0.00    0.00       2         BGBGC_LookupLObj [224]
+-----------------------------------------------
+                0.00    0.00       1/2           BASM_InitSig [48]
+                0.00    0.00       1/2           basm_print <cycle 2> [258]
+[225]    0.0    0.00    0.00       2         basm_puts [225]
+-----------------------------------------------
+                0.00    0.00       2/2           thThread [231]
+[226]    0.0    0.00    0.00       2         bgbgc_thread_init [226]
+                0.00    0.00       1/1           BGBGC_AddMarkHandler [248]
+-----------------------------------------------
+                0.00    0.00       2/2           dycGetSlotd [88]
+[227]    0.0    0.00    0.00       2         dyllSigGetPtrDouble [227]
+-----------------------------------------------
+                0.00    0.00       2/2           dyRawMethodData [92]
+[228]    0.0    0.00    0.00       2         dyllSigRet [228]
+-----------------------------------------------
+                0.00    0.00       2/2           dySetStatus [70]
+[229]    0.0    0.00    0.00       2         dyo_init [229]
+                0.00    0.00       1/1           thAllocTls [261]
+-----------------------------------------------
+                0.00    0.00       2/2           dySetStatus [70]
+[230]    0.0    0.00    0.00       2         thGetTlsValue [230]
+-----------------------------------------------
+                0.00    0.00       1/2           BGBGC_StartCollectLoop [256]
+                0.00    0.00       1/2           BGBGC_SpawnThread [254]
+[231]    0.0    0.00    0.00       2         thThread [231]
+                0.00    0.00       2/2           bgbgc_thread_init [226]
+-----------------------------------------------
+                0.00    0.00       1/1           BASM_InitLink [234]
+[232]    0.0    0.00    0.00       1         BASM_AllocDataChunk [232]
+                0.00    0.00       1/2           BASM_AllocChunkBuffer [211]
+-----------------------------------------------
+                0.00    0.00       1/1           BASM_InitLink [234]
+[233]    0.0    0.00    0.00       1         BASM_AllocTextChunk [233]
+                0.00    0.00       1/2           BASM_AllocChunkBuffer [211]
+-----------------------------------------------
+                0.00    0.00       1/1           BASM_Init <cycle 2> [146]
+[234]    0.0    0.00    0.00       1         BASM_InitLink [234]
+                0.00    0.00       1/2           BASM_InitRand [216]
+                0.00    0.00       1/1           BASM_AllocTextChunk [233]
+                0.00    0.00       1/1           BASM_AllocDataChunk [232]
+-----------------------------------------------
+                0.00    0.00       1/1           BASM_Init <cycle 2> [146]
+[235]    0.0    0.00    0.00       1         BASM_NewContext [235]
+-----------------------------------------------
+                0.00    0.00       1/1           BASM_OutOpStrRegImm [238]
+[236]    0.0    0.00    0.00       1         BASM_OutImm [236]
+                0.00    0.00       1/10          BASM_OutDWord [178]
+                0.00    0.00       1/9           BASM_EmitGoto [182]
+-----------------------------------------------
+                0.00    0.00       1/1           BASM_OutOpGeneric2 [148]
+[237]    0.0    0.00    0.00       1         BASM_OutOpRegImm [237]
+                0.00    0.00      27/768         BASM_OpArchP [103]
+                0.00    0.00      27/27          BASM_OpRegImmP [156]
+                0.00    0.00       1/1           BASM_OutOpStrRegImm [238]
+-----------------------------------------------
+                0.00    0.00       1/1           BASM_OutOpRegImm [237]
+[238]    0.0    0.00    0.00       1         BASM_OutOpStrRegImm [238]
+                0.00    0.00       1/92          BASM_AddrOverride [120]
+                0.00    0.00       1/70          BASM_RegREXW [128]
+                0.00    0.00       1/92          BASM_OutBodyBytes [122]
+                0.00    0.00       1/76          BASM_OutModRM [125]
+                0.00    0.00       1/1           BASM_OutImm [236]
+                0.00    0.00       1/76          BASM_OutSufBytes [126]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[239]    0.0    0.00    0.00       1         BGBDYC_DumpMinfHash [239]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[240]    0.0    0.00    0.00       1         BGBDYC_DumpSlotHash [240]
+-----------------------------------------------
+                0.00    0.00       1/1           BGBDYC_Init [51]
+[241]    0.0    0.00    0.00       1         BGBDYC_InitHash [241]
+                0.00    0.00       6/28          gcalloc [154]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[242]    0.0    0.00    0.00       1         BGBDYC_MinfHashSize [242]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[243]    0.0    0.00    0.00       1         BGBDYC_MinfHashUsed [243]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[244]    0.0    0.00    0.00       1         BGBDYC_SlotHashSize [244]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[245]    0.0    0.00    0.00       1         BGBDYC_SlotHashUsed [245]
+-----------------------------------------------
+                                   1             BGBDY_Init <cycle 1> [113]
+[246]    0.0    0.00    0.00       1         BGBDY_SetMark <cycle 1> [246]
+                                   1             BGBDY_FetchType <cycle 1> [134]
+-----------------------------------------------
+                                   1             BGBDY_Init <cycle 1> [113]
+[247]    0.0    0.00    0.00       1         BGBDY_SetPreserve <cycle 1> [247]
+                                   1             BGBDY_FetchType <cycle 1> [134]
+-----------------------------------------------
+                0.00    0.00       1/1           bgbgc_thread_init [226]
+[248]    0.0    0.00    0.00       1         BGBGC_AddMarkHandler [248]
+-----------------------------------------------
+                0.00    0.00       1/1           BGBGC_InitCons [251]
+[249]    0.0    0.00    0.00       1         BGBGC_AllocCBlk [249]
+-----------------------------------------------
+                0.00    0.00       1/1           BGBGC_ThreadProc@4 [474]
+[250]    0.0    0.00    0.00       1         BGBGC_CollectLoop [250]
+                0.00    0.00    2859/2860        thSleep [100]
+-----------------------------------------------
+                0.00    0.00       1/1           BGBGC_Init [223]
+[251]    0.0    0.00    0.00       1         BGBGC_InitCons [251]
+                0.00    0.00       1/1           BGBGC_AllocCBlk [249]
+-----------------------------------------------
+                0.00    0.00       1/1           BGBGC_Init [223]
+[252]    0.0    0.00    0.00       1         BGBGC_InitLow [252]
+-----------------------------------------------
+                0.00    0.00       1/1           BGBDY_InitTypes [222]
+[253]    0.0    0.00    0.00       1         BGBGC_SpaceAllocSafeP [253]
+                0.00    0.00       1/4           BGBGC_InitSpace [199]
+-----------------------------------------------
+                0.00    0.00       1/1           BGBGC_Init [223]
+[254]    0.0    0.00    0.00       1         BGBGC_SpawnThread [254]
+                0.00    0.00       1/2           thThread [231]
+-----------------------------------------------
+                0.00    0.00       1/1           gc_init [260]
+[255]    0.0    0.00    0.00       1         BGBGC_StackBase [255]
+-----------------------------------------------
+                0.00    0.00       1/1           BGBGC_ThreadProc@4 [474]
+[256]    0.0    0.00    0.00       1         BGBGC_StartCollectLoop [256]
+                0.00    0.00       1/2           thThread [231]
+-----------------------------------------------
+                0.00    0.00       1/1           BASM_InitRand [216]
+[257]    0.0    0.00    0.00       1         basm_genseed [257]
+-----------------------------------------------
+                                   1             BASM_Init <cycle 2> [146]
+[258]    0.0    0.00    0.00       1         basm_print <cycle 2> [258]
+                0.00    0.00       1/2           basm_puts [225]
+                                   1             BASM_Init <cycle 2> [146]
+-----------------------------------------------
+                0.00    0.00       1/1           gc_init [260]
+[259]    0.0    0.00    0.00       1         dyopr_init [259]
+-----------------------------------------------
+                0.00    0.00       1/1           main [1]
+[260]    0.0    0.00    0.00       1         gc_init [260]
+                0.00    0.00       1/2           BGBGC_Init [223]
+                0.00    0.00       1/1           BGBGC_StackBase [255]
+                0.00    0.00       1/2           BGBDY_InitTypes [222]
+                0.00    0.00       1/1           dyopr_init [259]
+-----------------------------------------------
+                0.00    0.00       1/1           dyo_init [229]
+[261]    0.0    0.00    0.00       1         thAllocTls [261]
+-----------------------------------------------
+                0.00    0.00       1/1           BGBGC_Init [223]
+[262]    0.0    0.00    0.00       1         thMutex [262]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+
+Index by function name
+
+ [176] BASM_AddSym           [179] BASM_UnlinkRefChain   [138] BGBGC_TryMarkSafe
+ [181] BASM_AddSymRef        [114] BASM_UnmangleName     [160] basm_atoi
+ [120] BASM_AddrOverride      [65] BGBDYC_AddHashMethod  [257] basm_genseed
+ [211] BASM_AllocChunkBuffer [192] BGBDYC_AddHashSlot    [258] basm_print
+ [232] BASM_AllocDataChunk    [62] BGBDYC_AddMethodSig   [225] basm_puts
+ [212] BASM_AllocDataSz       [54] BGBDYC_AddSlot        [141] basm_strdup
+ [233] BASM_AllocTextChunk    [55] BGBDYC_AddSlotAbstract [99] basm_stricmp
+ [213] BASM_AllocTextSz      [203] BGBDYC_AlignClassLength [226] bgbgc_thread_init
+ [185] BASM_AssignSym        [170] BGBDYC_CalcHashName     [3] dyApplyMethodV
+ [214] BASM_BeginAssembly     [17] BGBDYC_CalcHashNameSig [92] dyRawMethodData
+  [14] BASM_CallSig          [219] BGBDYC_CheckAddMinf    [70] dySetStatus
+  [74] BASM_CallSigStd       [204] BGBDYC_CheckAddSlot    [87] dycAlloc
+  [49] BASM_CreateStub        [20] BGBDYC_CheckHashMethodSig [83] dycAllocClass
+ [182] BASM_EmitGoto         [167] BGBDYC_CheckHashSlot   [40] dycBeginClass
+ [183] BASM_EmitGotoPos       [46] BGBDYC_CreateClass     [41] dycCallSig
+ [186] BASM_EmitLabel        [205] BGBDYC_CreateInstance  [44] dycCallSigUr
+ [187] BASM_EmitLabelPos     [239] BGBDYC_DumpMinfHash     [6] dycCallSigV
+ [215] BASM_EndAssemblyQuiet [240] BGBDYC_DumpSlotHash     [5] dycCallSigVd
+ [144] BASM_FetchSym         [195] BGBDYC_FindClassQName   [4] dycCallSigd
+ [142] BASM_FetchSymHash      [61] BGBDYC_GetMethodSig    [75] dycCallSigf
+ [129] BASM_FetchSymIndex     [22] BGBDYC_GetMinfFunc     [38] dycCallU
+ [130] BASM_FetchSymIndex2   [220] BGBDYC_GetObjectSlotIdxPtr [8] dycCallV
+ [196] BASM_GetPtr           [173] BGBDYC_GetObjectSlotIdxPtrTH [7] dycCalld
+ [155] BASM_GetRegWidth       [23] BGBDYC_GetStaticMinfFunc [208] dycEndClass
+ [162] BASM_GetSymIndex      [221] BGBDYC_InheritSingle   [81] dycGetClass
+ [146] BASM_Init              [51] BGBDYC_Init            [64] dycGetSlotPtr
+ [234] BASM_InitLink         [241] BGBDYC_InitHash        [88] dycGetSlotd
+ [216] BASM_InitRand          [66] BGBDYC_LookupClassMethodSig [197] dycGetd
+  [48] BASM_InitSig          [206] BGBDYC_LookupClassQName [11] dycIdxObjMethod
+ [190] BASM_LabelDisp         [13] BGBDYC_LookupMethodSig [82] dycIdxObjSlot
+  [15] BASM_LenSig            [16] BGBDYC_LookupMethodSigRA [80] dycIdxSlot
+ [217] BASM_LinkModule        [73] BGBDYC_LookupMethodSigRB [29] dycMethodCSelfData
+ [177] BASM_LinkRefChain      [72] BGBDYC_LookupMethodSigRS [30] dycMethodVirtual
+ [184] BASM_LinkReference    [174] BGBDYC_LookupSlot      [78] dycNew
+ [153] BASM_LookupLabel      [175] BGBDYC_LookupSlotR     [77] dycNewClass
+ [151] BASM_LookupLabelOS    [242] BGBDYC_MinfHashSize    [79] dycNewInit
+ [145] BASM_ModRM            [243] BGBDYC_MinfHashUsed    [76] dycNewInitClass
+ [235] BASM_NewContext        [32] BGBDYC_SetStaticMinfFunc [63] dycSetSlotd
+ [103] BASM_OpArchP          [244] BGBDYC_SlotHashSize   [209] dycSetd
+ [201] BASM_OpArgImmP        [245] BGBDYC_SlotHashUsed    [53] dycSlotBasic
+ [109] BASM_OpArgMemP         [67] BGBDYC_SortHashItems_Swap [10] dygettype
+ [104] BASM_OpArgRegP        [198] BGBDYC_TouchMinfMethod [59] dyllApplyRawFuncD
+ [157] BASM_OpMemP           [134] BGBDY_FetchType        [42] dyllApplyRawFuncU
+ [112] BASM_OpMemRegP        [127] BGBDY_FindType          [9] dyllApplyRawFuncV
+ [121] BASM_OpOnlySingleP     [43] BGBDY_GetSize          [24] dyllRepackBufSigV
+ [156] BASM_OpRegImmP         [56] BGBDY_GetType         [227] dyllSigGetPtrDouble
+ [108] BASM_OpRegMemP         [12] BGBDY_GetTypeName     [228] dyllSigRet
+ [131] BASM_OpRegP            [25] BGBDY_GetVType        [200] dyllSigSetPtrDouble
+ [106] BASM_OpRegRegP         [89] BGBDY_HashString      [210] dyllSigSizeAlign
+ [116] BASM_OpSingleP         [34] BGBDY_HashSymbol      [229] dyo_init
+ [122] BASM_OutBodyBytes      [90] BGBDY_HashSymbolQuick [259] dyopr_init
+ [107] BASM_OutByte          [113] BGBDY_Init             [91] dystring
+ [178] BASM_OutDWord         [222] BGBDY_InitTypes        [36] dysymbol
+ [236] BASM_OutImm            [57] BGBDY_IsPRange         [69] dytypep
+ [158] BASM_OutMOffs         [135] BGBDY_New             [260] gc_init
+ [125] BASM_OutModRM         [180] BGBDY_NewType         [154] gcalloc
+ [147] BASM_OutOpGeneric1    [246] BGBDY_SetMark          [94] gcatomic
+ [148] BASM_OutOpGeneric2    [247] BGBDY_SetPreserve      [86] gclock
+ [193] BASM_OutOpMem          [35] BGBDY_WrapSymbol       [27] gcralloc
+ [191] BASM_OutOpMemReg      [248] BGBGC_AddMarkHandler   [50] gcrgets
+ [149] BASM_OutOpReg         [136] BGBGC_Alloc            [84] gcrsplit
+ [237] BASM_OutOpRegImm      [249] BGBGC_AllocCBlk        [60] gcrstrdup
+ [172] BASM_OutOpRegMem      [143] BGBGC_AllocChk        [171] gctalloc
+ [163] BASM_OutOpRegReg      [188] BGBGC_AllocLObj       [110] hexbyte (basm_core.c)
+ [164] BASM_OutOpSingle       [21] BGBGC_CheckCons       [105] hexval (basm_core.c)
+ [165] BASM_OutOpStr          [68] BGBGC_ChunkGetEnt     [169] log2up (mm_cell.c)
+ [194] BASM_OutOpStrMem      [152] BGBGC_ChunkSetEnt      [45] strcmp
+ [150] BASM_OutOpStrReg      [250] BGBGC_CollectLoop     [261] thAllocTls
+ [238] BASM_OutOpStrRegImm   [137] BGBGC_CollectPause     [52] thFastMutex
+ [161] BASM_OutOpStrRegMem   [189] BGBGC_CollectUnpause  [230] thGetTlsValue
+ [166] BASM_OutOpStrRegReg    [19] BGBGC_ConsP            [33] thLockFastMutex
+ [126] BASM_OutSufBytes       [58] BGBGC_GetBase         [139] thLockMutex
+ [117] BASM_ParseArg          [26] BGBGC_GetChunk        [262] thMutex
+ [118] BASM_ParseOpcode      [223] BGBGC_Init            [100] thSleep
+ [202] BASM_ParseOpcodeList  [251] BGBGC_InitCons        [231] thThread
+ [115] BASM_ParseReg         [252] BGBGC_InitLow          [39] thTryLockFastMutex
+ [119] BASM_ParseSpecial     [199] BGBGC_InitSpace        [37] thUnlockFastMutex
+ [101] BASM_Parse_EatWhite   [224] BGBGC_LookupLObj      [140] thUnlockMutex
+ [111] BASM_Parse_IsLineBreak [93] BGBGC_MarkAtomic       [71] tst_basics
+ [132] BASM_Parse_MatchTokenListLen [168] BGBGC_NewBlock  [28] tst_initclass
+ [133] BASM_Parse_OpChar      [85] BGBGC_SetLockObj       [31] tst_method_foo
+ [102] BASM_Parse_Token      [207] BGBGC_SpaceAlloc       [47] tst_method_tst2
+ [123] BASM_Reg16P           [253] BGBGC_SpaceAllocSafeP   [2] tst_methods
+ [124] BASM_Reg32P           [254] BGBGC_SpawnThread      [95] <cycle 1>
+ [128] BASM_RegREXW          [255] BGBGC_StackBase        [96] <cycle 2>
+ [218] BASM_RegisterPtr      [256] BGBGC_StartCollectLoop
+ [159] BASM_SegOverride       [18] BGBGC_TryGetBase

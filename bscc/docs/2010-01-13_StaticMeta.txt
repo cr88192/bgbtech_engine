@@ -1,0 +1,30 @@
+Basic Idea:
+Create a tool which emits pre-built versions of the metadata database.
+These databases may then be read in when loading libraries, and not require processing headers to mine this info.
+
+These would generally be sent along with the DLLs.
+
+
+Considered:
+A simplistic markov-based compressor could be used to compress the database. Additionally, the compressor can include a cipher, as to allow a "key" to be used with the database and thus give some basic level of protection to its contents.
+
+The key would be a string, which could then be hashed to produce a numeric hash, used both to drive a substitution cipher and also to randomize the hash function.
+
+
+Idea:
+Consider using the substitution cipher on the output end (post Markov compression). This will allow also ciphering which data is runs, further increasing the difficulty of finding the key (yet leaving the data more friendly to possible entropy compression).
+
+
+If entropy compression is used, consider MTF and Rice Codes (pre-cipher).
+
+
+Byte-Space Layout
+00..BF: Data Bytes:
+C0: Escape byte;
+C1: Reserved
+C2..FF: Run 2..63
+
+
+Issue:
+I almost may as well just use deflate and actually good encryption...
+

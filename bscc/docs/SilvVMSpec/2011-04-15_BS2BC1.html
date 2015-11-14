@@ -1,0 +1,1398 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+</head>
+<body>
+BGBScript2 ByteCode 1<br>
+<br>
+Essentially a reboot of prior BS2BC design.<br>
+<br>
+stack machine;<br>
+explicit statically-typed opcodes.<br>
+<br>
+bytecode images use a large literal table;<br>
+blocks are part of the literal table, as are class definitions.<br>
+<br>
+<br>
+Note that the physical packaging has been moved into an adjacent spec.<br>
+<br>
+<br>
+Core opcode types:<br>
+Argument types will be indicated by a suffix.<br>
+<br>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Suffix<br>
+      </td>
+      <td style="vertical-align: top;">Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">i<br>
+      </td>
+      <td style="vertical-align: top;">Integer Arguments<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">l<br>
+      </td>
+      <td style="vertical-align: top;">Long Arguments<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">f<br>
+      </td>
+      <td style="vertical-align: top;">Float Arguments<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">d<br>
+      </td>
+      <td style="vertical-align: top;">Double Arguments<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">p<br>
+      </td>
+      <td style="vertical-align: top;">Pointer Arguments<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">r<br>
+      </td>
+      <td style="vertical-align: top;">Reference Arguments<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">x<br>
+      </td>
+      <td style="vertical-align: top;">Large Value/Structure Types<br>
+Additional characters may follow the x if the operation is performed
+over a specific large type.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">a<br>
+      </td>
+      <td style="vertical-align: top;">Signed Byte<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">b<br>
+      </td>
+      <td style="vertical-align: top;">Unsigned Byte<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">s<br>
+      </td>
+      <td style="vertical-align: top;">Signed Short<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">t<br>
+      </td>
+      <td style="vertical-align: top;">Unsigned Short<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+Value/Structure types will have storage reserved for them prior to
+entry into a function or method, however these types may not be moved
+directly on the stack, or directly loaded or stored. Generally, they
+will be accessed through the use of load-address and memory-copy
+operations. Note that call operations will be responsible for
+passing/returning structure types.<br>
+<br>
+Note that all operations will operate on stack-elements of the same
+conceptual size, hence all types will take exactly one stack element,
+regardless of the native machine word size. It will not be allowed,
+however, to access stack elements with operations intended for a
+different type.<br>
+<br>
+Note: For sake of basic operations, pointer and structure types will be
+considered as equivalent, however the pointer will be required to point
+to a structure of the appropriate type. For load/push operations, X
+will mean to take the address of the item.<br>
+For store operations, x will perform a memory copy.<br>
+<br>
+P anr R will be equivalent or different depending on context.<br>
+For operations on a value, they will differ, as P will operate on the
+pointer itself, whereas R will operate on the pointed-to object.<br>
+For loads/stores, P will mean to load/store the value which is a
+pointer. R will mean to load a reference for an object (boxing if need
+be), or store a referenced-value into a variable (may unbox if needed).<br>
+<br>
+<br>
+Lexical Scopes:<br>
+The lexical scope will be represented in terms of a set of chained
+environments, with each representing the environment frame owned by a
+given method. Static lexical environment frames may also exist, and as
+well a frame may have an associated object.<br>
+<br>
+<br>
+Condition Flags<br>
+<br>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Bit<br>
+      </td>
+      <td style="vertical-align: top;">Name<br>
+      </td>
+      <td style="vertical-align: top;">Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0<br>
+      </td>
+      <td style="vertical-align: top;">Carry Flag<br>
+      </td>
+      <td style="vertical-align: top;">Overflow/Underflow past MSB<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">Unused<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">2<br>
+      </td>
+      <td style="vertical-align: top;">Parity Flag<br>
+      </td>
+      <td style="vertical-align: top;">Set for unordered compares.
+Otherwise unused.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">3<br>
+      </td>
+      <td style="vertical-align: top;">Overflow Flag (remap from x86
+bit 11)<br>
+      </td>
+      <td style="vertical-align: top;">Status of MSB changed without
+causing a carry.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">4<br>
+      </td>
+      <td style="vertical-align: top;">Adjust Flag<br>
+      </td>
+      <td style="vertical-align: top;">Unused<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">5<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">Unused<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">6<br>
+      </td>
+      <td style="vertical-align: top;">Zero Flag<br>
+      </td>
+      <td style="vertical-align: top;">Result is Zero/Equal<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">7<br>
+      </td>
+      <td style="vertical-align: top;">Sign Flag<br>
+      </td>
+      <td style="vertical-align: top;">Sign bit is set.<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+Integer compares will try to set these bits as appropriate.<br>
+<br>
+Floating Point Compares will set these flags to only a few patterns:<br>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Cond<br>
+      </td>
+      <td style="vertical-align: top;">Bits<br>
+      </td>
+      <td style="vertical-align: top;">Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">x==y<br>
+      </td>
+      <td style="vertical-align: top;">Z, 0x40<br>
+      </td>
+      <td style="vertical-align: top;">Equal<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">x&gt;y<br>
+      </td>
+      <td style="vertical-align: top;">-, 0x00<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">x&lt;y<br>
+      </td>
+      <td style="vertical-align: top;">C, 0x01<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">ZPC, 0x45<br>
+      </td>
+      <td style="vertical-align: top;">Unordered<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+<br>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Code<br>
+      </td>
+      <td style="vertical-align: top;">Name<br>
+      </td>
+      <td style="vertical-align: top;">Bits<br>
+      </td>
+      <td style="vertical-align: top;">Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">0<br>
+      </td>
+      <td style="vertical-align: top;">O<br>
+      </td>
+      <td style="vertical-align: top;">O<br>
+      </td>
+      <td style="vertical-align: top;">Overflow<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">1<br>
+      </td>
+      <td style="vertical-align: top;">NO<br>
+      </td>
+      <td style="vertical-align: top;">!O<br>
+      </td>
+      <td style="vertical-align: top;">Not Overflow<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">2<br>
+      </td>
+      <td style="vertical-align: top;">B<br>
+      </td>
+      <td style="vertical-align: top;">C<br>
+      </td>
+      <td style="vertical-align: top;">Below<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">3<br>
+      </td>
+      <td style="vertical-align: top;">AE<br>
+      </td>
+      <td style="vertical-align: top;">!C<br>
+      </td>
+      <td style="vertical-align: top;">Above Equal<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">4<br>
+      </td>
+      <td style="vertical-align: top;">E<br>
+      </td>
+      <td style="vertical-align: top;">Z<br>
+      </td>
+      <td style="vertical-align: top;">Equal<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">5<br>
+      </td>
+      <td style="vertical-align: top;">NE<br>
+      </td>
+      <td style="vertical-align: top;">!Z<br>
+      </td>
+      <td style="vertical-align: top;">Not Equal<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">6<br>
+      </td>
+      <td style="vertical-align: top;">BE<br>
+      </td>
+      <td style="vertical-align: top;">C|Z<br>
+      </td>
+      <td style="vertical-align: top;">Below Equal<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">7<br>
+      </td>
+      <td style="vertical-align: top;">A<br>
+      </td>
+      <td style="vertical-align: top;">!(C|Z)<br>
+      </td>
+      <td style="vertical-align: top;">Above<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">8<br>
+      </td>
+      <td style="vertical-align: top;">S<br>
+      </td>
+      <td style="vertical-align: top;">S<br>
+      </td>
+      <td style="vertical-align: top;">Sign<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">9<br>
+      </td>
+      <td style="vertical-align: top;">NS<br>
+      </td>
+      <td style="vertical-align: top;">!S<br>
+      </td>
+      <td style="vertical-align: top;">Not Sign<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">10<br>
+      </td>
+      <td style="vertical-align: top;">P<br>
+      </td>
+      <td style="vertical-align: top;">P<br>
+      </td>
+      <td style="vertical-align: top;">Parity<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">11<br>
+      </td>
+      <td style="vertical-align: top;">NP<br>
+      </td>
+      <td style="vertical-align: top;">!P<br>
+      </td>
+      <td style="vertical-align: top;">Not Parity<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">12<br>
+      </td>
+      <td style="vertical-align: top;">L<br>
+      </td>
+      <td style="vertical-align: top;">S^O<br>
+      </td>
+      <td style="vertical-align: top;">Less<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">13<br>
+      </td>
+      <td style="vertical-align: top;">GE<br>
+      </td>
+      <td style="vertical-align: top;">!(S^O)<br>
+      </td>
+      <td style="vertical-align: top;">Greater Equal<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">14<br>
+      </td>
+      <td style="vertical-align: top;">LE<br>
+      </td>
+      <td style="vertical-align: top;">Z|(S^O)<br>
+      </td>
+      <td style="vertical-align: top;">Less Equal<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">15<br>
+      </td>
+      <td style="vertical-align: top;">G<br>
+      </td>
+      <td style="vertical-align: top;">!(Z|(S^O))</td>
+      <td style="vertical-align: top;">Greater<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+Cmp Algos<br>
+Float<br>
+&nbsp;&nbsp;&nbsp; if(nan(x)||nan(y))<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; unordered (Z=P=C=1)<br>
+&nbsp;&nbsp;&nbsp; else if(x==y)<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; equal (Z=1)<br>
+&nbsp;&nbsp;&nbsp; else if(x&gt;y)<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; greater (0)<br>
+&nbsp;&nbsp;&nbsp; else<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; less (C=1)<br>
+<br>
+<br>
+<br>
+Banks:<br>
+Opcodes will be divided into banks of 256, and will be numbered in hex.<br>
+<br>
+<br>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Name<br>
+      </td>
+      <td style="vertical-align: top;">Opcode<br>
+(Hex)<br>
+      </td>
+      <td style="vertical-align: top;">Immediates<br>
+      </td>
+      <td style="vertical-align: top;">Stack<br>
+      </td>
+      <td style="vertical-align: top;">Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">nop<br>
+      </td>
+      <td style="vertical-align: top;">00<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">No Operation<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">block<br>
+      </td>
+      <td style="vertical-align: top;">01<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">Transfers control to another
+thread, or breaks for incremental or time-limited operations.<br>
+Otherwise, its' behavior will be equivalent to a nop.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">push<br>
+[ilfdprx]<br>
+      </td>
+      <td style="vertical-align: top;">02<br>
+08<br>
+      </td>
+      <td style="vertical-align: top;">LitIndex<br>
+      </td>
+      <td style="vertical-align: top;">=v<br>
+      </td>
+      <td style="vertical-align: top;">Push a constant of a given type
+onto the stack.<br>
+push[i/l/f/d] push the literal value.<br>
+pushp will push the pointer stored in the literal.<br>
+pushr will push the literal as a dynamically-typed reference (box).<br>
+pushx will push the address of the literal.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">pop<br>
+      </td>
+      <td style="vertical-align: top;">09<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">v=<br>
+      </td>
+      <td style="vertical-align: top;">Discard top stack element<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">pushbi<br>
+      </td>
+      <td style="vertical-align: top;">0A<br>
+      </td>
+      <td style="vertical-align: top;">sbyte<br>
+      </td>
+      <td style="vertical-align: top;">=i<br>
+      </td>
+      <td style="vertical-align: top;">Push a sbyte (signed)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">pushsi<br>
+      </td>
+      <td style="vertical-align: top;">0B<br>
+      </td>
+      <td style="vertical-align: top;">short<br>
+      </td>
+      <td style="vertical-align: top;">=i<br>
+      </td>
+      <td style="vertical-align: top;">Push a short (signed)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">lload<br>
+[ilfdprx]<br>
+      </td>
+      <td style="vertical-align: top;">0C<br>
+12<br>
+      </td>
+      <td style="vertical-align: top;">byte<br>
+      </td>
+      <td style="vertical-align: top;">=v<br>
+      </td>
+      <td style="vertical-align: top;">Load a local variable or
+argument.<br>
+loadr will load the value as a reference (box).<br>
+loadx will load the address of the variable.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">lstore<br>
+[ilfdprx]<br>
+      </td>
+      <td style="vertical-align: top;">13<br>
+19<br>
+      </td>
+      <td style="vertical-align: top;">byte<br>
+      </td>
+      <td style="vertical-align: top;">v=<br>
+      </td>
+      <td style="vertical-align: top;">Store a value to a local
+variable or argument.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">aload<br>
+[ilfdprx]</td>
+      <td style="vertical-align: top;">1A<br>
+20<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">ai=v<br>
+      </td>
+      <td style="vertical-align: top;">Load an index from an array of
+the given type.<br>
+aloadr will load the index as a reference.<br>
+aloadx will load the address of the index.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">astore<br>
+[ilfdprx]</td>
+      <td style="vertical-align: top;">21<br>
+27<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">aiv=<br>
+      </td>
+      <td style="vertical-align: top;">Store a value to an array of the
+given type.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">aload<br>
+[abst]<br>
+      </td>
+      <td style="vertical-align: top;">28<br>
+2B<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">ai=i<br>
+      </td>
+      <td style="vertical-align: top;">Load certain small-integer types<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">astore<br>
+[bs]<br>
+      </td>
+      <td style="vertical-align: top;">2C<br>
+2D<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">aij=<br>
+      </td>
+      <td style="vertical-align: top;">Store certain small integer types<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">dup<br>
+      </td>
+      <td style="vertical-align: top;">2E<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">v=vv<br>
+      </td>
+      <td style="vertical-align: top;">Duplicate top stack item<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">exch<br>
+      </td>
+      <td style="vertical-align: top;">2F<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">xy=yx<br>
+      </td>
+      <td style="vertical-align: top;">Exchange top stack items<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">add<br>
+[ilfdpr]<br>
+      </td>
+      <td style="vertical-align: top;">30<br>
+35<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">xy=z<br>
+      </td>
+      <td style="vertical-align: top;">Add items<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">sub<br>
+[ilfdpr]<br>
+      </td>
+      <td style="vertical-align: top;">36<br>
+3B<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">xy=z</td>
+      <td style="vertical-align: top;">Subtract Items<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">mul<br>
+[ilfdr]<br>
+      </td>
+      <td style="vertical-align: top;">3C<br>
+40<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">xy=z</td>
+      <td style="vertical-align: top;">Multiply Items<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">div<br>
+[ilfdr]<br>
+      </td>
+      <td style="vertical-align: top;">41<br>
+45<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">xy=z</td>
+      <td style="vertical-align: top;">Divide Items<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">mod<br>
+[ilfdr]</td>
+      <td style="vertical-align: top;">46<br>
+4A<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">xy=z<br>
+      </td>
+      <td style="vertical-align: top;">Modulo Items<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">neg<br>
+[ilfdr]</td>
+      <td style="vertical-align: top;">4B<br>
+4F<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">x=y<br>
+      </td>
+      <td style="vertical-align: top;">Negate Items<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">shl[ilpr]<br>
+      </td>
+      <td style="vertical-align: top;">50<br>
+53<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">xy=z</td>
+      <td style="vertical-align: top;">Shift Left<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">shr[ilpr]<br>
+      </td>
+      <td style="vertical-align: top;">54<br>
+57<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">xy=z</td>
+      <td style="vertical-align: top;">Shift Right<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">ushr[ilr]<br>
+      </td>
+      <td style="vertical-align: top;">58<br>
+5A<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">xy=z</td>
+      <td style="vertical-align: top;">Unsigned Shift Right<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">and[ilr]<br>
+      </td>
+      <td style="vertical-align: top;">5B<br>
+5D<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">xy=z</td>
+      <td style="vertical-align: top;">And<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">or[ilr]<br>
+      </td>
+      <td style="vertical-align: top;">5E<br>
+60<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">xy=z</td>
+      <td style="vertical-align: top;">Or<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">xor[ilr]<br>
+      </td>
+      <td style="vertical-align: top;">61<br>
+63<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">xy=z</td>
+      <td style="vertical-align: top;">Xor<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">[ilfd]<br>
+2<br>
+[ilfd]<br>
+      </td>
+      <td style="vertical-align: top;">64<br>
+6F<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">x=y<br>
+      </td>
+      <td style="vertical-align: top;">Numeric Type Conversions<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">[ilfd]2r</td>
+      <td style="vertical-align: top;">70<br>
+73<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">x=r<br>
+      </td>
+      <td style="vertical-align: top;">Boxing Conversions<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">r2<br>
+[ilfd]</td>
+      <td style="vertical-align: top;">74<br>
+77<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">r=y<br>
+      </td>
+      <td style="vertical-align: top;">Unbox Conversions<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">cmp<br>
+[ilfdpr]</td>
+      <td style="vertical-align: top;">78<br>
+7D<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">xy=i<br>
+      </td>
+      <td style="vertical-align: top;">Compare Items<br>
+Results in a condition-code bits block<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">jmp<br>
+      </td>
+      <td style="vertical-align: top;">7E<br>
+      </td>
+      <td style="vertical-align: top;">rel16<br>
+      </td>
+      <td style="vertical-align: top;">=<br>
+      </td>
+      <td style="vertical-align: top;">Jump to a target.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">ret<br>
+      </td>
+      <td style="vertical-align: top;">7F<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">x=<br>
+      </td>
+      <td style="vertical-align: top;">Return from method. The value on
+the stack is returned (as per the method return type).<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">jcc<br>
+      <br>
+      </td>
+      <td style="vertical-align: top;">80<br>
+8F<br>
+      </td>
+      <td style="vertical-align: top;">rel16<br>
+      </td>
+      <td style="vertical-align: top;">i=<br>
+      </td>
+      <td style="vertical-align: top;">Check condition and jump if true.<br>
+Target is relative to the following opcode.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">sload<br>
+      </td>
+      <td style="vertical-align: top;">90<br>
+      </td>
+      <td style="vertical-align: top;">FieldRef<br>
+      </td>
+      <td style="vertical-align: top;">=x<br>
+      </td>
+      <td style="vertical-align: top;">Load a variable or static field<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">sstore<br>
+      </td>
+      <td style="vertical-align: top;">91<br>
+      </td>
+      <td style="vertical-align: top;">FieldRef<br>
+      </td>
+      <td style="vertical-align: top;">x=<br>
+      </td>
+      <td style="vertical-align: top;">Store a variable or static field<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">fload<br>
+      </td>
+      <td style="vertical-align: top;">92<br>
+      </td>
+      <td style="vertical-align: top;">FieldRef<br>
+      </td>
+      <td style="vertical-align: top;">a=x<br>
+      </td>
+      <td style="vertical-align: top;">Load a field from an object<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">fstore<br>
+      </td>
+      <td style="vertical-align: top;">93<br>
+      </td>
+      <td style="vertical-align: top;">FieldRef<br>
+      </td>
+      <td style="vertical-align: top;">ax=<br>
+      </td>
+      <td style="vertical-align: top;">Store a field to an object<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">call<br>
+      </td>
+      <td style="vertical-align: top;">94<br>
+      </td>
+      <td style="vertical-align: top;">MethodRef<br>
+      </td>
+      <td style="vertical-align: top;">M*=x<br>
+      </td>
+      <td style="vertical-align: top;">Call a static method / function<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">callv<br>
+      </td>
+      <td style="vertical-align: top;">95<br>
+      </td>
+      <td style="vertical-align: top;">MethodRef<br>
+      </td>
+      <td style="vertical-align: top;">M*=<br>
+      </td>
+      <td style="vertical-align: top;">Call a static method or
+function, discarding return value<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">mcall<br>
+      </td>
+      <td style="vertical-align: top;">96<br>
+      </td>
+      <td style="vertical-align: top;">MethodRef<br>
+      </td>
+      <td style="vertical-align: top;">M*a=x<br>
+      </td>
+      <td style="vertical-align: top;">Call a method<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">mcallv<br>
+      </td>
+      <td style="vertical-align: top;">97<br>
+      </td>
+      <td style="vertical-align: top;">MethodRef<br>
+      </td>
+      <td style="vertical-align: top;">M*a=<br>
+      </td>
+      <td style="vertical-align: top;">Call a method, discarding return
+value<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">rcall<br>
+      </td>
+      <td style="vertical-align: top;">98<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">M*r=t<br>
+      </td>
+      <td style="vertical-align: top;">Call a function-reference<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">rcallv<br>
+      </td>
+      <td style="vertical-align: top;">99<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">M*r=<br>
+      </td>
+      <td style="vertical-align: top;">Call a function-reference,
+discarding return value<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">rmcall<br>
+      </td>
+      <td style="vertical-align: top;">9A<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">M*rs=t<br>
+      </td>
+      <td style="vertical-align: top;">Call a method via a reference<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">rmcallv<br>
+      </td>
+      <td style="vertical-align: top;">9B<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">M*rs=<br>
+      </td>
+      <td style="vertical-align: top;">Call a method via a reference
+and discard return<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">rload<br>
+      </td>
+      <td style="vertical-align: top;">9C<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">rs=x<br>
+      </td>
+      <td style="vertical-align: top;">Load object variable by reference<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">rstore<br>
+      </td>
+      <td style="vertical-align: top;">9D<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">rsx=<br>
+      </td>
+      <td style="vertical-align: top;">Store object variable by
+reference<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">retr<br>
+      </td>
+      <td style="vertical-align: top;">9E<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">r=<br>
+      </td>
+      <td style="vertical-align: top;">Return from a method with a
+reference type<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">retv<br>
+      </td>
+      <td style="vertical-align: top;">9F<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">=<br>
+      </td>
+      <td style="vertical-align: top;">Return from a method with no
+value<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">new<br>
+      </td>
+      <td style="vertical-align: top;">A0<br>
+      </td>
+      <td style="vertical-align: top;">TypeRef<br>
+      </td>
+      <td style="vertical-align: top;">=a<br>
+      </td>
+      <td style="vertical-align: top;">Create a new object<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">anew<br>
+      </td>
+      <td style="vertical-align: top;">A1<br>
+      </td>
+      <td style="vertical-align: top;">TypeRef<br>
+      </td>
+      <td style="vertical-align: top;">i=a<br>
+      </td>
+      <td style="vertical-align: top;">Create a new array<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">alen<br>
+      </td>
+      <td style="vertical-align: top;">A2<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">a=i<br>
+      </td>
+      <td style="vertical-align: top;">Array Length<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">athrow<br>
+      </td>
+      <td style="vertical-align: top;">A3<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">r=<br>
+      </td>
+      <td style="vertical-align: top;">Throw an exception<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">checkcast<br>
+      </td>
+      <td style="vertical-align: top;">A4<br>
+      </td>
+      <td style="vertical-align: top;">TypeRef<br>
+      </td>
+      <td style="vertical-align: top;">r=r<br>
+      </td>
+      <td style="vertical-align: top;">Check that a cast is valid<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">instanceof<br>
+      </td>
+      <td style="vertical-align: top;">A5<br>
+      </td>
+      <td style="vertical-align: top;">TypeRef<br>
+      </td>
+      <td style="vertical-align: top;">r=i<br>
+      </td>
+      <td style="vertical-align: top;">Check if an object is a given
+type<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">jz[ilpr]<br>
+      </td>
+      <td style="vertical-align: top;">A6<br>
+A9<br>
+      </td>
+      <td style="vertical-align: top;">rel16<br>
+      </td>
+      <td style="vertical-align: top;">x=<br>
+      </td>
+      <td style="vertical-align: top;">Jump if value is null/zero<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">jnz[ilpr]<br>
+      </td>
+      <td style="vertical-align: top;">AA<br>
+AD<br>
+      </td>
+      <td style="vertical-align: top;">rel16<br>
+      </td>
+      <td style="vertical-align: top;">x=<br>
+      </td>
+      <td style="vertical-align: top;">Jump if value is non-zero<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">close<br>
+      </td>
+      <td style="vertical-align: top;">AE<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">x=y<br>
+      </td>
+      <td style="vertical-align: top;">Close over a function<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">wide<br>
+      </td>
+      <td style="vertical-align: top;">AF<br>
+      </td>
+      <td style="vertical-align: top;">*<br>
+      </td>
+      <td style="vertical-align: top;">*<br>
+      </td>
+      <td style="vertical-align: top;">Prefix<br>
+Expands the size of references or jumps.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">pushi<br>
+[03]<br>
+      </td>
+      <td style="vertical-align: top;">B0<br>
+B3<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">=i<br>
+      </td>
+      <td style="vertical-align: top;">Load integer 0..3<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">pushl[01]<br>
+      </td>
+      <td style="vertical-align: top;">B4<br>
+B5<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">=l<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">pushf[01]<br>
+      </td>
+      <td style="vertical-align: top;">B6<br>
+B7<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">=f<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">pushd[01]<br>
+      </td>
+      <td style="vertical-align: top;">B8<br>
+B9<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">=d<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">pushim1<br>
+      </td>
+      <td style="vertical-align: top;">BA<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">=i<br>
+      </td>
+      <td style="vertical-align: top;">Load integer -1<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">push_null<br>
+      </td>
+      <td style="vertical-align: top;">BB<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">=p<br>
+      </td>
+      <td style="vertical-align: top;">Load null<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">lxload<br>
+[ilfdprx]</td>
+      <td style="vertical-align: top;">0100<br>
+0106<br>
+      </td>
+      <td style="vertical-align: top;">byte y,<br>
+byte x<br>
+      </td>
+      <td style="vertical-align: top;">=x<br>
+      </td>
+      <td style="vertical-align: top;">Load from the lexical environment<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">lxstore<br>
+[ilfdprx]</td>
+      <td style="vertical-align: top;">0107<br>
+010D<br>
+      </td>
+      <td style="vertical-align: top;">byte y,<br>
+byte x</td>
+      <td style="vertical-align: top;">x=<br>
+      </td>
+      <td style="vertical-align: top;">Store into lexical environment<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">pload<br>
+[ilfdpabst]<br>
+      </td>
+      <td style="vertical-align: top;">010E<br>
+0106<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">p=x<br>
+      </td>
+      <td style="vertical-align: top;">Pointer Load<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">pstore<br>
+[ilfdpabst]<br>
+      </td>
+      <td style="vertical-align: top;">0107<br>
+010F<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">px=<br>
+      </td>
+      <td style="vertical-align: top;">Pointer Store<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</body>
+</html>

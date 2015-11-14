@@ -1,0 +1,21 @@
+BUILD=.
+DLLPF=lib
+
+# CC_OUTEXE=gcc -o 
+# CC_OUTDLL=gcc -shared -o 
+# CC_OUTOBJ=gcc -c -o 
+
+CFLAGS=-Iinclude -I../include -g -Werror-implicit-function-declaration 
+DLL_CFLAGS=$(CFLAGS) -DPDGL_DLL
+DLL_CFLAGS2=$(CFLAGS) -DPDGLUI_DLL
+LDFLAGS=-g -L.. -lbgbgc -lbgbdy -lbgbasm -lzpack -lm \
+	-lbsgen -lvecmath -lbgbbtjpg -lGL \
+	-Wl,-rpath,"$$ORIGIN"
+
+DLL_LDFLAGS=-g -L.. -lbgbgc -lbgbdy -lbgbasm -lzpack -lm -fPIC \
+	-lbsgen -lvecmath -lbgbbtjpg \
+	-Wl,-rpath,"$$ORIGIN"
+DLL_LDFLAGS2=$(DLL_LDFLAGS)
+
+include Makefile.inc
+

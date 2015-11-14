@@ -1,0 +1,96 @@
+ARCH_CFLAGS=
+CFLAGS=-g -pg -Iinclude -I../include -Werror-implicit-function-declaration $(ARCH_CFLAGS)
+# CFLAGS=-O3 -Iinclude -Werror-implicit-function-declaration $(ARCH_CFLAGS)
+
+LDFLAGS = -L. -lbgbdy -L.. -lbgbgc -lbgbasm -lzpack -lm -ldl -lpthread
+
+EXE=.bin
+A=.a
+O=.o
+
+
+#	base/memory2_2.o \
+
+OBJS=\
+	base/prng$(O) \
+	\
+	base/vfile2$(O) \
+	base/vfile2_dir$(O) \
+	base/vfile2_zip$(O) \
+	base/vfile2_zpak$(O) \
+	base/inflate$(O) \
+	base/deflate$(O) \
+	\
+	base/netval$(O) \
+	\
+	base/dyll_func$(O) \
+	base/dyll_sig$(O) \
+	base/dyll_addr$(O) \
+	base/dyll_sigcache$(O) \
+	\
+	base/dy_wref$(O) \
+	base/dy_strarith$(O) \
+	base/dy_chan$(O) \
+	\
+	base/dy_method$(O) \
+	base/dy_oo$(O) \
+	base/dy_dyo$(O) \
+	\
+	base/dyc_class$(O) \
+	base/dyc_lookup$(O) \
+	base/dyc_hash$(O) \
+	base/dyc_proto$(O) \
+	base/dyc_api$(O) \
+	\
+	base/dy_opr$(O) \
+	base/dy_cons$(O) \
+	base/dy_sparse$(O) \
+	\
+	base/dy_xml$(O) \
+	base/dy_print$(O) \
+	base/dys_parse$(O) \
+	base/dys_print$(O) \
+	base/dyx_parse$(O) \
+	base/dyx_print$(O) \
+	\
+	base/bgbdy_api$(O) \
+	\
+	bgal/bgal_main$(O) \
+	bgal/bgal_interp$(O) \
+	bgal/bgal_neuron$(O)
+
+SRCS=$(OBJS:$(O)=.c)
+
+DEP_HDRS=\
+	include/bgbdy_auto.h
+
+all: libs apps
+
+FORCE:
+
+libs: libbgbdy$(A)
+apps: dytst0$(EXE) tst_class0$(EXE) gatst0$(EXE)
+
+includes: $(DEP_HDRS)
+
+include/bgbdy_auto.h: autohead$(EXE) $(SRCS)
+	./autohead$(EXE) $(SRCS) > include/bgbdy_auto.h
+
+libbgbdy$(A): $(DEP_HDRS) $(OBJS)
+	ar -cr libbgbdy$(A) $(OBJS)
+
+autohead$(EXE): autohead.c
+	$(CC) -o autohead$(EXE) autohead.c
+
+dytst0$(EXE): dytst0.c $(DEP_HDRS) $(OBJS)
+	$(CC) -o dytst0$(EXE) dytst0.c $(CFLAGS) $(LDFLAGS)
+
+tst_class0$(EXE): tst_class0.c $(DEP_HDRS) $(OBJS)
+	$(CC) -o tst_class0$(EXE) tst_class0.c $(CFLAGS) $(LDFLAGS)
+
+gatst0$(EXE): gatst0.c $(DEP_HDRS) $(OBJS)
+	$(CC) -o gatst0$(EXE) gatst0.c $(CFLAGS) $(LDFLAGS)
+
+clean:
+	rm -rf $(shell find -name \*$(A))
+	rm -rf $(shell find -name \*$(O))

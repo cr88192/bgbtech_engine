@@ -1,0 +1,63 @@
+# ARCH_CFLAGS=-DBS1_JIT -DBS1_X86 -I../include
+ARCH_CFLAGS=-I../include
+CFLAGS=-g -pg -Iinclude -Werror-implicit-function-declaration $(ARCH_CFLAGS)
+# CFLAGS=-O3 -Iinclude -Werror-implicit-function-declaration $(ARCH_CFLAGS)
+
+LDFLAGS = -L. -lbgbcc -L.. -lbgbdy -lbgbgc -lrpnil -lbgbasm -lzpack -ldl -lm -lpthread
+
+CC=gcc
+AR=ar -cr
+EXE=.bin
+A=.a
+O=.o
+
+OBJS=\
+	cparse/cparse_token.o \
+	cparse/cparse_misc.o \
+	cparse/cparse_type.o \
+	cparse/cparse_def.o \
+	cparse/cparse_expr2.o \
+	cparse/cparse_stmt.o \
+	cparse/preproc.o \
+	\
+	cc/cc_compile.o \
+	cc/cc_expr.o \
+	cc/cc_index.o \
+	cc/cc_reduce.o \
+	\
+	cc_api.o \
+	cc_cache.o \
+	cc_sig.o
+
+SRCS=$(OBJS:.o=.c)
+
+DEP_HDRS=\
+	include/bgbcc_auto.h
+
+LIBS=libbgbcc.a
+APPS=parse0$(EXE) bgbcc0$(EXE)
+
+all: libs apps
+
+libs: $(LIBS)
+apps: $(APPS)
+includes: $(DEP_HDRS)
+
+
+autohead$(EXE): autohead.c
+	$(CC) -o autohead$(EXE) autohead.c
+
+include/bgbcc_auto.h: autohead$(EXE) $(SRCS)
+	./autohead$(EXE) $(SRCS) > include/bgbcc_auto.h
+
+libbgbcc$(A): $(DEP_HDRS) $(OBJS)
+	$(AR) libbgbcc$(A) $(OBJS)
+
+parse0$(EXE): parse0$(O) $(LIBS)
+	$(CC) $(CFLAGS) -o parse0$(EXE) parse0$(O) $(LDFLAGS)
+
+bgbcc0$(EXE): bgbcc0$(O) $(LIBS)
+	$(CC) $(CFLAGS) -o bgbcc0$(EXE) bgbcc0$(O) $(LDFLAGS)
+
+clean:
+	rm -rf $(shell find -name \*.o)

@@ -1,0 +1,229 @@
+Changes to core API:
+
+void bsdeBind(int scope, int hdl);
+Set the current object to be manipulated.
+Scope identifies the address-space of the object to be manipulated, and hdl specifies the specific object within this space.
+
+Scope is one of:
+	BSDE_SOLID
+	BSDE_JOINT
+	BSDE_PARTICLE
+
+
+void bsdeGet[/2/3/4][i/f/iv/fv/...]();
+void bsdeSet[/2/3/4][i/f/iv/fv/...]();
+
+int bsdeGeti(int var);
+double bsdeGetf(int var);
+
+void bsdeGetiv(int num, int var, int *v, int n);
+void bsdeGetfv(int num, int var, float *v, int n);
+void bsdeGet2iv(int num, int var, int *v);
+void bsdeGet2fv(int num, int var, float *v);
+void bsdeGet3iv(int num, int var, int *v);
+void bsdeGet3fv(int num, int var, float *v);
+void bsdeGet4iv(int num, int var, int *v);
+void bsdeGet4fv(int num, int var, float *v);
+
+void bsdeSeti(int var, int val);
+void bsdeSetf(int var, double val);
+
+void bsdeSet2i(int var, int x, int y);
+void bsdeSet2f(int var, double x, double y);
+void bsdeSet3i(int var, int x, int y, int z);
+void bsdeSet3f(int var, double x, double y, double z);
+void bsdeSet4i(int var, int x, int y, int z, int w);
+void bsdeSet4f(int var, double x, double y, double z, double w);
+
+void bsdeSetiv(int var, int *v, int n);
+void bsdeSetfv(int var, float *v, int n);
+void bsdeSet2iv(int var, int *v);
+void bsdeSet2fv(int var, float *v);
+void bsdeSet3iv(int var, int *v);
+void bsdeSet3fv(int var, float *v);
+void bsdeSet4iv(int var, int *v);
+void bsdeSet4fv(int var, float *v);
+
+Get or set a specific value within the currently bound object.
+
+
+void bsdeIdxGet[/2/3/4][i/f/iv/fv/...]();
+void bsdeIdxSet[/2/3/4][i/f/iv/fv/...]();
+
+int bsdeIdxGeti(int num, int var);
+double bsdeIdxGetf(int num, int var);
+
+void bsdeIdxGetiv(int num, int var, int *v, int n);
+void bsdeIdxGetfv(int num, int var, float *v, int n);
+void bsdeIdxGet2iv(int num, int var, int *v);
+void bsdeIdxGet2fv(int num, int var, float *v);
+void bsdeIdxGet3iv(int num, int var, int *v);
+void bsdeIdxGet3fv(int num, int var, float *v);
+void bsdeIdxGet4iv(int num, int var, int *v);
+void bsdeIdxGet4fv(int num, int var, float *v);
+
+void bsdeIdxSet[i/f/iv/fv/...]();
+
+void bsdeIdxSeti(int num, int var, int val);
+void bsdeIdxSetf(int num, int var, double val);
+
+void bsdeIdxSet2i(int num, int var, int x, int y);
+void bsdeIdxSet2f(int num, int var, double x, double y);
+void bsdeIdxSet3i(int num, int var, int x, int y, int z);
+void bsdeIdxSet3f(int num, int var, double x, double y, double z);
+void bsdeIdxSet4i(int num, int var, int x, int y, int z, int w);
+void bsdeIdxSet4f(int num, int var,
+	double x, double y, double z, double w);
+
+void bsdeIdxSetiv(int num, int var, int *v, int n);
+void bsdeIdxSetfv(int num, int var, float *v, int n);
+void bsdeIdxSet2iv(int num, int var, int *v);
+void bsdeIdxSet2fv(int num, int var, float *v);
+void bsdeIdxSet3iv(int num, int var, int *v);
+void bsdeIdxSet3fv(int num, int var, float *v);
+void bsdeIdxSet4iv(int num, int var, int *v);
+void bsdeIdxSet4fv(int num, int var, float *v);
+
+Get and set index-attributes within a sub-object of the currently bound object (these will be used for some classes of objects, such as soft-bodies).
+
+
+void bsdeGetIdx[/2/3/4][i/f/iv/fv/...]();
+void bsdeSetIdx[/2/3/4][i/f/iv/fv/...]();
+
+Get/Set attributes within an array.
+
+
+int bsdeIdxGeti(int num, int var);
+double bsdeIdxGetf(int num, int var);
+
+
+void bsdeGetWorld[/2/3/4][i/f/iv/fv/...]();
+void bsdeSetWorld[/2/3/4][i/f/iv/fv/...]();
+
+Get or Set world-related or global properties.
+
+
+Particles:
+
+Particles will be free floating and will have a variable level of influence on other particles or objects. They will be separate from solids (in that they will have a separate handle address space).
+
+int bsdeNewParticle3f(double x, double y, double z);
+int bsdeNewParticle3fv(float *v);
+int bsdeNewParticle3dv(double *v);
+Create particle at specific origin.
+...
+
+void bsdeDestroyParticle(int num);
+
+Destroy Particle.
+
+
+Particle attributes:
+BSDE_ORIGIN(3f)		Origin of particle
+BSDE_VELOCITY(3f)		Velocity
+BSDE_MASS(f)		Inertial mass
+BSDE_ACCELERATION(3f)	Continuous acceleration
+
+BSDE_FORCE(f)		Force-effect of particle,
+	impulse+=(mass*force)/(dist^2)
+BSDE_POLARITY(f)		Particle polarity,
+	impulse+=(A.polarity*B.polarity)/(dist^2)
+
+
+Soft-Bodies:
+
+Soft bodies will occupy the same space as rigid bodies, but will differ greatly in terms of behavior and mechanics.
+
+Soft bodies will consist of several arrays:
+Vertices, which will hold the current object vertices;
+Springs, will hold a number of spring-like relations between vertices;
+Faces, will hold a number of faces giving an external structure to the mesh (these will serve as collision geometry).
+
+Vertices will each have their own position, velocity, and mass.
+Each vertex will have its coordinates stored in world space.
+
+When unconstrained, a vertex will move freely in space (subject to gravity, but otherwise non-solid).
+
+Vertex Array Properties (IdxGet/IdxSet):
+	BSDE_VERTEX_ORIGIN(3f)		Vertex origin
+	BSDE_VERTEX_VELOCITY(3f)	Vertex velocity
+	BSDE_VERTEX_MASS(f)		Vertex mass
+
+Springs will relate 2, 3, or 4 vertices, and apply forces to them.
+
+Springs with 2 vertices will generally have linear compression and expansion properties (flexing is not possible with 2 points).
+
+Springs with 3 vertices will have both compression and flexing.
+
+Springs with 4 vertices will also have volume (they will form a tetrahedron with a defined volume).
+
+Springs with 2 vertices will be the same as 3 vertices but have -1 as the last vertex. Vertex 0 will be special and refer to the object's origin.
+
+
+Spring Properties (IdxGet/IdxSet)
+	BSDE_SPRING_VERTEX(2/3/4i)	Spring vertices
+	BSDE_SPRING_VERTEX0(i)		Spring vertex 0	BSDE_SPRING_VERTEX1(i)		Spring vertex 1
+	BSDE_SPRING_VERTEX2(i)		Spring vertex 2
+	BSDE_SPRING_VERTEX3(i)		Spring vertex 3
+	BSDE_SPRING_LENGTH(f/fv)	Spring length (Vertex 0-1/ABCDEF)
+	BSDE_SPRING_LENGTH0(f)		Spring length (Vertex 0-1)
+	BSDE_SPRING_LENGTH1(f)		Spring length (Vertex 1-2)
+	BSDE_SPRING_LENGTH2(f)		Spring length (Vertex 2-0)
+	BSDE_SPRING_LENGTH3(f)		Spring length (Vertex 0-3)
+	BSDE_SPRING_LENGTH4(f)		Spring length (Vertex 1-3)
+	BSDE_SPRING_LENGTH5(f)		Spring length (Vertex 2-3)
+	BSDE_SPRING_AREA(f)		Triangle area
+	BSDE_SPRING_VOLUME(f)		Simplex volume
+
+These will define the ideal shape of the spring. Note that area and volume will be aliased, and will be defined by the lengths in question. Many of these values will be computed when creating the spring.
+
+Spring Attenuation
+	BSDE_SPRING_LENGTH_CONSTANT_ATTN
+	BSDE_SPRING_LENGTH_LINEAR_ATTN
+	BSDE_SPRING_LENGTH_QUADRATIC_ATTN
+	BSDE_SPRING_LENGTH_CUBIC_ATTN
+
+	BSDE_SPRING_AREA_CONSTANT_ATTN
+	BSDE_SPRING_AREA_LINEAR_ATTN
+	BSDE_SPRING_AREA_QUADRATIC_ATTN
+	BSDE_SPRING_AREA_CUBIC_ATTN
+
+	BSDE_SPRING_VOLUME_CONSTANT_ATTN
+	BSDE_SPRING_VOLUME_LINEAR_ATTN
+	BSDE_SPRING_VOLUME_QUADRATIC_ATTN
+	BSDE_SPRING_VOLUME_CUBIC_ATTN
+
+The attenuation factors will effect how strongly the the spring will attempt to retain its ideal shape. Likewise, the area and volume attenuations will be aliased.
+
+
+Face Properties (IdxGet/IdxSet)
+	BSDE_FACE_VERTEX(2/3i/4i)	Face vertices
+	BSDE_FACE_VERTEX0(i)		Face vertex 0
+	BSDE_FACE_VERTEX1(i)		Face vertex 1
+	BSDE_FACE_VERTEX2(i)		Face vertex 2
+	BSDE_FACE_VERTEX3(i)		Face vertex 3
+
+The faces will represent solid lines, triangles, or tetrahedrons.
+These will likewise use the convention of -1 indicating missing vertices. By default, these will inherit the meterial behavior from the base object (solid, fluid, ...).
+
+
+Soft-Bodies are likely to be constructed similarly to that of BRep-solids.
+
+
+Consider:
+Use message delivery as a means of informing the client about certain kinds of events (would take the place of contact arrays and similar).
+
+int bsdePeekMessage();
+Will return an ID number for the current message.
+BSDE_NULL will be returned if the message queue is empty.
+
+int bsdeNextMessage();
+Will drop the current message and proceed to the next one (returning the ID for the next message, or BSDE_NULL if empty).
+
+void bsdeGetMessage[/2/3/4][i/f/iv/fv/...]();
+
+Get a specific property for the current message.
+The properties present in the message will depend on the message in question.
+
+BSDE_MESSAGE_PROPERTIES(iv) can be used to get a list of message properties.
+

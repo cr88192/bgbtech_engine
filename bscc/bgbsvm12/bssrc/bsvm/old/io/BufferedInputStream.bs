@@ -1,0 +1,31 @@
+package bsvm.io;
+
+public class BufferedInputStream extends FilterInputStream
+{
+protected byte[] buf;
+protected int count;
+protected int marklimit;
+protected int markpos;
+protected int pos;
+
+public BufferedInputStream(InputStream in)
+	{ super(in); }
+public BufferedInputStream(InputStream in, int size)
+	{ this(in); }
+
+public int available()
+	{ return 0; }
+public void mark(int readlimit)
+	{}
+
+public boolean markSupported()
+	{ return false; }
+public int read()
+	{ return 0; }
+public int read(byte[] b, int off, int len)
+	{ return 0; }
+public void reset()
+	{}
+public long skip(long n)
+	{ return 0; }
+}

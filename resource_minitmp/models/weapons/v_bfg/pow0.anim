@@ -1,0 +1,35 @@
+frame 0
+frame 1
+Base [ 0 0 0 ] [ 1 0 0 0 1 -0.023 0 0.023 1 ]
+
+frame 2
+Base [ 0 0 0 ] [ 1 0 0 0 1 -0.004 0 0.004 1 ]
+
+frame 3
+Base [ 0 0 0 ] [ 1 0 0 0 1 0.015 0 -0.015 1 ]
+
+frame 4
+frame 5
+frame 6
+Base [ 0 0 0 ] [ 1 0 0 0 1 -0.025 0 0.025 1 ]
+
+frame 7
+frame 8
+Base [ 0 0 0 ] [ 1 0 0 0 1 -0.043 0 0.043 1 ]
+
+frame 9
+Base [ 0 0 0 ] [ 1 0 0 0 0.961 -0.276 0 0.276 0.961 ]
+
+frame 10
+frame 11
+frame 12
+frame 13
+frame 14
+frame 15
+frame 16
+frame 17
+frame 18
+frame 19
+frame 20
+frame 21
+frame 22

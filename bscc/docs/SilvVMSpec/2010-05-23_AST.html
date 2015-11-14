@@ -1,0 +1,1652 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="CONTENT-TYPE"
+ content="text/html; charset=windows-1252">
+  <title></title>
+  <meta name="GENERATOR" content="OpenOffice.org 3.0  (Win32)">
+  <meta name="CREATED" content="0;0">
+  <meta name="CHANGED" content="20100526;7051600">
+  <meta name="Info 1" content="">
+  <meta name="Info 2" content="">
+  <meta name="Info 3" content="">
+  <meta name="Info 4" content="">
+</head>
+<body dir="LTR" lang="en-US">
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2">This
+spec will attempt to document the ASTs used in my compiler front-end.
+<br>
+<br>
+General conventions:<br>
+&lt;nodetype/&gt;<br>
+Will identify a
+particular XML node type.<br>
+This will refer to the node, rather than
+necessarily define its contents as empty.<br>
+<br>
+[ stuff ]<br>
+Will
+indicate that "stuff" is optional.<br>
+<br>
+something+<br>
+Will
+indicate that something may appear 1 or more times.<br>
+<br>
+something*<br>
+Will indicate that something may appear 0 or more
+times.<br>
+<br>
+If a single node type is defined multiple times, it
+means that it may appear in one of these forms.<br>
+</font></font><br>
+</p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2">Toplevel:</font></font></p>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2">&lt;module
+lang="srclang" arch="arch"&gt;</font></font></p>
+<p style="margin-left: 0.79in; margin-bottom: 0in;"><font
+ face="Courier New, monospace"><font size="2">[&lt;structs/&gt;]<br>
+[&lt;types/&gt;]<br>
+&lt;body/&gt;</font></font></p>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2">&lt;/module&gt;</font></font></p>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2"><br>
+The
+lang attribute will give the name of the source language, which may
+effect the treatment of particular nodes, types, or modifier
+flags.<br>
+<br>
+The arch attribute will identify the particular target
+architecture.<br>
+This is relevant mostly for languages like C and C++
+where the code is typically specialized for a particular arch as
+early as the preprocessor.<br>
+The arch name "default" or
+"any" will identify that the code in question doesn't
+itself depend on any particular target arch.<br>
+Note that the target
+architecture may in-fact represent a request by the user for a
+particular target, rather than simply as a limitation of the source
+language. <br>
+<br>
+&lt;structs/&gt;<br>
+This node will contain a list
+of known structures/unions/classes/etc...<br>
+This will be used in a
+language such as C or C++ where structures may be defined inline and
+subsequently referenced via a similar definition, and so provides a
+space in which to merge multiple such definitions.<br>
+<br>
+There is no
+such requirement, however, that structured types actually be placed
+here (rather than, for example, in context under the body node), and
+so as a result this node may be empty or absent despite structured
+types having been declared.</font></font></p>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2"><br>
+&lt;types/&gt;<br>
+This
+node will contain a list of known type definitions.<br>
+As with
+&lt;structs/&gt;, this node is not necessarily used for
+type-definitions.<br>
+In general, types will be defined via &lt;var/&gt;
+nodes.<br>
+<br>
+<br>
+&lt;body/&gt;<br>
+<br>
+Will contain all the "stuff"
+for the module, starting from the POV of the toplevel.<br>
+<br>
+<br>
+General
+Notes<br>
+<br>
+The AST doesn't solidly distinguish between particular
+syntactic roles (statement vs expression, or expression vs
+declaration), and is generally a little looser than the source
+language. Instead, things are roughly organized by "context",
+and the particular types of nodes which may appear in a given
+context.<br>
+<br>
+<br>
+Statement context is generally where no return
+value would make sense from an expression.<br>
+Declarations are
+generally only allowed to appear in statement contexts.<br>
+Any
+expression may appear in a statement context, but an expression is
+considered as "useless" if it does not produce any
+side-effects.<br>
+<br>
+Expression context is where a return-value is
+expected.<br>
+Statements which may not produce a meaningful return
+value may not appear in expression context (note that in many cases
+it could be possible to "reinterpret" these statements in a
+form where a return-value makes sense, but since these semantics
+can't be represented in the typical source languages, this usage
+doesn't make much sense).<br>
+Declarations are similarly disallowed as
+they produce no meaningful return value (and also due to source
+language).<br>
+<br>
+Declaration context is where only declarations are
+allowed (as neither expressions nor statements would be
+sensible).<br>
+<br>
+Type-Expression context overlaps with Expression
+context, but differs mostly in that operations are being applied to
+abstract types rather than to values, and as a result only certain
+expressions make sense, and there may be additional expression types
+which are only sensible in the context of types. Note that many
+operations may have different semantics when applied to types.<br>
+<br>
+<br>
+A
+subset of expression context is tail-expression context, which exists
+only when the current expression is part of a return (either
+explicitly via a return, or implicitly via being in tail-position
+within an expression already in tail position). Tail context does not
+exist within non-tail positions within an expression, even if the
+parent expression is within tail position. Generally, if any
+operation needs to be performed on the result of an expression prior
+to returning it, it is no longer in tail position (although, an
+exception may be made for casts where no type-conversion is
+involved).<br>
+<br>
+<br>
+Some nodes serve as lists, where lists are
+expected to have items in their regular ordering, and are as-such
+order and position sensitive. Any node present within a list is
+assumed to be a member of that list.<br>
+<br>
+Most other nodes have
+their contents identified via markers. Marker nodes need not appear
+in any particular order, and generally (within reason) custom nodes
+may be placed within such a node without causing issue. Generally,
+marker nodes are also list nodes, and very often a marker node may
+only validly contain a single child node (this being the marked
+item).<br>
+<br>
+Marker nodes generally serve the purpose of identifying
+a particular node as serving a particular role, but this node may be
+one of any number of types.<br>
+<br>
+<br>
+Exact numeric flags values are
+undefined here (flag strings would be better, albeit they are not
+presently used).<br>
+The flags-string format is specified in the
+metadata spec.<br>
+<br>
+xmlns (if needed):
+"uuid:dab16484-68e9-4b0f-a6cc-883ff7cd0f00"<br>
+This will be
+applied to the toplevel module.<br>
+<br>
+The ln and fn attributes may
+be applied to any general-purpose node type, and will indicate the
+source line number and filename.<br>
+<br>
+<br>
+</font></font><br>
+</p>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2">Types
+and Definitions<br>
+<br>
+</font></font><br>
+</p>
+<table width="100%" border="1" cellpadding="4" cellspacing="3">
+  <col width="85*"> <col width="85*"> <col width="85*"> <tbody>
+    <tr valign="TOP">
+      <td width="33%">
+      <p>Example Syntax</p>
+      </td>
+      <td width="33%">
+      <p>XML</p>
+      </td>
+      <td width="33%">
+      <p>Comments</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>modifiers-typenames-and-attributes</i><sup><span
+ style="font-style: normal;">1</span></sup></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;type
+name="name" flags="flags" ind="ind"&gt;<br>
+&nbsp;&nbsp;&nbsp; [&lt;size/&gt;]<br>
+&nbsp;&nbsp;&nbsp; [&lt;rsize/&gt;]<br>
+&nbsp;&nbsp;&nbsp; [&lt;attributes/&gt;]<br>
+&lt;/type&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p style="margin-bottom: 0in;">This identifies a unique type,
+which may later be referenced by expressions or declarations. Types
+will be considered equivalent if they have the same structure.</p>
+      <p><br>
+The flags attribute gives the modifier flags, and ind gives the pointer
+indirection level (C/C++ only).<br>
+The &lt;size/&gt; and &lt;rsize/&gt; nodes give the array size for
+C-style arrays.<br>
+      <br>
+      <sup>1</sup> C/C++ specific.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>modifiers-and-attributes typename</i></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;type
+name="name" flags="flags"&gt;<br>
+&nbsp;&nbsp;&nbsp; [&lt;attributes/&gt;]<br>
+&lt;/type&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>The name attribute identifies the specific type-name, which
+may be a built-in or externally-defined type, a structural definition,
+or a type-definition. This attribute may be unused if a type-expression
+defines the type.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>modifiers-and-attributes</i> <i>type-expression</i></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;type
+flags="flags"&gt;<br>
+&nbsp;&nbsp;&nbsp; [&lt;expr/&gt;]<br>
+&nbsp;&nbsp;&nbsp; [&lt;attributes/&gt;]<br>
+&lt;/type&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>The &lt;expr/&gt; node may be used to define a type via a
+type-expression.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>modifiers </i><span style="font-weight: bold;">struct </span><i>name</i>
+      <i>body</i><span style="font-style: normal;"><br>
+      </span><i><br>
+modifiers
+      <span style="font-weight: bold;"> </span></i><span
+ style="font-style: normal; font-weight: bold;">struct </span><i>attributes</i><span
+ style="font-style: normal;"> </span><i>name</i><span
+ style="font-style: normal;"> </span><i>body</i><span
+ style="font-style: normal;"><br>
+      </span></p>
+      <p><span style="font-style: normal; font-weight: bold;">struct </span><i>body</i></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;struct
+name="name" flags="flags"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;body/&gt;<br>
+&nbsp;&nbsp;&nbsp; [&lt;attributes/&gt;]<br>
+&nbsp;&nbsp;&nbsp; [&lt;sharpargs/&gt;]<br>
+&lt;/struct&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>The name is required for structural types, even if none is
+given in the source language. In the case of anonymous structural
+types, a name is simulated, such as via the use of a hash function or
+gensym (less preferable as this can't as easily merge duplicate structs
+and may pollute external metadata with stale redundant declarations).</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>modifiers </i><span style="font-weight: bold;">union </span><i>name</i>
+      <i>body</i><span style="font-style: normal;"><br>
+      </span><i><br>
+modifiers
+      <span style="font-weight: bold;"> </span></i><span
+ style="font-style: normal; font-weight: bold;">union </span><i>attributes</i><span
+ style="font-style: normal;"> </span><i>name</i><span
+ style="font-style: normal;"> </span><i>body</i><span
+ style="font-style: normal;"><br>
+union </span><i>body</i></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;union
+name="name" flags="flags"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;body/&gt;<br>
+&nbsp;&nbsp;&nbsp; [&lt;attributes/&gt;]<br>
+&nbsp;&nbsp;&nbsp; [&lt;sharpargs/&gt;]<br>
+&lt;/union&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>modifiers </i><span style="font-weight: bold;">enum </span><i>name</i>
+      <i>body</i><span style="font-style: normal;"><br>
+      </span><i><br>
+modifiers
+      <span style="font-weight: bold;"> </span></i><span
+ style="font-style: normal; font-weight: bold;">enum </span><i>attributes</i><span
+ style="font-style: normal;"> </span><i>name</i><span
+ style="font-style: normal;"> </span><i>body</i><span
+ style="font-style: normal;"><br>
+enum </span><i>body</i></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;enum
+name="name" flags="flags"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;body/&gt;<br>
+&nbsp;&nbsp;&nbsp; [&lt;attributes/&gt;]<br>
+&nbsp;&nbsp;&nbsp; [&lt;sharpargs/&gt;]<br>
+&lt;/enum&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>Where name gives the particular structure name, and flags
+gives the modifier flags.<br>
+The body node gives the collection of definitions for the structure.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>modifiers </i><span style="font-weight: bold;">class </span><i>name</i>
+      <i>body</i><span style="font-style: normal;"><br>
+      </span><i><br>
+modifiers
+      <span style="font-weight: bold;"> </span></i><span
+ style="font-style: normal; font-weight: bold;">class </span><i>attributes</i><span
+ style="font-style: normal;"> </span><i>name</i><span
+ style="font-style: normal;">:</span><i>super</i><span
+ style="font-style: normal;">,</span><i>interfaces</i><span
+ style="font-style: normal;"> </span><i>body</i><span
+ style="font-style: normal;"><br>
+      </span><i><br>
+modifiers
+      <span style="font-weight: bold;"> </span></i><span
+ style="font-style: normal; font-weight: bold;">class </span><i>attributes</i><span
+ style="font-style: normal;"> </span><i>name</i><span
+ style="font-style: normal;">&lt;</span><i>sharpargs</i><span
+ style="font-style: normal;">&gt;
+      <span style="font-weight: bold;"> extends </span></span><i>super</i><span
+ style="font-style: normal;"> </span><span
+ style="font-style: normal; font-weight: bold;">implements </span><i>interfaces</i><span
+ style="font-style: normal;"> </span><i>body</i><span
+ style="font-style: normal;"><br>
+      </span></p>
+      <p><span style="font-style: normal; font-weight: bold;">class </span><i>body</i></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;class
+name="name" flags="flags"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;super/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;impl/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;body/&gt;<br>
+&nbsp;&nbsp;&nbsp; [&lt;attributes/&gt;]<br>
+&nbsp;&nbsp;&nbsp; [&lt;sharpargs/&gt;]<br>
+&lt;/class&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>The super and impl nodes give the superclass and implemented
+interfaces for a class.<br>
+Both super and impl contain &lt;type/&gt; nodes.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>type</i> <i>name</i><span style="font-weight: bold;">(</span><i>args</i><span
+ style="font-weight: bold;">);</span></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;proto
+name="name"&gt; &lt;type/&gt; &lt;args/&gt; &lt;/proto&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>This gives function prototypes and method declarations.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>type</i> <span style="font-weight: bold;">(</span><i>name</i><span
+ style="font-weight: bold;">)(</span><i>args</i><span
+ style="font-weight: bold;">);</span><sup><span
+ style="font-style: normal;">1<br>
+      </span></sup><span style="font-style: normal;">delegate </span><i>type</i><span
+ style="font-style: normal;"> </span><i>name</i><span
+ style="font-style: normal; font-weight: bold;">(</span><i>args</i><span
+ style="font-style: normal; font-weight: bold;">);</span></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;s_proto
+name="name"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;type/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;args/&gt;<br>
+&lt;/s_proto&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>This structure-prototypes.<br>
+The main difference here is that a normal prototype works as a function
+declaration, whereas a structure-prototype behaves like a structure and
+may be used in declaring function-pointer types.<br>
+      <br>
+      <sup>1</sup> This is the type-of the declaration, but the
+declaration will itself produce different syntax.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>type</i> <i>name</i> <span style="font-weight: bold;">{ </span><i>get</i>
+      <i>set</i> <span style="font-weight: bold;">}</span></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;property
+
+name="name"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;type/&gt;<br>
+&nbsp;&nbsp;&nbsp; [ &lt;get/&gt; ]<br>
+&nbsp;&nbsp;&nbsp; [ &lt;set/&gt; ]<br>
+&lt;/property&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>type name</i><br>
+      <i>type name</i>=<i>value</i></p>
+      </td>
+      <td width="33%">
+      <p>&lt;var name="name"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;type/&gt;<br>
+&nbsp;&nbsp;&nbsp; [ &lt;value/&gt; ]<br>
+&lt;/var&gt;</p>
+      </td>
+      <td width="33%">
+      <p>Declares a variable or field.<br>
+Not usually standalone except in an arguments list or similar.<br>
+Normally, each &lt;var/&gt; is a member in a &lt;vars/&gt; node.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2"><br>
+</font></font><br>
+</p>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2">Simple
+Composites</font></font></p>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2"><br>
+</font></font><br>
+</p>
+<table width="100%" border="1" cellpadding="4" cellspacing="3">
+  <col width="85*"> <col width="85*"> <col width="85*"> <tbody>
+    <tr valign="TOP">
+      <td width="33%">
+      <p>Example Syntax</p>
+      </td>
+      <td width="33%">
+      <p>XML</p>
+      </td>
+      <td width="33%">
+      <p>Comments</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>expression<br>
+      </i></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;value&gt;
+
+expr &lt;/value&gt;<br>
+      </font></font></p>
+      </td>
+      <td width="33%">
+      <p>Typically marks the value in a unary expression or similar.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>expression</i></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;left&gt;
+
+expr &lt;/left&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>Typically marks the LHS in a binary expression.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>expression</i></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;right&gt;
+
+expr &lt;/right&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>Typically marks the RHS in a binary expression.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>block</i> | <i>statement</i></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;body&gt;
+
+statement* &lt;/body&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>Marker for the body of a compound statement or similar.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;attributes&gt;
+
+attribute* &lt;/attributes&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>Usually marks attributes in a type-declaration or similar.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;args&gt;
+
+expression* &lt;/args&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>Marks arguments when calling something.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;args&gt;
+
+definition* &lt;/args&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>Marks arguments when declaring a function or method or similar.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>type</i> <i>vars</i><span style="font-weight: bold;">;</span></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;vars&gt;
+
+&lt;var/&gt;* &lt;/vars&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>Typical form for variable declarations.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">&lt;</span><i>type-expressions</i><span
+ style="font-weight: bold;">&gt;</span></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;sharpargs&gt;
+
+type-expression* &lt;/sharpargs&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>Usually part of or marking arguments for something dealing
+with generics.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2"><br>
+<br>
+</font></font><br>
+</p>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2">Primitive
+Expressions</font></font></p>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2"><br>
+</font></font><br>
+</p>
+<table width="100%" border="1" cellpadding="4" cellspacing="3">
+  <col width="85*"> <col width="85*"> <col width="85*"> <tbody>
+    <tr valign="TOP">
+      <td width="33%">
+      <p>Example Syntax</p>
+      </td>
+      <td width="33%">
+      <p>XML</p>
+      </td>
+      <td width="33%">
+      <p>Comments</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>name</i></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;ref
+name="var"/&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>Refer to a variable.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>string-literal</i></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;string
+value="text"/&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>Literal string.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>integer-literal</i></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;int
+value="value"/&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>Literal integral value.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>real-literal</i></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;real
+value="value"/&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>Literal real value.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>real</i>+i<i>mag</i>i</p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;complex
+real="real" imag="imag"/&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>Literal complex number.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">goto </span><i>name</i><span
+ style="font-weight: bold;">;</span></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;goto
+name="var"/&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>Goto somewhere.</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">break;</span><br>
+      </td>
+      <td style="vertical-align: top;">&lt;break/&gt;<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">continue;</span><br>
+      </td>
+      <td style="vertical-align: top;">&lt;continue/&gt;<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>name</i><span style="font-weight: bold;">:</span></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;label
+name="var"/&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p>Label.</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">default:</span><br>
+      </td>
+      <td style="vertical-align: top;">&lt;case_default/&gt;<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2"><br>
+Attributes<br>
+<br>
+</font></font><br>
+</p>
+<table width="100%" border="1" cellpadding="4" cellspacing="3">
+  <col width="85*"> <col width="85*"> <col width="85*"> <tbody>
+    <tr valign="TOP">
+      <td width="33%">
+      <p>Example Syntax</p>
+      </td>
+      <td width="33%">
+      <p>XML</p>
+      </td>
+      <td width="33%">
+      <p>Comments</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p>__attribute__((<i>name</i>))<br>
+__attribute__((<i>name</i>(<i>args</i>)))</p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;attribute&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;attr name="name"&gt;<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; [&lt;args/&gt;]<br>
+&nbsp;&nbsp;&nbsp; &lt;/attr&gt;*<br>
+&lt;/attribute&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">These
+declare basic attributes, such as by the __attribute__ keyword in C/C++.<br>
+      </font></font><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p>__declspec(<i>name</i>)<br>
+__declspec(<i>name</i>(<i>args</i>))<br>
+      <span style="font-style: normal;"><span
+ style="font-weight: normal;">[</span></span><i>name</i><span
+ style="font-weight: normal;">]<br>
+[</span><i><span style="font-weight: normal;">name</span></i><span
+ style="font-weight: normal;">(</span><i><span
+ style="font-weight: normal;">args</span></i><span
+ style="font-weight: normal;">)]</span></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;declspec&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;attr name="name"&gt;<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; [&lt;args/&gt;]<br>
+&nbsp;&nbsp;&nbsp; &lt;/attr&gt;*<br>
+&lt;/declspec&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">These
+declare basic attributes, such as by the __declspec keyword in C/C++,
+or attributes in C#.<br>
+      </font></font><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p>&lt;<i>sharpargs</i>&gt;</p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;attribute&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;sharpargs/&gt;<br>
+&lt;/attribute&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">This is
+used when a declaration is generic, such as with a generic method.</font></font></p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p>@<i>name</i><br>
+@<i>name</i>(<i>args</i>)</p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;attribute&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;annotation name="name"&gt;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; [&lt;args/&gt;]<br>
+&nbsp;&nbsp;&nbsp; &lt;/annotation&gt;<br>
+&lt;/attribute&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">This is
+used when a declaration is an annotation.</font></font></p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<p style="margin-bottom: 0in;"><br>
+</p>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2">Expressions</font></font></p>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2"><br>
+</font></font><br>
+</p>
+<table width="100%" border="1" cellpadding="4" cellspacing="3">
+  <col width="85*"> <col width="85*"> <col width="85*"> <tbody>
+    <tr valign="TOP">
+      <td width="33%">
+      <p>Example Syntax</p>
+      </td>
+      <td width="33%"> XML </td>
+      <td width="33%">
+      <p>Comments</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+      <td width="33%"> <br>
+      </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>op value</i></p>
+      </td>
+      <td width="33%"> &lt;unary op="operator"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;value/&gt;<br>
+&lt;/unary&gt; </td>
+      <td width="33%">
+      <p>Uses a unary operator subject to syntax and context.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>left op right</i></p>
+      </td>
+      <td width="33%"> &lt;binary op="operator"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;left/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;right/&gt;<br>
+&lt;/binary&gt; </td>
+      <td width="33%">
+      <p>Uses a binary operator subject to syntax and context.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>name</i><span style="font-weight: bold;">(</span><i>args</i><span
+ style="font-weight: bold;">)</span></p>
+      </td>
+      <td width="33%"> &lt;funcall name="name"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;args/&gt;<br>
+&lt;/funcall&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>expr</i><span style="font-weight: bold;">(</span><i>args</i><span
+ style="font-weight: bold;">)</span></p>
+      </td>
+      <td width="33%"> &lt;funcall&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;value/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;args/&gt;<br>
+&lt;/funcall&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>objref</i><span style="font-weight: bold;">(</span><i>args</i><span
+ style="font-weight: bold;">)</span></p>
+      </td>
+      <td width="33%"> &lt;methodcall name="var"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;value/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;args/&gt;<br>
+&lt;/methodcall&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">return;</span><br>
+      <span style="font-weight: bold;">return </span><i>value</i><span
+ style="font-weight: bold;">;</span></p>
+      </td>
+      <td width="33%"> &lt;return&gt; [&lt;value/&gt;] &lt;/return&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p>++<i>expr</i><br>
+--<i>expr</i><br>
+      <i>expr</i>++<br>
+      <i>expr</i>--</p>
+      </td>
+      <td width="33%"> &lt;preinc&gt; &lt;expr/&gt; &lt;/preinc&gt;<br>
+&lt;predec&gt; &lt;expr/&gt; &lt;/predec&gt;<br>
+&lt;postinc&gt; &lt;expr/&gt; &lt;/postinc&gt;<br>
+&lt;postdec&gt; &lt;expr/&gt; &lt;/postdec&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">(</span><i>type</i><span
+ style="font-weight: bold;">)</span><i>value</i><i><br>
+value</i> <span style="font-weight: bold;">as </span><i>type</i>
+      </p>
+      </td>
+      <td width="33%"> &lt;cast&gt; &lt;type/&gt; &lt;value/&gt;
+&lt;/cast&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">new </span><i>type</i><br>
+      <span style="font-weight: bold;">new </span><i>type</i><span
+ style="font-weight: bold;">(</span><i>args</i><span
+ style="font-weight: bold;">)</span></p>
+      </td>
+      <td width="33%"> &lt;new&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;type/&gt;<br>
+&nbsp;&nbsp;&nbsp; [ &lt;args/&gt; ]<br>
+&lt;/new&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>value</i> <span style="font-weight: bold;">instanceof </span><i>type<br>
+value</i> <span style="font-weight: bold;">is </span><i>type</i></p>
+      <p><br>
+      </p>
+      </td>
+      <td width="33%"> &lt;instanceof&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;value/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;type/&gt;<br>
+&lt;/instanceof&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>left</i><span style="font-weight: bold;">=</span><i>right</i><br>
+      <i>left</i> <i><span style="font-weight: normal;">op</span></i><span
+ style="font-weight: bold;">= </span><i>right</i></p>
+      </td>
+      <td width="33%"> &lt;assign [op="op"]&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;left/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;right/&gt;<br>
+&lt;/assign&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>value</i>.<i>name<br>
+value</i><span style="font-style: normal; font-weight: bold;">-&gt;</span><i>name</i></p>
+      </td>
+      <td width="33%"> &lt;objref name="slot"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;value/&gt;<br>
+&lt;/objref&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>array</i><span style="font-weight: bold;">[</span><i>index</i><span
+ style="font-weight: bold;">]</span></p>
+      </td>
+      <td width="33%"> &lt;getindex&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;array/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;index/&gt;<br>
+&lt;/getindex&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>left</i><span style="font-weight: bold;">, </span><i>right</i></p>
+      </td>
+      <td width="33%"> &lt;comma&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;left/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;right/&gt;<br>
+&lt;/comma&gt; </td>
+      <td width="33%">
+      <p>Comma operator. Note that RHS is in tail-position.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>array</i><span style="font-weight: bold;">[]</span><br>
+      <i>array</i><span style="font-weight: bold;">[,,]</span></p>
+      </td>
+      <td width="33%"> &lt;emptyindex [ord="ord"]&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;array/&gt;<br>
+&lt;/emptyindex&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">{ </span><i>expr</i>* <span
+ style="font-weight: bold;">}</span><br>
+      <span style="font-weight: bold;">(</span><i>expr-list</i>*<span
+ style="font-weight: bold;">)</span></p>
+      </td>
+      <td width="33%"> &lt;begin&gt; expr* &lt;/begin&gt; </td>
+      <td width="33%">
+      <p>Group of expressions. Note that the last expression is in
+tail-position if &lt;begin/&gt; is in expression context.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">if(</span><i>cond</i><span
+ style="font-weight: bold;">)</span><i>then</i><br>
+      <span style="font-weight: bold;">if(</span><i>cond</i><span
+ style="font-weight: bold;">)</span><i>then</i> <span
+ style="font-weight: bold;">else </span><i>else<br>
+cond</i><span style="font-style: normal; font-weight: bold;">?</span><i>then</i><span
+ style="font-style: normal; font-weight: bold;">:</span><i>else</i></p>
+      </td>
+      <td width="33%"> &lt;if&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;cond/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;then/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;else/&gt;<br>
+&lt;/if&gt; </td>
+      <td width="33%">
+      <p>The then and else blocks are in tail position.</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">for(</span><i>init</i><span
+ style="font-weight: bold;">; </span><i>cond</i><span
+ style="font-weight: bold;">; </span><i>step</i><span
+ style="font-weight: bold;">) </span><i>body</i></p>
+      </td>
+      <td width="33%"> &lt;for&gt; &lt;init/&gt; &lt;cond/&gt;
+&lt;step/&gt; &lt;body/&gt; &lt;/for&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">for</span>(<i>left</i> <span
+ style="font-weight: bold;">in </span><i>right</i>) <i>body</i><span
+ style="font-style: normal;"><br>
+      <span style="font-weight: bold;">foreach</span>(</span><i>left</i><span
+ style="font-style: normal;">
+      <span style="font-weight: bold;"> in </span></span><i>right</i><span
+ style="font-style: normal;">) </span><i>body</i></p>
+      </td>
+      <td width="33%"> &lt;for_in&gt; &lt;left/&gt; &lt;right/&gt;
+&lt;body/&gt; &lt;for_in&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">while(</span><i>cond</i><span
+ style="font-weight: bold;">) </span><i>body</i></p>
+      </td>
+      <td width="33%"> &lt;while&gt; &lt;cond/&gt; &lt;body/&gt;
+&lt;/while&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">do </span><i>body</i> <span
+ style="font-weight: bold;">while(</span><i>cond</i><span
+ style="font-weight: bold;">);</span></p>
+      </td>
+      <td width="33%"> &lt;do_while&gt; &lt;cond/&gt; &lt;body/&gt;
+&lt;/do_while&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">switch(</span><i>cond</i><span
+ style="font-weight: bold;">) </span><i>body</i></p>
+      </td>
+      <td width="33%"> &lt;switch&gt; &lt;cond/&gt; &lt;body/&gt;
+&lt;/switch&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">case </span><i>value</i><span
+ style="font-weight: bold;">:</span></p>
+      </td>
+      <td width="33%"> &lt;case&gt; &lt;value/&gt; &lt;/case&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>type</i> <i>name</i><span style="font-weight: bold;">(</span><i>args</i><span
+ style="font-weight: bold;">) </span><i>body</i></p>
+      </td>
+      <td width="33%"> &lt;defun name="name"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;type/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;args/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;body/&gt;<br>
+&lt;/defun&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">sizeof(</span><i>type</i><span
+ style="font-weight: bold;">)</span></p>
+      </td>
+      <td width="33%"> &lt;sizeof&gt; &lt;type/&gt; &lt;/sizeof&gt;<br>
+&lt;sizeof&gt; &lt;tyexpr/&gt; &lt;/sizeof&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">sizeof </span><i>expr</i></p>
+      </td>
+      <td width="33%"> &lt;sizeof_expr&gt; &lt;value/&gt;
+&lt;/sizeof_expr&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">get </span><i>body<br>
+      </i><span style="font-style: normal; font-weight: bold;">set </span><i>body</i></p>
+      </td>
+      <td width="33%"> &lt;get&gt; &lt;body/&gt; &lt;/get&gt;<br>
+&lt;set&gt; &lt;body/&gt; &lt;/set&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">try</span> <i>body</i><br>
+      <span style="font-weight: bold;">catch</span>(<i>args</i>)<i>body</i><sub><i>1</i></sub>
+      <span style="font-weight: bold;"><br>
+finally</span> <i>body</i><font color="#000000"><sub><i>2</i></sub></font></p>
+      </td>
+      <td width="33%"> &lt;try_catch&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;body/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;catch&gt;<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;args/&gt;<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;body/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/catch&gt;*<br>
+&nbsp;&nbsp;&nbsp; [ &lt;finally&gt;<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;body/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/finally&gt; ]<br>
+&lt;/try_catch&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">throw</span> <i>value</i><span
+ style="font-style: normal; font-weight: bold;">;</span></p>
+      </td>
+      <td width="33%"> &lt;throw&gt; &lt;value/&gt; &lt;/throw&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">import</span> <i>name</i><span
+ style="font-weight: bold;">;</span></p>
+      </td>
+      <td width="33%"> &lt;import name="name"/&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">package</span> <i>name</i><span
+ style="font-weight: bold;">;</span><br>
+      <span style="font-weight: bold;">package</span> <i>name</i> <i>body</i></p>
+      </td>
+      <td width="33%"> &lt;package name="name"&gt;<br>
+&nbsp;&nbsp;&nbsp; [ &lt;body/&gt; ]<br>
+&lt;/package&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">using</span> <i>name</i><span
+ style="font-weight: bold;">;</span></p>
+      </td>
+      <td width="33%"> &lt;using name="name"/&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">namespace</span> <i>name</i>
+      <i>body</i></p>
+      </td>
+      <td width="33%"> &lt;namespace name="name"&gt;<br>
+&nbsp;&nbsp;&nbsp; [ &lt;body/&gt; ]<br>
+&lt;/namespace&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">;</span><br>
+      <span style="font-weight: bold;">,</span></p>
+      </td>
+      <td width="33%"> &lt;null_statement/&gt;<br>
+&lt;null_expression/&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p>__asm__ ( ... );<br>
+__asm { ... }</p>
+      </td>
+      <td width="33%"> &lt;gcc_asm/&gt;<br>
+&lt;msvc_asm/&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>modifiers</i> <i>classname</i>(<i>args</i>) <i>body</i><br>
+      <i>modifiers</i> <i>classname</i>(<i>args</i>):<i>name</i><sub><i>1</i></sub>(<i>args</i><sub><i>1</i></sub>)
+
+      <i>body</i></p>
+      </td>
+      <td width="33%"> &lt;constructor flags="flags"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;args/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;body/&gt;<br>
+&nbsp;&nbsp;&nbsp; [ &lt;defer name="name"&gt;<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;args/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;/defer&gt; ]<br>
+&lt;/constructor&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>modifiers body</i></p>
+      </td>
+      <td width="33%"> &lt;groupflags flags="flags"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;body/&gt;<br>
+&lt;/groupflags&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">ref</span> <span
+ style="font-style: italic;">expr</span><br>
+      </p>
+      </td>
+      <td width="33%"> &lt;byref&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;value/&gt;<br>
+&lt;/byref&gt;<br>
+      </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">out</span> <span
+ style="font-style: italic;">expr</span><br>
+      </p>
+      </td>
+      <td width="33%"> &lt;byref_out&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;value/&gt;<br>
+&lt;/byref_out&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><span style="font-weight: bold;">delete</span> <span
+ style="font-style: italic;">expr</span><br>
+      </p>
+      </td>
+      <td width="33%"> &lt;delete&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;value/&gt;<br>
+&lt;/delete&gt; </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">typeof</span>
+      <span style="font-style: italic;">expr</span><br>
+      </td>
+      <td style="vertical-align: top;">&lt;typeof&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;value/&gt;<br>
+&lt;/typeof&gt;</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">fun[</span><span
+ style="font-style: italic;">expr</span><span style="font-weight: bold;">]</span><br>
+      </td>
+      <td style="vertical-align: top;">&lt;lambda_expr&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;value/&gt;<br>
+&lt;/lamba_expr&gt;</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">fun{</span><span
+ style="font-style: italic;">body</span><span style="font-weight: bold;">}</span><br>
+      </td>
+      <td style="vertical-align: top;">&lt;lambda&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;body/&gt;<br>
+&lt;/lamba&gt;</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">fun
+      </span><span style="font-style: italic;">type</span><span
+ style="font-weight: bold;">(</span><span style="font-style: italic;">args</span><span
+ style="font-weight: bold;">) </span><span style="font-style: italic;">body</span><br>
+      </td>
+      <td style="vertical-align: top;">&lt;lambda&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;type/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;args/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;body/&gt;<br>
+&lt;/lamba&gt;<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">fun
+      </span><span style="font-style: italic;">type name</span><span
+ style="font-weight: bold;">(</span><span style="font-style: italic;">args</span><span
+ style="font-weight: bold;">) </span><span style="font-style: italic;">body</span></td>
+      <td style="vertical-align: top;">&lt;lambda name="name"&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;type/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;args/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;body/&gt;<br>
+&lt;/lamba&gt;</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2"><br>
+<br>
+<br>
+Type
+Expression<br>
+<br>
+</font></font><br>
+</p>
+<table width="100%" border="1" cellpadding="4" cellspacing="3">
+  <col width="85*"> <col width="85*"> <col width="85*"> <tbody>
+    <tr valign="TOP">
+      <td width="33%">
+      <p>Example Syntax</p>
+      </td>
+      <td width="33%">
+      <p>XML</p>
+      </td>
+      <td width="33%">
+      <p>Comments</p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p>?</p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;anytype/&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>value</i> <span style="font-weight: bold;">extends </span><i>type</i></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;extends&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;type/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;value/&gt;<br>
+&lt;/extends&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>value</i> <span style="font-weight: bold;">implements </span><i>type</i></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;implements&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;type/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;value/&gt;<br>
+&lt;/implements&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>value</i> <span style="font-weight: bold;">super </span><i>type</i></p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;super&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;type/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;value/&gt;<br>
+&lt;/super&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+    <tr valign="TOP">
+      <td width="33%">
+      <p><i>value</i>&lt;<i>args</i>&gt;</p>
+      </td>
+      <td width="33%">
+      <p><font face="Courier New, monospace"><font size="2">&lt;sharpcall&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;value/&gt;<br>
+&nbsp;&nbsp;&nbsp; &lt;args/&gt;<br>
+&lt;/sharpcall&gt;</font></font></p>
+      </td>
+      <td width="33%">
+      <p><br>
+      </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p style="margin-bottom: 0in;"><font face="Courier New, monospace"><font
+ size="2"><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+</font></font><br>
+</p>
+<p><br>
+<br>
+</p>
+</body>
+</html>

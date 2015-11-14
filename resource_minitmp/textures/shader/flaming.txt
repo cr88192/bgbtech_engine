@@ -1,0 +1,2 @@
+$flags window
+$drawfunc shader_flame

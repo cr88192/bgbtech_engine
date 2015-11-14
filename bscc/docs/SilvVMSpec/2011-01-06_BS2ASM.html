@@ -1,0 +1,348 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="Content-Type">
+  <title>BS2ASM</title>
+</head>
+<body>
+BS2 ASM will use similar token rules to a C-style parser. Syntax will
+be case sensitive.<br>
+<br>
+Basic Syntax<br>
+<table width="100%" border="1" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">SetName<br>
+      </td>
+      <td style="vertical-align: top;">Syntax<br>
+      </td>
+      <td style="vertical-align: top;">Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">//</span><span
+ style="font-style: italic;">stuff</span>...<br>
+      <span style="font-weight: bold;">/* </span><span
+ style="font-style: italic;">stuff</span>... <span
+ style="font-weight: bold;">*/</span><br>
+      </td>
+      <td style="vertical-align: top;">Comment.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">opcodes<br>
+      </td>
+      <td><span style="font-style: italic;">opcode</span></td>
+      <td style="vertical-align: top;">Opcode by itself. Only allowed
+if the opcode does not accept arguments.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">opcodes<br>
+      </td>
+      <td><span style="font-style: italic;">opcode</span><span
+ style="font-weight: bold;">;</span><span style="font-style: italic;"><br>
+opcode args</span><span style="font-weight: bold;">;</span></td>
+      <td style="vertical-align: top;">Typical opcode form. ';' serves
+as an opcode separator.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">opcodes<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-style: italic;">labelname</span><span
+ style="font-weight: bold;">:</span><br>
+      </td>
+      <td style="vertical-align: top;">Label.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">block<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">{
+
+
+      </span><span style="font-style: italic;">opcodes </span><span
+ style="font-weight: bold;">}</span><br>
+      </td>
+      <td style="vertical-align: top;">Code block.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">decl<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-style: italic;">decltype
+
+
+      </span><span style="font-weight: bold;">{ </span><span
+ style="font-style: italic;">decl</span>... <span
+ style="font-weight: bold;">}</span><br>
+      </td>
+      <td style="vertical-align: top;">Basic Declaration block.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">decl<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-style: italic;">varname</span><span
+ style="font-weight: bold;">=</span><span style="font-style: italic;">value</span><span
+ style="font-weight: bold;"></span><br>
+      </td>
+      <td style="vertical-align: top;">Basic key/value pair.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">decltype<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;"></span><span
+ style="font-style: italic;">keyword</span><br>
+      </td>
+      <td style="vertical-align: top;">Starts a declaration.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">decl<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">body
+
+
+      </span><span style="font-style: italic;">block</span><br>
+      </td>
+      <td style="vertical-align: top;">Code block for a method or
+similar.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+Declarations<br>
+<br>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">Syntax<br>
+      </td>
+      <td style="vertical-align: top;">Description<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">var | field | s_var {<br>
+name=<span style="font-style: italic;">name</span><br>
+type=<span style="font-style: italic;">type</span><br>
+flags=<span style="font-style: italic;">modifiers</span><br>
+values { <span style="font-style: italic;">decl</span>* }<br>
+}<br>
+      </td>
+      <td style="vertical-align: top;">Declare a variable or field.<br>
+s_var will be a special case, where the field will serve as a
+type-definition rather than as an accessible variable.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">method | function | proto |
+s_proto {<br>
+name=<span style="font-style: italic;">name</span><br>
+type=<span style="font-style: italic;">type</span><br>
+flags=<span style="font-style: italic;">modifiers</span><br>
+args { <span style="font-style: italic;">var</span>* }<br>
+vars { <span style="font-style: italic;">var</span>* }<br>
+catches { <span style="font-style: italic;">catch</span>* }<br>
+body { ... }<br>
+}<br>
+      </td>
+      <td style="vertical-align: top;">Declare a method, function, or
+prototype.<br>
+s_proto will be a special case which will define a prototype which will
+serve as a type.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">catch {<br>
+begin=<span style="font-style: italic;">label</span><br>
+end=<span style="font-style: italic;">label</span><br>
+target=<span style="font-style: italic;">label</span><br>
+class=<span style="font-style: italic;">classname</span><br>
+}<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">class | interface | class |
+union {<br>
+name=<span style="font-style: italic;">name</span><br>
+extends=<span style="font-style: italic;">classname</span><br>
+flags=<span style="font-style: italic;">modifiers</span><br>
+implements { <span style="font-style: italic;">classref</span>* }<br>
+      <span style="font-style: italic;">decl</span>*<br>
+}<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">package {<br>
+name=<span style="font-style: italic;">name</span><br>
+      <span style="font-style: italic;">decl</span>*<br>
+}<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">classref {<br>
+name=<span style="font-style: italic;">name</span><br>
+}<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">import {<br>
+name=<span style="font-style: italic;">name</span><br>
+flags=<span style="font-style: italic;">modifiers</span><br>
+}</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">attribute {<br>
+name=<span style="font-style: italic;">name</span><br>
+args { <span style="font-style: italic;">decl</span>* }<br>
+}<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">list { <span
+ style="font-style: italic;">decl</span>* }<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">int { value=<span
+ style="font-style: italic;">value </span>}<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">long { value=<span
+ style="font-style: italic;">value </span>}</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">float { value=<span
+ style="font-style: italic;">value </span>}<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">double { value=<span
+ style="font-style: italic;">value </span>}</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">string { value=<span
+ style="font-style: italic;">value </span>}<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">symbol { value=<span
+ style="font-style: italic;">value </span>}</td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+Example:<br>
+<br>
+package {<br>
+&nbsp;&nbsp;&nbsp; name="myapp/stuff"<br>
+&nbsp;&nbsp;&nbsp; class {<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; name="MyClass"<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; extends="Object"<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; field { name="x" type="i" }<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; method {<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; name="foo"<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; type="i"<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; args { var {
+name="x" type="i" } }<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; vars { var {
+name="v" type="i" } }<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; body {<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; load x;<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; dup inc mul;<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; store v;<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp; load v;<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp; ret; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; }<br>
+&nbsp;&nbsp;&nbsp; }<br>
+}<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+</body>
+</html>

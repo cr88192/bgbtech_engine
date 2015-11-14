@@ -1,0 +1,52 @@
+Idea for container format reused from a previous idea:
+
+This format is binary but is dumped serially.
+Numbers will be little-endian, and there will not be any padding.
+
+As a general rule, tags will give the file structure.
+
+FOURCC tag;		//tag id
+
+What follows the tag depends, first, on what the tag is, and, secondly, on the casing of the tag letters.
+
+ABCD:
+a/A, primitive/compound, where a compound is followed by more tags;
+b/B, no-length/length, indicates whether a length field follows (as a 32 bit integer);
+c/C, optional/must-understand;
+d/D, local/global (eg: whether this tag would mean the same thing elsewhere).
+
+The meaning of non-alphabetic characters is context dependent. Naturally, most non-alphabetic characters should be treated as lower-case. However, '~' will be treated as upper-case (and may be used to pad-out some special tags).
+
+Additionally, a tag will be viewed as "sane" if:
+All characters in the tag fall within the printable ascii range (0x20..0x7E);
+The first character is not a spacing character (' ' or '~');
+There are no spacing characters followed by non-spacing ones.
+
+Only sane tags should be used in general.
+
+"special" tags may exist, which are not strictly required to follow this casing rule (but should as a general rule, if sensible).
+
+compounds, in the default case, will be a tag followed by more tags. If a compound has a length, the length is used to indicate the size of the contents, otherwise, the contents are ended by the special tag 'enD~'.
+
+A few special/predefined tags:
+'jUnK' <length> <data[length]>, padding;
+'uuiD' reserved;
+'uUiD' <UUID> <length> <data[length]>;
+'UUiD' <UUID> <length> <tag[]>;
+'UuiD' <UUID> <tag[]> 'end ';
+'uuID' reserved;
+'uUID' <UUID> <length> <data[length]>;
+'UUID' <UUID> <length> <tag[]>;
+'UuID' <UUID> <tag[]> 'end ';
+'enD~', end marker for compounds.
+
+The exact meaning of the contents of a tag is undefined if the tag is not recognized or expected. No exact specification is made as to how unrecognized tags are to be handled, however:
+If the program is relying on the file's semantics, it should stop processing if any unrecognized tags are marked must-understand;
+Unless previously expected, all tags with non-sane values should cause the program to cease further processing of the file (as the file is likely either invalid or corrupt).
+
+
+In general, tags with the first 2 letters lower-case should not be used for any purposes other than a standalone tag value.
+
+
+
+'ItCF' <tag[]> 'enD~', Informal Tagged Container Format.

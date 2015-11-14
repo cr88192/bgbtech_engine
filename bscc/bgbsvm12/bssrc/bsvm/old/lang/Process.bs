@@ -1,0 +1,15 @@
+package bsvm.lang;
+import bsvm.io.*;
+
+public abstract class Process extends Object
+{
+public Process() {}
+
+abstract void destroy();
+abstract int exitValue();
+abstract InputStream getErrorStream();
+abstract InputStream getInputStream();
+abstract OutputStream getOutputStream();
+abstract int waitFor();
+
+}

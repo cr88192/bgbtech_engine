@@ -1,0 +1,48 @@
+I will define some amount of extension tokens and syntax, which should hopefully not conflict with other tokens in C.
+
+Braces:
+<. .>		{. .}
+[. .]		(. .)
+
+#< >		#{ }
+#[ ]		#( )
+
+#<. .>	#{. .}
+#[. .]	#(. .)
+
+
+Operators:
++.	-.	*.	/.
+%.	&.	|.	^.
+
+.+	.-	.*	./
+.%	.&	.|	.^
+
+~.	!.	.~	.!
+..
+
+Change:
+C99 allows 3. and .3 as valid float literals.
+will generally replace . with `.
+
++`	-`	*`	/`
+%`	&`	|`	^`
+
+`+	`-	`*	`/
+`%	`&	`|	`^
+
+~`	!`	`~	`!
+``
+
+Precedence:
+	cast
+	` `` &` |` ^` `& `| `^
+	* / % *` /` %` `* `/ `%  ~ ~` `~
+	+ - +` -` `+ `-
+
+a`b: (numbers) exponent
+a`b: (vector) dot product (alternate)
+a`b: (quat) exponent
+
+a/`b: (integers) float division
+a/`b: (quat) reverse division

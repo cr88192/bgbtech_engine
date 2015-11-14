@@ -1,0 +1,6074 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;
+      charset=ISO-8859-1">
+    <title></title>
+  </head>
+  <body>
+    <h1>BGBScript VM ByteCode Spec</h1>
+    <br>
+    <br>
+    <h2>Overview</h2>
+    <br>
+    The BGBScript VM is based on a stack machine.<br>
+    Each operation may use either immediate or stack-based operands.<br>
+    Typically, the type-system will assume the use of variant types,
+    however a VM is allowed to infer types and use alternate
+    representations where possible.<br>
+    <br>
+    Several environments will exist:<br>
+    &nbsp;&nbsp;&nbsp; The Lexical Environment;<br>
+    &nbsp;&nbsp;&nbsp; The Dynamic Environment;<br>
+    &nbsp;&nbsp;&nbsp; The Object Environment (Accessed via a self/this
+    pseudo-variable);<br>
+    &nbsp;&nbsp;&nbsp; The Toplevel Environment (Accessed via a top
+    psuedo-variable).<br>
+    <br>
+    A stack will also be used. The stack may be relative to the current
+    execution frame, and thus it is not allowed to pass values between
+    frames in stack variables. Similarly, the stack will be required to
+    have the same physical layout and declared types (excluding variant
+    types) for all control-flow paths which may reach a given label (the
+    existence of labels will be implied by them being reachable via a
+    jump).<br>
+    <br>
+    It will also be required that there only be a single valid parsing
+    of all instructions in a block starting from the first instruction
+    in a block (it will not allowed to jump into the middle of another
+    instruction).<br>
+    <br>
+    The stack will generally assume variant types, but the VM may infer
+    the types of stack elements from prior elements.<br>
+    Type-specific opcodes are provided to help optimize the case where
+    running in an interpreter which does not perform type inference.<br>
+    <br>
+    Value-types will be managed directly by the interpreter (any
+    copying/freeing will be performed as part of the course of normal
+    operation). Some "fast" opcodes will exist which will skip these
+    checks.<br>
+    <br>
+    <br>
+    Each function block will also have a literal table associated with
+    it. This table may be unique to the function in question, or may be
+    shared between multiple functions. Many literal values and symbols
+    will be drawn from these tables. The table will essentially be an
+    array of values associated with the function.<br>
+    <br>
+    Note, these are not equivalent to the lump indices used in
+    serialized bytecode files.<br>
+    <br>
+    <br>
+    <h3> Lexical Environment</h3>
+    Lexical Variables will be represented linearly using an index value
+    (similar to a stack index).<br>
+    This will be relative to the most recently bound variable, which
+    will have index 0, the one bound before that as 1, ...<br>
+    <br>
+    Arguments will behave as if they were bound in left-to-right order,
+    meaning they will appear reversed regarding their numerical values.
+    Note that in the case of variable-arguments functions, the remaining
+    arguments will be folded into a single variable.<br>
+    <br>
+    Variables from parent frames will precede the arguments list (and
+    thus have larger index values).<br>
+    <br>
+    Note: the current function will not normally be part of the lexical
+    environment (including for "rlambda" forms), but may be accessed via
+    the "current function" opcodes.<br>
+    <br>
+    <br>
+    The physical representation of the lexical environemt will not be
+    defined here, but a few possibilities include:<br>
+    As stack frames (useful for when there is no variable capture);<br>
+    As a heap-allocated list structure;<br>
+    As heap-allocated frame objects;<br>
+    ...<br>
+    <br>
+    The only real requirement is that the VM obey the correct
+    (stack-like) variable numbering.<br>
+    <br>
+    Note that the VM may make use of a stack for holding variables if it
+    can be determined that this can be done without violating other
+    requirements.<br>
+    <br>
+    <h4>Captured Variable Lifetime</h4>
+    A lexical variable captured as part of a closure is required to be
+    retained past the termination of the parent function in cases where
+    the closure will continue to exist past the termination of the
+    parent function.<br>
+    <br>
+    In this case, the captured bindings will persist so long as there
+    are any references to them.<br>
+    <br>
+    Note that the VM need not preserve the bindings if it can be
+    determined that the closure will not outlive the lifetime of the
+    parent function.<br>
+    Similarly, the VM not need preserve the same bindings if it can be
+    determined that their value is "effectively final", in which case
+    the closure may instead capture a copy of the parent environment.<br>
+    <br>
+    Note that in certain cases a called sub-block (such as part of an
+    "ifdef") may make reference to parent bindings.<br>
+    This will be allowed, however, by itself this will not count as
+    varaible capture as the called sub-block will necessarily terminate
+    prior to the termination of the parent function. It will then only
+    be necessary to preserve bindings if the called sub-block itself
+    captures the bindings (such as by the creation of a closure).<br>
+    <br>
+    <h4>Named Variable Access</h4>
+    Environments other than the lexical environment will generally be
+    accessed by name (the lexical environment may also be accessed by
+    name). In this case, the VM may employ the use of dynamic name
+    resolution in an attempt to find the requesed binding.<br>
+    <br>
+    The VM may be allowed to omit retention of names for lexical
+    variables if it can be determined that lexical bindings are never
+    accessed by name.<br>
+    <br>
+    <br>
+    <h3>Call Arguments</h3>
+    Arguments for calls will be passed in left to right order.<br>
+    Generally, any object used will be placed following the rightmost
+    argument.<br>
+    In most cases, an explicit mark will be given (as required by
+    opcodes).<br>
+    <br>
+    <br>
+    <h3>Types And Signatures</h3>
+    The exact typesystem and notation for signature strings is outside
+    the scope of this spec.<br>
+    See the metadata spec for information on signatures.<br>
+    <br>
+    <br>
+    <h3>Opcode Prefixes</h3>
+    <br>
+    A number of prefixes will exist. Prefixes may alter the structure or
+    behavior of opcodes on which they are applied. Some prefixes may be
+    mutually exclusive, and the behavior of combining them will be
+    undefined. Generally, prefixes will themselves use a "PF_" name
+    prefix. A prefix will be considered to be a part of the first
+    non-prefix opcode which follows it. A prefix will not apply to
+    multiple opcodes.<br>
+    <br>
+    Type prefixes will alter the behavior of an operation according to
+    the value types it will accept or produce.<br>
+    If no type prefixes are given for an opcode, it will default to the
+    use of dynamic type-checking.<br>
+    The use of type prefixes will indicate the use of statically-typed
+    instructions (as opposed to untagged dynamic instructions).<br>
+    <br>
+    Note: It is not allowed to directly pass values between statically
+    and dynamically typed instructions even if the type of the value is
+    known in advance. This is because statically typed instructions may
+    use special value representations which differ from those used by
+    analogous dynamically-typed instructions.<br>
+    <br>
+    Note: Unless otherwise specified, all memory objects will be "self
+    describing", and thus the type prefixes will serve more as
+    optimization hints than as mandatory prefixes for the identification
+    of types. The main purpose of the type-hints then is to aide in the
+    use of more specialized value representations, and in the aviodance
+    of run-time type-checks.<br>
+    <br>
+    <br>
+    <table style=" text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Name<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(General Prefixes)<br>
+          </td>
+          <td style="vertical-align: top;">These prefixes apply to
+            general opcodes.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_WIDE<br>
+          </td>
+          <td style="vertical-align: top;">Increases the with of jump
+            targets from 16 to 32 bits.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(General Type Prefixes)<br>
+          </td>
+          <td style="vertical-align: top;">Prefixes to indicate the
+            general type of an operation (mutually exclusive).<br>
+            May also be called basic types.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XI<br>
+          </td>
+          <td style="vertical-align: top;">Integer prefix. Marks the
+            following opcode as using a 32-bit integer type.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XL<br>
+          </td>
+          <td style="vertical-align: top;">Long prefix. Marks the
+            following opcode as using a 64-bit long type.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XF<br>
+          </td>
+          <td style="vertical-align: top;">Float prefix. Marks the
+            following opcode as using a 32-bit float type.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XD</td>
+          <td style="vertical-align: top;">Double prefix. Marks the
+            following opcode as using a 64-bit double type.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_FN</td>
+          <td style="vertical-align: top;">Fixnum Prefix. Marks opcode
+            as using the fixnum type.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_FL</td>
+          <td style="vertical-align: top;">Flonum Prefix. Marks opcode
+            as using the flonum type.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Special Type Prefixes)<br>
+          </td>
+          <td style="vertical-align: top;">These prefixes will have
+            special behaviors, which are specific to the prefix.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_PTR</td>
+          <td style="vertical-align: top;">Pointer Prefix. Marks the
+            opcode as using a pointer type.<br>
+            A pointer prefix will use a compound type to indicate the
+            base-type of the pointer.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_IX<br>
+          </td>
+          <td style="vertical-align: top;">Integer Index (Pointer or
+            Array). Indicates that the index or offset is an integer.<br>
+            This is needed for array-index operations and for
+            pointer-arithmetic operations against an integer.<br>
+            This modifier is implied by the use of a type-prefix with an
+            IX suffix, and so is not needed.<br>
+            IX is not used if the Index is constant.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_VOID</td>
+          <td style="vertical-align: top;">Void-type Prefix. This prefix
+            type is special and may not be used as a general-purpose
+            type.<br>
+            By itself the void type has no value and may not be
+            represented as a value.<br>
+            May be used with PTR to compose a void pointer.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_PVAR<br>
+          </td>
+          <td style="vertical-align: top;">Pointer-variant Prefix. This
+            prefix type is special and may not be used as a
+            general-purpose type.<br>
+            Indicates a base-type pointer of unspecified type.<br>
+            May be used with PTR to compose a multi-level pointer.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_S<br>
+          </td>
+          <td style="vertical-align: top;">Gives a hint identified via a
+            signature string.<br>
+            For call operations, this gives the signature of the
+            function to-be-called.<br>
+            If used, this prefix will generally be used by itself, and
+            will <br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Pointer and Array Prefixes)<br>
+          </td>
+          <td style="vertical-align: top;">These prefixes apply to
+            pointers and arrays (and are mutually exclusive).<br>
+            Note that these require a pointer-hint for pointer-types,
+            otherwise an array will be assumed.<br>
+            May also be called compound types, as more than one type is
+            specified by the prefix.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XUBI<br>
+          </td>
+          <td style="vertical-align: top;">Unsigned Byte as Integer.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XSBI<br>
+          </td>
+          <td style="vertical-align: top;">Signed Byte as Integer.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XUSI<br>
+          </td>
+          <td style="vertical-align: top;">Unsigned Short as Integer.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XSSI<br>
+          </td>
+          <td style="vertical-align: top;">Signed Short as Integer.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XUDI<br>
+          </td>
+          <td style="vertical-align: top;">Unsigned Dword as Integer.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XSDI<br>
+          </td>
+          <td style="vertical-align: top;">Signed Dword as Integer.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XUDL<br>
+          </td>
+          <td style="vertical-align: top;">Unsigned Dword as Long.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XSDL<br>
+          </td>
+          <td style="vertical-align: top;">Signed Dword as Long.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XUBI_IX<br>
+          </td>
+          <td style="vertical-align: top;">Unsigned Byte as Integer
+            (Integer Index).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XSBI_IX
+          </td>
+          <td style="vertical-align: top;">Signed Byte as Integer
+            (Integer Index).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XUSI_IX
+          </td>
+          <td style="vertical-align: top;">Unsigned Short as Integer
+            (Integer Index).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XSSI_IX
+          </td>
+          <td style="vertical-align: top;">Signed Short as Integer
+            (Integer Index).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XUDI_IX
+          </td>
+          <td style="vertical-align: top;">Unsigned Dword as Integer
+            (Integer Index).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XSDI_IX
+          </td>
+          <td style="vertical-align: top;">Signed Dword as Integer
+            (Integer Index).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XUDL_IX
+          </td>
+          <td style="vertical-align: top;">Unsigned Dword as Long
+            (Integer Index).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XSDL_IX
+          </td>
+          <td style="vertical-align: top;">Signed Dword as Long (Integer
+            Index).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XII<br>
+          </td>
+          <td style="vertical-align: top;">Integer as Integer<sup>1</sup>.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XLL<br>
+          </td>
+          <td style="vertical-align: top;">Long as Long<sup>1</sup>.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XFF<br>
+          </td>
+          <td style="vertical-align: top;">Float as Float<sup>1</sup>.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XDD<br>
+          </td>
+          <td style="vertical-align: top;">Double as Double<sup>1</sup>.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XII_IX<br>
+          </td>
+          <td style="vertical-align: top;">Integer as Integer (Integer
+            Index). </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XLL_IX </td>
+          <td style="vertical-align: top;">Long as Long (Integer Index).
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XFF_IX </td>
+          <td style="vertical-align: top;">Float as Float (Integer
+            Index).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XDD_IX </td>
+          <td style="vertical-align: top;">Double as Double (Integer
+            Index).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    Note 1: These differ from the basic type forms in that when applied
+    to objects, arrays, or pointers, they will specify that both the
+    value and its memory storage are of the given type, whereas the
+    basic form will only apply to the value itself (and so may load the
+    value from a dynamically-typed object).<br>
+    <br>
+    These will not apply to lexical variables, for which the basic type
+    will apply both to the value and also to the variable itself, and is
+    required to be consistent with regards to the type of the variable.<br>
+    <br>
+    <br>
+    Prefix Examples<br>
+    <br>
+    <table style=" text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Opcodes<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(XI) ADD<br>
+          </td>
+          <td style="vertical-align: top;">Add Integer<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(XI) ADD_C<br>
+          </td>
+          <td style="vertical-align: top;">Add integer with constant.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(XII_IX) LOADINDEX<br>
+          </td>
+          <td style="vertical-align: top;">Load integer from integer
+            array using integer index.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(XII) LOADINDEX</td>
+          <td style="vertical-align: top;">Load integer from object
+            (integer slot) using variant index.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(XI) LOADINDEX<br>
+          </td>
+          <td style="vertical-align: top;">Load integer from object
+            (variant slot) using variant index.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(XII) LOADINDEX_S</td>
+          <td style="vertical-align: top;">Load integer from object
+            (integer field) using a name (IX reserved).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(XII) LOADINDEX_I<br>
+          </td>
+          <td style="vertical-align: top;">Load integer from integer
+            array using a constant index (IX reserved).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(PTR) (XII_IX) ADD<br>
+          </td>
+          <td style="vertical-align: top;">Add pointer and integer
+            (needs IX).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(PTR) (XII) ADD_C<br>
+          </td>
+          <td style="vertical-align: top;">Add pointer and constant (IX
+            reserved).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(PTR) (XII_IX) LOADINDEX</td>
+          <td style="vertical-align: top;">Load integer from integer
+            pointer using an integer index (needs IX).<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <h3>Opcode Format</h3>
+    <br>
+    Basic instruction listing layout is:<br>
+    &lt;opname&gt; &lt;opnum&gt; &lt;args&gt; &lt;flow&gt;
+    &lt;description&gt;<br>
+    <br>
+    Opname and Opnum give the name (nmonic) and assigned opcode number
+    of a given opcode.<br>
+    <br>
+    <br>
+    Args is a string identifying what immediately follows the opcode.<br>
+    Characters are one of:<br>
+    <table border="1" cellpadding="2" cellspacing="2" width="100%">
+      <tbody>
+        <tr>
+          <td>A</td>
+          <td> Relative address (16-bits, LE)<br>
+            (WIDE) 32-bits, LE<br>
+          </td>
+        </tr>
+        <tr>
+          <td>B</td>
+          <td> 8 bit unsigned byte<br>
+          </td>
+        </tr>
+        <tr>
+          <td>C</td>
+          <td> 8 bit signed byte<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Bd<br>
+          </td>
+          <td style="vertical-align: top;">8 bit unsigned byte<br>
+            (WIDE) Expands to Int32 LE.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">Cd<br>
+          </td>
+          <td style="vertical-align: top;">8 bit signed byte<br>
+            (WIDE) Expands to Int32 LE.</td>
+        </tr>
+        <tr>
+          <td>G</td>
+          <td> 16 bit fixed-point value (10000 based, -3.2768 .. 3.2767)</td>
+        </tr>
+        <tr>
+          <td>H</td>
+          <td> 16 bit fixed-point value (100 based, -327.68 .. 327.67)</td>
+        </tr>
+        <tr>
+          <td>I</td>
+          <td> Literal Value Index (VLI2)<br>
+            Encodes an index into the literal table for a block.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>J</td>
+          <td> Lexical Variable Index (VLI2)</td>
+        </tr>
+        <tr>
+          <td>K</td>
+          <td> 16 bit signed short (LE)</td>
+        </tr>
+        <tr>
+          <td>L</td>
+          <td> 32-bit signed integer (LE)</td>
+        </tr>
+        <tr>
+          <td>M</td>
+          <td> signed numeric index</td>
+        </tr>
+        <tr>
+          <td>N</td>
+          <td> numeric index (stack items, ...)</td>
+        </tr>
+        <tr>
+          <td>S</td>
+          <td> Symbol index (special case of I)</td>
+        </tr>
+        <tr>
+          <td>T</td>
+          <td> String index (special case of I)</td>
+        </tr>
+        <tr>
+          <td>U</td>
+          <td> UVLI</td>
+        </tr>
+        <tr>
+          <td>V</td>
+          <td> SVLI</td>
+        </tr>
+        <tr>
+          <td>W</td>
+          <td> 16 bit unsigned short</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">D<br>
+          </td>
+          <td style="vertical-align: top;">SVLI pair (base, exp)
+            encoding a floating point value (base*2<sup>exp</sup>).<br>
+          </td>
+        </tr>
+        <tr>
+          <td>u</td>
+          <td> Unary Operation</td>
+        </tr>
+        <tr>
+          <td>b</td>
+          <td> Binary Operation</td>
+        </tr>
+      </tbody>
+    </table>
+    &nbsp;&nbsp;&nbsp; ...<br>
+    <br>
+    Flow:&nbsp;&nbsp;&nbsp; in*=out*<br>
+    &nbsp;&nbsp;&nbsp; vv=v&nbsp;&nbsp;&nbsp; Consumes 2 values and
+    outputs a value<br>
+    <br>
+    Flow types:<br>
+    &nbsp;&nbsp;&nbsp; v, generic variant value;<br>
+    &nbsp;&nbsp;&nbsp; i, generic fixnum;<br>
+    &nbsp;&nbsp;&nbsp; f, generic flonum;<br>
+    &nbsp;&nbsp;&nbsp; b, bool.<br>
+    Flow special values:<br>
+    &nbsp;&nbsp;&nbsp; w/x/y/z, named variant;<br>
+    &nbsp;&nbsp;&nbsp; j/k/l, named fixnum;<br>
+    &nbsp;&nbsp;&nbsp; g/h, named flonum;<br>
+    &nbsp;&nbsp;&nbsp; M, indicates the presence of a stack mark;<br>
+    &nbsp;&nbsp;&nbsp; M*, indicates that a variable number of items
+    will exist following the mark.<br>
+    <br>
+    If args is absent, it is assumed that the opcode is coded by itself.<br>
+    <br>
+    <h3>Number Formats</h3>
+    This section will describe some of the common number formats.<br>
+    All fixed-width multi-byte values will be encoded in little-endian
+    order.<br>
+    Most variable-width multi-byte formats (opcodes and VLIs) will be
+    implicitly in a big-endian ordering.<br>
+    <br>
+    <h4>Opcode Numbers</h4>
+    <br>
+    Opcode numbers will be encoded into the bytecode via a
+    variable-length format:<br>
+    <table style=" text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Range<br>
+          </td>
+          <td style="vertical-align: top;">Encoding<br>
+          </td>
+          <td style="vertical-align: top;">Range Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">0..191<br>
+          </td>
+          <td style="vertical-align: top;">00..BF<br>
+          </td>
+          <td style="vertical-align: top;">Single Byte Range (Common
+            Opcodes)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">192..12287<br>
+          </td>
+          <td style="vertical-align: top;">C0..EF XX<br>
+          </td>
+          <td style="vertical-align: top;">Dual Byte Range (Less Common
+            Opcodes)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">12288..786431<br>
+          </td>
+          <td style="vertical-align: top;">F0..FB XX XX</td>
+          <td style="vertical-align: top;">Reserved (Extension Opcodes)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">786432..50331647<br>
+          </td>
+          <td style="vertical-align: top;">FC..FE XX XX XX<br>
+          </td>
+          <td style="vertical-align: top;">Reserved (Extension Opcodes)</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">50331648..2147483647<br>
+          </td>
+          <td style="vertical-align: top;">FF XX XX XX XX</td>
+          <td style="vertical-align: top;">Reserved (Extension Opcodes)</td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    Currently, overlong codings will exist, but are not currently
+    allowed for encoding opcodes (with the exception of NOP).<br>
+    Currently, opcodes in the range of 192..255 will not be allowed.<br>
+    They may not be assigned behavior, and will be considered an
+    encoding error.<br>
+    <br>
+    <br>
+    <h4>Variable Length Integers</h4>
+    <br>
+    Full Range VLI values will be encoded according to the pattern:<br>
+    <table style=" text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Range<br>
+          </td>
+          <td style="vertical-align: top;">Encoding<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">0..127</td>
+          <td style="vertical-align: top;"> 0xxxxxxx</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">128..16383</td>
+          <td style="vertical-align: top;">10xxxxxx xxxxxxxx</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">16384..2097151<br>
+          </td>
+          <td style="vertical-align: top;">110xxxxx xxxxxxxx xxxxxxxx<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">2097152..268435455<br>
+          </td>
+          <td style="vertical-align: top;">1110xxxx xxxxxxxx xxxxxxxx
+            xxxxxxxx<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">268435456..34359738367<br>
+          </td>
+          <td style="vertical-align: top;">11110xxx xxxxxxxx xxxxxxxx
+            xxxxxxxx xxxxxxxx</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">34359738368...<br>
+          </td>
+          <td style="vertical-align: top;">...<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    Note: The pattern will not end at 64 bits (where all bits in the
+    first byte are 1), but will instead insert an additional byte, and
+    the pattern will continue on as before.<br>
+    <br>
+    VLI2 is a special case of a VLI.<br>
+    <br>
+    Currently, VLI2 is limited to a 1 or 2 byte encoding:<br>
+    <table style=" text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Range<br>
+          </td>
+          <td style="vertical-align: top;">Encoding<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">0..127</td>
+          <td style="vertical-align: top;"> 0xxxxxxx</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">128..16383</td>
+          <td style="vertical-align: top;">10xxxxxx xxxxxxxx</td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    A VM may support longer encodings, but is not required to be able to
+    accept them.<br>
+    <br>
+    <h4> Signed VLI</h4>
+    Signed VLI will fold the sign into the LSB, thus following the
+    pattern: 0, -1, 1, -2, 2, ...<br>
+    <br>
+    <br>
+    <br>
+    <h2> Opcode List</h2>
+    <br>
+    <br>
+    <table border="1" cellpadding="2" cellspacing="2" width="100%">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Name<br>
+          </td>
+          <td style="vertical-align: top;">Num<br>
+          </td>
+          <td style="vertical-align: top;">Args<br>
+          </td>
+          <td style="vertical-align: top;">Stack Flow<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td>NOP</td>
+          <td>0</td>
+          <td>-</td>
+          <td>=</td>
+          <td>Does nothing. Allows overlong forms, which will also do
+            nothing.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>BLOCK</td>
+          <td>1</td>
+          <td>-</td>
+          <td>=</td>
+          <td>Momentarily blocks a running thread. This is mostly a
+            scheduling hint, and does not otherwise effect code. May be
+            treated as a no-op.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>DBGMARK</td>
+          <td>2</td>
+          <td>TW</td>
+          <td>=</td>
+          <td>Sets the filename and line number at once.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>CGENAST</td>
+          <td>3</td>
+          <td>I</td>
+          <td>!<br>
+          </td>
+          <td>AST Syntax to be passed to code generator (Inline ASM and
+            similar).<br>
+          </td>
+        </tr>
+        <tr>
+          <td>FN</td>
+          <td>4</td>
+          <td>T</td>
+          <td>=</td>
+          <td>Filename. This may indicate the current source filename,
+            but is otherwise no-op.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>LN</td>
+          <td>5</td>
+          <td>W</td>
+          <td>=</td>
+          <td>Line number. This may indicate the current source
+            line-number, but is otherwise no-op.</td>
+        </tr>
+        <tr>
+          <td>LABEL</td>
+          <td>6</td>
+          <td>S</td>
+          <td>=</td>
+          <td>Named label. May be used to refer to labels by name. The
+            value of the label will be the first instruction following
+            the label. Label opcodes are otherwise no-op.<br>
+            These are unnecessary in most normal circumstances.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Reserved)</td>
+          <td style="vertical-align: top;">7-<br>
+            15<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td>PUSH</td>
+          <td>16</td>
+          <td>I</td>
+          <td>=v</td>
+          <td>Push item on the stack. This item comes from the literal
+            table of the current function.<br>
+            Type prefixes may be used, which will indicate the literal
+            value type being pushed. The literal in question will then
+            need to be of the appropriate type.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>POP</td>
+          <td>17</td>
+          <td>-</td>
+          <td>v=</td>
+          <td>Pop item from the stack (the value is popped and destroyed
+            if needed).<br>
+            Type prefixes will indicate the type of value being dropped.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>LOAD</td>
+          <td>18</td>
+          <td>S</td>
+          <td>=v</td>
+          <td>Load item from variable onto stack.</td>
+        </tr>
+        <tr>
+          <td>STORE</td>
+          <td>19</td>
+          <td>S</td>
+          <td>v=</td>
+          <td>Store item on stack into variable.</td>
+        </tr>
+        <tr>
+          <td>BIND</td>
+          <td>20</td>
+          <td>S</td>
+          <td>v=</td>
+          <td>Bind item on stack to new variable (object or toplevel)<br>
+          </td>
+        </tr>
+        <tr>
+          <td>DYNBIND</td>
+          <td>21</td>
+          <td>S</td>
+          <td>v=</td>
+          <td>Dynamically bind an item on the stack (dynamic
+            environment)<br>
+          </td>
+        </tr>
+        <tr>
+          <td>LEXBIND</td>
+          <td>22</td>
+          <td>S</td>
+          <td>v=</td>
+          <td>Lexically bind an item on the stack (lexical environment)<br>
+          </td>
+        </tr>
+        <tr>
+          <td>LOADINDEX</td>
+          <td>23</td>
+          <td>-</td>
+          <td>vv=v</td>
+          <td>Load an index into an object (obj, idx)<br>
+            Compound type prefixes are used.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>STOREINDEX</td>
+          <td>24</td>
+          <td>-</td>
+          <td>vvv=</td>
+          <td>Store into an index in an object (val, obj, idx)<br>
+            Compound type prefixes are used.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>PUSH_SELF</td>
+          <td>25</td>
+          <td>-</td>
+          <td>=v</td>
+          <td>Push 'self'/'this' onto stack.</td>
+        </tr>
+        <tr>
+          <td>CLEARENV</td>
+          <td>26</td>
+          <td>-</td>
+          <td>=</td>
+          <td>Clear lexical bindings to mark<br>
+            Used for control paths which do not capture bindings.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>TRYCAST_S<br>
+          </td>
+          <td>27</td>
+          <td>S<br>
+          </td>
+          <td>v=v<br>
+          </td>
+          <td>Tries to perform a cast. Returns null on failure.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>PF_HINT_PTR </td>
+          <td>28</td>
+          <td>!<br>
+          </td>
+          <td>-</td>
+          <td>Prefix Hint for Pointer<br>
+          </td>
+        </tr>
+        <tr>
+          <td>PF_HINT_S<br>
+          </td>
+          <td>29</td>
+          <td>S<br>
+          </td>
+          <td>-</td>
+          <td>Prefix Type-Hint Signature<br>
+          </td>
+        </tr>
+        <tr>
+          <td>TRYLOAD</td>
+          <td>30</td>
+          <td>S</td>
+          <td>=v</td>
+          <td>Try to load an item (returns undefined on failure)<br>
+          </td>
+        </tr>
+        <tr>
+          <td>CAST_S</td>
+          <td>31</td>
+          <td>S</td>
+          <td>v=v</td>
+          <td>Cast a value to a specific type<br>
+            Keyword: Type Name<br>
+            Symbol: Type Signature<br>
+            Throws CastFailException on failure.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>MARK</td>
+          <td>32</td>
+          <td>-</td>
+          <td>=M</td>
+          <td>Mark the current stack location</td>
+        </tr>
+        <tr>
+          <td>CALL</td>
+          <td>33</td>
+          <td>-</td>
+          <td>M*v=v</td>
+          <td>Call a given function (handle)<br>
+          </td>
+        </tr>
+        <tr>
+          <td>TAILCALL</td>
+          <td>34</td>
+          <td>-</td>
+          <td>M*v=</td>
+          <td>Tail call a given function (handle)<br>
+          </td>
+        </tr>
+        <tr>
+          <td>CALL_S</td>
+          <td>35</td>
+          <td>S</td>
+          <td>M*=v</td>
+          <td>Call a given function (named)</td>
+        </tr>
+        <tr>
+          <td>TAILCALL_S</td>
+          <td>36</td>
+          <td>S</td>
+          <td>M*=</td>
+          <td>Tail call a given function (named)</td>
+        </tr>
+        <tr>
+          <td>METHODCALL</td>
+          <td>37</td>
+          <td>-</td>
+          <td>M*vv=v</td>
+          <td>Call a given method</td>
+        </tr>
+        <tr>
+          <td>METHODTAILCALL</td>
+          <td>38</td>
+          <td>-</td>
+          <td>M*vv=</td>
+          <td>Tail-call a given method</td>
+        </tr>
+        <tr>
+          <td>METHODCALL_S</td>
+          <td>39</td>
+          <td>S</td>
+          <td>M*v=v</td>
+          <td>Call a given method (named)</td>
+        </tr>
+        <tr>
+          <td>METHODTAILCALL_S</td>
+          <td>40</td>
+          <td>S</td>
+          <td>M*v=</td>
+          <td>Tail-call a given method (named)</td>
+        </tr>
+        <tr>
+          <td>RET</td>
+          <td>41</td>
+          <td>-</td>
+          <td>v=</td>
+          <td>Return from current function</td>
+        </tr>
+        <tr>
+          <td>(Unused)</td>
+          <td>42</td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+        </tr>
+        <tr>
+          <td>(Unused)</td>
+          <td>43</td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+        </tr>
+        <tr>
+          <td>(Unused)</td>
+          <td>44</td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+        </tr>
+        <tr>
+          <td>(Unused)</td>
+          <td>45</td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+        </tr>
+        <tr>
+          <td>(Unused)</td>
+          <td>46</td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+        </tr>
+        <tr>
+          <td>NEW_S</td>
+          <td>47</td>
+          <td>S</td>
+          <td>M*=v</td>
+          <td>Create new object instance.<br>
+            This call is passed the constructor arguments.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>DUP</td>
+          <td>48</td>
+          <td>-</td>
+          <td>x=xx</td>
+          <td>Duplicate items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH</td>
+          <td>49</td>
+          <td>-</td>
+          <td>xy=yx</td>
+          <td>Swap items on stack</td>
+        </tr>
+        <tr>
+          <td>INDEX</td>
+          <td>50</td>
+          <td>N</td>
+          <td>=v</td>
+          <td>Refer to an item on stack</td>
+        </tr>
+        <tr>
+          <td>RINDEX</td>
+          <td>51</td>
+          <td>N</td>
+          <td>=v</td>
+          <td>Refer to an item relative to mark</td>
+        </tr>
+        <tr>
+          <td>SETINDEX</td>
+          <td>52</td>
+          <td>N</td>
+          <td>v=</td>
+          <td>Set an item on the stack</td>
+        </tr>
+        <tr>
+          <td>SETRINDEX</td>
+          <td>53</td>
+          <td>N</td>
+          <td>v=</td>
+          <td>Set an item on the stack</td>
+        </tr>
+        <tr>
+          <td>DUP_F</td>
+          <td>54</td>
+          <td>-</td>
+          <td>x=xx</td>
+          <td>Duplicate items on stack (fast).<br>
+            This operation will skip value-copy checks or fiddling with
+            ref-counts (if applicable).<br>
+          </td>
+        </tr>
+        <tr>
+          <td>(Unused)<br>
+          </td>
+          <td>55</td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+        </tr>
+        <tr>
+          <td>(Unused)</td>
+          <td>56</td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+        </tr>
+        <tr>
+          <td>(Unused)</td>
+          <td>57</td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+        </tr>
+        <tr>
+          <td>(Unused)</td>
+          <td>58</td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+        </tr>
+        <tr>
+          <td>(Unused)</td>
+          <td>59</td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+        </tr>
+        <tr>
+          <td>EXCH_SELF</td>
+          <td>60</td>
+          <td>-</td>
+          <td>x=y</td>
+          <td>Swap <span style="font-weight: bold;">self </span>/ <span
+              style="font-weight: bold;">this </span>with the value on
+            stack.</td>
+        </tr>
+        <tr>
+          <td>PUSH_CTV</td>
+          <td>61</td>
+          <td>B</td>
+          <td>=v</td>
+          <td>Push a special value</td>
+        </tr>
+        <tr>
+          <td>DELETE</td>
+          <td>62</td>
+          <td>-</td>
+          <td>v=b</td>
+          <td>Delete an object, push a bool (indicating whether or not
+            the object could be deleted).<br>
+          </td>
+        </tr>
+        <tr>
+          <td>CAST</td>
+          <td>63</td>
+          <td>-</td>
+          <td>vv=v</td>
+          <td>Cast a value to a given type (value, type).<br>
+            Semantically, this is a try-cast, and so will return null on
+            failure.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>UNARYOP</td>
+          <td>64</td>
+          <td>u</td>
+          <td>v=v</td>
+          <td>Unary operation. Uses basic types.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>BINARYOP</td>
+          <td>65</td>
+          <td>b</td>
+          <td>vv=v</td>
+          <td>Binary operation. Uses basic types.</td>
+        </tr>
+        <tr>
+          <td>PUSH_NULL</td>
+          <td>66</td>
+          <td>-</td>
+          <td>=v</td>
+          <td>Push a literal null.</td>
+        </tr>
+        <tr>
+          <td>PUSH_TRUE</td>
+          <td>67</td>
+          <td>-</td>
+          <td>=v</td>
+          <td>Push a literal true.</td>
+        </tr>
+        <tr>
+          <td>PUSH_FALSE</td>
+          <td>68</td>
+          <td>-</td>
+          <td>=v</td>
+          <td>Push a literal false.</td>
+        </tr>
+        <tr>
+          <td>PUSH_SV</td>
+          <td>69</td>
+          <td>K</td>
+          <td>=i</td>
+          <td>Push a small fixnum (short). Defaults to fixnum, but type
+            prefix allows for other types.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>PUSH_0</td>
+          <td>70</td>
+          <td>-</td>
+          <td>=i</td>
+          <td>Push 0. Defaults to fixnum, but type prefix allows for
+            other types.</td>
+        </tr>
+        <tr>
+          <td>PUSH_1</td>
+          <td>71</td>
+          <td>-</td>
+          <td>=i</td>
+          <td>Push 1. Defaults to fixnum, but type prefix allows for
+            other types.</td>
+        </tr>
+        <tr>
+          <td>PUSH_2</td>
+          <td>72</td>
+          <td>-</td>
+          <td>=i</td>
+          <td>Push 2. Defaults to fixnum, but type prefix allows for
+            other types.</td>
+        </tr>
+        <tr>
+          <td>PUSH_3</td>
+          <td>73</td>
+          <td>-</td>
+          <td>=i</td>
+          <td>Push 3. Defaults to fixnum, but type prefix allows for
+            other types.</td>
+        </tr>
+        <tr>
+          <td>PUSH_4</td>
+          <td>74</td>
+          <td>-</td>
+          <td>=i</td>
+          <td>Push 4. Defaults to fixnum, but type prefix allows for
+            other types.</td>
+        </tr>
+        <tr>
+          <td>PUSH_5</td>
+          <td>75</td>
+          <td>-</td>
+          <td>=i</td>
+          <td>Push 5. Defaults to fixnum, but type prefix allows for
+            other types.</td>
+        </tr>
+        <tr>
+          <td>PUSH_6</td>
+          <td>76</td>
+          <td>-</td>
+          <td>=i</td>
+          <td>Push 6. Defaults to fixnum, but type prefix allows for
+            other types.</td>
+        </tr>
+        <tr>
+          <td>PUSH_7</td>
+          <td>77</td>
+          <td>-</td>
+          <td>=i</td>
+          <td>Push 7. Defaults to fixnum, but type prefix allows for
+            other types.</td>
+        </tr>
+        <tr>
+          <td>PUSH_CF</td>
+          <td>78</td>
+          <td>-</td>
+          <td>=v</td>
+          <td>Push current function.</td>
+        </tr>
+        <tr>
+          <td>CALL_CF</td>
+          <td>79</td>
+          <td>-</td>
+          <td>M*=v</td>
+          <td>Call current function.</td>
+        </tr>
+        <tr>
+          <td>TAILCALL_CF</td>
+          <td>80</td>
+          <td>-</td>
+          <td>M*=</td>
+          <td>Tailcall current function.</td>
+        </tr>
+        <tr>
+          <td>CAR</td>
+          <td>81</td>
+          <td>-</td>
+          <td>v=v</td>
+          <td>Head of a list.</td>
+        </tr>
+        <tr>
+          <td>CDR</td>
+          <td>82</td>
+          <td>-</td>
+          <td>v=v</td>
+          <td>Tail of a list.</td>
+        </tr>
+        <tr>
+          <td>CAAR</td>
+          <td>83</td>
+          <td>-</td>
+          <td>v=v</td>
+          <td>List ops.</td>
+        </tr>
+        <tr>
+          <td>CDAR</td>
+          <td>84</td>
+          <td>-</td>
+          <td>v=v</td>
+          <td>List ops.</td>
+        </tr>
+        <tr>
+          <td>CADR</td>
+          <td>85</td>
+          <td>-</td>
+          <td>v=v</td>
+          <td>List ops.</td>
+        </tr>
+        <tr>
+          <td>CDDR</td>
+          <td>86</td>
+          <td>-</td>
+          <td>v=v</td>
+          <td>List ops.</td>
+        </tr>
+        <tr>
+          <td>PUSH_SV_P</td>
+          <td>87</td>
+          <td>B</td>
+          <td>=i</td>
+          <td>Push a small fixnum (positive, byte).<br>
+            Defaults to fixnum, but type prefix allows for other types.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>PUSH_SV_N</td>
+          <td>88</td>
+          <td>B</td>
+          <td>=i</td>
+          <td>Push a small fixnum (negative, byte).<br>
+            Defaults to fixnum, but type prefix allows for other types.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>PUSH_SV_F</td>
+          <td>89</td>
+          <td>H</td>
+          <td>=f</td>
+          <td>Push a small flonum (fixed-point, 100).<br>
+            Defaults to flonum, but type prefix allows for other types.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>LLOAD</td>
+          <td>90</td>
+          <td>J<br>
+          </td>
+          <td>=v</td>
+          <td>Load an item from the lexical env.<br>
+            Type prefix may be used to indicate the load type. The
+            prefix will apply to both the variable and also to the
+            value, which are to be of compatible types.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>LSTORE</td>
+          <td>91</td>
+          <td>J<br>
+          </td>
+          <td>=v</td>
+          <td>Store an item to the lexical env.<br>
+            Type prefix may be used to indicate the store type. The
+            prefix will apply to both the variable and also to the
+            value, which are to be of compatible types.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>LLOAD_F</td>
+          <td>92</td>
+          <td>J<br>
+          </td>
+          <td>=v</td>
+          <td>Load an item from the lexical env (fast). Skips
+            copy-checks.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>LSTORE_F</td>
+          <td>93</td>
+          <td>J<br>
+          </td>
+          <td>=v</td>
+          <td>Store an item to the lexical env (fast). Skips
+            copy-checks. </td>
+        </tr>
+        <tr>
+          <td>LPOSTINC</td>
+          <td>94</td>
+          <td>J<br>
+          </td>
+          <td>=v</td>
+          <td>Post-increment lexical var. Type prefixes may be used to
+            indicate variable type.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>LPOSTDEC</td>
+          <td>95</td>
+          <td>J<br>
+          </td>
+          <td>=v</td>
+          <td>Post-decrement lexical var. Type prefixes may be used to
+            indicate variable type.</td>
+        </tr>
+        <tr>
+          <td>LINC</td>
+          <td>96</td>
+          <td>J<br>
+          </td>
+          <td>=</td>
+          <td>Set i=i+1. Type prefixes may be used to indicate variable
+            type. </td>
+        </tr>
+        <tr>
+          <td>LDEC</td>
+          <td>97</td>
+          <td>J<br>
+          </td>
+          <td>=</td>
+          <td>Set i=i-1. Type prefixes may be used to indicate variable
+            type. </td>
+        </tr>
+        <tr>
+          <td>LPREINC</td>
+          <td>98</td>
+          <td>J<br>
+          </td>
+          <td>=v</td>
+          <td>Pre-increment lexical var. Type prefixes may be used to
+            indicate variable type.</td>
+        </tr>
+        <tr>
+          <td>LPREDEC</td>
+          <td>99</td>
+          <td>J<br>
+          </td>
+          <td>=v</td>
+          <td>Pre-decrement lexical var. Type prefixes may be used to
+            indicate variable type.</td>
+        </tr>
+        <tr>
+          <td>LOADINDEX_S</td>
+          <td>100</td>
+          <td>S</td>
+          <td>v=v</td>
+          <td>Load an index from an object. Compound type prefixes are
+            used.</td>
+        </tr>
+        <tr>
+          <td>STOREINDEX_S</td>
+          <td>101</td>
+          <td>S</td>
+          <td>vv=</td>
+          <td>Store into an object slot (val, obj). Compound type
+            prefixes are used.</td>
+        </tr>
+        <tr>
+          <td>LOADINDEX_I</td>
+          <td>102</td>
+          <td>Bd</td>
+          <td>v=v</td>
+          <td>Load an index from an object. Compound type prefixes are
+            used.<br>
+            (WIDE) uses 32-bit index.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>STOREINDEX_I</td>
+          <td>103</td>
+          <td>Bd</td>
+          <td>vv=</td>
+          <td>Store into an object index (val, obj). Compound type
+            prefixes are used.<br>
+            (WIDE) uses 32-bit index.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>LOADINDEX_0</td>
+          <td>104</td>
+          <td>-</td>
+          <td>v=v</td>
+          <td>Load an index from an object.</td>
+        </tr>
+        <tr>
+          <td>LOADINDEX_1</td>
+          <td>105</td>
+          <td>-</td>
+          <td>v=v</td>
+          <td>Load an index from an object.</td>
+        </tr>
+        <tr>
+          <td>LOADINDEX_2</td>
+          <td>106</td>
+          <td>-</td>
+          <td>v=v</td>
+          <td>Load an index from an object.</td>
+        </tr>
+        <tr>
+          <td>LOADINDEX_3</td>
+          <td>107</td>
+          <td>-</td>
+          <td>v=v</td>
+          <td>Load an index from an object.</td>
+        </tr>
+        <tr>
+          <td>STOREINDEX_0</td>
+          <td>108</td>
+          <td>-</td>
+          <td>vv=</td>
+          <td>Store into an object index (val, obj).</td>
+        </tr>
+        <tr>
+          <td>STOREINDEX_1</td>
+          <td>109</td>
+          <td>-</td>
+          <td>vv=</td>
+          <td>Store into an object index (val, obj).</td>
+        </tr>
+        <tr>
+          <td>STOREINDEX_2</td>
+          <td>110</td>
+          <td>-</td>
+          <td>vv=</td>
+          <td>Store into an object index (val, obj).</td>
+        </tr>
+        <tr>
+          <td>STOREINDEX_3</td>
+          <td>111</td>
+          <td>-</td>
+          <td>vv=</td>
+          <td>Store into an object index (val, obj).</td>
+        </tr>
+        <tr>
+          <td>THROW_S</td>
+          <td>112</td>
+          <td>S</td>
+          <td>=<br>
+          </td>
+          <td>Throw exception (simple name). This form will itself
+            handle creation of an exception object, or may skip creation
+            of such an object if applicable.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>BEGIN_TRY</td>
+          <td>113</td>
+          <td>-</td>
+          <td>=<br>
+          </td>
+          <td>Begins the body of a try block.<br>
+            If an exception takes place within the try block, then
+            handlers will be executed following the END_TRY instruction.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>END_TRY</td>
+          <td>114</td>
+          <td>-</td>
+          <td>=<br>
+          </td>
+          <td>Ends the body of a try block. This is followed by any
+            excpetion handlers for the block.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>// CATCH</td>
+          <td>115</td>
+          <td>SA</td>
+          <td>=<br>
+          </td>
+          <td>Add exception handler. This operation will jump to the
+            address if an exception is seen.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>THROW_OBJ</td>
+          <td>116</td>
+          <td>-</td>
+          <td>v=</td>
+          <td>Throw exception object.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_WIDE<br>
+          </td>
+          <td style="vertical-align: top;">117<br>
+          </td>
+          <td style="vertical-align: top;">!<br>
+          </td>
+          <td style="vertical-align: top;">!<br>
+          </td>
+          <td style="vertical-align: top;">Wide Prefix (Expands size of
+            jump addresses and fixed-size indices)<br>
+          </td>
+        </tr>
+        <tr>
+          <td>JMP</td>
+          <td>118</td>
+          <td>A</td>
+          <td>=</td>
+          <td>Jump to relative offset.</td>
+        </tr>
+        <tr>
+          <td>JMP_TRUE</td>
+          <td>119</td>
+          <td>A</td>
+          <td>v=</td>
+          <td>Jump to relative offset if true.<br>
+            (XI|XL) Jump if non-zero.<br>
+            (PTR) Jump if non-null.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>JMP_FALSE</td>
+          <td>120</td>
+          <td>A</td>
+          <td>v=</td>
+          <td>Jump to relative offset if false.<br>
+            (XI|XL) Jump if zero.<br>
+            (PTR) Jump if null.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>JMP_COND_U</td>
+          <td>121</td>
+          <td>uA</td>
+          <td>v=</td>
+          <td>Jump to relative offset (unary condition).</td>
+        </tr>
+        <tr>
+          <td>JMP_COND_B</td>
+          <td>122</td>
+          <td>bA</td>
+          <td>vv=</td>
+          <td>Jump to relative offset (binary condition).</td>
+        </tr>
+        <tr>
+          <td>BEGIN_CATCH</td>
+          <td>123</td>
+          <td>S</td>
+          <td>=v</td>
+          <td>Begins the body of a catch block.<br>
+            Will begin executing at the next instruction if the named
+            exception is active, pushing the exception to the stack.
+            Otherwise, it will jump to the next matching END_CATCH
+            instruction.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>END_CATCH</td>
+          <td>124</td>
+          <td>-</td>
+          <td>=</td>
+          <td>Ends the body of a catch block. This serves as a marker
+            for BEGIN_CATCH to know where to jump to if no exception has
+            ocurred. If reached from inside of a BEGIN_CATCH_FINAL block,
+            this instruction will continue propagating the exception.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>BEGIN_CATCH_FINAL</td>
+          <td>125</td>
+          <td>-</td>
+          <td>=</td>
+          <td>Begins the body of a finally block. This will begin
+            execution at the next instruction if an unhandled exception
+            exists, otherwise it will jump to the next matching
+            END_CATCH.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Unused)<br>
+          </td>
+          <td style="vertical-align: top;">126<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Unused)<br>
+          </td>
+          <td style="vertical-align: top;">127<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td>ARRAY</td>
+          <td>128</td>
+          <td>-</td>
+          <td>M*=v</td>
+          <td>New array from values. By default, this form will create
+            an array of type variant[].<br>
+          </td>
+        </tr>
+        <tr>
+          <td>DICT</td>
+          <td>129</td>
+          <td>-</td>
+          <td>M*=v</td>
+          <td>New dict ("ex-nihilo" object) from values.<br>
+            Arguments consist of key/value pairs (consisting of the
+            symbol followed by its value).<br>
+            If the key is an ordinary value, it will indicate an
+            ordinary (dynamically-typed) slot.<br>
+            If it is a keyword, it will indicate that the slot is a
+            dynamically-typed delegate slot.<br>
+            If it is a varinfo, it will indicate the creation of a
+            complex field.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>ATTR</td>
+          <td>130</td>
+          <td>-</td>
+          <td>xy=v</td>
+          <td>New attribute from name and value (value, key).<br>
+            An attribute is a standalone key/value pair, and will follow
+            similar rules for the key to that of a dict.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>// OBJECT</td>
+          <td>131</td>
+          <td>-</td>
+          <td>M*=v</td>
+          <td>(Deprecated) New empty object.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>VECTOR</td>
+          <td>132</td>
+          <td>-</td>
+          <td>M*=v</td>
+          <td>New vector from values (2-4 float values).</td>
+        </tr>
+        <tr>
+          <td>// TERMINAL</td>
+          <td>133</td>
+          <td>-</td>
+          <td>v=v<br>
+          </td>
+          <td>(Deprecated) New terminal from value.</td>
+        </tr>
+        <tr>
+          <td>COMPLEX</td>
+          <td>134</td>
+          <td>-</td>
+          <td>ff=v</td>
+          <td>New complex from values (real, imag)<br>
+          </td>
+        </tr>
+        <tr>
+          <td>MATRIX</td>
+          <td>135</td>
+          <td>-</td>
+          <td>M*=v</td>
+          <td>New matrix from values</td>
+        </tr>
+        <tr>
+          <td>LIST</td>
+          <td>136</td>
+          <td>-</td>
+          <td>M*=v</td>
+          <td>New list from values.</td>
+        </tr>
+        <tr>
+          <td>COMPLEX_I</td>
+          <td>137</td>
+          <td>-</td>
+          <td>f=v</td>
+          <td>New imaginary number from flonum (a complex with a real
+            part of 0).<br>
+          </td>
+        </tr>
+        <tr>
+          <td>CLOSE</td>
+          <td>138</td>
+          <td>-</td>
+          <td>v=v</td>
+          <td>Close over a block making a clousure ("lambda").</td>
+        </tr>
+        <tr>
+          <td>CLOSE2</td>
+          <td>139</td>
+          <td>-</td>
+          <td>v=v</td>
+          <td>Close, but have it bound in self (?)</td>
+        </tr>
+        <tr>
+          <td>// FLINK</td>
+          <td>140</td>
+          <td>-</td>
+          <td>vv=v</td>
+          <td>(Deprecated) Link functions together.<br>
+            Linking functions allows creating a single function object
+            which will dispatch based on the arguments list.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>CONS</td>
+          <td>141</td>
+          <td>-</td>
+          <td>vv=v</td>
+          <td>New cons cell (car, cdr).</td>
+        </tr>
+        <tr>
+          <td>QUAT</td>
+          <td>142</td>
+          <td>-</td>
+          <td>ffff=v</td>
+          <td>Construct a quaternion (WXYZ, real-values)</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Unused)<br>
+          </td>
+          <td style="vertical-align: top;">143<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td>NEG</td>
+          <td>144</td>
+          <td>-</td>
+          <td>v=w</td>
+          <td>Negate. Uses basic types.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>LNOT</td>
+          <td>145</td>
+          <td>-</td>
+          <td>v=w</td>
+          <td>Logical not. Uses basic types (excludes floating point).</td>
+        </tr>
+        <tr>
+          <td>DEFER</td>
+          <td>146</td>
+          <td>-</td>
+          <td>v=w</td>
+          <td>Dereference / unary-multiply.<br>
+            Uses compound types.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>PUSH_SV_C</td>
+          <td>147</td>
+          <td>W</td>
+          <td>=v</td>
+          <td>Push a character codepoint.</td>
+        </tr>
+        <tr>
+          <td>ARRAY_S</td>
+          <td>148</td>
+          <td>S</td>
+          <td>M*=v</td>
+          <td>New array from values (typed). The operand is a symbol
+            which gives the type signature to be used for the array
+            elements.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>CLONE</td>
+          <td>149</td>
+          <td>-</td>
+          <td>v=w</td>
+          <td>Clone an object. This will invoke a handler to clone the
+            object, returning the new object.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>TOSTRING</td>
+          <td>150</td>
+          <td>-</td>
+          <td>v=w</td>
+          <td>Convert object to a string. This will invoke a handler to
+            convert the object to a string.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>TYBIND</td>
+          <td>151</td>
+          <td>SSS</td>
+          <td>v=</td>
+          <td>Bind new variable (name, sig, flags). The value is given
+            on the stack.<br>
+            This will create a new binding for the variable in the
+            current class or package.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>TYDYNBIND</td>
+          <td>152</td>
+          <td>SSS</td>
+          <td>v=</td>
+          <td>Dynamically bind item on the stack.<br>
+            This will create a new binding in the dynamic scope.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>TYLEXBIND</td>
+          <td>153</td>
+          <td>SSS</td>
+          <td>v=</td>
+          <td>Lexically bind item on the stack.<br>
+            This will create a new binding in the lexical scope.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>IMPORT</td>
+          <td>154</td>
+          <td>SS</td>
+          <td>=</td>
+          <td>Import package (name, flags).</td>
+        </tr>
+        <tr>
+          <td>LOADA_S</td>
+          <td>155</td>
+          <td>S</td>
+          <td>=p</td>
+          <td>Load address of a variable.</td>
+        </tr>
+        <tr>
+          <td>LOADINDEXA</td>
+          <td>156</td>
+          <td>-</td>
+          <td>vv=v</td>
+          <td>Load address of array index (arr, idx).<br>
+          </td>
+        </tr>
+        <tr>
+          <td>CLASS_IFACE</td>
+          <td>157</td>
+          <td>SS</td>
+          <td>=</td>
+          <td>Implement interface (name, flags). Only valid within a
+            class definition.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>INSTANCEOF_S</td>
+          <td>158</td>
+          <td>S</td>
+          <td>v=b</td>
+          <td>Check if value is of a given type (signature).<br>
+          </td>
+        </tr>
+        <tr>
+          <td>ADD</td>
+          <td>159</td>
+          <td>-</td>
+          <td>vv=v</td>
+          <td>Add operator. Uses basic types.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>SUB</td>
+          <td>160</td>
+          <td>-</td>
+          <td>vv=v</td>
+          <td>Sub operator. Uses basic types.</td>
+        </tr>
+        <tr>
+          <td>MUL</td>
+          <td>161</td>
+          <td>-</td>
+          <td>vv=v</td>
+          <td>Mul operator. Uses basic types.</td>
+        </tr>
+        <tr>
+          <td>DIV</td>
+          <td>162</td>
+          <td>-</td>
+          <td>vv=v</td>
+          <td>Div operator. Uses basic types.</td>
+        </tr>
+        <tr>
+          <td>MOD</td>
+          <td>163</td>
+          <td>-</td>
+          <td>vv=v</td>
+          <td>Mod operator. Uses basic types.</td>
+        </tr>
+        <tr>
+          <td>AND</td>
+          <td>164</td>
+          <td>-</td>
+          <td>vv=v</td>
+          <td>And operator. Uses basic types.</td>
+        </tr>
+        <tr>
+          <td>OR</td>
+          <td>165</td>
+          <td>-</td>
+          <td>vv=v</td>
+          <td>Or operator. Uses basic types.</td>
+        </tr>
+        <tr>
+          <td>XOR</td>
+          <td>166</td>
+          <td>-</td>
+          <td>vv=v</td>
+          <td>Xor operator. Uses basic types.</td>
+        </tr>
+        <tr>
+          <td>POSTINC_S</td>
+          <td>167</td>
+          <td>S</td>
+          <td>=v</td>
+          <td>Post-increment variable. Uses basic types.</td>
+        </tr>
+        <tr>
+          <td>POSTDEC_S</td>
+          <td>168</td>
+          <td>S</td>
+          <td>=v</td>
+          <td>Post-decrement variable. Uses basic types.</td>
+        </tr>
+        <tr>
+          <td>PREINC_S</td>
+          <td>169</td>
+          <td>S</td>
+          <td>=v</td>
+          <td>Pre-increment variable. Uses basic types.</td>
+        </tr>
+        <tr>
+          <td>PREDEC_S</td>
+          <td>170</td>
+          <td>S</td>
+          <td>=v</td>
+          <td>Pre-decrement variable. Uses basic types.</td>
+        </tr>
+        <tr>
+          <td>INC_S</td>
+          <td>171</td>
+          <td>S</td>
+          <td>=</td>
+          <td>Increment variable. Uses basic types.</td>
+        </tr>
+        <tr>
+          <td>DEC_S</td>
+          <td>172</td>
+          <td>S</td>
+          <td>=</td>
+          <td>Decrement variable. Uses basic types.</td>
+        </tr>
+        <tr>
+          <td>SETDEFER</td>
+          <td>173</td>
+          <td>-</td>
+          <td>vw=</td>
+          <td>Set deference (val ref). Uses compound types.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>NOT</td>
+          <td>174</td>
+          <td>-</td>
+          <td>v=w</td>
+          <td>Not. Uses basic types.</td>
+        </tr>
+        <tr>
+          <td>INC</td>
+          <td>175</td>
+          <td>-</td>
+          <td>v=w</td>
+          <td>Increment value. Uses basic types. </td>
+        </tr>
+        <tr>
+          <td>DEC</td>
+          <td>176</td>
+          <td>-</td>
+          <td>v=w</td>
+          <td>Decrement value. Uses basic types. </td>
+        </tr>
+        <tr>
+          <td>PUSH_SV_FB</td>
+          <td>177</td>
+          <td>G</td>
+          <td>=f</td>
+          <td>Push a small flonum (fixed 10000).<br>
+          </td>
+        </tr>
+        <tr>
+          <td>ROLL_I</td>
+          <td>178</td>
+          <td>NM</td>
+          <td>-</td>
+          <td>Rotate stack elements by a count.</td>
+        </tr>
+        <tr>
+          <td>COPY_I</td>
+          <td>179</td>
+          <td>N</td>
+          <td>-</td>
+          <td>Duplicate the N top stack elements.</td>
+        </tr>
+        <tr>
+          <td>PF_HINT_XI</td>
+          <td>180</td>
+          <td>!<br>
+          </td>
+          <td>-</td>
+          <td style="vertical-align: top;">Prefix Type-Hint, Integer.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>PF_HINT_XL</td>
+          <td>181</td>
+          <td>!<br>
+          </td>
+          <td>-</td>
+          <td style="vertical-align: top;">Prefix Type-Hint, Long.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>PF_HINT_XF</td>
+          <td>182</td>
+          <td>!<br>
+          </td>
+          <td>-</td>
+          <td style="vertical-align: top;">Prefix Type-Hint, Float.</td>
+        </tr>
+        <tr>
+          <td>PF_HINT_XD</td>
+          <td>183</td>
+          <td>!<br>
+          </td>
+          <td>-</td>
+          <td style="vertical-align: top;">Prefix Type-Hint, Double.</td>
+        </tr>
+        <tr>
+          <td>PUSH_XI</td>
+          <td>184</td>
+          <td>V</td>
+          <td>=i</td>
+          <td>Push a literal integer. Value is an integer type.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>PUSH_XL</td>
+          <td>185</td>
+          <td>V</td>
+          <td>=i</td>
+          <td>Push a literal long. Value is a long type.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>SHL</td>
+          <td>186</td>
+          <td>-</td>
+          <td>xy=z</td>
+          <td>Shift left. Uses basic types.</td>
+        </tr>
+        <tr>
+          <td>SHR</td>
+          <td>187<br>
+          </td>
+          <td>-</td>
+          <td>xy=z</td>
+          <td>Shift right. Uses basic types.</td>
+        </tr>
+        <tr>
+          <td>INC2</td>
+          <td>188</td>
+          <td>-</td>
+          <td>v=w</td>
+          <td>Increment value by 2. Uses basic types. </td>
+        </tr>
+        <tr>
+          <td>DEC2</td>
+          <td>189</td>
+          <td>-</td>
+          <td>v=w</td>
+          <td>Decrement value by 2. Uses basic types. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Unused)<br>
+          </td>
+          <td style="vertical-align: top;">190-<br>
+            191<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Encoding Disallowed)<br>
+          </td>
+          <td style="vertical-align: top;">192-<br>
+            255<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">This region exists as part of
+            the start of the 2-byte range, but is disallowed in the
+            instruction encoding.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>JMP_L_FN</td>
+          <td>256</td>
+          <td>A</td>
+          <td>ii=</td>
+          <td>Jump compare fixnums, i&lt;j</td>
+        </tr>
+        <tr>
+          <td>JMP_G_FN</td>
+          <td>257</td>
+          <td>A</td>
+          <td>ii=</td>
+          <td>Jump compare fixnums, I&gt;j</td>
+        </tr>
+        <tr>
+          <td>JMP_LE_FN</td>
+          <td>258</td>
+          <td>A</td>
+          <td>ii=</td>
+          <td>Jump compare fixnums, i&lt;=j</td>
+        </tr>
+        <tr>
+          <td>JMP_GE_FN</td>
+          <td>259</td>
+          <td>A</td>
+          <td>ii=</td>
+          <td>Jump compare fixnums, i&gt;=j</td>
+        </tr>
+        <tr>
+          <td>JMP_L_FL</td>
+          <td>260</td>
+          <td>A</td>
+          <td>ff=</td>
+          <td>Jump compare flonums, f&lt;g</td>
+        </tr>
+        <tr>
+          <td>JMP_G_FL</td>
+          <td>261</td>
+          <td>A</td>
+          <td>ff=</td>
+          <td>Jump compare flonums, f&gt;g</td>
+        </tr>
+        <tr>
+          <td>JMP_LE_FL</td>
+          <td>262</td>
+          <td>A</td>
+          <td>ff=</td>
+          <td>Jump compare flonums, f&lt;=g</td>
+        </tr>
+        <tr>
+          <td>JMP_GE_FL</td>
+          <td>263</td>
+          <td>A</td>
+          <td>ff=</td>
+          <td>Jump compare flonums, f&gt;=g</td>
+        </tr>
+        <tr>
+          <td>JMP_E_LFN</td>
+          <td>264</td>
+          <td>JJA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variables, i==j</td>
+        </tr>
+        <tr>
+          <td>JMP_NE_LFN</td>
+          <td>265</td>
+          <td>JJA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variables, i!=j</td>
+        </tr>
+        <tr>
+          <td>JMP_L_LFN</td>
+          <td>266</td>
+          <td>JJA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variables, i&lt;j</td>
+        </tr>
+        <tr>
+          <td>JMP_G_LFN</td>
+          <td>267</td>
+          <td>JJA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variables, i&gt;j</td>
+        </tr>
+        <tr>
+          <td>JMP_LE_LFN</td>
+          <td>268</td>
+          <td>JJA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variables, i&lt;=j</td>
+        </tr>
+        <tr>
+          <td>JMP_GE_LFN</td>
+          <td>269</td>
+          <td>JJA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variables, i&gt;=j</td>
+        </tr>
+        <tr>
+          <td>JMP_E_ZFN</td>
+          <td>270</td>
+          <td>A</td>
+          <td>i=</td>
+          <td>Jump compare fixnum with 0, i==0</td>
+        </tr>
+        <tr>
+          <td>JMP_NE_ZFN</td>
+          <td>271</td>
+          <td>A</td>
+          <td>i=</td>
+          <td>Jump compare fixnum with 0, i!=0</td>
+        </tr>
+        <tr>
+          <td>JMP_L_ZFN</td>
+          <td>272</td>
+          <td>A</td>
+          <td>i=</td>
+          <td>Jump compare fixnum with 0, i&lt;0</td>
+        </tr>
+        <tr>
+          <td>JMP_G_ZFN</td>
+          <td>273</td>
+          <td>A</td>
+          <td>i=</td>
+          <td>Jump compare fixnum with 0, i&gt;0</td>
+        </tr>
+        <tr>
+          <td>JMP_LE_ZFN</td>
+          <td>274</td>
+          <td>A</td>
+          <td>i=</td>
+          <td>Jump compare fixnum with 0, i&lt;=0</td>
+        </tr>
+        <tr>
+          <td>JMP_GE_ZFN</td>
+          <td>275</td>
+          <td>A</td>
+          <td>i=</td>
+          <td>Jump compare fixnum with 0, i&gt;=0</td>
+        </tr>
+        <tr>
+          <td>JMP_E_LZFN</td>
+          <td>276</td>
+          <td>JA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variable with 0, i==0</td>
+        </tr>
+        <tr>
+          <td>JMP_NE_LZFN</td>
+          <td>277</td>
+          <td>JA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variable with 0, i!=0</td>
+        </tr>
+        <tr>
+          <td>JMP_L_LZFN</td>
+          <td>278</td>
+          <td>JA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variable with 0, i&lt;0</td>
+        </tr>
+        <tr>
+          <td>JMP_G_LZFN</td>
+          <td>279</td>
+          <td>JA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variable with 0, i&gt;0</td>
+        </tr>
+        <tr>
+          <td>JMP_LE_LZFN</td>
+          <td>280</td>
+          <td>JA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variable with 0, i&lt;=0</td>
+        </tr>
+        <tr>
+          <td>JMP_GE_LZFN</td>
+          <td>281</td>
+          <td>JA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variable with 0, i&gt;=0</td>
+        </tr>
+        <tr>
+          <td>JMP_E_FNC</td>
+          <td>282</td>
+          <td>CA</td>
+          <td>=</td>
+          <td>Jump compare fixnum with constant, i==c</td>
+        </tr>
+        <tr>
+          <td>JMP_NE_FNC</td>
+          <td>283</td>
+          <td>CA</td>
+          <td>i=</td>
+          <td>Jump compare fixnum with constant, i!=c</td>
+        </tr>
+        <tr>
+          <td>JMP_L_FNC</td>
+          <td>284</td>
+          <td>CA</td>
+          <td>i=</td>
+          <td>Jump compare fixnum with constant, i&lt;c</td>
+        </tr>
+        <tr>
+          <td>JMP_G_FNC</td>
+          <td>285</td>
+          <td>CA</td>
+          <td>i=</td>
+          <td>Jump compare fixnum with constant, i&gt;c</td>
+        </tr>
+        <tr>
+          <td>JMP_LE_FNC</td>
+          <td>286</td>
+          <td>CA</td>
+          <td>i=</td>
+          <td>Jump compare fixnum with constant, i&lt;=c</td>
+        </tr>
+        <tr>
+          <td>JMP_GE_FNC</td>
+          <td>287</td>
+          <td>CA</td>
+          <td>i=</td>
+          <td>Jump compare fixnum with constant, i&gt;=c</td>
+        </tr>
+        <tr>
+          <td>JMP_E_LFNC</td>
+          <td>288</td>
+          <td>JCA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variable with constant, i==c</td>
+        </tr>
+        <tr>
+          <td>JMP_NE_LFNC</td>
+          <td>289</td>
+          <td>JCA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variable with constant, i!=c</td>
+        </tr>
+        <tr>
+          <td>JMP_L_LFNC</td>
+          <td>290</td>
+          <td>JCA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variable with constant, i&lt;c</td>
+        </tr>
+        <tr>
+          <td>JMP_G_LFNC</td>
+          <td>291</td>
+          <td>JCA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variable with constant, i&gt;c</td>
+        </tr>
+        <tr>
+          <td>JMP_LE_LFNC</td>
+          <td>292</td>
+          <td>JCA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variable with constant, i&lt;=c</td>
+        </tr>
+        <tr>
+          <td>JMP_GE_LFNC</td>
+          <td>293</td>
+          <td>JCA</td>
+          <td>=</td>
+          <td>Jump compare fixnum variable with constant, i&gt;=c</td>
+        </tr>
+        <tr>
+          <td>INC_FN</td>
+          <td>294</td>
+          <td>-</td>
+          <td>i=i</td>
+          <td>Increment fixnum, i+1</td>
+        </tr>
+        <tr>
+          <td>DEC_FN</td>
+          <td>295</td>
+          <td>-</td>
+          <td>i=i</td>
+          <td>Decrement fixnum, i-1</td>
+        </tr>
+        <tr>
+          <td>INC2_FN</td>
+          <td>296</td>
+          <td>-</td>
+          <td>i=i</td>
+          <td>Increment fixnum by 2, i+2</td>
+        </tr>
+        <tr>
+          <td>DEC2_FN</td>
+          <td>297</td>
+          <td>-</td>
+          <td>i=i</td>
+          <td>Decrement fixnum by 2, i-2</td>
+        </tr>
+        <tr>
+          <td>ADD_FN</td>
+          <td>298</td>
+          <td>-</td>
+          <td>ii=i</td>
+          <td>Add fixnum, i+j</td>
+        </tr>
+        <tr>
+          <td>SUB_FN</td>
+          <td>299</td>
+          <td>-</td>
+          <td>ii=i</td>
+          <td>Subtract fixnum, i-j</td>
+        </tr>
+        <tr>
+          <td>MUL_FN</td>
+          <td>300</td>
+          <td>-</td>
+          <td>ii=i</td>
+          <td>Multiply fixnum, i*j</td>
+        </tr>
+        <tr>
+          <td>DIV_FN</td>
+          <td>301</td>
+          <td>-</td>
+          <td>ii=i</td>
+          <td>Divide fixnum, i/j, may return flonum result.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>IDIV_FN</td>
+          <td>302</td>
+          <td>-</td>
+          <td>ii=i</td>
+          <td>Integer Divide fixnum, i/j, returns fixnum result.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>MOD_FN</td>
+          <td>303</td>
+          <td>-</td>
+          <td>ii=i</td>
+          <td>Modulo fixnum, i%j</td>
+        </tr>
+        <tr>
+          <td>AND_FN</td>
+          <td>304</td>
+          <td>-</td>
+          <td>ii=i</td>
+          <td>And fixnum, i&amp;j</td>
+        </tr>
+        <tr>
+          <td>OR_FN</td>
+          <td>305</td>
+          <td>-</td>
+          <td>ii=i</td>
+          <td>Or fixnum, i|j</td>
+        </tr>
+        <tr>
+          <td>XOR_FN</td>
+          <td>306</td>
+          <td>-</td>
+          <td>ii=i</td>
+          <td>Xor fixnum, i^j</td>
+        </tr>
+        <tr>
+          <td>CMP_L_FN</td>
+          <td>307</td>
+          <td>-</td>
+          <td>ii=b</td>
+          <td>I&lt;j</td>
+        </tr>
+        <tr>
+          <td>CMP_G_FN</td>
+          <td>308</td>
+          <td>-</td>
+          <td>ii=b</td>
+          <td>I&gt;j</td>
+        </tr>
+        <tr>
+          <td>CMP_LE_FN</td>
+          <td>309</td>
+          <td>-</td>
+          <td>ii=b</td>
+          <td>I&lt;=j</td>
+        </tr>
+        <tr>
+          <td>CMP_GE_FN</td>
+          <td>310</td>
+          <td>-</td>
+          <td>ii=b</td>
+          <td>I&gt;=j</td>
+        </tr>
+        <tr>
+          <td>CMP_E_FN</td>
+          <td>311</td>
+          <td>-</td>
+          <td>ii=b</td>
+          <td>I==j</td>
+        </tr>
+        <tr>
+          <td>CMP_NE_FN</td>
+          <td>312</td>
+          <td>-</td>
+          <td>ii=b</td>
+          <td>I!=j</td>
+        </tr>
+        <tr>
+          <td>NEG_FN</td>
+          <td>313</td>
+          <td>-</td>
+          <td>i=i</td>
+          <td>//-i</td>
+        </tr>
+        <tr>
+          <td>NOT_FN</td>
+          <td>314</td>
+          <td>-</td>
+          <td>i=i</td>
+          <td>//~i</td>
+        </tr>
+        <tr>
+          <td>ADD_FN_C</td>
+          <td>315</td>
+          <td>B</td>
+          <td>i=i</td>
+          <td>I+c</td>
+        </tr>
+        <tr>
+          <td>SUB_FN_C</td>
+          <td>316</td>
+          <td>B</td>
+          <td>i=i</td>
+          <td>I-c</td>
+        </tr>
+        <tr>
+          <td>MUL_FN_C</td>
+          <td>317</td>
+          <td>B</td>
+          <td>i=i</td>
+          <td>I*c</td>
+        </tr>
+        <tr>
+          <td>CONV_FN2FL</td>
+          <td>318</td>
+          <td>-</td>
+          <td>i=f</td>
+          <td>Convert fixnum to flonum (i+f, ...)</td>
+        </tr>
+        <tr>
+          <td>CONV_FL2FN</td>
+          <td>319</td>
+          <td>-</td>
+          <td>f=i</td>
+          <td>Convert flonum to fixnum (int f, ...)</td>
+        </tr>
+        <tr>
+          <td>ADD_FL</td>
+          <td>320</td>
+          <td>-</td>
+          <td>ff=f</td>
+          <td>F+g</td>
+        </tr>
+        <tr>
+          <td>SUB_FL</td>
+          <td>321</td>
+          <td>-</td>
+          <td>ff=f</td>
+          <td>F-g</td>
+        </tr>
+        <tr>
+          <td>MUL_FL</td>
+          <td>322</td>
+          <td>-</td>
+          <td>ff=f</td>
+          <td>F*g</td>
+        </tr>
+        <tr>
+          <td>DIV_FL</td>
+          <td>323</td>
+          <td>-</td>
+          <td>ff=f</td>
+          <td>F/g</td>
+        </tr>
+        <tr>
+          <td>CMP_L_FL</td>
+          <td>324</td>
+          <td>-</td>
+          <td>ff=b</td>
+          <td>F&lt;g</td>
+        </tr>
+        <tr>
+          <td>CMP_G_FL</td>
+          <td>325</td>
+          <td>-</td>
+          <td>ff=b</td>
+          <td>F&gt;g</td>
+        </tr>
+        <tr>
+          <td>CMP_LE_FL</td>
+          <td>326</td>
+          <td>-</td>
+          <td>ff=b</td>
+          <td>F&lt;=g</td>
+        </tr>
+        <tr>
+          <td>CMP_GE_FL</td>
+          <td>327</td>
+          <td>-</td>
+          <td>ff=b</td>
+          <td>F&gt;=g</td>
+        </tr>
+        <tr>
+          <td>CMP_E_FL</td>
+          <td>328</td>
+          <td>-</td>
+          <td>ff=b</td>
+          <td>F==g</td>
+        </tr>
+        <tr>
+          <td>CMP_NE_FL</td>
+          <td>329</td>
+          <td>-</td>
+          <td>ff=b</td>
+          <td>F!=g</td>
+        </tr>
+        <tr>
+          <td>NEG_FL</td>
+          <td>330</td>
+          <td>-</td>
+          <td>f=f</td>
+          <td>//-f</td>
+        </tr>
+        <tr>
+          <td>JMP_E_FN</td>
+          <td>331</td>
+          <td>A</td>
+          <td>ii=</td>
+          <td>I==j</td>
+        </tr>
+        <tr>
+          <td>JMP_NE_FN</td>
+          <td>332</td>
+          <td>A</td>
+          <td>ii=</td>
+          <td>I!=j</td>
+        </tr>
+        <tr>
+          <td>JMP_E_FL</td>
+          <td>333</td>
+          <td>A</td>
+          <td>ff=</td>
+          <td>F==g</td>
+        </tr>
+        <tr>
+          <td>JMP_NE_FL</td>
+          <td>334</td>
+          <td>A</td>
+          <td>ff=</td>
+          <td>F!=g</td>
+        </tr>
+        <tr>
+          <td>SHL_FN</td>
+          <td>335</td>
+          <td>-</td>
+          <td>ii=i</td>
+          <td>I&lt;&lt;j</td>
+        </tr>
+        <tr>
+          <td>SHR_FN</td>
+          <td>336</td>
+          <td>-</td>
+          <td>ii=i</td>
+          <td>I&gt;&gt;j</td>
+        </tr>
+        <tr>
+          <td>EXP_FN</td>
+          <td>337</td>
+          <td>-</td>
+          <td>ii=i</td>
+          <td>I**j</td>
+        </tr>
+        <tr>
+          <td>SHL_FN_C</td>
+          <td>338</td>
+          <td>B</td>
+          <td>i=i</td>
+          <td>I&lt;&lt;c</td>
+        </tr>
+        <tr>
+          <td>SHR_FN_C</td>
+          <td>339</td>
+          <td>B</td>
+          <td>i=i</td>
+          <td>I&gt;&gt;c</td>
+        </tr>
+        <tr>
+          <td>EXP_FN_C</td>
+          <td>340</td>
+          <td>B</td>
+          <td>i=i</td>
+          <td>I**c</td>
+        </tr>
+        <tr>
+          <td>PUSH_XF<br>
+          </td>
+          <td>341</td>
+          <td>D<br>
+          </td>
+          <td>=f<br>
+          </td>
+          <td>Push literal float.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>PUSH_XD<br>
+          </td>
+          <td>342</td>
+          <td>D<br>
+          </td>
+          <td>=f<br>
+          </td>
+          <td>Push literal double.<br>
+          </td>
+        </tr>
+        <tr>
+          <td><br>
+          </td>
+          <td>343</td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+          <td><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">SHRR<br>
+          </td>
+          <td style="vertical-align: top;">344<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;">xy=z<br>
+          </td>
+          <td style="vertical-align: top;">Shift right2<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">LOADB_S<br>
+            <br>
+            <br>
+          </td>
+          <td style="vertical-align: top;">345 </td>
+          <td style="vertical-align: top;">S<br>
+          </td>
+          <td style="vertical-align: top;">=p<br>
+          </td>
+          <td style="vertical-align: top;">Load a reference to S.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">LOADINDEXA_S</td>
+          <td style="vertical-align: top;">346 </td>
+          <td style="vertical-align: top;">S<br>
+          </td>
+          <td style="vertical-align: top;">v=v<br>
+          </td>
+          <td style="vertical-align: top;">Load address of a field.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">LOADINDEXB_S</td>
+          <td style="vertical-align: top;">347<br>
+          </td>
+          <td style="vertical-align: top;">S<br>
+          </td>
+          <td style="vertical-align: top;">v=v<br>
+          </td>
+          <td style="vertical-align: top;">Load reference to a field.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">LOADINDEXA_I</td>
+          <td style="vertical-align: top;">348<br>
+          </td>
+          <td style="vertical-align: top;">Bd<br>
+          </td>
+          <td style="vertical-align: top;">v=v<br>
+          </td>
+          <td style="vertical-align: top;">Load address of an array
+            index.<br>
+            (WIDE) uses 32-bit index.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">LOADINDEXB_I</td>
+          <td style="vertical-align: top;">349<br>
+          </td>
+          <td style="vertical-align: top;">Bd<br>
+          </td>
+          <td style="vertical-align: top;">v=v<br>
+          </td>
+          <td style="vertical-align: top;">Load reference to an array
+            index.<br>
+            (WIDE) uses 32-bit index.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">LLOADA</td>
+          <td style="vertical-align: top;">350<br>
+          </td>
+          <td style="vertical-align: top;">J<br>
+          </td>
+          <td style="vertical-align: top;">=v<br>
+          </td>
+          <td style="vertical-align: top;">Load address of a lexical
+            variable.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">LLOADB</td>
+          <td style="vertical-align: top;">351<br>
+          </td>
+          <td style="vertical-align: top;">J<br>
+          </td>
+          <td style="vertical-align: top;">=v<br>
+          </td>
+          <td style="vertical-align: top;">Load reference to a lexical
+            variable.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"> UNARYOP_S</td>
+          <td style="vertical-align: top;">352<br>
+          </td>
+          <td style="vertical-align: top;">S<br>
+          </td>
+          <td style="vertical-align: top;">v=v<br>
+          </td>
+          <td style="vertical-align: top;">Named unary operator.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"> BINARYOP_S</td>
+          <td style="vertical-align: top;">353<br>
+          </td>
+          <td style="vertical-align: top;">S<br>
+          </td>
+          <td style="vertical-align: top;">vv=v<br>
+          </td>
+          <td style="vertical-align: top;">Named binary operator.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Unused)<br>
+          </td>
+          <td style="vertical-align: top;">354<br>
+            359<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_FN2XI<br>
+          </td>
+          <td style="vertical-align: top;">360<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;">v=i<br>
+          </td>
+          <td style="vertical-align: top;">Convert variant to integer.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_FN2XL<br>
+          </td>
+          <td style="vertical-align: top;">361<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;">v=i<br>
+          </td>
+          <td style="vertical-align: top;">Convert variant to long.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_FL2XF<br>
+          </td>
+          <td style="vertical-align: top;">362<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;">v=f<br>
+          </td>
+          <td style="vertical-align: top;">Convert variant to float.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_FL2XD<br>
+          </td>
+          <td style="vertical-align: top;">363<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;">v=f<br>
+          </td>
+          <td style="vertical-align: top;">Convert variant to double.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_XI2FN<br>
+          </td>
+          <td style="vertical-align: top;">364<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;">i=v<br>
+          </td>
+          <td style="vertical-align: top;">Convert integer to fixnum.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_XL2FN<br>
+          </td>
+          <td style="vertical-align: top;">365<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;">i=v<br>
+          </td>
+          <td style="vertical-align: top;">Convert long to fixnum.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_XF2FL<br>
+          </td>
+          <td style="vertical-align: top;">366<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;">f=v<br>
+          </td>
+          <td style="vertical-align: top;">Convert float to flonum.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_XD2FL<br>
+          </td>
+          <td style="vertical-align: top;">367<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;">f=v<br>
+          </td>
+          <td style="vertical-align: top;">Convert double to flonum.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ADD_C<br>
+          </td>
+          <td style="vertical-align: top;">368<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=v<br>
+          </td>
+          <td style="vertical-align: top;">Add constant to value. Uses
+            basic types (float/double: only integer-valued constants may
+            be encoded).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">SUB_C<br>
+          </td>
+          <td style="vertical-align: top;">369<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=v<br>
+          </td>
+          <td style="vertical-align: top;">Subtract constant from value.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">MUL_C<br>
+          </td>
+          <td style="vertical-align: top;">370<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=v<br>
+          </td>
+          <td style="vertical-align: top;">Multiply value by a constant.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">DIV_C<br>
+          </td>
+          <td style="vertical-align: top;">371<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=v</td>
+          <td style="vertical-align: top;">Divide value by a constant.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">MOD_C<br>
+          </td>
+          <td style="vertical-align: top;">372<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=v</td>
+          <td style="vertical-align: top;">Modulo value by constant.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">AND_C<br>
+          </td>
+          <td style="vertical-align: top;">373<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=v</td>
+          <td style="vertical-align: top;">And value with constant.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">OR_C<br>
+          </td>
+          <td style="vertical-align: top;">374<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=v</td>
+          <td style="vertical-align: top;">Or value with constant. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">XOR_C<br>
+          </td>
+          <td style="vertical-align: top;">375<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=v</td>
+          <td style="vertical-align: top;">Xor value with constant. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">SHL_C<br>
+          </td>
+          <td style="vertical-align: top;">376<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=v</td>
+          <td style="vertical-align: top;">Shift value left by constant.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">SHR_C<br>
+          </td>
+          <td style="vertical-align: top;">377<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=v</td>
+          <td style="vertical-align: top;">Shift value right by
+            constant.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">SHRR_C<br>
+          </td>
+          <td style="vertical-align: top;">378<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=v</td>
+          <td style="vertical-align: top;">Shift value right (unsigned)
+            by constant. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Unused)<br>
+          </td>
+          <td style="vertical-align: top;">379<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CMP_EQ_C<br>
+          </td>
+          <td style="vertical-align: top;">380<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=b</td>
+          <td style="vertical-align: top;">Compare value is equal to
+            constant.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CMP_NE_C</td>
+          <td style="vertical-align: top;">381<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=b</td>
+          <td style="vertical-align: top;">Compare value is not equal to
+            constant. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CMP_LT_C</td>
+          <td style="vertical-align: top;">382<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=b</td>
+          <td style="vertical-align: top;">Compare value is less than
+            constant. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CMP_GT_C</td>
+          <td style="vertical-align: top;">383<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=b</td>
+          <td style="vertical-align: top;">Compare value is greater than
+            constant. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CMP_LE_C</td>
+          <td style="vertical-align: top;">384<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=b</td>
+          <td style="vertical-align: top;">Compare value is less than or
+            equal to constant. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CMP_GE_C</td>
+          <td style="vertical-align: top;">385<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=b</td>
+          <td style="vertical-align: top;">Compare value is greater than
+            or equal to constant. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">JMP_EQ_C</td>
+          <td style="vertical-align: top;">386<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=<br>
+          </td>
+          <td style="vertical-align: top;">Jump if value is equal to
+            constant. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">JMP_NE_C</td>
+          <td style="vertical-align: top;">387<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=</td>
+          <td style="vertical-align: top;">Jump if value is not equal to
+            constant. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">JMP_LT_C</td>
+          <td style="vertical-align: top;">388<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=</td>
+          <td style="vertical-align: top;">Jump if value is less than
+            constant. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">JMP_GT_C</td>
+          <td style="vertical-align: top;">389<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=</td>
+          <td style="vertical-align: top;">Jump if value is greater than
+            constant. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">JMP_LE_C</td>
+          <td style="vertical-align: top;">390<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=</td>
+          <td style="vertical-align: top;">Jump if value is less than or
+            equal to constant. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">JMP_GE_C</td>
+          <td style="vertical-align: top;">391<br>
+          </td>
+          <td style="vertical-align: top;">V<br>
+          </td>
+          <td style="vertical-align: top;">v=</td>
+          <td style="vertical-align: top;">Jump if value is greater than
+            or equal to constant. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Unused)<br>
+          </td>
+          <td style="vertical-align: top;">392<br>
+            399<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XUBI<br>
+          </td>
+          <td style="vertical-align: top;">400<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XSBI<br>
+          </td>
+          <td style="vertical-align: top;">401<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XUSI<br>
+          </td>
+          <td style="vertical-align: top;">402<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XSSI<br>
+          </td>
+          <td style="vertical-align: top;">403<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XUDI<br>
+          </td>
+          <td style="vertical-align: top;">404<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XSDI<br>
+          </td>
+          <td style="vertical-align: top;">405<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XUDL<br>
+          </td>
+          <td style="vertical-align: top;">406<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XSDL<br>
+          </td>
+          <td style="vertical-align: top;">407<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XUBI_IX<br>
+          </td>
+          <td style="vertical-align: top;">408<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XSBI_IX</td>
+          <td style="vertical-align: top;">409<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XUSI_IX</td>
+          <td style="vertical-align: top;">410<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XSSI_IX</td>
+          <td style="vertical-align: top;">411<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XUDI_IX</td>
+          <td style="vertical-align: top;">412<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XSDI_IX</td>
+          <td style="vertical-align: top;">413<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XUDL_IX</td>
+          <td style="vertical-align: top;">414<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XSDL_IX</td>
+          <td style="vertical-align: top;">415<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XII<br>
+          </td>
+          <td style="vertical-align: top;">416<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XLL<br>
+          </td>
+          <td style="vertical-align: top;">417<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XFF<br>
+          </td>
+          <td style="vertical-align: top;">418<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XDD<br>
+          </td>
+          <td style="vertical-align: top;">419<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XII_IX<br>
+          </td>
+          <td style="vertical-align: top;">420<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XLL_IX</td>
+          <td style="vertical-align: top;">421<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XFF_IX</td>
+          <td style="vertical-align: top;">422<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_XDD_IX</td>
+          <td style="vertical-align: top;">423<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Compound type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">// PF_HINT_PTR<br>
+          </td>
+          <td style="vertical-align: top;">424<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_IX<br>
+          </td>
+          <td style="vertical-align: top;">425<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Integer Index type hint.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_FN<br>
+          </td>
+          <td style="vertical-align: top;">426<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Fixnum type hint.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_FL<br>
+          </td>
+          <td style="vertical-align: top;">427<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Flonum type hint.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_V2F<br>
+          </td>
+          <td style="vertical-align: top;">428<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Vector vec2 type hint.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_V3F<br>
+          </td>
+          <td style="vertical-align: top;">429<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Vector vec3 type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_V4F<br>
+          </td>
+          <td style="vertical-align: top;">430<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Vector vec4 type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_QUAT<br>
+          </td>
+          <td style="vertical-align: top;">431<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Vector quat type hint.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_VOID</td>
+          <td style="vertical-align: top;">432<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Special void type.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PF_HINT_PVAR</td>
+          <td style="vertical-align: top;">433<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Special variant-pointer type.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Prefix Reserved)</td>
+          <td style="vertical-align: top;">434<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Prefix Reserved)</td>
+          <td style="vertical-align: top;">435<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_XI2XL</td>
+          <td style="vertical-align: top;">436<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Convert integer to long.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_XI2XF<br>
+          </td>
+          <td style="vertical-align: top;">437<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Convert integer to float.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_XI2XD<br>
+          </td>
+          <td style="vertical-align: top;">438<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Convert integer to double.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_XL2XI<br>
+          </td>
+          <td style="vertical-align: top;">439<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Convert long to integer.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_XL2XF<br>
+          </td>
+          <td style="vertical-align: top;">440<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Convert long to float.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_XL2XD<br>
+          </td>
+          <td style="vertical-align: top;">441<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Convert long to double.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_XF2XI<br>
+          </td>
+          <td style="vertical-align: top;">442<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Convert float to integer.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_XF2XL<br>
+          </td>
+          <td style="vertical-align: top;">443<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Convert float to long.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_XF2XD<br>
+          </td>
+          <td style="vertical-align: top;">444<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Convert float to double.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_XD2XI<br>
+          </td>
+          <td style="vertical-align: top;">445<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Convert double to integer.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_XD2XL<br>
+          </td>
+          <td style="vertical-align: top;">446<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Convert double to long.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONV_XD2XF<br>
+          </td>
+          <td style="vertical-align: top;">447<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;">Convert double to float.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">EXCH_YXZ<br>
+          </td>
+          <td style="vertical-align: top;">448<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;">xyz=yxz<br>
+          </td>
+          <td style="vertical-align: top;">Exchange items on stack.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">EXCH_YZX<br>
+          </td>
+          <td style="vertical-align: top;">449<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;">xyz=yzx</td>
+          <td style="vertical-align: top;">Exchange items on stack. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">EXCH_ZXY<br>
+          </td>
+          <td style="vertical-align: top;">450<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;">xyz=zxy</td>
+          <td style="vertical-align: top;">Exchange items on stack. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">EXCH_ZYX<br>
+          </td>
+          <td style="vertical-align: top;">451<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;">xyz=zyx</td>
+          <td style="vertical-align: top;">Exchange items on stack. </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Unused)<br>
+          </td>
+          <td style="vertical-align: top;">452<br>
+            455<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">JMP_SWEQ<br>
+          </td>
+          <td style="vertical-align: top;">456<br>
+          </td>
+          <td style="vertical-align: top;">IA<br>
+          </td>
+          <td style="vertical-align: top;">v=v<br>
+          </td>
+          <td style="vertical-align: top;">Jump switch-equal. Compares
+            value on stack to literal and jumps if equal. Leaves value
+            on stack for next operation (but does pop value if the jump
+            is taken).<br>
+            Intended specifically for implementing switch (not
+            general-use). Uses basic type-hints.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">JMP_SWEQF<br>
+          </td>
+          <td style="vertical-align: top;">457<br>
+          </td>
+          <td style="vertical-align: top;">IA<br>
+          </td>
+          <td style="vertical-align: top;">v=v<br>
+          </td>
+          <td style="vertical-align: top;">Jump switch-equal (fast).
+            Compares value on stack to literal and jumps if equal (uses
+            direct compare, rather than by comparing by value).<br>
+            Intended specifically for implementing switch (not
+            general-use). Uses basic type-hints.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">JMP_SWDFL<br>
+          </td>
+          <td style="vertical-align: top;">458<br>
+          </td>
+          <td style="vertical-align: top;">A<br>
+          </td>
+          <td style="vertical-align: top;">v=<br>
+          </td>
+          <td style="vertical-align: top;">Jump, switch-default. Pops
+            value and jumps to target.<br>
+            Intended specifically for implementing switch (not
+            general-use). Uses basic type-hints.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">JMP_SWB<br>
+          </td>
+          <td style="vertical-align: top;">459<br>
+          </td>
+          <td style="vertical-align: top;">bIA<br>
+          </td>
+          <td style="vertical-align: top;">v=v<br>
+          </td>
+          <td style="vertical-align: top;">Jump, switch-binary. Compares
+            value to literal, jumps if comparison is true.<br>
+            Intended specifically for implementing switch (not
+            general-use). Uses basic type-hints.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Unused)<br>
+          </td>
+          <td style="vertical-align: top;">460<br>
+            461<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td>JMP_U</td>
+          <td>462</td>
+          <td>A</td>
+          <td>xy=</td>
+          <td>Jump if x,y unordered. Uses basic type hints.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>CMP_U</td>
+          <td>463</td>
+          <td>-</td>
+          <td>xy=b</td>
+          <td>Compare x,y unordered. Uses basic type hints. </td>
+        </tr>
+        <tr>
+          <td>JMP_EQ</td>
+          <td>464</td>
+          <td>A</td>
+          <td>xy=</td>
+          <td>Jump if x==y. Uses basic type hints.</td>
+        </tr>
+        <tr>
+          <td>JMP_NE</td>
+          <td>465</td>
+          <td>A</td>
+          <td>xy=</td>
+          <td>Jump if x!=y. Uses basic type hints.</td>
+        </tr>
+        <tr>
+          <td>JMP_LT</td>
+          <td>466</td>
+          <td>A</td>
+          <td>xy=</td>
+          <td>Jump if x&lt;y. Uses basic type hints.</td>
+        </tr>
+        <tr>
+          <td>JMP_GT</td>
+          <td>467</td>
+          <td>A</td>
+          <td>xy=</td>
+          <td>Jump if x&gt;y. Uses basic type hints.</td>
+        </tr>
+        <tr>
+          <td>JMP_LE</td>
+          <td>468</td>
+          <td>A</td>
+          <td>xy=</td>
+          <td>Jump if x&lt;=y. Uses basic type hints.</td>
+        </tr>
+        <tr>
+          <td>JMP_GE</td>
+          <td>469</td>
+          <td>A</td>
+          <td>xy=</td>
+          <td>Jump if x&gt;=y. Uses basic type hints.</td>
+        </tr>
+        <tr>
+          <td>CMP_EQ</td>
+          <td>470</td>
+          <td>-</td>
+          <td>xy=b</td>
+          <td>Compare x==y. Uses basic type hints.</td>
+        </tr>
+        <tr>
+          <td>CMP_NE</td>
+          <td>471</td>
+          <td>-</td>
+          <td>xy=b</td>
+          <td>Compare x!=y. Uses basic type hints.</td>
+        </tr>
+        <tr>
+          <td>CMP_LT</td>
+          <td>472</td>
+          <td>-</td>
+          <td>xy=b</td>
+          <td>Compare x&lt;y. Uses basic type hints.</td>
+        </tr>
+        <tr>
+          <td>CMP_GT</td>
+          <td>473</td>
+          <td>-</td>
+          <td>xy=b</td>
+          <td>Compare x&gt;y. Uses basic type hints.</td>
+        </tr>
+        <tr>
+          <td>CMP_LE</td>
+          <td>474</td>
+          <td>-</td>
+          <td>xy=b</td>
+          <td>Compare x&lt;=y. Uses basic type hints.</td>
+        </tr>
+        <tr>
+          <td>CMP_GE</td>
+          <td>475</td>
+          <td>-</td>
+          <td>xy=b</td>
+          <td>Compare x&gt;=y. Uses basic type hints.</td>
+        </tr>
+        <tr>
+          <td>JMP_EQQ</td>
+          <td>476</td>
+          <td>A</td>
+          <td>xy=</td>
+          <td>Jump if x===y. Uses basic type hints.</td>
+        </tr>
+        <tr>
+          <td>CMP_EQQ</td>
+          <td>477</td>
+          <td>-</td>
+          <td>xy=b</td>
+          <td>Compare x===y. Uses basic type hints.</td>
+        </tr>
+        <tr>
+          <td>JMP_NEQ</td>
+          <td>478</td>
+          <td>A</td>
+          <td>xy=</td>
+          <td>Jump if x!==y. Uses basic type hints. </td>
+        </tr>
+        <tr>
+          <td>CMP_NEQ</td>
+          <td>479</td>
+          <td>-</td>
+          <td>xy=b</td>
+          <td>Compare x!==y. Uses basic type hints. </td>
+        </tr>
+        <tr>
+          <td>EXCH_WXYZ</td>
+          <td>480</td>
+          <td>-</td>
+          <td>wxyz=wxyz</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_WXZY</td>
+          <td>481</td>
+          <td>-</td>
+          <td>wxyz=wxzy</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_WYXZ</td>
+          <td>482</td>
+          <td>-</td>
+          <td>wxyz=wyxz</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_WYZX</td>
+          <td>483</td>
+          <td>-</td>
+          <td>wxyz=wyzx</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_WZXY</td>
+          <td>484</td>
+          <td>-</td>
+          <td>wxyz=wzxy</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_WZYX</td>
+          <td>485</td>
+          <td>-</td>
+          <td>wxyz=wzyx</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_XWYZ</td>
+          <td>486</td>
+          <td>-</td>
+          <td>wxyz=xwyz</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_XWZY</td>
+          <td>487</td>
+          <td>-</td>
+          <td>wxyz=xwzy</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_XYWZ</td>
+          <td>488</td>
+          <td>-</td>
+          <td>wxyz=xywz</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_XYZW</td>
+          <td>489</td>
+          <td>-</td>
+          <td>wxyz=xyzw</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_XZWY</td>
+          <td>490</td>
+          <td>-</td>
+          <td>wxyz=xzwy</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_XZYW</td>
+          <td>491</td>
+          <td>-</td>
+          <td>wxyz=xzyw</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_YWXZ</td>
+          <td>492</td>
+          <td>-</td>
+          <td>wxyz=ywxz</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_YWZX</td>
+          <td>493</td>
+          <td>-</td>
+          <td>wxyz=wxyz</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_YXWZ</td>
+          <td>494</td>
+          <td>-</td>
+          <td>wxyz=wxyz</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_YXZW</td>
+          <td>495</td>
+          <td>-</td>
+          <td>wxyz=wxyz</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_YZWX</td>
+          <td>496</td>
+          <td>-</td>
+          <td>wxyz=wxyz</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_YZXW</td>
+          <td>497</td>
+          <td>-</td>
+          <td>wxyz=wxyz</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_ZWXY</td>
+          <td>498</td>
+          <td>-</td>
+          <td>wxyz=wxyz</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_ZWYX</td>
+          <td>499</td>
+          <td>-</td>
+          <td>wxyz=wxyz</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_ZXWY</td>
+          <td>500</td>
+          <td>-</td>
+          <td>wxyz=wxyz</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_ZXYW</td>
+          <td>501</td>
+          <td>-</td>
+          <td>wxyz=wxyz</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_ZYWX</td>
+          <td>502</td>
+          <td>-</td>
+          <td>wxyz=wxyz</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>EXCH_ZYXW</td>
+          <td>503</td>
+          <td>-</td>
+          <td>wxyz=wxyz</td>
+          <td>Exchange items on stack.</td>
+        </tr>
+        <tr>
+          <td>SLEEP</td>
+          <td>504</td>
+          <td>-</td>
+          <td>v=v</td>
+          <td>Sleep (milliseconds).</td>
+        </tr>
+        <tr>
+          <td>SLEEP_SV</td>
+          <td>505</td>
+          <td>W</td>
+          <td>=v</td>
+          <td>Sleep constant (milliseconds).</td>
+        </tr>
+        <tr>
+          <td>UNQUOTE</td>
+          <td>506</td>
+          <td>-</td>
+          <td>v=v</td>
+          <td>Evaluate expression.</td>
+        </tr>
+        <tr>
+          <td>LOCK_OBJ</td>
+          <td>507</td>
+          <td>-</td>
+          <td>v=</td>
+          <td>Lock object (generic).</td>
+        </tr>
+        <tr>
+          <td>UNLOCK_OBJ</td>
+          <td>508</td>
+          <td>-</td>
+          <td>v=</td>
+          <td>Unlock object (generic).</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">LOADMINDEX<br>
+          </td>
+          <td style="vertical-align: top;">509<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;">M*v=v<br>
+          </td>
+          <td style="vertical-align: top;">Load Multi-Index.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">STOREMINDEX<br>
+          </td>
+          <td style="vertical-align: top;">510<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;">M*v=<br>
+          </td>
+          <td style="vertical-align: top;">Store Multi-Index.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">BINDPATTERN<br>
+          </td>
+          <td style="vertical-align: top;">511<br>
+          </td>
+          <td style="vertical-align: top;">-<br>
+          </td>
+          <td style="vertical-align: top;">vv=<br>
+          </td>
+          <td style="vertical-align: top;">Bind vars using a pattern.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>BEGIN_PACKAGE</td>
+          <td>512</td>
+          <td>SS</td>
+          <td>=v</td>
+          <td>Begin package (name, flags).</td>
+        </tr>
+        <tr>
+          <td>BEGIN_STRUCT</td>
+          <td>513</td>
+          <td>SSS</td>
+          <td>=v</td>
+          <td>Begin struct (name, super, flags).</td>
+        </tr>
+        <tr>
+          <td>BEGIN_CLASS</td>
+          <td>514</td>
+          <td>SSS</td>
+          <td>=v</td>
+          <td>Begin class (name, super, flags).</td>
+        </tr>
+        <tr>
+          <td>BEGIN_IFACE</td>
+          <td>515</td>
+          <td>SSS</td>
+          <td>=v</td>
+          <td>Begin interface (name, super, flags).</td>
+        </tr>
+        <tr>
+          <td>END_PACKAGE</td>
+          <td>516</td>
+          <td>-</td>
+          <td>v=w</td>
+          <td>End package.</td>
+        </tr>
+        <tr>
+          <td>END_STRUCT</td>
+          <td>517</td>
+          <td>-</td>
+          <td>v=w</td>
+          <td>End struct.</td>
+        </tr>
+        <tr>
+          <td>END_CLASS</td>
+          <td>518</td>
+          <td>-</td>
+          <td>v=w</td>
+          <td>End class.</td>
+        </tr>
+        <tr>
+          <td>END_IFACE</td>
+          <td>519</td>
+          <td>-</td>
+          <td>v=w</td>
+          <td>End interface.</td>
+        </tr>
+        <tr>
+          <td>OFFSETOF</td>
+          <td>520</td>
+          <td>SS</td>
+          <td>=i</td>
+          <td>Offsetof (type, field).</td>
+        </tr>
+        <tr>
+          <td>SIZEOF</td>
+          <td>521</td>
+          <td>-</td>
+          <td>v=i</td>
+          <td>Sizeof (expression). Returns the sizeof the type for which
+            the value applies.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>SIZEOF_S</td>
+          <td>522</td>
+          <td>S</td>
+          <td>=i</td>
+          <td>Sizeof (type). Returns the size of the type identified by
+            the signature.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>NEWARRAY_S</td>
+          <td>523</td>
+          <td>S</td>
+          <td>i=v</td>
+          <td>Create a new array.</td>
+        </tr>
+        <tr>
+          <td>NEWMARRAY_S</td>
+          <td>524</td>
+          <td>S</td>
+          <td>M*=v</td>
+          <td>Create a new multi-dimensional array.</td>
+        </tr>
+        <tr>
+          <td>CALL_THIS</td>
+          <td>525</td>
+          <td>-</td>
+          <td>M*=v</td>
+          <td>Call another constructor in "this".</td>
+        </tr>
+        <tr>
+          <td>CALL_SUPER</td>
+          <td>526</td>
+          <td>-</td>
+          <td>M*=v</td>
+          <td>Call another constructor in "super".</td>
+        </tr>
+        <tr>
+          <td>NEW</td>
+          <td>527</td>
+          <td>-</td>
+          <td>M*v=w</td>
+          <td>Create new object.</td>
+        </tr>
+        <tr>
+          <td>PUSH_ERROR</td>
+          <td>528</td>
+          <td>-</td>
+          <td>=v</td>
+          <td>Push related to compiler error.</td>
+        </tr>
+        <tr>
+          <td>POP_ERROR</td>
+          <td>529</td>
+          <td>-</td>
+          <td>v=</td>
+          <td>Pop related to compiler error.</td>
+        </tr>
+        <tr>
+          <td>INSTANCEOF</td>
+          <td>530</td>
+          <td>-</td>
+          <td>vw=b</td>
+          <td>Check if value is of a given type.</td>
+        </tr>
+        <tr>
+          <td>LDJMP</td>
+          <td>531</td>
+          <td>A</td>
+          <td>=v</td>
+          <td>Load a jump-target address.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>JMPIA</td>
+          <td>532</td>
+          <td>-</td>
+          <td>v=</td>
+          <td>Jump to an indirect address. This is only allowed to jump
+            to targets within the same function block.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>EXCH_TOP</td>
+          <td>533</td>
+          <td>-</td>
+          <td>x=y</td>
+          <td>Swap 'top' with value on stack.</td>
+        </tr>
+        <tr>
+          <td>CALL_ASYNC</td>
+          <td>534</td>
+          <td>-</td>
+          <td>M*v=v</td>
+          <td>Call an async block (does not wait for called block to
+            finish).</td>
+        </tr>
+        <tr>
+          <td>CALL_IFDEF</td>
+          <td>535</td>
+          <td>S</td>
+          <td>M*v=v</td>
+          <td>Call a block if S is defined.</td>
+        </tr>
+        <tr>
+          <td>CALL_IFNDEF</td>
+          <td>536</td>
+          <td>S</td>
+          <td>M*v=v</td>
+          <td>Call a block if S is not defined.</td>
+        </tr>
+        <tr>
+          <td>BEGIN_SYNC</td>
+          <td>537</td>
+          <td>-</td>
+          <td>=</td>
+          <td>Begin critical section. Uses a global lock.<br>
+          </td>
+        </tr>
+        <tr>
+          <td>END_SYNC</td>
+          <td>538</td>
+          <td>-</td>
+          <td>=</td>
+          <td>End critical section. Uses a global lock.</td>
+        </tr>
+        <tr>
+          <td>BEGIN_SYNC_OBJ</td>
+          <td>539</td>
+          <td>-</td>
+          <td>v=</td>
+          <td>Lock object (begin synchronized section over object).</td>
+        </tr>
+        <tr>
+          <td>END_SYNC_OBJ</td>
+          <td>540</td>
+          <td>-</td>
+          <td>v=</td>
+          <td>Unlock object (end synchronized section over object).</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Static Block)<br>
+          </td>
+          <td style="vertical-align: top;">684<br>
+            859<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <br>
+    <h3> Operators (Unary/Binary)</h3>
+    <br>
+    Binary Operators:<br>
+    <table border="1" cellpadding="2" cellspacing="2" width="100%">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Operator<br>
+          </td>
+          <td style="vertical-align: top;">Number<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td>ADD</td>
+          <td>0</td>
+          <td style="vertical-align: top;">Add Values<br>
+          </td>
+        </tr>
+        <tr>
+          <td>SUB</td>
+          <td>1</td>
+          <td style="vertical-align: top;">Subtract Values<br>
+          </td>
+        </tr>
+        <tr>
+          <td>MUL</td>
+          <td>2</td>
+          <td style="vertical-align: top;">Multiply Values<br>
+          </td>
+        </tr>
+        <tr>
+          <td>DIV</td>
+          <td>3</td>
+          <td style="vertical-align: top;">Divide Values<br>
+          </td>
+        </tr>
+        <tr>
+          <td>MOD</td>
+          <td>4</td>
+          <td style="vertical-align: top;">Modulo Values<br>
+          </td>
+        </tr>
+        <tr>
+          <td>AND</td>
+          <td>5</td>
+          <td style="vertical-align: top;">And Values<br>
+          </td>
+        </tr>
+        <tr>
+          <td>OR</td>
+          <td>6</td>
+          <td style="vertical-align: top;">Or Values<br>
+          </td>
+        </tr>
+        <tr>
+          <td>XOR</td>
+          <td>7</td>
+          <td style="vertical-align: top;">Xor Values<br>
+          </td>
+        </tr>
+        <tr>
+          <td>SHL</td>
+          <td>8</td>
+          <td style="vertical-align: top;">Shift-Left Values<br>
+          </td>
+        </tr>
+        <tr>
+          <td>SHR</td>
+          <td>9</td>
+          <td style="vertical-align: top;">Shift-Right Values<br>
+          </td>
+        </tr>
+        <tr>
+          <td>EQ</td>
+          <td>10</td>
+          <td style="vertical-align: top;">Compare Values Strict
+            Equality (a===b)<br>
+          </td>
+        </tr>
+        <tr>
+          <td>EQV</td>
+          <td>11</td>
+          <td style="vertical-align: top;">Compare Values Equal (a==b)<br>
+          </td>
+        </tr>
+        <tr>
+          <td>NEQ</td>
+          <td>12</td>
+          <td style="vertical-align: top;">Compare Values Strict
+            Inequality (a!==b)</td>
+        </tr>
+        <tr>
+          <td>NEQV</td>
+          <td>13</td>
+          <td style="vertical-align: top;">Compare Values Not Equal
+            (a!=b)</td>
+        </tr>
+        <tr>
+          <td>LT</td>
+          <td>14</td>
+          <td style="vertical-align: top;">Compare Values Less Than<br>
+          </td>
+        </tr>
+        <tr>
+          <td>GT</td>
+          <td>15</td>
+          <td style="vertical-align: top;">Compare Values Greater Than<br>
+          </td>
+        </tr>
+        <tr>
+          <td>LE</td>
+          <td>16</td>
+          <td style="vertical-align: top;">Compare Values Less Than or
+            Equal<br>
+          </td>
+        </tr>
+        <tr>
+          <td>GE</td>
+          <td>17</td>
+          <td style="vertical-align: top;">Compare Values Greater Than
+            or Equal<br>
+          </td>
+        </tr>
+        <tr>
+          <td>IDIV</td>
+          <td>18</td>
+          <td style="vertical-align: top;">Integer division ("a\b")<br>
+          </td>
+        </tr>
+        <tr>
+          <td>DADD</td>
+          <td>19</td>
+          <td style="vertical-align: top;">Dotted Add<br>
+          </td>
+        </tr>
+        <tr>
+          <td>DSUB</td>
+          <td>20</td>
+          <td style="vertical-align: top;">Dotted Subtract</td>
+        </tr>
+        <tr>
+          <td>DMUL</td>
+          <td>21</td>
+          <td style="vertical-align: top;">Dotted Multiply</td>
+        </tr>
+        <tr>
+          <td>DDIV</td>
+          <td>22</td>
+          <td style="vertical-align: top;">Dotted Division</td>
+        </tr>
+        <tr>
+          <td>DMOD</td>
+          <td>23</td>
+          <td style="vertical-align: top;">Dotted Modulo</td>
+        </tr>
+        <tr>
+          <td>DAND</td>
+          <td>24</td>
+          <td style="vertical-align: top;">Dotted And</td>
+        </tr>
+        <tr>
+          <td>DOR</td>
+          <td>25</td>
+          <td style="vertical-align: top;">Dotted Or<br>
+          </td>
+        </tr>
+        <tr>
+          <td>DXOR</td>
+          <td>26</td>
+          <td style="vertical-align: top;">Dotted Xor</td>
+        </tr>
+        <tr>
+          <td>DIDIV</td>
+          <td>27</td>
+          <td style="vertical-align: top;">Dotted Integer Division<br>
+          </td>
+        </tr>
+        <tr>
+          <td>EXP</td>
+          <td>28</td>
+          <td style="vertical-align: top;">Exponent of Values<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    Unary Operators:<br>
+    <table border="1" cellpadding="2" cellspacing="2" width="100%">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Operator<br>
+          </td>
+          <td style="vertical-align: top;">Number<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td>NEG</td>
+          <td>0</td>
+          <td style="vertical-align: top;">Negate ("-a")<br>
+          </td>
+        </tr>
+        <tr>
+          <td>NOT</td>
+          <td>1</td>
+          <td style="vertical-align: top;">Bitwise Not ("~a")<br>
+          </td>
+        </tr>
+        <tr>
+          <td>LNOT</td>
+          <td>2</td>
+          <td style="vertical-align: top;">Logical Not ("!a")<br>
+          </td>
+        </tr>
+        <tr>
+          <td>POS</td>
+          <td>3</td>
+          <td style="vertical-align: top;">Positive ("+a")<br>
+          </td>
+        </tr>
+        <tr>
+          <td>UMUL</td>
+          <td>4</td>
+          <td style="vertical-align: top;">Unary Multiply ("*a")<br>
+          </td>
+        </tr>
+        <tr>
+          <td>UDIV</td>
+          <td>5</td>
+          <td style="vertical-align: top;">Unary Division ("/a")<br>
+          </td>
+        </tr>
+        <tr>
+          <td>UIDIV</td>
+          <td>6</td>
+          <td style="vertical-align: top;">Unary Integer Division ("\a")</td>
+        </tr>
+        <tr>
+          <td>UMOD</td>
+          <td>7</td>
+          <td style="vertical-align: top;">Unary Modulo ("%a")</td>
+        </tr>
+        <tr>
+          <td>UAND</td>
+          <td>8</td>
+          <td style="vertical-align: top;">Unary And ("&amp;a")</td>
+        </tr>
+        <tr>
+          <td>UOR</td>
+          <td>9</td>
+          <td style="vertical-align: top;">Unary Or ("|a")</td>
+        </tr>
+        <tr>
+          <td>UXOR</td>
+          <td>10</td>
+          <td style="vertical-align: top;">Unary Xor ("^a")</td>
+        </tr>
+        <tr>
+          <td>ULAND</td>
+          <td>11</td>
+          <td style="vertical-align: top;">Unary Logical And
+            ("&amp;&amp;a")</td>
+        </tr>
+        <tr>
+          <td>ULOR</td>
+          <td>12</td>
+          <td style="vertical-align: top;">Unary Logical Or ("||a")</td>
+        </tr>
+        <tr>
+          <td>ULXOR</td>
+          <td>13</td>
+          <td style="vertical-align: top;">Unary Logical Xor ("^^a")</td>
+        </tr>
+        <tr>
+          <td>INC</td>
+          <td>14</td>
+          <td style="vertical-align: top;">Increment Value<br>
+          </td>
+        </tr>
+        <tr>
+          <td>DEC</td>
+          <td>15</td>
+          <td style="vertical-align: top;">Decrement Value<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <br>
+    <h3>VM Modifier Flags</h3>
+    These flags are assigned to declarations, and may alter the behavior
+    of a declaration. Some flags depend on context.<br>
+    <br>
+    <br>
+    <table style="text-align: left; width: 871px; height: 620px;"
+      border="1" cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Name<br>
+          </td>
+          <td style="vertical-align: top;">Value<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PUBLIC<br>
+          </td>
+          <td style="vertical-align: top;">0x0001<br>
+          </td>
+          <td style="vertical-align: top;">Declaration has public
+            access.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PRIVATE<br>
+          </td>
+          <td style="vertical-align: top;">0x0002</td>
+          <td style="vertical-align: top;">Declaration has private
+            access.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PROTECTED<br>
+          </td>
+          <td style="vertical-align: top;">0x0004</td>
+          <td style="vertical-align: top;">Declaration has protected
+            access.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">STATIC<br>
+          </td>
+          <td style="vertical-align: top;">0x0008</td>
+          <td style="vertical-align: top;">Declaration is static.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">FINAL<br>
+          </td>
+          <td style="vertical-align: top;">0x0010</td>
+          <td style="vertical-align: top;">Declaration is final (may not
+            be changed).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">SUPER / SYNCHRONIZED</td>
+          <td style="vertical-align: top;">0x0020</td>
+          <td style="vertical-align: top;">Super or Synchronized is set.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">VOLATILE<br>
+          </td>
+          <td style="vertical-align: top;">0x0040</td>
+          <td style="vertical-align: top;">Declaration is volatile
+            (value may change without warning).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">TRANSIENT<br>
+          </td>
+          <td style="vertical-align: top;">0x0080</td>
+          <td style="vertical-align: top;">Declaration is transient (not
+            preserved during data serialization).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">NATIVE<br>
+          </td>
+          <td style="vertical-align: top;">0x0100</td>
+          <td style="vertical-align: top;">Declaration is native.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">INTERFACE<br>
+          </td>
+          <td style="vertical-align: top;">0x0200</td>
+          <td style="vertical-align: top;">Class is an interface.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ABSTRACT<br>
+          </td>
+          <td style="vertical-align: top;">0x0400</td>
+          <td style="vertical-align: top;">Class or method must be
+            overridden.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">STRICT / READONLY<br>
+          </td>
+          <td style="vertical-align: top;">0x0800</td>
+          <td style="vertical-align: top;">Declaration is read-only.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">BYREF<br>
+          </td>
+          <td style="vertical-align: top;">0x1000</td>
+          <td style="vertical-align: top;">Declaration is a reference
+            (pass-by-reference is used).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">DELEGATE<br>
+          </td>
+          <td style="vertical-align: top;">0x2000</td>
+          <td style="vertical-align: top;">Declaration is marked as
+            delegate.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">GETTER<br>
+          </td>
+          <td style="vertical-align: top;">0x4000</td>
+          <td style="vertical-align: top;">Method is a getter.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">SETTER<br>
+          </td>
+          <td style="vertical-align: top;">0x8000</td>
+          <td style="vertical-align: top;">Method is a setter.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">SIGNED / INTERNAL<br>
+          </td>
+          <td style="vertical-align: top;">0x00010000<br>
+          </td>
+          <td style="vertical-align: top;">Declaration represents a
+            signed or internal value.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">UNSIGNED<br>
+          </td>
+          <td style="vertical-align: top;">0x00020000<br>
+          </td>
+          <td style="vertical-align: top;">Declaration represents an
+            unsigned value (redundant with type).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">EXTERN<br>
+          </td>
+          <td style="vertical-align: top;">0x00040000<br>
+          </td>
+          <td style="vertical-align: top;">Declaration was marked
+            extern.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CONST / STRUCT<br>
+          </td>
+          <td style="vertical-align: top;">0x00080000<br>
+          </td>
+          <td style="vertical-align: top;">Declaration was marked as
+            const, or the class is a struct (or value-class).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">INLINE<br>
+          </td>
+          <td style="vertical-align: top;">0x00100000</td>
+          <td style="vertical-align: top;">Declaration was marked
+            inline.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">EVENT<br>
+          </td>
+          <td style="vertical-align: top;">0x00200000</td>
+          <td style="vertical-align: top;">Declaration was marked as an
+            event.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">WIDE<br>
+          </td>
+          <td style="vertical-align: top;">0x00400000</td>
+          <td style="vertical-align: top;">Declaration was marked as
+            wide.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">THREAD<br>
+          </td>
+          <td style="vertical-align: top;">0x00800000</td>
+          <td style="vertical-align: top;">Declaration was marked
+            thread.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">DYNAMIC<br>
+          </td>
+          <td style="vertical-align: top;">0x01000000</td>
+          <td style="vertical-align: top;">Declaration was marked
+            dynamic.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">STDCALL / WIN64<br>
+          </td>
+          <td style="vertical-align: top;">0x02000000</td>
+          <td style="vertical-align: top;">Function was marked as
+            stdcall or win64 (ABI hint).</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">CDECL / AMD64<br>
+          </td>
+          <td style="vertical-align: top;">0x04000000</td>
+          <td style="vertical-align: top;">Function was marked cdecl or
+            amd64 (ABI hint).</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">PROXY<br>
+          </td>
+          <td style="vertical-align: top;">0x08000000</td>
+          <td style="vertical-align: top;">Function or method was marked
+            as proxy (mutable by assignment).</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">LTLENDIAN<br>
+          </td>
+          <td style="vertical-align: top;">0x10000000</td>
+          <td style="vertical-align: top;">Declaration was marked as
+            little-endian (data-storage hint).</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">BIGENDIAN<br>
+          </td>
+          <td style="vertical-align: top;">0x20000000</td>
+          <td style="vertical-align: top;">Declaration was marked as
+            big-endian (data-storage hint).</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Unused)<br>
+          </td>
+          <td style="vertical-align: top;">0x40000000</td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Unused)</td>
+          <td style="vertical-align: top;">0x80000000</td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">DLLIMPORT<br>
+          </td>
+          <td style="vertical-align: top;">0x0000000100000000<br>
+          </td>
+          <td style="vertical-align: top;">Function was marked as
+            dllimport.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">DLLEXPORT<br>
+          </td>
+          <td style="vertical-align: top;">0x0000000200000000<br>
+          </td>
+          <td style="vertical-align: top;">Function was marked as
+            dllexport.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Unused)</td>
+          <td style="vertical-align: top;">0x0000000400000000<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ASYNC<br>
+          </td>
+          <td style="vertical-align: top;">0x0000000800000000<br>
+          </td>
+          <td style="vertical-align: top;">Function or method was marked
+            as async.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">THISCALL<br>
+          </td>
+          <td style="vertical-align: top;">0x0000001000000000<br>
+          </td>
+          <td style="vertical-align: top;">Method was marked thiscall
+            (ABI hint)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">TYPEDEF<br>
+          </td>
+          <td style="vertical-align: top;">0x0000002000000000</td>
+          <td style="vertical-align: top;">Declaration was marked as a
+            typedef (no storage or value, may be used as a type-name).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">SETUID<br>
+          </td>
+          <td style="vertical-align: top;">0x0000004000000000</td>
+          <td style="vertical-align: top;">Function or method was marked
+            as setuid.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">SETGID<br>
+          </td>
+          <td style="vertical-align: top;">0x0000008000000000</td>
+          <td style="vertical-align: top;">Function or method was marked
+            as setgid.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <h3>VM Access Flags</h3>
+    These flags define who can access a given resource.<br>
+    <br>
+    <br>
+    <table style=" text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Name<br>
+          </td>
+          <td style="vertical-align: top;">Value<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ACCESS_EXEC_ANY<br>
+          </td>
+          <td style="vertical-align: top;">0x0001<br>
+          </td>
+          <td style="vertical-align: top;">Execute Access (everyone)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ACCESS_WRITE_ANY<br>
+          </td>
+          <td style="vertical-align: top;">0x0002</td>
+          <td style="vertical-align: top;">Write Access (everyone)</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ACCESS_READ_ANY<br>
+          </td>
+          <td style="vertical-align: top;">0x0004</td>
+          <td style="vertical-align: top;">Read Access (everyone)</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Reserved)<br>
+          </td>
+          <td style="vertical-align: top;">0x0008</td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ACCESS_EXEC_GRP<br>
+          </td>
+          <td style="vertical-align: top;">0x0010</td>
+          <td style="vertical-align: top;">Execute Access (group)</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ACCESS_WRITE_GRP<br>
+          </td>
+          <td style="vertical-align: top;">0x0020</td>
+          <td style="vertical-align: top;">Write Access (group)</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ACCESS_READ_GRP<br>
+          </td>
+          <td style="vertical-align: top;">0x0040</td>
+          <td style="vertical-align: top;">Read Access (group)</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Reserved)</td>
+          <td style="vertical-align: top;">0x0080<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ACCESS_EXEC_OWN<br>
+          </td>
+          <td style="vertical-align: top;">0x0100</td>
+          <td style="vertical-align: top;">Execute Access (owner)</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ACCESS_WRITE_OWN<br>
+          </td>
+          <td style="vertical-align: top;">0x0200</td>
+          <td style="vertical-align: top;">Write Access (owner)</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ACCESS_READ_OWN<br>
+          </td>
+          <td style="vertical-align: top;">0x0400<br>
+          </td>
+          <td style="vertical-align: top;">Read Access (owner)</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">(Reserved)</td>
+          <td style="vertical-align: top;">0x0800<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ACCESS_MODEMASK<br>
+          </td>
+          <td style="vertical-align: top;">0x00000FFF<br>
+          </td>
+          <td style="vertical-align: top;">Access Mode Mask<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ACCESS_UIDMASK<br>
+          </td>
+          <td style="vertical-align: top;">0x003FF000<br>
+          </td>
+          <td style="vertical-align: top;">Access UserID Mask<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ACCESS_GIDMASK<br>
+          </td>
+          <td style="vertical-align: top;">0xFFC00000<br>
+          </td>
+          <td style="vertical-align: top;">Access GroupID Mask<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ACCESS_DEFAULT<br>
+          </td>
+          <td style="vertical-align: top;">0x00000755<br>
+          </td>
+          <td style="vertical-align: top;">RWX owner, R-X others.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">ACCESS_ROOTONLY<br>
+          </td>
+          <td style="vertical-align: top;">0x00000700<br>
+          </td>
+          <td style="vertical-align: top;">RWX owner, no access to
+            others.<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <h2>ByteCode Container Format</h2>
+    <br>
+    BGBScript ByteCode 1<br>
+    IL Container Format Largely reused.<br>
+    <br>
+    At this point, I will split the IL-bytecode and IL container format
+    into separate specs.<br>
+    <br>
+    <br>
+    Note:<br>
+    UVLI is a variable length integer format, which follows the
+    following pattern.<br>
+    <br>
+    <table style="text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Low<br>
+          </td>
+          <td style="vertical-align: top;">High<br>
+          </td>
+          <td style="vertical-align: top;">Pattern<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">0<br>
+          </td>
+          <td style="vertical-align: top;">127<br>
+          </td>
+          <td style="vertical-align: top;">0xxxxxxx<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">128<br>
+          </td>
+          <td style="vertical-align: top;">16383<br>
+          </td>
+          <td style="vertical-align: top;">10xxxxxx xxxxxxxx<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">16384<br>
+          </td>
+          <td style="vertical-align: top;">2097151<br>
+          </td>
+          <td style="vertical-align: top;">110xxxxx xxxxxxxx xxxxxxxx</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">2097152<br>
+          </td>
+          <td style="vertical-align: top;">268435455<br>
+          </td>
+          <td style="vertical-align: top;">1110xxxx xxxxxxxx xxxxxxxx
+            xxxxxxxx</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">268435456<br>
+          </td>
+          <td style="vertical-align: top;">34359738367<br>
+          </td>
+          <td style="vertical-align: top;">11110xxx xxxxxxxx xxxxxxxx
+            xxxxxxxx xxxxxxxx</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">34359738368<br>
+          </td>
+          <td style="vertical-align: top;">...<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">...<br>
+          </td>
+          <td style="vertical-align: top;">...<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    SVLI uses the same basic encoding as above, but encodes a sign into
+    the LSB.<br>
+    Thus, SVLI follows the pattern: 0, -1, 1, -2, 2, -3, 3, ...<br>
+    <br>
+    SZVLI<br>
+    Will be a variant of VLI, but will include the ability to encode -0.<br>
+    SZVLI will follow the pattern 0, -0, 1, -1, 2, -2, ...<br>
+    <br>
+    <br>
+    FVLI<br>
+    <br>
+    Will encode a floating-point number in a VLI-like format.<br>
+    Basic format will be:<br>
+    struct FVLI<br>
+    {<br>
+    SZVLI exp;&nbsp;&nbsp;&nbsp; //exponent<br>
+    SVLI frac;&nbsp;&nbsp;&nbsp; //fractional part<br>
+    }<br>
+    <br>
+    The value will be frac*(2^exp).<br>
+    <br>
+    An exponent of -0 indicates one of several special cases (encoded in
+    low 4 bits of frac):<br>
+    &nbsp;&nbsp;&nbsp; frac%16=0, encodes a literal value 0.0<br>
+    &nbsp;&nbsp;&nbsp; frac%16= +/- 2, encodes +/- NaN<br>
+    &nbsp;&nbsp;&nbsp; frac%16= +/- 4, encodes +/- Inf<br>
+    &nbsp;&nbsp;&nbsp; Other values are currently reserved.<br>
+    <br>
+    The values in any additional bits will be reserved for now.<br>
+    <br>
+    <br>
+    ByteCode opcodes will be encoded using a different scheme:<br>
+    <table style="text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Low<br>
+          </td>
+          <td style="vertical-align: top;">High<br>
+          </td>
+          <td style="vertical-align: top;">Pattern<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">0<br>
+          </td>
+          <td style="vertical-align: top;">191<br>
+          </td>
+          <td style="vertical-align: top;">00xxxxxx<br>
+            01xxxxxx<br>
+            10xxxxxx<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">192<br>
+          </td>
+          <td style="vertical-align: top;">12287<br>
+          </td>
+          <td style="vertical-align: top;">1100xxxx xxxxxxxx<br>
+            1101xxxx xxxxxxxx<br>
+            1110xxxx xxxxxxxx<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">12288<br>
+          </td>
+          <td style="vertical-align: top;">786431<br>
+          </td>
+          <td style="vertical-align: top;">111100xx xxxxxxxx xxxxxxxx<br>
+            111101xx xxxxxxxx xxxxxxxx<br>
+            111110xx xxxxxxxx xxxxxxxx<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">...<br>
+          </td>
+          <td style="vertical-align: top;">...<br>
+          </td>
+          <td style="vertical-align: top;">...<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    Rationale: I have long since been using the above encoding, and also
+    because it can be assumed that opcodes tend to be strongly clustered
+    around smaller values. This scheme allows a greater number of
+    single-byte opcodes at the cost of higher overhead for larger
+    numbers.<br>
+    <br>
+    In this spec, it will be assumed that bytecodes be referred to by
+    nmonic or by their opcode number, rather than by their byte
+    encoding.<br>
+    <br>
+    <table border="1" cellpadding="2" cellspacing="2" width="100%">
+      <tbody>
+        <tr>
+          <td>Name</td>
+          <td>Description</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">BYTE<br>
+          </td>
+          <td style="vertical-align: top;">8bit byte<br>
+          </td>
+        </tr>
+        <tr>
+          <td>WORD</td>
+          <td>16bit word, little endian<br>
+          </td>
+        </tr>
+        <tr>
+          <td>DWORD</td>
+          <td style="vertical-align: top;">32bit dword, little endian<br>
+          </td>
+        </tr>
+        <tr>
+          <td>QWORD</td>
+          <td style="vertical-align: top;">64bit dword, little endian<br>
+          </td>
+        </tr>
+        <tr>
+          <td>OWORD</td>
+          <td style="vertical-align: top;">128bit oword, little endian<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">FLOAT32<br>
+          </td>
+          <td style="vertical-align: top;">32bit IEEE float, little
+            endian<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">FLOAT64<br>
+          </td>
+          <td style="vertical-align: top;">64bit IEEE float, little
+            endian<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">FLOAT128<br>
+          </td>
+          <td style="vertical-align: top;">128bit IEEE float, little
+            endian<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    Literal Table entry 0 is NULL, and is not encoded.<br>
+    All literals will be identified by their table index.<br>
+    The image will be simply all entries in the literal table packed
+    end-to-end.<br>
+    <br>
+    Literal Table entry 1 is a special Root entry, and will indicate the
+    root or the header of the image.<br>
+    Currently, this entry will hold a VM bytecode block.<br>
+    <br>
+    <pre>struct Lump<br>{<br>UVLI type;<br>UVLI size;<br>byte data[size];<br>}<br><br>struct NullLump<br>{<br>UVLI type=0;<br>UVLI size=0;<br>} <br></pre>
+    <br>
+    <br>
+    The NullLump entry will terminate the literal table.<br>
+    <br>
+    struct CommentLump<br>
+    {<br>
+    UVLI type=0;<br>
+    UVLI size;<br>
+    byte data[size];<br>
+    }<br>
+    <br>
+    All lumps with (type=0) and (size!=0) will be non-entries, and will
+    not take up space in the literal table. They may not be referenced
+    by other entries, nor may they constitute structural values (image
+    data or metadata). Their role then will be similar to comments, and
+    they may store ancillary data (such as about the image). They may
+    begin with an ASCIIZ string, and any data following this string will
+    depend on the string (and a comment lump starting with 0 will be
+    padding). The default behavior will be to ignore them when loading
+    the image.<br>
+    <br>
+    Allow for a file-magic entry:<br>
+    struct FileMagicLump<br>
+    {<br>
+    UVLI type=0;<br>
+    UVLI size=5;<br>
+    byte data[size]="BSBC0";<br>
+    }<br>
+    <br>
+    If present, this entry will be a special case of a comment entry,
+    serving mostly to identify that the file is a BSVM ByteCode image.<br>
+    <br>
+    <br>
+    <br>
+    Lump Types are UTF8 Strings, also encoded as lumps.<br>
+    <br>
+    For now, lump type names are required to follow the "C identifier"
+    rules, in particular:<br>
+    Must begin with a letter or an underscore, and may only contain
+    numbers, letters, and underscores (all other characters are
+    presently reserved).<br>
+    <br>
+    The case of the first letter will also determine its semantics,
+    where an upper-case letter will indicate a "must understand" lump
+    (failure to understand such a lump should result in the image being
+    rejected). A lump with the first letter as lower-case or an
+    underscore is an optional lump, and is to be ignored if not
+    understood (although, if appropriate, a warning may be used to
+    notify the user of this fact).<br>
+    <br>
+    <br>
+    UTF8 Strings:<br>
+    <br>
+    Several lump types may contain strings encoded in the UTF-8 format.<br>
+    <br>
+    Strings may optionally encode the 0 byte, which will serve as a
+    string terminator.<br>
+    The 0 byte will not be a valid character in strings, however a 0
+    codepoint may be encoded by using an overlong encoding ("\xC0\x80").<br>
+    Codepoints &gt;= 65536 are also not allowed, and instead these
+    codepoints will be encoded as surrogate pairs.<br>
+    <br>
+    If a 0 byte is present, bytes may still appear after this byte and
+    are required to form valid UTF-8 codepoints with the final byte in
+    the lump being 0. However, these extended bytes are not a part of
+    the symbol's value. Currently, these are reserved for use as
+    extended lump-type information, and are not to be used with strings
+    intended as values.<br>
+    <br>
+    <br>
+    "_nullentry_t":<br>
+    A NullEnty will encode an unused literal index. Any data associated
+    with a NullEntry is to be ignored and should be zeroed.<br>
+    <br>
+    "_blob_t":<br>
+    Unstructured blob of bytes.<br>
+    <br>
+    "_symbol_t":<br>
+    Declares a literal symbol value (as a UTF-8 string).<br>
+    The lump for the string "_symbol_t" will just point at itself WRT
+    the type.<br>
+    <br>
+    This lump declares a symbol. A symbol is used as the name of an
+    item. Note that only one symbol is allowed for any given string
+    value, however, a symbol may have an empty name, which indicates
+    that the symbol is anonymous, and so will serve as an unnamed
+    handle. This feature is intended to allow for symbol scrubbing while
+    still allowing for the proper identification of the referenced
+    entities via a symbolic handle. Note that symbols which reference or
+    are referenced by external entities may not be scrubbed.<br>
+    <br>
+    Note that it is allowed for a symbol to be used as a literal value,
+    in which case it may not be safe to scrub a symbol even if it is not
+    related to external linkage, unless it can be determined that a
+    given symbol is never used in the context of external linkage.<br>
+    <br>
+    "_keyword_t":<br>
+    Declares a keyword (as a UTF-8 string).<br>
+    A keyword is essentially a special type of symbol. The difference
+    between keywords and symbols is that they will have a different
+    identity from an equivalent symbol despite having the same string,
+    and also that keywords may be treated differently by the language.<br>
+    <br>
+    "_string_t":<br>
+    Declares a literal string value (as a UTF-8 string).<br>
+    <br>
+    "_bool_t":<br>
+    Boolean value, byte encodes true/false status (true=non-zero,
+    false=zero). <br>
+    <br>
+    "_fixint_t":<br>
+    Fixnum/Fixint (constant integer value), stored as an SVLI.<br>
+    The exact size of a fixint is undefined here, and its designation as
+    a fixint may be considered a hint.<br>
+    The VM may promote a fixint to a boxed integer type if it will not
+    fit in a fixint on the target.<br>
+    <br>
+    "_int_t", "_long_t", "_int128_t":<br>
+    Constant boxed integer values, stored as an SVLI.<br>
+    The type will indicate the intended size and range of the value,
+    with int having a 32-bit size, long a 64-bit size, and int128 a
+    128-bit size.<br>
+    <br>
+    "_flonum_t":<br>
+    Flonum (float value), stored as a 32-bit IEEE float. <br>
+    <br>
+    "_float_t":<br>
+    Float, stored as a 32-bit IEEE float. <br>
+    <br>
+    "_double_t":<br>
+    Double, stored as a 64-bit IEEE float. <br>
+    <br>
+    "_float128_t":<br>
+    Float128, stored as a 128-bit IEEE float. <br>
+    <br>
+    "_list_t":<br>
+    List of items (cons cells), stores as UVLI lump indices. <br>
+    <br>
+    "_cons_t":<br>
+    List of items (cons cells), stores as UVLI lump indices, with the
+    last index as the tail. <br>
+    <br>
+    "_array_t":<br>
+    Array of items (lump indices), with the first index encoding the
+    element type signature. <br>
+    <br>
+    "svm_blk_bytecode_t":<br>
+    Raw glob of bytecode.<br>
+    <br>
+    "svm_blk_t":<br>
+    VM executable bytecode block.<br>
+    <br>
+    <pre>
+lump SVM_Block<br>{<br>UVLI version;		//version number<br>LumpIndex type;		//block return type (symbol/signature)<br>LumpIndex name;		//block name (symbol)<br>LumpIndex args;		//block arguments list (list of symbols or varinfo)<br>LumpIndex fargs;	//filtered arguments (optional)<br>LumpIndex exps;		//block expressions / AST (optional)<br>LumpIndex lit;		//block literal array<br>LumpIndex attr;		//attributes list<br>LumpIndex body;		//bytecode for block<br>UVLI szbody;		//size of body<br>UVLI flags;		//block modifier flags<br>UVLI access;		//block access flags<br>UVLI vmflags;		//VM behavior flags<br>}</pre>
+    <br>
+    "svm_varinfo_t":<br>
+    VM Variable Info block.<br>
+    <br>
+    <pre>lump SVM_VarInfo<br>{<br>UVLI version;		//version number<br>LumpIndex name;		//variable name<br>LumpIndex sig;		//type-signature string<br>LumpIndex flsig;	//flags-signature string<br>LumpIndex value;	//literal value<br>LumpIndex attr;		//attributes list<br>UVLI flags;		//variable modifier flags<br>UVLI access;		//variable access flags<br>}</pre>
+    <br>
+    <br>
+    "svm_overlayinfo_t":<br>
+    VM Overlay Info (block attribute).<br>
+    This attribute allows defining extensions to the basic ISA.<br>
+    Each overlay will have its own local opcode listing (starting at 0),
+    and will be mapped into the main ISA at a given location.<br>
+    Names will be unique strings used to identify the overlay, but will
+    still be required to follow similar naming rules as type-names.<br>
+    <br>
+    <pre>lump SVM_OverlayInfo<br>{<br>UVLI version;		//version number<br>LumpIndex name;		//overlay name<br>LumpIndex attr;		//attributes list<br>UVLI base;		//base opcode<br>UVLI count;		//opcode count<br>UVLI flags;		//overlay flags<br>}</pre>
+    <br>
+    <br>
+    <br>
+    <br>
+  </body>
+</html>

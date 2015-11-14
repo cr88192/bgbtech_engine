@@ -1,0 +1,153 @@
+General Info about the Metadata Cache
+
+At present, the metadata cache is filled via the compiler.
+Using 'ccLoadModule()' on relevant header files should be sufficient to keep it current.
+
+void ccBindKey(char *key, char *val);
+char *ccLookupKey(char *key);
+
+These will allow looking up and binding keys.
+Binding a key to a value of NULL will serve to delete the key.
+ccLookupKey will return NULL if the key does not exist.
+
+
+Structure of the Cache:
+The cache has a vaguely similar structure to that of the Windows System Registry, only that at present all keys and values are string based (ASCII or UTF-8).
+
+
+General Info
+
+All keys are accessed via a 'path' or 'key' (the term 'key' here will refer to the entire path+name combination, or to the specific key/value pair).
+
+The path will be heirarchical, and will consist of a sequence of names separated via '/'.
+
+Names may consist of the following characters in any order:
+'A'..'Z', 'a'..'z', '0'..'9', '_', '-', '.'
+
+As well as all graphical unicode codepoints (no control characters, reserved codepoints, surrogate pairs, ...). UTF-8 should be normalized as to not contain surrogate pairs (they should instead be represented as proper UTF-8 codepoints).
+
+GUIDs are also allowed, provided they are formatted in the usual manner:
+{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}
+
+This syntax may be later recognized and used internally to "compact" the GUID (such as base-85).
+
+
+For the time being, all other characters in the ASCII range will be disallowed.
+
+
+The path will be separated from the final key name via ':', for example: "foo/bar:baz".
+
+Similarly, the final key may be left off, in which case it will refer to the "default" key, which will be given the name "_".
+
+As a result "foo/bar/baz" and "foo/bar/baz:_" will refer to the same key/value pair.
+
+
+Conventions
+
+The path of a key will typically refer to the namespace or qualified-name of the item being described.
+
+In general, each path will use the default key to indicate the type of item described by this path. Similarly, any sub-paths are assumed to be valid members of the type contained by this path.
+
+A few types will be defined:
+	func, the item is an ordinary function;
+	var, the item is a variable (toplevel or namespace);
+	type, the item is a type definiton;
+	struct, the item is a structure;
+	union, the item is a union;
+	class, the item is a class;
+	interface, the item is an interface;
+	field, the item is a field;
+	method, the item is a method;
+	namespace, the item is a namespace.
+
+The following types will be regarded as Declaration types (DECL):
+	func, var, type, field, method.
+The following types will be regarded as Object types (OBJ):
+	struct, union, class, interface.
+
+Each type will have a collection of relevant keys:
+	sig (DECL), gives the type signature string;
+	flags (OBJ|DECL), gives the item flags;
+	field.# (OBJ), gives the name of a field for a paticular index;
+	method.# (OBJ), gives the name of a method for a paticular index;
+
+The primary reason for "field.#" and "method.#" is to allow the proper ordering of fields to be established (particularly important for struct and cclass, as this is needed to determine the physical layout of the data and vtables). The "#" in the case of the above refers to the index number, which is a set of consecutive integers starting at 0. No gaps are allowed, as the first non-assigned index will be assumed to be the last field or method of the object in question. Similarly, "field.#" and "method.#" will each have their own index space (so, an object will have both "field.0" and "method.0").
+
+Flags will be assigned according to an "extended JVM" convention, where the lower 16 bits are used for essentially the same modifiers as in the JVM.
+
+The present flag assignments are as such:
+BGBCC_TYFL_PUBLIC		0x0001	//global visibility
+BGBCC_TYFL_PRIVATE	0x0002	//local visibility (class)
+BGBCC_TYFL_PROTECTED	0x0004	//owning package/namespace
+BGBCC_TYFL_STATIC		0x0008	//depends on context
+BGBCC_TYFL_FINAL		0x0010	//immutable
+BGBCC_TYFL_SUPER		0x0020	//
+BGBCC_TYFL_SYNCHRONIZED	0x0020	//
+BGBCC_TYFL_VOLATILE	0x0040	//do not cache
+BGBCC_TYFL_TRANSIENT	0x0080	//
+BGBCC_TYFL_NATIVE		0x0100	//(JNI hook)
+BGBCC_TYFL_INTERFACE	0x0200	//is interface
+BGBCC_TYFL_ABSTRACT	0x0400	//class is can't be instanced
+BGBCC_TYFL_STRICT		0x0800	//
+
+BGBCC_TYFL_SIGNED		0x00010000	//integer is signed (redundant)
+BGBCC_TYFL_UNSIGNED	0x00020000	//integer is unsigned (redundant)
+BGBCC_TYFL_EXTERN		0x00040000	//variable is extern (ignore)
+BGBCC_TYFL_CONST		0x00080000	//var is const (may alias final)
+BGBCC_TYFL_INLINE		0x00100000	//(func) inline
+BGBCC_TYFL_VIRTUAL	0x00200000	//(class) method is virtual (opt)
+BGBCC_TYFL_PERSISTENT	0x00400000	//var refers to persistent store
+
+BGBCC_TYFL_FUNCTION	0x00800000	//is a function
+BGBCC_TYFL_CLASS		0x01000000	//is a class
+BGBCC_TYFL_STDCALL	0x02000000	//'__stdcall'
+BGBCC_TYFL_CDECL		0x04000000	//'__cdecl'
+BGBCC_TYFL_PROXY		0x08000000	//'__proxy'
+
+BGBCC_TYFL_PACKED		0x00010000 //overloaded, do not align members
+BGBCC_TYFL_GC		0x00020000 //overloaded, class is managed
+BGBCC_TYFL_NOGC		0x00100000 //overloaded, class is unmanaged
+
+
+Signature strings are not defined here.
+
+Note that if a piece of information is redundant or conflicts between the flags and sig strings, the sig strings are to take precedence. Similarly, the exact treatment of flags is not required to be consistent between programming languages (as a result, different languages may result in variations as to what flags will be set and clear and when). As such, the flags should be regarded as primarily informative.
+
+
+External Serialization
+
+The following external serialization is defined for the metadata cache format:
+;comment
+[path]
+key=value
+
+Where comments and blank lines are ignored, and whitespace is allowed prior to the start of a line's contents (this may be used for aesthetic purposes).
+Note: Comments are not ignored after key/value pairs, as all characters following '=' up until the next newline are assumed to be part of the key. As such, a comment would not be filtered, rather, it would be assumed to be part of the value.
+
+The '[path]' line will indicate the current path of any following pairs up until the next '[path]' line. Note that the path is fully qualified.
+
+There is no particular ordering imposed for either paths or for keys, however they should be arraged sequentially (paths and keys sorted by name, in ascending order by character and with shorter paths and keys preceding longer ones in the case where the former is a prefix of the latter).
+
+The reason for this ordering is that it will both improve "readability", as well as giving a point of reference for certain loader optimizations.
+
+Example:
+[foo]
+_=namespace
+[foo/bar]
+_=type
+flags=0
+sig=PXfoo/bar_s;
+[foo/bar_s]
+_=struct
+field.0=foobaz
+field.1=foobar
+field.2=foo
+[foo/bar_s/foo]
+_=field
+flags=0
+sig=i
+[foo/bar_s/foobar]
+...
+[foo/bar_s/foobaz]
+...
+

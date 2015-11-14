@@ -1,0 +1,80 @@
+Ideas for concurrency, as a library feature:
+Message Passing
+
+Take a position vaguely similar to MPI, albeit splitting the message, the sender, and the thread.
+
+Each message will have these properties:
+a stream (where this message is sent);
+a target (what this message applies to);
+and a message.
+
+For example:
+A worker based message dispatch, would be sent to a general stream (the work queue), with the target being the function or message handler, and the message being the payload.
+
+Additionally, each message would have a type (potentially implicit), indicating how the message is to be applied to the target.
+
+
+Each worker or serve to read and dispatch messages (or possibly, in some cases, to reroute messages).
+
+
+Idea: CSP
+
+Channels
+Each channel allows either sending or recieving a datum.
+Channels are statically typed (or, in this case, untyped).
+The nature of the channel itself will be opaque.
+
+Though possible, it will be considered invalid to pass more than one type along the same channel.
+
+
+dyt chnNew();
+
+void chnGetBuf(dyt chn, void *buf, int sz);
+void chnPutBuf(dyt chn, void *buf, int sz);
+void chnSendBuf(dyt chn, void *buf, int sz);
+
+Get and Put raw buffers (structs, ...).
+
+int chnGetInt(dyt chn);
+s64 chnGetLong(dyt chn);
+float chnGetFloat(dyt chn);
+double chnGetDouble(dyt chn);
+char *chnGetString(dyt chn);
+dyt chnGetDyt(dyt chn);
+void *chnGetPtr(dyt chn);
+
+void chnPutInt(dyt chn, int val);
+void chnPutLong(dyt chn, s64 val);
+void chnPutFloat(dyt chn, float val);
+void chnPutDouble(dyt chn, double val);
+void chnPutString(dyt chn, char *val);
+void chnPutDyt(dyt chn, dyt val);
+void chnPutPtr(dyt chn, void *val);
+
+void chnSendInt(dyt chn, int val);
+void chnSendLong(dyt chn, s64 val);
+void chnSendFloat(dyt chn, float val);
+void chnSendDouble(dyt chn, double val);
+void chnSendString(dyt chn, char *val);
+void chnSendDyt(dyt chn, dyt val);
+void chnSendPtr(dyt chn, void *val);
+
+Get and Put values to/into a channel.
+
+Get and Put will be syncronous, aka:
+Get will block on a channel until a matching Put occures;
+Put will block on a channel until a matching Get occures.
+
+Send will differ from Put primarily that send will be asyncronous.
+A send will return immediately, and continue on with execution, and will not wait for the reciever to get the message. Send will also buffer (unlike Put).
+
+int chnPollGetP(dyt chn);
+int chnPollPutP(dyt chn);
+Returns a value indicating whether at this moment a Get or Put is possible without blocking. This will not at all effect the state of the channel (and is thus subject to possible race conditions).
+
+int chnGetP(dyt chn);
+int chnPutP(dyt chn);
+Returns a value indicating whether at this moment a Get or Put is possible without blocking, and if it is possible, to 'reserve' the channel (aka: a Get or Put is to immediately follow, and is not subject to race conditions).
+
+Note that this will not check which Get or Put, so, race conditions may still occure if one is mixing syncronous and polling actions.
+

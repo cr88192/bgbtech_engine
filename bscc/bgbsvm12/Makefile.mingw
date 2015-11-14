@@ -1,0 +1,70 @@
+# ARCH_CFLAGS=-DBS1_JIT -DBS1_X86 -I../include
+ARCH_CFLAGS=-I../include
+CFLAGS=-g -pg -Iinclude -DBS1_INTERNAL -Werror-implicit-function-declaration $(ARCH_CFLAGS)
+# CFLAGS=-O3 -Iinclude -DBS1_INTERNAL -Werror-implicit-function-declaration $(ARCH_CFLAGS)
+
+ARCH_LDFLAGS=-L.. -lbgbdy -lbgbgc -lbgbasm -lzpack
+# LDFLAGS=-lreadline $(ARCH_LDFLAGS)
+LDFLAGS=$(ARCH_LDFLAGS)
+
+CC=gcc
+EXE=.exe
+
+
+OBJS=\
+	bs1/svm/bs1_ops.o \
+	\
+	bs1/svm/s_interp.o \
+	bs1/svm/s_compile.o \
+	bs1/svm/sc_reduce.o \
+	bs1/svm/sc_reverse.o \
+	bs1/svm/sc_index.o \
+	bs1/svm/sc_expr.o \
+	\
+	bs1/parse2/parse_token.o \
+	bs1/parse2/parse.o \
+	bs1/parse2/parse_expr2.o \
+	bs1/parse2/parse_stmt.o \
+	\
+	bs1/builtin/builtin_base.o \
+	bs1/builtin/builtin_math.o
+
+
+SRCS=$(OBJS:.o=.c)
+
+DEP_HDRS=\
+	include/bs1_ops.h \
+	include/bs1_auto.h
+
+LIBS=libbgbsvm.a
+APPS=bs1cc$(EXE)
+
+all: libs apps
+
+libs: $(LIBS)
+apps: $(APPS)
+includes: $(DEP_HDRS)
+
+
+autohead$(EXE): autohead.c
+	$(CC) -o autohead$(EXE) autohead.c
+
+genops$(EXE): genops.c
+	$(CC) -g -o genops$(EXE) genops.c
+
+include/bs1_auto.h: autohead$(EXE) $(SRCS)
+	./autohead$(EXE) $(SRCS) > include/bs1_auto.h
+
+include/bs1_ops.h: genops$(EXE) bs1_ops.txt
+	./genops$(EXE)
+
+
+libbgbsvm.a: $(DEP_HDRS) $(OBJS)
+	ar -cr libbgbsvm.a $(OBJS)
+
+
+bs1cc$(EXE): $(DEP_HDRS) bs1cc.o $(OBJS)
+	$(CC) $(CFLAGS) -o $@ bs1cc.o $(OBJS) $(LDFLAGS)
+
+clean:
+	rm -rf $(shell find -name \*.o)

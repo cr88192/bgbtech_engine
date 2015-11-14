@@ -1,0 +1,122 @@
+This will attempt to specify Signature strings as applied to data types. These may be used for variables, objects, functions or methods, ...
+
+Each type is intended to be parsable fairly easily, and where multiple types may be present in the same string (them being placed end to end). However, only the types in-sequence are specified, and this does not necessarily specify how these will be placed in memory.
+
+
+Qualifiers:
+	P*, pointer to type
+	R*, reference to type (invisible pointer)
+	C*, complex type (f,d,e,g,k)
+		C<digit>*, multidimensional dynamic array of type.
+	G*, imaginary type (f,d,e,g,k)
+	U*, extended type qualifier ('<name>;')
+
+	X*, compound type (struct or union), followed by '<name>;'.
+	T*, will specify a tagged type (deprecated).
+	W*, Wide pointer type
+	L*, reference to object type ('<classname>;')
+	Q*, dynamic array of type
+
+	A*, B*, used for basic extension types
+
+Basic Types:
+	a, signed char
+	b, bool
+	c, char
+	d, double
+	e, long double
+	f, float
+	g, 128-bit float
+	h, unsigned char/byte
+	i, int
+	j, unsigned int
+	k, hfloat (16-bit float)
+	l, long
+	m, unsigned long
+	n, 128-bit int
+	o, unsigned 128-bit int
+	p, (reserved)
+	q, (reserved)
+	r, variant (dynamicly typed reference)
+	s, short
+	t, unsigned short
+	u, custom type
+	v, void
+	w, wchar/short
+	x, long long
+	y, unsigned long long
+	z, ... (varargs, ...)
+
+Extended Types:
+	m64,	64-bit raw SSE vector
+	m128, 128-bit raw SSE vector
+	quat, quaternion
+	hquat, hyperbolic quaternion
+	vec2, 2-elem geometric vector
+	vec3, 3-elem geometric vector
+	vec4, 4-elem geometric vector
+	mat2, 2x2 matrix
+	mat3, 3x3 matrix
+	mat4, 4x4 matrix
+	v2f, 2-elem raw vector
+	v3f, 3-elem raw vector
+	v4f, 4-elem raw vector
+	v2d, 2-elem raw vector (double)
+
+
+
+If the type is followed by a number, it indicates that this is an array, with a comma allowing multidimensional arrays.
+
+Example:
+bar:PXfoo;4,4
+struct foo *bar[4][4];
+
+Example:
+Uvec4;16
+Array of 16 4-vectors.
+
+These arrays will specify memory with the specified physical layout.
+
+
+
+
+
+Object References
+'L<classname>;'
+
+These will refer to a specific object type, where classname will be the qualified class-name for the object in question.
+
+This will differ from 'PX<name>;' in that 'X<name>;' will refer to a specific and known structural type (the physical layout is thus known). Likewise, I says nothing about the pointer itself, or the nature of the pointed-to memory.
+
+On the other hand, 'r' specifies that a dynamically-typed reference is given, and thus the nature of the pointer and the kind of memory it can point to, however, 'r' does not specify anything about 'what' is referenced.
+
+'L<classname>;' will then specify that this is a dynamically typed reference (similar to 'r'), but will also specify that it is a reference to a specific abstract type (for example, the class with the given classname, or a class derived from this class), but will not specify the physical layout or concrete type of the referenced memory (unlike 'X' or 'PX'). In many cases, 'L' may be treated as simply a special case of 'r' (differing primarily in terms of assignment, where the implementation is strongly encouraged to ensure that the object being referenced is of the appropriate class, as otherwise things may be allowed to break).
+
+The exact structure and meaning of 'classname' will be internal to the object system, but the current idea is that it will represent a heirarchy of the form '[<name>/]*<class>'. For example, "myApp/custom/Foo".
+
+
+Dynamic Arrays
+'Q' will be similar to 'P' in spirit, but differ in practice similarly to how 'L' differs from 'PX'. 'Q' will specify that a reference is used to a dynamically-managed array holding members with the given type, but will specify neither the physical layout of the array nor of the referenced values.
+Presently this will be limited to reference based types, such as 'Q', 'L', and 'r'.
+
+For example: 'QQr' will be an array of arrays of references, and "QLmyApp/custom/Foo;" will be an array of objects.
+
+'C<order>*' will be overloaded for dynamic square arrays.
+For example, 'C2i' will be a 2D array of integers, or 'C3r' a 3D array of dynamic references.
+
+
+Functions and Methods
+Signature strings as applied to functions and methods will have a slightly modified notation, namely in that a specific designation of args and return type may be given.
+
+The basic layout will be:
+'(<args>)<ret>'.
+
+Examples:
+"int foo();" gives "()i";
+"double bar(int x, int y);" gives "(ii)d".
+
+This whole unit will be treated as a single type-unit, so, for example, a function-pointer could be specified like this:
+"P(d)i" for the type "int (*)(double)".
+
+The exact meaning or interpretation of this type will depend on the context of its usage.
+

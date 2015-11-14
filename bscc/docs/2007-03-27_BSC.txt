@@ -1,0 +1,14 @@
+BSC
+
+Will be a lang based around C99, but will offer a number of extensions intended for being used on the VM side to access both C and script functionality.
+
+The goal will be that it is backwards compatible with C, for the most part at least. If avoidable existing code should not have to be modified.
+
+
+BSC will define some additional types:
+elem		Dynamically typed value;
+object	Prototype object
+list		List of cons cells
+...
+
+Conversions to/from these types will be handled automatically if possible.

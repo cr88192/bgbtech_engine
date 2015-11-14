@@ -1,0 +1,15 @@
+package bsvm.lang;
+
+public abstract class ClassLoader extends Object
+{
+protected ClassLoader()
+	{}
+protected Class defineClass(byte[] data, int offset, int length)
+	{ return null; }
+protected Class findSystemClass(String name)
+	{ return null; }
+protected abstract Class loadClass(String name, boolean resolve);
+protected void resolveClass(Class c)
+	{}
+
+}

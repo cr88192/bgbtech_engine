@@ -1,0 +1,4 @@
+$flags window
+$shader bgb_glass
+$fparm 0 0.05
+

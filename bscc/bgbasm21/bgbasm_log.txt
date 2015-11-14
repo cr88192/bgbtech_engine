@@ -1,0 +1,8 @@
+ASM: Bad Opcode Args, str reg reg
+ASM: Bad Opcode Args, str reg reg
+ASM: Bad Opcode Args, str reg reg
+ASM: Bad Opcode Args, str reg reg
+ASM: Bad Opcode Args, str reg reg
+ASM: Bad Opcode Args, str reg reg
+ASM: Bad Opcode Args, str reg reg
+ASM: Bad Opcode Args, str reg reg

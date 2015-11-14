@@ -1,0 +1,82 @@
+BGB Serial Data Representation
+
+This format will describe a binary means of serializing data either for storage or for network transmission.
+
+This will derive both from signature strings, and also from BGBMDF.
+
+
+In general, multi-byte integers and floats will be in Little-Endian ordering. No alignment will be used.
+
+a, b, c, h: encoded as a raw byte
+
+d, e, f, g: encoded as expected (64, 128, 32, and 128 bit floats).
+e is to be encoded the same as g (128 bit float).
+
+k: 16-bit float, encoded as a 16-bit float
+
+s, t, w: 16-bit short/ushort/wchar_t
+i, j: 32-bit integers (int/uint)
+
+l, m: will be encoded as 64-bit integers
+x, y: 64-bit integers (long-long / u-long-long)
+
+n, o: 128-bit integers (int128/uint128)
+
+
+r: will be serialized in-place
+
+P* will give an unspecified serialization (not allowed, passed as a handle, ...).
+L* will be serialized to an object handle (encoded as a variable-length integer).
+
+
+VLI (Variable Length Integer) based types:
+
+Vi, Vj: int/uint encoded as a VLI (int=svli, uint=uvli)
+Vl, Vm: long/ulong encoded as a VLI.
+Vx, Vy: int64/uint64 encoded as a VLI.
+Vn, Vo: int128/unint128 encoded as a VLI.
+
+these types will only exist for the external serialization, and will be mapped to their appropriate base types.
+
+
+Handles will be encoded as UVLI values, of which 0 will indicate NULL.
+
+Vs will be special, and indicate a serialized string.
+Vt will indicate a serialized symbol.
+Vk will indicate a keyword.
+
+String values will be encoded as a glob of UTF-8 characters and terminated by a 0. An 0 may be embedded in a string through the special sequence '\xC0\x80' (UTF-8, 2-byte 0).
+
+
+Q* may be either serialized or passed as a handle.
+
+SerialArray {
+svli len;
+if(len>=0)SigType items[len];
+	else uvli handle;
+}
+
+Len gives the array length, but -1 is used to indicate an array given as a reference.
+If handle is 0, then this is a NULL array.
+If handle is 1, this will encode a zero-length array.
+
+
+The 'r' type will be serialized via a SerialVariant.
+
+SerialVariant {
+string sig;
+data...
+}
+
+However, this will specify the layout of the data, rather than the in-system type. For example, that 'Vi' is a fixnum or 'f' is a flonum can only be gained via inference...
+
+'V(...)<type>'
+
+Will be reserved as a special syntax for complex-meta types, where '...' gives the physical serialization of the data, and 'type' identifies the conceptual meta-type produced.
+
+'U<name>;' will be used as the magic for built-in types, and 'L<name>;' as an indication that an object is to be produced using the appropriate constructor.
+
+'V(Vs)Ljava/lang/String;'
+
+Takes the serial string and uses it to create an instance with the class 'java.lang.String'.
+

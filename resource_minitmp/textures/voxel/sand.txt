@@ -1,0 +1,5 @@
+$flags voxel
+
+$vox_img_top_scale 4
+$vox_img_side_scale 4
+$vox_img_bot_scale 4

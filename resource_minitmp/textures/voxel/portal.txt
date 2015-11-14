@@ -1,0 +1,9 @@
+$flags voxel alpha fluid_portal warpst nowateroverlay
+$vox_TouchEvent BTSV_Voxel_TouchEvent_Portal
+
+$vox_vlight_val 6
+$vox_vlight_clr violet
+
+$vox_img_top_scale 2
+
+$video textures/voxel/portal.avi

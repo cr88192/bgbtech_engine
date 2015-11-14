@@ -1,0 +1,309 @@
+New API for array handling.
+
+
+Many functions will use a type suffix, where the suffix is one of:
+sb, type is a signed byte;
+ub, type is an unsigned byte;
+ss, type is a signed short;
+us, type is an unsigned short;
+i, type is int;
+l, type is long (64 bits);
+f, type is float;
+d, type is double;
+r, type is a dynamically typed reference;
+p, type is a raw pointer.
+
+These refer to the basic physical representation, not to the entire type, and so these may be used with functions that actually have different types as per the signatures, but which represent their data in these ways.
+
+
+
+dycArray dycNewArray(char *sig, int cnt);
+
+Create a new 1D array with a given element type and a given number of elements.
+
+int dycArrayP(dyt p);
+
+Returns non-zero if p is an array.
+
+
+int dycArraySigP(dyt p, char *sig);
+
+Returns non-zero if p is an array with a given type signature.
+
+
+void *dycArrayV(dycArray arr);
+int dycArraySz(dycArray arr);
+char *dycArraySig(dycArray arr);
+int dycArrayStep(dycArray arr);
+
+Get certain properties from an array.
+V returns a pointer to the array's payload;
+Sz returns the number of items in the array.
+Sig returns the type signature.
+Step returns the given item size (derived from signature).
+
+
+void *dycArrayIdxPtr(dycArray arr, int idx);
+
+Returns a pointer to a given index within the array.
+Returns NULL if the index is not within the array bounds.
+
+
+void *dycArrayIdxPtrBC(dycArray arr, int idx);
+
+Similar to the prior form, but rather than returning NULL, this form will throw a BoundsCheck exception.
+
+
+int dycGetArraysb(dycArray arr, int idx);
+int dycGetArrayub(dycArray arr, int idx);
+int dycGetArrayss(dycArray arr, int idx);
+int dycGetArrayus(dycArray arr, int idx);
+int dycGetArrayi(dycArray arr, int idx);
+s64 dycGetArrayl(dycArray arr, int idx);
+float dycGetArrayf(dycArray arr, int idx);
+double dycGetArrayd(dycArray arr, int idx);
+dyt dycGetArrayr(dycArray arr, int idx);
+void *dycGetArrayp(dycArray arr, int idx);
+
+void dycSetArraysb(dycArray arr, int idx, int val);
+void dycSetArrayub(dycArray arr, int idx, int val);
+void dycSetArrayss(dycArray arr, int idx, int val);
+void dycSetArrayus(dycArray arr, int idx, int val);
+void dycSetArrayi(dycArray arr, int idx, int val);
+void dycSetArrayl(dycArray arr, int idx, s64 val);
+void dycSetArrayf(dycArray arr, int idx, float val);
+void dycSetArrayd(dycArray arr, int idx, double val);
+void dycSetArrayr(dycArray arr, int idx, dyt val);
+void dycSetArrayp(dycArray arr, int idx, void *val);
+
+Get or Set a given array element. The type is required to match with the type defined in the array, and idx is required to be within the array bounds. Otherwise, the behavior is undefined.
+
+
+int dycGetArraySsb(dycArray arr, int idx);
+int dycGetArraySub(dycArray arr, int idx);
+int dycGetArraySss(dycArray arr, int idx);
+int dycGetArraySus(dycArray arr, int idx);
+int dycGetArraySi(dycArray arr, int idx);
+s64 dycGetArraySl(dycArray arr, int idx);
+float dycGetArraySf(dycArray arr, int idx);
+double dycGetArraySd(dycArray arr, int idx);
+dyt dycGetArraySr(dycArray arr, int idx);
+void *dycGetArraySp(dycArray arr, int idx);
+
+void dycSetArraySsb(dycArray arr, int idx, int val);
+void dycSetArraySub(dycArray arr, int idx, int val);
+void dycSetArraySss(dycArray arr, int idx, int val);
+void dycSetArraySus(dycArray arr, int idx, int val);
+void dycSetArraySi(dycArray arr, int idx, int val);
+void dycSetArraySl(dycArray arr, int idx, s64 val);
+void dycSetArraySf(dycArray arr, int idx, float val);
+void dycSetArraySd(dycArray arr, int idx, double val);
+void dycSetArraySr(dycArray arr, int idx, dyt val);
+void dycSetArraySp(dycArray arr, int idx, void *val);
+
+These are similar to the above, but differ primarily in that they apply appropriate bounds checks, and will throw a BoundsCheck exception if the access is not safe.
+
+dycArray dycNewArrayM(char *sig, int ord, int *sz);
+dycArray dycNewArrayM2(char *sig, int s0, int s1);
+dycArray dycNewArrayM3(char *sig, int s0, int s1, int s2);
+dycArray dycNewArrayM4(char *sig, int s0, int s1, int s2, int s3);
+...
+
+Creates a multi-array (a set of nested arrays), where ord is the number of dimensions (currently allowed values are between 2 and 9). The sz argument gives the size along each dimension.
+
+Note that 'sig' refers to the final leaf type, and not to the array as a whole.
+
+
+
+dycArrayN dycNewArrayN(char *sig, int ord, int *sz);
+
+Creates a square array, where ord is the number of dimensions (currently allowed values are between 2 and 9). The sz argument gives the size along each dimension.
+
+
+int dycArrayNP(dyt p);
+int dycArrayNSigP(dyt p, char *sig);
+int dycArrayNSigOrdP(dyt p, char *sig, int ord);
+
+Check that the array is a square array with the given properties.
+
+
+void *dycArrayNV(dycArrayN arr);
+int *dycArrayNSz(dycArrayN arr);
+int dycArrayNCnt(dycArrayN arr);
+int dycArrayNOrd(dycArrayN arr);
+char *dycArrayNSig(dycArrayN arr);
+int dycArrayNStep(dycArrayN arr);
+
+Get certain properties from a square array.
+V returns a pointer to the array's payload;
+Sz returns the number of items in the array (for each dimension).
+Cnt returns the total number of items (for all dimensions).
+Ord returns the order of the array.
+Sig returns the type signature.
+Step returns the given item size (derived from signature).
+
+
+
+void *dycArrayNIdxPtr(dycArrayN arr, int *idx)
+
+Returns a pointer to the given index in a square array.
+Will return NULL if idx is outside the array's bounds.
+
+
+void *dycArrayNIdxPtrBC(dycArrayN arr, int *idx)
+
+Returns a pointer to the given index in a square array.
+Will throw BoundsCheck if idx is outside the array's bounds.
+
+
+int dycGetArrayNsb(dycArrayN arr, int *idx);
+int dycGetArrayNub(dycArrayN arr, int *idx);
+int dycGetArrayNss(dycArrayN arr, int *idx);
+int dycGetArrayNus(dycArrayN arr, int *idx);
+int dycGetArrayNi(dycArrayN arr, int *idx);
+s64 dycGetArrayNl(dycArrayN arr, int *idx);
+float dycGetArrayNf(dycArrayN arr, int *idx);
+double dycGetArrayNd(dycArrayN arr, int *idx);
+dyt dycGetArrayNr(dycArrayN arr, int *idx);
+void *dycGetArrayNp(dycArrayN arr, int *idx);
+
+void dycSetArrayNsb(dycArrayN arr, int *idx, int val);
+void dycSetArrayNub(dycArrayN arr, int *idx, int val);
+void dycSetArrayNss(dycArrayN arr, int *idx, int val);
+void dycSetArrayNus(dycArrayN arr, int *idx, int val);
+void dycSetArrayNi(dycArrayN arr, int *idx, int val);
+void dycSetArrayNl(dycArrayN arr, int *idx, s64 val);
+void dycSetArrayNf(dycArrayN arr, int *idx, float val);
+void dycSetArrayNd(dycArrayN arr, int *idx, double val);
+void dycSetArrayNr(dycArrayN arr, int *idx, dyt val);
+void dycSetArrayNp(dycArrayN arr, int *idx, void *val);
+
+Get or Set the given item in a square array.
+Like with flat arrays, these do not apply safety checks.
+
+
+int dycGetArrayNSsb(dycArrayN arr, int *idx);
+int dycGetArrayNSub(dycArrayN arr, int *idx);
+int dycGetArrayNSss(dycArrayN arr, int *idx);
+int dycGetArrayNSus(dycArrayN arr, int *idx);
+int dycGetArrayNSi(dycArrayN arr, int *idx);
+s64 dycGetArrayNSl(dycArrayN arr, int *idx);
+float dycGetArrayNSf(dycArrayN arr, int *idx);
+double dycGetArrayNSd(dycArrayN arr, int *idx);
+dyt dycGetArrayNSr(dycArrayN arr, int *idx);
+void *dycGetArrayNSp(dycArrayN arr, int *idx);
+
+void dycSetArrayNSsb(dycArrayN arr, int *idx, int val);
+void dycSetArrayNSub(dycArrayN arr, int *idx, int val);
+void dycSetArrayNSss(dycArrayN arr, int *idx, int val);
+void dycSetArrayNSus(dycArrayN arr, int *idx, int val);
+void dycSetArrayNSi(dycArrayN arr, int *idx, int val);
+void dycSetArrayNSl(dycArrayN arr, int *idx, s64 val);
+void dycSetArrayNSf(dycArrayN arr, int *idx, float val);
+void dycSetArrayNSd(dycArrayN arr, int *idx, double val);
+void dycSetArrayNSr(dycArrayN arr, int *idx, dyt val);
+void dycSetArrayNSp(dycArrayN arr, int *idx, void *val);
+
+Likewise, but with bounds checking.
+
+
+void *dycArray2IdxPtr(dycArrayN arr, int y, int x);
+void *dycArray2IdxPtrBC(dycArrayN arr, int y, int x);
+
+int dycGetArray2sb(dycArrayN arr, int y, int x);
+int dycGetArray2ub(dycArrayN arr, int y, int x);
+int dycGetArray2ss(dycArrayN arr, int y, int x);
+int dycGetArray2us(dycArrayN arr, int y, int x);
+int dycGetArray2i(dycArrayN arr, int y, int x);
+s64 dycGetArray2l(dycArrayN arr, int y, int x);
+float dycGetArray2f(dycArrayN arr, int y, int x);
+double dycGetArray2d(dycArrayN arr, int y, int x);
+dyt dycGetArray2r(dycArrayN arr, int y, int x);
+void *dycGetArray2p(dycArrayN arr, int y, int x);
+
+void dycSetArray2sb(dycArrayN arr, int y, int x, int val);
+void dycSetArray2ub(dycArrayN arr, int y, int x, int val);
+void dycSetArray2ss(dycArrayN arr, int y, int x, int val);
+void dycSetArray2us(dycArrayN arr, int y, int x, int val);
+void dycSetArray2i(dycArrayN arr, int y, int x, int val);
+void dycSetArray2l(dycArrayN arr, int y, int x, s64 val);
+void dycSetArray2f(dycArrayN arr, int y, int x, float val);
+void dycSetArray2d(dycArrayN arr, int y, int x, double val);
+void dycSetArray2r(dycArrayN arr, int y, int x, dyt val);
+void dycSetArray2p(dycArrayN arr, int y, int x, void *val);
+
+int dycGetArray2Ssb(dycArrayN arr, int y, int x);
+int dycGetArray2Sub(dycArrayN arr, int y, int x);
+int dycGetArray2Sss(dycArrayN arr, int y, int x);
+int dycGetArray2Sus(dycArrayN arr, int y, int x);
+int dycGetArray2Si(dycArrayN arr, int y, int x);
+s64 dycGetArray2Sl(dycArrayN arr, int y, int x);
+float dycGetArray2Sf(dycArrayN arr, int y, int x);
+double dycGetArray2Sd(dycArrayN arr, int y, int x);
+dyt dycGetArray2Sr(dycArrayN arr, int y, int x);
+void *dycGetArray2Sp(dycArrayN arr, int y, int x);
+
+void dycSetArray2Ssb(dycArrayN arr, int y, int x, int val);
+void dycSetArray2Sub(dycArrayN arr, int y, int x, int val);
+void dycSetArray2Sss(dycArrayN arr, int y, int x, int val);
+void dycSetArray2Sus(dycArrayN arr, int y, int x, int val);
+void dycSetArray2Si(dycArrayN arr, int y, int x, int val);
+void dycSetArray2Sl(dycArrayN arr, int y, int x, s64 val);
+void dycSetArray2Sf(dycArrayN arr, int y, int x, float val);
+void dycSetArray2Sd(dycArrayN arr, int y, int x, double val);
+void dycSetArray2Sr(dycArrayN arr, int y, int x, dyt val);
+void dycSetArray2Sp(dycArrayN arr, int y, int x, void *val);
+
+Access a square array, as before, but these are specialized for 2D square arrays.
+
+
+void *dycArray3IdxPtr(dycArrayN arr, int z, int y, int x);
+void *dycArray3IdxPtrBC(dycArrayN arr, int z, int y, int x);
+
+int dycGetArray3sb(dycArrayN arr, int z, int y, int x);
+int dycGetArray3ub(dycArrayN arr, int z, int y, int x);
+int dycGetArray3ss(dycArrayN arr, int z, int y, int x);
+int dycGetArray3us(dycArrayN arr, int z, int y, int x);
+int dycGetArray3i(dycArrayN arr, int z, int y, int x);
+s64 dycGetArray3l(dycArrayN arr, int z, int y, int x);
+float dycGetArray3f(dycArrayN arr, int z, int y, int x);
+double dycGetArray3d(dycArrayN arr, int z, int y, int x);
+dyt dycGetArray3r(dycArrayN arr, int z, int y, int x);
+void *dycGetArray3p(dycArrayN arr, int z, int y, int x);
+
+void dycSetArray3sb(dycArrayN arr, int z, int y, int x, int val);
+void dycSetArray3ub(dycArrayN arr, int z, int y, int x, int val);
+void dycSetArray3ss(dycArrayN arr, int z, int y, int x, int val);
+void dycSetArray3us(dycArrayN arr, int z, int y, int x, int val);
+void dycSetArray3i(dycArrayN arr, int z, int y, int x, int val);
+void dycSetArray3l(dycArrayN arr, int z, int y, int x, s64 val);
+void dycSetArray3f(dycArrayN arr, int z, int y, int x, float val);
+void dycSetArray3d(dycArrayN arr, int z, int y, int x, double val);
+void dycSetArray3r(dycArrayN arr, int z, int y, int x, dyt val);
+void dycSetArray3p(dycArrayN arr, int z, int y, int x, void *val);
+
+int dycGetArray3Ssb(dycArrayN arr, int z, int y, int x);
+int dycGetArray3Sub(dycArrayN arr, int z, int y, int x);
+int dycGetArray3Sss(dycArrayN arr, int z, int y, int x);
+int dycGetArray3Sus(dycArrayN arr, int z, int y, int x);
+int dycGetArray3Si(dycArrayN arr, int z, int y, int x);
+s64 dycGetArray3Sl(dycArrayN arr, int z, int y, int x);
+float dycGetArray3Sf(dycArrayN arr, int z, int y, int x);
+double dycGetArray3Sd(dycArrayN arr, int z, int y, int x);
+dyt dycGetArray3Sr(dycArrayN arr, int z, int y, int x);
+void *dycGetArray3Sp(dycArrayN arr, int z, int y, int x);
+
+void dycSetArray3Ssb(dycArrayN arr, int z, int y, int x, int val);
+void dycSetArray3Sub(dycArrayN arr, int z, int y, int x, int val);
+void dycSetArray3Sss(dycArrayN arr, int z, int y, int x, int val);
+void dycSetArray3Sus(dycArrayN arr, int z, int y, int x, int val);
+void dycSetArray3Si(dycArrayN arr, int z, int y, int x, int val);
+void dycSetArray3Sl(dycArrayN arr, int z, int y, int x, s64 val);
+void dycSetArray3Sf(dycArrayN arr, int z, int y, int x, float val);
+void dycSetArray3Sd(dycArrayN arr, int z, int y, int x, double val);
+void dycSetArray3Sr(dycArrayN arr, int z, int y, int x, dyt val);
+void dycSetArray3Sp(dycArrayN arr, int z, int y, int x, void *val);
+
+Access a square array, as before, but these are specialized for 3D square arrays.
+
+

@@ -1,0 +1,31 @@
+SDK_BASE = C:/nacl_sdk/pepper_23
+SDK_TOOL_BASE = $(SDK_BASE)/toolchain/win_x86_glibc
+
+export PATH := $(TOOLS_BASE):$(SDK_TOOL_BASE)/bin:$(PATH)
+
+export BUILD:=.
+export MKSUF:=.nacl
+export LIBSUF:=.na
+export DLLSUF:=.so
+export EXESUF:=.nexe
+export OBJSUF:=.no
+export BINSUF:=.exe
+export DLLPF:=lib
+
+export TARG=i686-nacl
+
+export CC=$(TARG)-gcc
+export CC_OUTEXE=$(CC) -o 
+export CC_OUTDLL=$(CC) -shared -o 
+export CC_OUTOBJ=$(CC) -c -o 
+export CC_OUTTOOL=gcc -o 
+
+export EXE := .nexe
+export BIN := .exe
+export O := .no
+export A := .na
+
+ARCH=$(shell autohead$(BINSUF) -idarch)
+
+include Makefile.inc
+

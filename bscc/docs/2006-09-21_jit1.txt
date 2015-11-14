@@ -1,0 +1,99 @@
+The JIT compiler will have several parts:
+Convert VM bytecode to Low-Level Ops;
+Convert Low-Level Ops to machine code.
+
+
+The Low-Level Ops interface will be a wrapper interface to allow the arch to be targeted in a slightly more arch neutral manner.
+
+The Low-Level Opcode system will be called LLO.
+
+The arch presented will be a stack machine. At the discretion of the native code generator, the top arg may be either on the stack or in a register.
+
+Types:
+Int Long Pointer Float
+
+Dynamic values may also be handled, but at this level in general will be treated as a special case of integers.
+
+Calls to the opcode generator will need to indicate the type. Maybe this can be tacked onto the opcode (likely more useful if an external serialization is considered).
+
+ADD_I
+	pop eax
+	pop edx
+	add eax, edx
+	push eax
+SUB_I
+MUL_I
+DIV_I
+AND_I
+OR_I
+XOR_I
+
+ADD_L
+	pop eax
+	pop edx
+	pop ecx
+	add eax, ecx
+	pop ecx
+	adc edx, ecx
+	push edx
+	push eax
+
+
+Assembler Functions 
+
+ASM_Context *ASM_NewContext();
+void ASM_OutByte(ASM_Context *ctx, int i);
+void ASM_OutWord(ASM_Context *ctx, int i);
+void ASM_OutDWord(ASM_Context *ctx, int i);
+void ASM_Sib(ASM_Context *ctx, int rm, int sc, int idx);
+void ASM_ModRM(ASM_Context *ctx, int reg, int rm, int sc, int idx, int disp);
+void ASM_OutOpStr(ASM_Context *ctx, char *s);
+void ASM_OutOpStrReg(ASM_Context *ctx, char *s, int reg);
+void ASM_OutOpStrImm(ASM_Context *ctx, char *s, int imm);
+void ASM_OutOpStrMem(ASM_Context *ctx, char *s,int breg, int ireg, int sc, int disp);
+void ASM_OutOpStrRegReg(ASM_Context *ctx, char *s, int r0, int r1);
+void ASM_OutOpStrRegImm(ASM_Context *ctx, char *s, int reg, int imm);
+void ASM_OutOpStrRegMem(ASM_Context *ctx, char *s, int reg,int breg, int ireg, int sc, int disp);
+int ASM_OpSingleP(int i);
+int ASM_OpRegP(int i, int reg);
+int ASM_OpImmP(int i, int imm);
+int ASM_OpMemP(int i);
+int ASM_OpRegRegP(int i, int r0, int r1);
+int ASM_OpRegImmP(int i, int reg, int imm);
+int ASM_OpRegMemP(int i, int reg);
+int ASM_OpMemRegP(int i, int reg);
+void ASM_OutOpSingle(ASM_Context *ctx, int op);
+void ASM_OutOpReg(ASM_Context *ctx, int op, int reg);
+void ASM_OutOpImm(ASM_Context *ctx, int op, int imm);
+void ASM_OutOpMem(ASM_Context *ctx, int op, int reg, int disp);
+void ASM_OutOpMem2(ASM_Context *ctx, int op,int breg, int ireg, int sc, int disp);
+void ASM_OutOpRegReg(ASM_Context *ctx, int op, int r0, int r1);
+void ASM_OutOpRegImm(ASM_Context *ctx, int op, int reg, int imm);
+void ASM_OutOpRegMem(ASM_Context *ctx, int op, int reg, int breg, int disp);
+void ASM_OutOpMemReg(ASM_Context *ctx, int op, int reg, int breg, int disp);
+void ASM_OutOpRegMem2(ASM_Context *ctx, int op, int reg,int breg, int ireg, int sc, int disp);
+void ASM_OutOpMem2Reg(ASM_Context *ctx, int op, int reg,int breg, int ireg, int sc, int disp);
+void ASM_OutOpRegPtr(ASM_Context *ctx, int op, int reg, void *ptr);
+void ASM_OutOpPtrReg(ASM_Context *ctx, int op, void *ptr, int reg);
+
+void ASM_MovRegReg(ASM_Context *ctx, int r0, int r1);
+void ASM_MovRegImm(ASM_Context *ctx, int reg, int imm);
+void ASM_MovRegMem(ASM_Context *ctx, int reg, int breg, int disp);
+void ASM_MovMemReg(ASM_Context *ctx, int reg, int breg, int disp);
+void ASM_MovRegPtr(ASM_Context *ctx, int reg, void *ptr);
+void ASM_MovPtrReg(ASM_Context *ctx, void *ptr, int reg);
+void ASM_PushReg(ASM_Context *ctx, int reg);
+void ASM_PushImm(ASM_Context *ctx, int imm);
+void ASM_PushMem(ASM_Context *ctx, int breg, int disp);
+void ASM_PushPtr(ASM_Context *ctx, void *ptr);
+void ASM_PopReg(ASM_Context *ctx, int reg);
+void ASM_PopImm(ASM_Context *ctx, int imm);
+void ASM_PopMem(ASM_Context *ctx, int breg, int disp);
+void ASM_PopPtr(ASM_Context *ctx, void *ptr);
+void ASM_EmitLabel(ASM_Context *ctx, char *name);
+void ASM_EmitGoto(ASM_Context *ctx, char *name, int ty);
+void ASM_EmitJmpLabel(ASM_Context *ctx, char *name);
+void ASM_EmitJmpCondLabel(ASM_Context *ctx, int cond, char *name);
+void ASM_EmitJmpLabelE(ASM_Context *ctx, char *name);
+void ASM_EmitJmpLabelNE(ASM_Context *ctx, char *name);
+void ASM_EmitCallLabel(ASM_Context *ctx, char *name);

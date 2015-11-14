@@ -1,0 +1,2 @@
+$flags lightvol
+$lightvol 2.0

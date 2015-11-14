@@ -1,0 +1,45 @@
+Random:
+
+Fantasy themed ideas (for plot crazy glue or similar).
+
+A fantasy world exists, either in cyberspace, or in an alternate universe.
+This fantasy world has Elves, Dwarfs, Halflings, Orcs, an evil-overlord, ...
+
+Magic:
+"Light Magic" vs "Dark Magic";
+light magic users consume light magic, producing dark-magic as a byproduct;
+dark magic users consume dark magic, producing light-magic as a byproduct;
+normally they don't mix well, and are prone to neutralize;
+magical dead-zones exist, where there is very little magical energy.
+
+Light/Dark is not the same as good/evil, but may often lean this way.
+
+Races:
+High-Elves, strong magic, light-magic users;
+Dark-Elves, strong magic, dark-magic users;
+Halflings, weak magic, light-magic users;
+Dwarves, weak magic, dark-magic users;
+Humans, weak magic, neutral magic alignment (native to dead-zones);
+Orcs/Trolls/..., medium magic, dark-magic users;
+
+Monsters, variable, typically dark-magic users;
+Mystical Beasts, variable, typically light-magic users;
+Animals, weak magic, variable (Cows/Sheep light, Pigs/Goats dark).
+
+Core Races:
+Elves (High/Dark) and Humans, same basic race, but adapted to different environments (lack of elf triats in humans being due to their adaptation to dead-zones).
+Halflings and Dwarves: same race, but adapted to light and dark environments, like elves, they need magic to thrive, but don't generally use magic directly.
+
+
+Industry:
+
+Orcs, run a burger chain:
+They have halflings in a giant cave raising cattle and growing crops (with "the eye" as the sun), supplying most of the meat and bread;
+The major use of these farms, however, is to convert light magic into dark magic.
+
+Dwarves: make lots of weapons and armor.
+
+Elves: Make most magical implements, including "bags of holding".
+
+Have a giant monster hidden under ground, which they use as a giant dark to light magic converter. The magic from the monster is used to power their bag-of-holding network, as each bag is linked essentially to a storage chamber located underground, not too far from the monster. This is because they need large amounts of magic to hold all of the portals open.
+

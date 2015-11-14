@@ -1,0 +1,165 @@
+Dynamic Type System:
+
+GC type names beginning with '_' will be reserved for the implementation.
+
+General Conventions:
+void *dy<type>(...);
+Will create an object of the type.
+
+int dy<type>p(void *p);
+Will return a nonzero value if p is the correct type.
+
+<type> dy<type>v(void *p);
+Will get the value for a specific type.
+
+char *dygettype(void *p);
+int dytypep(void *p, char *ty);
+Will get or check the type of an object.
+These will exist as there is no strict requirement that some of these builtin types will have the same GC type (or even necessarily be on-heap). In these cases, this function may need to do additional work in order to locate the correct type string.
+
+If only a single type needs to be checked, the provided specialized predicate functions will be viewed as the preferred means.
+
+
+Note:
+For Complex Types (such as arrays, conses, and hashes), it is acceptable to use any kind of pointer (it does not have to be from this type system, or necessarily even the GC). However, that is the intent that this be used mostly for dynamic types and GC'ed data, and other GC restrictions apply.
+
+
+Primitive Types: int; long; long long; float; double; fcomplex; dcomplex.
+Basic Types: string; wstring; symbol; keyword.
+Complex Types: array; cons; hash.
+
+...
+
+so:
+void *dyint(int v);
+void *dylong(long v);
+void *dylonglong(long long v);
+void *dyfloat(float v);
+void *dydouble(double v);
+void *dyfcomplex(float _Complex v);
+void *dydcomplex(double _Complex v);
+
+char *dystring(char *s);
+char *dysymbol(char *s);
+char *dykeyword(char *s);
+wchar_t *dywstring(wchar_t *s);
+
+...
+
+int dyintp(void *p);
+int dylongp(void *p);
+int dylonglongp(void *p);
+
+...
+
+int dyintv(void *p);
+long dylongv(void *p);
+long long dylonglongv(void *p);
+
+...
+
+
+Integer Type Disjointness
+It will not be required that integer types be disjoint.
+As a result, a value created with dyint() may still return a nonzero value with dylonglongp().
+
+Likewise, a value created by dylonglong() may be nonzero with dyintp() in the case where dylonglong() was called with a value sufficiently small to fit into an integer.
+
+As such, these predicates will mostly serve to indicate range requirements, rather than a strict type.
+
+Float and Double
+These types will also not be, entirely, disjoint.
+The main difference will be accuracy, where float will be less accurate than double (2008-06-05: Float is now a flonum type, currently a 24-bit floating point format). Double will generally be allocated on the heap.
+
+Real will exist as a psuedo type, which will be true for values decodable as a  double.
+
+int dyrealp(void *p);
+double dyrealv(void *p);
+
+
+Arithmetic
+Functions will be provided for arithmetic on dynamic types.
+
+void *dyadd(void *a, void *b);
+void *dysub(void *a, void *b);
+void *dymul(void *a, void *b);
+void *dydiv(void *a, void *b);
+void *dymod(void *a, void *b);
+void *dyand(void *a, void *b);
+void *dyor(void *a, void *b);
+void *dyxor(void *a, void *b);
+
+void *dyneg(void *a);
+void *dynot(void *a);
+
+int dyeqp(void *a, void *b);
+int dyneqp(void *a, void *b);
+int dygtp(void *a, void *b);
+int dyltp(void *a, void *b);
+int dygep(void *a, void *b);
+int dylep(void *a, void *b);
+
+int dytruep(void *a);
+int dyfalsep(void *a);
+
+
+String:
+Will behave much the same as a GC'ed dynamicly typed strdup.
+Additionally, string merging may be performed, so the result should be regarded as immutable.
+
+Symbol and Keyword:
+These will be 2 different types, but each has essentially the same semantics.
+
+Beyond the different types, they will have another important property:
+Any 2 calls to the same function with the same input string produces the same output (allowing '==' to be used for equality checks).
+
+
+Array:
+
+void *dyarray(int cnt);
+Create an array with initially cnt pointers.
+
+void *dyarrayidx(void *p, int idx);
+void dyarraysetidx(void *p, int idx, void *q);
+Get and Set array index.
+
+void **dyarrayv(void *p);
+Get a 'void **' array representing the contents of the array.
+
+
+Cons:
+
+void *dycons(void *car, void *cdr);
+void *dycar(void *p);
+void *dycdr(void *p);
+
+void *dycaar(void *p);
+void *dycadr(void *p);
+void *dycdar(void *p);
+void *dycddr(void *p);
+(up to 4 levels).
+...
+
+void *dylist1(void *a);
+void *dylist2(void *a, void *b);
+void *dylist3(void *a, void *b, void *c);
+void *dylist4(void *a, void *b, void *c, void *d);
+void *dylist5(void *a, void *b, void *c, void *d, void *e);
+void *dylist6(void *a, void *b, void *c, void *d, void *e, void *f);
+(up to 10).
+...
+
+
+Hash:
+
+void *dyhash(int cnt);
+Create a hash with initially cnt slots in the table. Calling this with '0' will specify that the implementation use a default value.
+
+void *dyhashget(void *p, char *s);
+void *dyhashset(void *p, char *s, void *q);
+Get or Set the value associated with a given string index.
+Set will return the previous value (or NULL).
+
+The hash may be resized if it is full.
+
+

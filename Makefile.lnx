@@ -1,0 +1,10 @@
+BUILD=.
+MKSUF=.lnx
+LIBSUF=.a
+DLLSUF=.so
+EXESUF=.elf
+
+ARCH=$(shell autohead$(EXESUF) -idarch)
+
+include Makefile.inc
+

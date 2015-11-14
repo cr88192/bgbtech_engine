@@ -1,0 +1,132 @@
+The Compiler, Interpreter, and VM
+
+	Compilers are a technology that has really changed fairly little.
+
+	In traditional compilation, we call the compiler, with the source files, and get some object files. We link these object files, with a few libs, and get the binary. Then we run the binary, and we have the app.
+	This app, until it is recompiled, is essentially constant. Every time it is run, it itself is the same, its inner workings being as if they were set in stone. And what if something needs to change? Well then, the programmer uses his power of the text editor, makes a change, and the process is repeated.
+	No one doubts this, but people frequently struggle with this problem. People often want more from the code than it can seem to deliver. Yet, we have all these "new" technologies, claiming to ease all these woes, be it faster or more convinient app development, or increased portability, and so on.
+	But, always it is the same old process as before: edit, compile, link, and run. Now, suddenly, we have this same process, but with a new language, and a new level of abstraction: the VM.
+	The VM is the new OS. Actually, as it would seem, there are actually far more VMs than there are OSs. Some liberation from the OS gained at the cost of being chained to the VM.
+	And to make the problem worse, the VM is often only a crude immitation of the OS. Each with its own set of APIs and 'frameworks', some things it does, but everything else silently being hidden away because no one has wrapped it up in a convinient package for this particular VM.
+	Instead of the OS, we have the FFI. All this code, wrapped again, and everything old is new again, as a person is like "oh wow, now I can use OpenGL!" (nevermind the great twisting and horrors that they had to do internally to make glTexImage2D and glReadPixels work with the languages' typesystem).
+	And for the next language and the next VM, it is all done just the same again. A neverending cycle. Now, some would say, "well, why not make everyone use the same VM?", well then, how are we then any different from where we started?...
+	After all, we can write in C or C++, and maybe use things like OpenGL and SDL (and modularize any OS-dependent stuff in small controlled areas), and, oh wow, the code will compile and run on both Windows AND Linux!...
+	And, not only this, but we don't need to wait for anyone to wrap a damn thing...
+
+	But, oh wait, our is app is still a solid block. What if we actually need it to do something that wasn't written into the app to begin with?
+	Well, then re-enters the VM, but in a different form. Now it is something anywhere from a handy little library to an app-consuming monolith, much like a fungus trying to spread its fibers and gradually completely consume anything in which it comes in contact.
+	But, as programmers, we tend to tolerate this. For this meager addition to our flexibility, we tolerate these things.
+	And what of the scripts? Well then, we have yet another language, each VM its own language, incompatible with every other, and code that can't be reused elsewhere apart from nearly completely destroying and remaking it.
+
+	And what always seems to be the solution to these problems? A new VM and a new language!... Yes, that is it, because the Foo VM sucks, we go and write the Bar VM, and not everyone likes that one either, what with its lacking codebase, lame performance, and crap API support and all, and just as soon as people start complaining, someone goes and writes Baz...
+
+	And what do I say? Well, I say we allready have a VM, let's call it x86 for now, which has this amazing power: it runs code at full speed. Not only this, but code running in this VM can call into all these existing libraries, with no FFI at all...
+	And not only this, but this VM can also run all sorts of languages, be them static or dynamic, or representing data one way or another.
+	Now, for this particular VM, a few languages are particularly popular. Why not just call them C and C++.
+
+	But, then someone may say "but, hey, wait, we already have these!", and I am like "yes", and they say "but then we have to compile and link", and I say "yes and no".
+
+	Then we are back to compiler technology. Our Good Ol' C compiler has a very limited mode of operation: Compile Source; produce Object. Our Good Ol' linker is just the same: Take Objects, Produce Binary.
+
+	I say, this is where the problem lies. These walls need to be broken, such as just as soon as we have new code, it is compiled, and when it is compiled, it is linked and run. But, here is where it is different: the app image is no longer inflexible and static, but is fluid and can relink itself as needed, not when the program is no longer running, but when it is still active. As such, the image is no longer some fixed entity set up by the linker, but is fluid, in much the same way as the heap (and we manage the generation and usage of code much the same as we currently manage our memory).
+
+	Just sit and imagine coding in a world where there was no malloc. All we would have is these large fixed-size arrays, having to precisely balance how many items might reasonably exist in memory, with how much memory we have, and what is the best way to partition said memory, along with other concerns. And what if a computer has a larger or smaller amount of memory, well then, we have to go and edit the source, and recompile for this new machine with its new memory footprint (and then people are left to develop and market new and innovative ways to more effectively make use of all these fixed-size arrays). After all, most people, for most projects, can get by just fine within the machines' limits and with these fixed-size arrays.
+	This would be a horror, but I say that the current situation is similar. We have this problem, and one person will say that there is no problem, that this is unnecessary, and others will flog off all manner of VM.
+
+	Now, I will not claim that there is not any hope. Projects like LLVM and TinyC seem to be a step in the right direction IMO.
+
+	But, just the same, I am off in my own world, writing my own thing...
+
+
+	The Issue of Language Features
+
+	Some variation exists, but this is primarily only in dynamic, often interpreted languages, which will usually run in some manner or another of VM, and are thus typically isolated from the details of the underlying OS.
+
+	Often, the languages are designed with certain assumtions, usually that the developer is:
+	A newbie;
+	A little kid being taught in a class;
+	A trogladyte retard.
+
+	And so we design all these languages, designing things to try to hide away anything that could be potentially confusing, and hide away anything that could potentially allow the programmer to shoot themselves. We often assume that what we need is lots of standard APIs, and building nearly any possible feature into the core language.
+
+	I say, this is wrong. I say, the purpose of a language is power, and if power opens up holes for the programmer to shoot themselves, so be it.
+
+	But, what about high level features, such as garbage collection, or lexical scopting and closures, dynamic typing, ... ?
+	I say, these features are also good, but one needs to weigh the costs.
+
+
+	What is the big deal with always worrying about C and C++?
+
+	It is my perspective that at this time, the majority of the existant codebase, and especially operating systems and core libraries, are written in one of these 2 languages. This is especially true for much of anything running on the base OS, as opposed to within a VM (as is typically the case for languages like Java and C#), which I regard as an essentially very different approach to the 'future'.
+
+
+	What About Non-C Languages?
+
+	Yes, there are plenty of languages worth note, that are very different than C, C++, and their various offspring. Many have various good and notable points, but very often these are paired with crippling weaknesses.
+
+
+Lisp and Scheme
+
+	These languages are notable in that they have some very novel features.
+	One is 'eval', which allows arbitrary code to be constructed and run dynamically.
+	These languages often involve far more developed and advanced macro facilities than found in other languages. These may include a more direct approach, where a macro has full access to a language and thus rewrites its input to its output in nearly any way it sees fit.
+	Another is hygenic macros, which serve to perform more abstract transformations (usually closer to that of pattern matching and replacement with implicit variable renaming).
+	Another feature is a very centralized and flexible design for the typesystem, which through a small set of basic types allows a wide variety of structures to be created and expressed.
+	Code, and syntax, is data. In fact, the syntax typically maps directly to the languages' typesystem, and so it is fairly easy to parse, alter, and print code absent any real guesswork (this goes along nicely with both macros and the use of eval).
+
+	However, this family of languages is fundamnetally different in some ways from the rest of computing (it is very difficult to effectively integrate with more mainstream languages).
+	The syntax is both a blessing and a curse. For all its elegance and flexibility, it is a damn horror to type and look at, and not even the most basic arithmetic expressions are free from this curse.
+
+Smalltalk
+
+	This language has a special power, in that it shows some interesting ways to view computation, objects, and programming.
+	In fact, unlike in nearly every other major programming language, you typically don't edit source files. Nearly everything is done through the GUI, and as opposed to maintaining a mass of source files, data files, and so on, we maintain an "image", which is incrementally tweaked into whatever we want it to be, and we can generally observe and modify nearly anything at any time.
+	Likewise, smalltalk systems are generally "build free", in that changes can be made to nearly anything, absent having to recompile any changes to see them take effect. This is usually because the entire compilation process is internalized in the implementation, all hidden just behind the GUI.
+
+	Additionally, the GUI can be very flexible (for example, in Squeak and Morphic), compared with that of a more traditional GUI. For example, as opposed to having some small, opaque, and predefined set of 'widgets' which are assembled into windows and forms, nearly any object can be made renderable and connected with the UI, and can exhibit a variety of appearances and interface styles (this is much unlike 'skinning', where the same basic widgets are used but with some graphical overlay).
+
+	However, not all is well. Typically, code, when it is seen, uses a syntax very unfammiliar to a typical programmer, and code structure can be non obvious if one is not fammiliar with the code it depends on, and so on.
+	Likewise, there is little isolation between code using the GUI and the GUI's implementation, causing various problems (such as difficulty with or inability to use the "native" GUI of the OS, which may be important for some apps).
+
+
+Self
+
+	This language, unlike the former, has never even really been adopted by anyone. This language was an experimental offshoot of Smalltalk, and as such is not much more than a 'proof of concept'.
+
+	Its main feature, IMO, is actually its object system. In general, it discards the whole notion of classes and instances, along with traditional notions of 'scope', instead using cloning and delegation.
+	As such, any object can be unique, having its own slots, and its own methods. Any shared slots or behavior (what would usually be part of a class, a 'static' member, ...), is instead handled through the use of delegation (each object may hold references to other objects, where if something is not known to it, it will searched for in the objects it delegates to).
+	Self allows multiple delegates per object, and allows the graph to be cyclic, and otherwise discards toplevel and lexical scoping (these are different from some other languages, such as JavaScript, which only allows a single delegate, 'parent', does not allow cycles, and uses a toplevel and lexical scoping model).
+
+
+	Garbage Collection
+
+	For example, in the case where nearly all the libraries are written and compiled natively in C and C++, do we want or need a unified garbage collection scheme?
+	One must realize, these libraries will typically use malloc, and 'new' is often little more than a wrapper for malloc. So, unless we can modify malloc proper (say, by modifying the C RTL proper and requiring everything to be built for this new RTL), we are generally SOL when it comes to unified garbage collection.
+	That does not mean, however, that our app, or language can't have garbage collection. For example, it is common practice in C to remake parts of the system APIs, usually fairly close to the originals, and to use these APIs internally.
+	So, what do we do? Well, we provide our own allocator, and be certain to use the CORRECT one when allocating and freeing data, and using some care when handling data.
+	Sadly, there does not seem to be any kind of "one size fits all" when it comes to garbage collection. For example, in C land, it is most common to use conservative collection.
+	Now, this is not bad, after all, conservative collection usually poses minimal impact on the structure of the apps being developed. Often, data may be treated the same as, or almost the same as if it were being allocated from a traditional malloc.
+
+However, there are a few major costs with conservative GC:
+	It is necessary to scan all reachable memory that may potentially contain pointers, making this naturally slower;
+	It is more necessary to verify that the pointers actually point into heap (and one is never sure if a value actually is a pointer);
+	If handled poorly, there is a risk of resurrecting dead pointers (such as if failing to initialize memory either in the collector or allocator, ...);
+	More advanced teqniques, such as relocating memory, or performing reference counting (useful in reducing unecessary GC passes), are typically not possible;
+	...
+
+
+	So, for a language with native garbage collection, it is usually better to implement precise GC, but then we have a scheme which is often awkward to handle from C code, which is then faced with having to register/unregister roots, potentially maintain reference counts, and deal with an opaque reference type (for example, a tagged-integer based reference), and dealing with a typesystem fundamentally different than that used by the language proper.
+	The result may be code heavily filled with the use of preprocessor macros, and in some cases barely even resembling C anymore (for example: 'LIST3S("foo", KEYSYM("x"), ADD(SYM("x"), FIXNUM(1)))').
+
+	The problem isn't really nice, but is far from unworkable.
+
+
+	Dynamic Types
+
+	These, have both good and bas points, especially when one considers integration with C land.
+
+
+	Prototype Objects
+
+	However, in such a system, there is no well defined notion of an object's type (given there are no classes, it is not meaningful to ask about this, instead one resorts to less formal approaches). Some of the controls of class/instance systems are absent, making some uncomfortable. It is not really cleanly possible to seperate the objects, code, and data (somewhat complicating implementing serialized data storage).
+	Mainstream languages don't do this, and many developers are likely to be rather confused.

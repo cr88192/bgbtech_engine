@@ -1,0 +1,29 @@
+$dung_vox air				  0   0   0
+$dung_vox brick				128   0   0
+$dung_vox stone_brick		 64  64  64
+$dung_vox mobspawner		255   0 255
+$dung_vox torch				255 255   0
+$dung_vox ladder			128 128   0
+
+$dung_allow_nx	hall_x_stonebrick
+$dung_allow_nx	hall_x_brick
+$dung_allow_nx	break_nx_stonebrick
+$dung_allow_nx	break_nx_brick
+
+$dung_allow_px	hall_x_stonebrick
+$dung_allow_px	hall_x_brick
+$dung_allow_px	break_px_stonebrick
+$dung_allow_px	break_px_brick
+
+$dung_allow_ny	hall_y_stonebrick
+$dung_allow_ny	hall_y_brick
+$dung_allow_ny	break_ny_stonebrick
+$dung_allow_ny	break_ny_brick
+
+$dung_allow_py	hall_y_stonebrick
+$dung_allow_py	hall_y_brick
+$dung_allow_py	break_py_stonebrick
+$dung_allow_py	break_py_brick
+
+$dung_allow_pz	ladderfloor_xy_mixbrick
+$dung_allow_pz	laddershaft_mixbrick

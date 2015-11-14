@@ -1,0 +1,478 @@
+Idea:
+BGB Generic Byte Code
+
+Goal:
+Bytecode format capable of effectively handling both statically and dynamically typed languages without seriously compromising either;
+Be reasonably flexible and extensible;
+Allow both reasonable performance for interpreters and try to leave room for JIT.
+
+
+Bytecode Files
+
+u1/u2/u4/u8: unsigned int, big-endian
+s1/s2/s4/s8: signed int, big-endian
+f4/f8: float/double, big-endian
+
+uvli: unsigned variable-length-integer
+0-127				0xxxxxxx
+128-16383			10xxxxxx xxxxxxxx
+16384-2097151		110xxxxx xxxxxxxx xxxxxxxx
+2097152-268435455		1110xxxx xxxxxxxx xxxxxxxx xxxxxxxx
+268435456-34359738367	11110xxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
+
+2^35 - 2^42			111110xx xxxxxxxx(x5)
+2^42 - 2^49			1111110x xxxxxxxx(x6)
+2^49 - 2^56			11111110 xxxxxxxx(x7)
+2^56 - 2^63			11111111 0xxxxxxx xxxxxxxx(x7)
+2^63 - 2^70			11111111 10xxxxxx xxxxxxxx(x8)
+
+svli: signed variable length integer
+Will use the same basic encoding as uvli but will fold the sign into the LSB and offset negatives by 1.
+ 0=>0		-1=>1		 1=>2		-2=>3		2=>4	...
+
+string: uvli index into string table
+
+bgbc_file {
+u4 magic;			//'BGBC'
+u4 magic2;			//version, file type
+strings_info strings;	//strings table
+attr_info cpool;		//constant pool
+attr_info attr;		//module attributes
+...
+}
+
+strings_info {
+uvli size;
+u1 chars[size];
+}
+
+Strings are represented as UTF-8 and are null-terminated.
+Byte 0 is always 0, and string offset 0 is always an empty string.
+
+
+attr_info {
+uvli count;
+attr const[count];
+}
+
+Main constant pool. Note that the table is offset by 1, so that the constants are represented in the range of '1..count' rather than '0..count-1'. Entry 0 will be reserved as as a special NULL slot.
+
+
+attr {
+string tag;		//tag, string-table index
+uvli size;		//data size
+u1 data[size];	//const data
+}
+
+Tag, data:
+"ConstInt"		s4
+"ConstLong"		s8
+"ConstFloat"	f4
+"ConstDouble"	f8
+"ConstUTF8"		string
+
+"ConstNameType" {
+string name;
+string type;
+}
+
+"ConstClass" {
+string name;
+}
+
+"ConstSlotRef" {
+uvli class_id;
+uvli nametype_id;
+}
+
+"ConstMethodRef" {
+uvli class_id;
+uvli nametype_id;
+}
+
+...
+
+
+Next Idea:
+
+TLV structure for whole file.
+
+item {
+uvli tag;
+uvli size;
+u1 data[size];
+}
+
+Tag bits:
+Bit 0(LSB): 0=string-ref, 1=literal
+
+Literal:
+Bit 1: 0=data, 1=group
+Bit 2: 0=ignorable/default, 1=must-understand
+Bit 3: Reserved, 0
+
+String tags will use a special ending character:
+none: ignorable, data
+':': ignorable, group
+'!': must-understand, data
+'#': must-understand, group
+
+
+Bytecode Structure
+
+Bytecode will include both statically and dynamically typed ops.
+A fixed-size stack will be allocated per function/method, and will be initially empty on function entry.
+A space will be provided for locals, and will initially hold arguments as well.
+
+The stack and locals will be statically typed.
+
+Types:
+i	int
+l	long
+f	float
+d	double
+a	abstract/reference
+p	pointer
+
+
+Bytecode Layout:
+0x00-0xDF (0-223) are encoded directly;
+0xE0-0xEF (224-239) encode 2-byte opcodes (256-4095)
+0xF0-0xFF (240-255) encode 3-byte opcodes (4096-1048575)
+
+Basic line layout is:
+<opname> <opnum> [args [flow]]
+Where args is a string identifying what immediately follows the opcode. 
+This is one of:
+	b	8-bit char
+	w	16-bit short
+
+	c	constant pool, 8-bit
+	d	constant pool, 16-bit
+	e	constant pool, 16-bit, 64-bit
+
+	l	local, 8-bit
+	a	address
+	A	address (32-bit)
+	C	class
+	M	method
+	N	interface method
+	F	field
+
+If args is absent, it is assumed that the opcode is coded by itself.
+
+Flow:	in*=out*
+	vv=v	Consumes 2 values and outputs a value
+
+Flow types:
+	a/b/c, reference;
+	i/j/k, int;
+	f/g/h, float;
+	l/m/n, long;
+	d/e/o, double;
+	p/q/r, pointer;
+
+	x/y/z, generic (narrow item);
+	u/v/w, generic (wide item).
+
+
+nop			0 -	=	//do nothing
+aconst_null		1 -	=a	//push NULL
+iconst_m1		2 -	=i	//int const -1
+iconst_0		3 -	=i	//
+iconst_1		4 -	=i	//
+iconst_2		5 -	=i	//
+iconst_3		6 -	=i	//
+iconst_4		7 -	=i	//
+iconst_5		8 -	=i	//
+lconst_0		9 -	=l	//
+lconst_1		10 -	=l	//
+fconst_0		11 -	=f	//
+fconst_1		12 -	=f	//
+fconst_2		13 -	=f	//
+dconst_0		14 -	=d	//
+dconst_1		15 -	=d	//
+
+bipush		16 b	=i	//push 8-bit value
+sipush		17 w	=i	//push 16-bit value
+ldc			18 c	=x	//load constant (8-bit index)
+ldc_w			19 d	=x	//load constant (16-bit index)
+ldc2_w		20 e	=u	//load 64-bit constant (16-bit idx)
+
+iload			21 l	=i	//load local
+lload			22 l	=l	//
+fload			23 l	=f	//
+dload			24 l	=d	//
+aload			25 l	=a	//
+
+iload_0		26 -	=i	//load local (fixed index)
+iload_1		27 -	=i	//
+iload_2		28 -	=i	//
+iload_3		29 -	=i	//
+lload_0		30 -	=l	//
+lload_1		31 -	=l	//
+lload_2		32 -	=l	//
+lload_3		33 -	=l	//
+fload_0		34 -	=f	//
+fload_1		35 -	=f	//
+fload_2		36 -	=f	//
+fload_3		37 -	=f	//
+dload_0		38 -	=d	//
+dload_1		39 -	=d	//
+dload_2		40 -	=d	//
+dload_3		41 -	=d	//
+aload_0		42 -	=a	//
+aload_1		43 -	=a	//
+aload_2		44 -	=a	//
+aload_3		45 -	=a	//
+
+iaload		46 -	ai=j	//array load
+laload		47 -	ai=l	//
+faload		48 -	ai=f	//
+daload		49 -	ai=d	//
+aaload		50 -	ai=b	//
+baload		51 -	ai=j	//
+caload		52 -	ai=j	//
+saload		53 -	ai=j	//
+
+istore		54 l	i=	//store local
+lstore		55 l	l=	//
+fstore		56 l	f=	//
+dstore		57 l	d=	//
+astore		58 l	a=	//
+
+istore_0		59 -	i=	//store local (fixed index)
+istore_1		60 -	i=	//
+istore_2		61 -	i=	//
+istore_3		62 -	i=	//
+lstore_0		63 -	l=	//
+lstore_1		64 -	l=	//
+lstore_2		65 -	l=	//
+lstore_3		66 -	l=	//
+fstore_0		67 -	f=	//
+fstore_1		68 -	f=	//
+fstore_2		69 -	f=	//
+fstore_3		70 -	f=	//
+dstore_0		71 -	d=	//
+dstore_1		72 -	d=	//
+dstore_2		73 -	d=	//
+dstore_3		74 -	d=	//
+astore_0		75 -	a=	//
+astore_1		76 -	a=	//
+astore_2		77 -	a=	//
+astore_3		78 -	a=	//
+
+iastore		79 -	aij=	//array store
+lastore		80 -	ail=	//
+fastore		81 -	aif=	//
+dastore		82 -	aid=	//
+aastore		83 -	aib=	//
+bastore		84 -	aij=	//
+castore		85 -	aij=	//
+sastore		86 -	aij=	//
+
+pop			87 -	x=		//
+pop2			88 -	u=		//
+dup			89 -	x=xx		//
+dup_x1		90 -	xy=yxy	//
+dup_x2		91 -	xyz=zxyz	//
+dup2			92 -	u=uu		//
+dup2_x1		93 -	uv=vuv	//
+dup2_x2		94 -	uvw=wuvw	//
+swap			95 -	xy=yz		//
+
+iadd			96 -	ij=k	//
+ladd			97 -	lm=n	//
+fadd			98 -	fg=h	//
+dadd			99 -	de=u	//
+isub			100 -	ij=k	//
+lsub			101 -	ij=k	//
+fsub			102 -	fg=h	//
+dsub			103 -	de=u	//
+imul			104 -	ij=k	//
+lmul			105 -	lm=n	//
+fmul			106 -	fg=h	//
+dmul			107 -	de=u	//
+idiv			108 -	ij=k	//
+ldiv			109 -	lm=n	//
+fdiv			110 -	fg=h	//
+ddiv			111 -	de=u	//
+irem			112 -	ij=k	//
+lrem			113 -	lm=n	//
+frem			114 -	fg=h	//
+drem			115 -	de=u	//
+ineg			116 -	i=j	//
+lneg			117 -	l=m	//
+fneg			118 -	f=g	//
+dneg			119 -	d=e	//
+ishl			120 -	ij=k	//
+lshl			121 -	li=m	//
+ishr			122 -	ij=k	//
+lshr			123 -	li=m	//
+iushr			124 -	ij=k	//
+lushr			125 -	li=m	//
+iand			126 -	ij=k	//
+land			127 -	lm=n	//
+ior			128 -	ij=k	//
+lor			129 -	lm=n	//
+ixor			130 -	ij=k	//
+lxor			131 -	lm=n	//
+iinc			132 lb =	//
+
+i2l			133 -	i=l	//
+i2f			134 -	i=f	//
+i2d			135 -	i=d	//
+l2i			136 -	l=i	//
+l2f			137 -	l=f	//
+l2d			138 -	l=d	//
+f2i			139 -	f=i	//
+f2l			140 -	f=l	//
+f2d			141 -	f=d	//
+d2i			142 -	d=i	//
+d2l			143 -	d=l	//
+d2f			144 -	d=f	//
+i2b			145 -	i=j	//
+i2c			146 -	i=j	//
+i2s			147 -	i=j	//
+
+lcmp			148 -	lm=i	//A>B=1, A<B=-1, (A==B)=0
+fcmpl			149 -	fg=i	//
+fcmpg			150 -	fg=i	//
+dcmpl			151 -	de=i	//
+dcmpg			152 -	de=i	//
+
+ifeq			153 a	i=	//
+ifne			154 a	i=	//
+iflt			155 a	i=	//
+ifge			156 a	i=	//
+ifgt			157 a	i=	//
+ifle			158 a	i=	//
+if_icmpeq		159 a	ij=	//
+if_icmpne		160 a	ij=	//
+if_icmplt		161 a	ij=	//
+if_icmpge		162 a	ij=	//
+if_icmpgt		163 a	ij=	//
+if_icmple		164 a	ij=	//
+if_acmpeq		165 a	ab=	//
+if_acmpne		166 a	ab=	//
+
+goto			167 a	=	//
+jsr			168 a	=x	//
+ret			169 l	=	//
+tableswitch		170 -	=	//
+lookupswitch	171 -	=	//
+
+ireturn		172 -	i=	//
+lreturn		173 -	l=	//
+freturn		174 -	f=	//
+dreturn		175 -	d=	//
+areturn		176 -	a=	//
+return		177 -	=	//
+
+getstatic		178 F	?	//
+putstatic		179 F	?	//
+getfield		180 F	?	//
+putfield		181 F	?	//
+invokevirtual	182 M	?	//
+invokespecial	183 M	?	//
+invokestatic	184 M	?	//
+invokeinterface	185 Nbb ?	//
+// xxxunusedxxx1	186 -	=	//invokedynamic...
+invokedynamic	186 Nbb ?	//
+new			187 C	=a	//
+newarray		188 b	=	//
+anewarray		189 C	=	//
+arraylength		190 -	=	//
+athrow		191 -	=	//
+
+checkcast		192 C	=	//
+instanceof		193 C	=	//
+monitorenter	194 -	=	//
+monitorexit		195 -	=	//
+wide			196 b	=	//
+multianewarray	197 Cb =	//
+ifnull		198 a	=	//
+ifnonnull		199 a	=	//
+goto_w		200 A	=	//
+jsr_w			201 A	=	//
+breakpoint		202 -	=	//
+
+
+ipload		256 - p=i	//int-pointer load
+lpload		257 - p=l	//long-pointer load
+fpload		258 - p=f	//float-pointer load
+dpload		259 - p=d	//double-pointer load
+ppload		260 - p=q	//pointer-pointer load
+bpload		261 - p=i	//byte-pointer load
+spload		262 - p=i	//short-pointer load
+bupload		263 - p=i	//unsigned byte-pointer load
+supload		264 - p=i	//unsigned short-pointer load
+
+ipstore		265 - pi=	//int-pointer store
+lpstore		266 - pl=	//long-pointer store
+fpstore		267 - pf=	//float-pointer store
+dpstore		268 - pd=	//double-pointer store
+ppstore		269 - pq=	//pointer-pointer store
+bpstore		270 - pi=	//byte-pointer store
+spstore		271 - pi=	//short-pointer store
+bupstore		272 - pi=	//unsigned byte-pointer store
+supstore		273 - pi=	//unsigned short-pointer store
+
+piadd			274 - pi=q	//pointer-int add
+piaddsc		275 b pi=q	//pointer-int add-scale
+piaddsc_w		276 w pi=q	//pointer-int add-scale 
+pisub			277 - pq=i	//pointer int subtraction
+
+pladd			278 - pl=q	//pointer long add
+plsub			279 - pq=l	//pointer long subtraction
+
+piaddsc_2		280 - pi=q	//pointer-int add-scale by 2
+piaddsc_4		281 - pi=q	//pointer-int add-scale by 4
+piaddsc_8		282 - pi=q	//pointer-int add-scale by 8
+piaddsc_16		283 - pi=q	//pointer-int add-scale by 16
+
+pconst_null		284 - =p	//push NULL pointer
+
+
+aadd			285 - ab=c	//
+asub			286 - ab=c	//
+amul			287 - ab=c	//
+adiv			288 - ab=c	//
+arem			289 - ab=c	//
+aand			290 - ab=c	//
+aor			291 - ab=c	//
+axor			292 - ab=c	//
+
+aneg			293 - a=b	//
+anot			294 - a=b	//
+ashl			295 - ab=c	//
+ashr			296 - ab=c	//
+
+acmpl			297 - ab=i	//compare dynamic objects, -1 if no-cmp
+acmpg			298 - ab=i	//compare dynamic objects, 1 if no-cmp
+	//Compare dynamicly typed objects, where a>b=1, a<b=-1, (a==b)=0.
+	//-1 or 1 may be returned if types can't be comparred.
+	//1 or -1 may be returned if types can only be compared for equality.
+
+car			300 - a=b	//
+cdr			301 - a=b	//
+
+i2a			302 - i=a	//
+l2a			303 - l=a	//
+f2a			304 - f=a	//
+d2a			305 - d=a	//
+
+a2i			306 - a=i	//
+a2l			307 - a=l	//
+a2f			308 - a=f	//
+a2d			309 - a=d	//
+
+cons			310 - ab=c		//
+cons_2		311 - aaa=a		//
+cons_3		312 - aaaa=a	//
+cons_4		313 - aaaaa=a	//
+
+getcglobal		314 F ?	//get value (C toplevel)
+putcglobal		315 F ?	//put value (C toplevel)
+invokecfunc		316 M ?	//invoke native C function
+

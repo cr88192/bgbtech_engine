@@ -1,0 +1,23 @@
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\obj\Debug\ResolveAssemblyReference.cache
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\Paint.NET FileType1.dll
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\Paint.NET FileType1.pdb
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\PaintDotNet.Base.dll
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\PaintDotNet.Core.dll
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\PaintDotNet.Data.dll
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\PaintDotNet.Effects.dll
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\PaintDotNet.Resources.dll
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\PaintDotNet.SystemLayer.dll
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\ICSharpCode.SharpZipLib.dll
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\PaintDotNet.SystemLayer.Native.x64.dll
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\Interop.WIA.dll
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\PaintDotNet.SystemLayer.Native.x86.dll
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\PaintDotNet.SystemLayer.pdb
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\PaintDotNet.Core.pdb
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\PaintDotNet.Data.pdb
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\PaintDotNet.Effects.pdb
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\PaintDotNet.Resources.pdb
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\bin\Debug\PaintDotNet.Base.pdb
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\obj\Debug\Paint.NET FileType1.dll
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\obj\Debug\Paint.NET FileType1.pdb
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\obj\Debug\Paint.NET_FileType1.Form1.resources
+E:\bgb.school.2011\Paint.NET FileType1\Paint.NET FileType1\obj\Debug\Paint.NET FileType1.csproj.GenerateResource.Cache

@@ -1,0 +1,28 @@
+BUILD=.
+MKSUF=.msvc
+LIBSUF=.lib
+DLLSUF=.dll
+EXESUF=.exe
+OBJSUF=.obj
+BINSUF=.exe
+DLLPF=
+
+CC_OUTEXE=cl /Fe
+CC_OUTDLL=cl /LD /Fe
+CC_OUTOBJ=cl /c /Fo
+CC_OUTTOOL=cl /Fe
+
+CFLAGS=/Iinclude /I../include /Z7 /arch:SSE2
+# CFLAGS=/Iinclude /I../include /O2 /Ox /arch:SSE2
+DLL_CFLAGS=$(CFLAGS) /DBTA2D_DLL
+LDFLAGS=btanim2d.lib ../bgbbtjpg.lib ../btgecm.lib \
+	../libpdgl.lib ../libpdglui.lib ../libvecmath.lib \
+	../bgbdy.lib ../bgbgc.lib ../bgbasm.lib ../zpack.lib \
+	opengl32.lib
+DLL_LDFLAGS=../bgbbtjpg.lib ../btgecm.lib \
+	../libpdgl.lib  ../libpdglui.lib ../libvecmath.lib \
+	../bgbdy.lib ../bgbgc.lib ../bgbasm.lib ../zpack.lib \
+	opengl32.lib
+
+include Makefile.inc
+

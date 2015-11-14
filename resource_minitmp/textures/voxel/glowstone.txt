@@ -1,0 +1,4 @@
+$flags voxel alpha lightmap
+
+$vox_vlight_val 12
+$vox_vlight_clr yellow

@@ -1,0 +1,8 @@
+$sprite 3
+// $spr_frame 0  48 40  96 80  sprites/s_flash_0.pcx
+// $spr_frame 1  48 40  96 80  sprites/s_flash_1.pcx
+// $spr_frame 2  48 40  96 80  sprites/s_flash_2.pcx
+
+$spr_frame 0  12 10  24 20  sprites/flash/s_flash_0.png
+$spr_frame 1  12 10  24 20  sprites/flash/s_flash_1.png
+$spr_frame 2  12 10  24 20  sprites/flash/s_flash_2.png

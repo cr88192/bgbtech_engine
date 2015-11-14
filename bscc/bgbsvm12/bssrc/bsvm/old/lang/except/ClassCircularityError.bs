@@ -1,0 +1,11 @@
+package bsvm.lang;
+
+public class ClassCircularityError extends LinkageError
+{
+// private static final long serialVersionUID = 2256477558314496007L;
+
+public ClassCircularityError()
+	{ super(); }
+public ClassCircularityError(String s)
+	{ super(s); }
+}

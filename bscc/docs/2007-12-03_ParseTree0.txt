@@ -1,0 +1,270 @@
+Design Plan for newer C Compiler parse trees.
+
+The basic unit will be the expression. There will be no real difference at the parse tree level between a statement and an expression.
+
+The parse tree structure will be primarily based on annotation and will not care much about ordering.
+
+Simple Composites
+
+<value>expr</value>
+<left>expr</left>
+<right>expr</right>
+
+
+Basic Expressions
+
+<ref name="var"/>
+Refer to a variable.
+
+<string value="text"/>
+<int value="value"/>
+<real value="value"/>
+<complex real="real" imag="imag"/>
+
+
+<goto name="var"/>
+<label name="var"/>
+
+
+Compound Expressions
+
+<binary op="operator">
+	<left/>
+	<right/>
+</binary>
+
+<funcall name="var">
+	<args>args...</args>
+</funcall>
+
+<funcall>
+	<func>expr</func>
+	<args>args...</args>
+</funcall>
+
+<return>
+	<value/>
+</return>
+
+<preinc> <expr/> </preinc>
+<predec> <expr/> </predec>
+<postinc> <expr/> </postinc>
+<postdec> <expr/> </postdec>
+
+
+<cast>
+	<tyexpr/>
+	<value/>
+</cast>
+
+<assign [op="op"]>
+	<left/>
+	<right/>
+</assign>
+
+<objref name="slot">
+	<value/>
+</objref>
+
+<getindex>
+	<array/>
+	<index/>
+</getindex>
+
+<begin>
+	exprs...
+</begin>
+
+<if> <cond/> <then/> <else/> </if>
+<for> <init/> <cond/> <step/> <body/> </for>
+<while> <cond/> <body/> </for>
+
+
+<type name="name" fl="flags" ind="ind">
+	[<size>ord*</size>]
+	[<rsize>ord*</rsize>]
+</type>
+
+The difference between name/rname, flags/rflags, ... will be one of type resolution, where name/flags/... will represent the type as declared, and rname/rflags, ... as they are resolved to base types.
+
+
+<var name="...">
+	<type/>
+	<value/>
+</var>
+
+<function name="...">
+	<type/>
+	<args>
+		vars...
+	</args>
+	<body>
+		statements...
+	</body>
+</function>
+
+
+
+Parse Trees from older PDScript compiler:
+
+<assign name="x">
+  <ref name="y"/>
+</assign>
+
+<assign name="x2">
+  <binary op="+">
+    <left>
+      <funcall name="foo">
+        <args>
+          <ref name="x"/>
+          <ref name="y"/>
+          <binary op="+">
+            <left>
+              <binary op="*">
+                <left>
+                  <ref name="z"/>
+                </left>
+                <right>
+                  <number value="2"/>
+                </right>
+              </binary>
+            </left>
+            <right>
+              <number value="3"/>
+            </right>
+          </binary>
+          <string>
+            foo bar baz
+          </string>
+        </args>
+      </funcall>
+    </left>
+    <right>
+      <number value="4"/>
+    </right>
+  </binary>
+</assign>
+
+<vars>
+  <var name="x"/>
+  <var name="y">
+    <number value="3"/>
+  </var>
+</vars>
+
+<function name="test0">
+  <args>
+    <var name="x"/>
+    <var name="y"/>
+  </args>
+  <body>
+    <assign name="z">
+      <binary op="+">
+        <left>
+          <ref name="x"/>
+        </left>
+        <right>
+          <ref name="y"/>
+        </right>
+      </binary>
+    </assign>
+    <assign name="z2">
+      <unary op="-">
+        <ref name="z"/>
+      </unary>
+    </assign>
+  </body>
+</function>
+
+
+<assign name="x">
+  <ref name="y"/>
+</assign>
+
+<assign name="x2">
+  <binary op="+">
+    <left>
+      <funcall name="foo">
+        <args>
+          <ref name="x"/>
+          <ref name="y"/>
+          <binary op="+">
+            <left>
+              <binary op="*">
+                <left>
+                  <ref name="z"/>
+                </left>
+                <right>
+                  <number value="2"/>
+                </right>
+              </binary>
+            </left>
+            <right>
+              <number value="3"/>
+            </right>
+          </binary>
+          <string>
+            foo bar baz
+          </string>
+        </args>
+      </funcall>
+    </left>
+    <right>
+      <number value="4"/>
+    </right>
+  </binary>
+</assign>
+
+<vars>
+  <var name="x"/>
+  <var name="y">
+    <number value="3"/>
+  </var>
+</vars>
+
+<vars>
+  <var name="z">
+    <lambda>
+      <args>
+        <var name="x"/>
+        <var name="y"/>
+      </args>
+      <body>
+        <assign name="z3">
+          <binary op="+">
+            <left>
+              <ref name="x"/>
+            </left>
+            <right>
+              <ref name="y"/>
+            </right>
+          </binary>
+        </assign>
+      </body>
+    </lambda>
+  </var>
+</vars>
+
+<function name="test0">
+  <args>
+    <var name="x"/>
+    <var name="y"/>
+  </args>
+  <body>
+    <assign name="z">
+      <binary op="+">
+        <left>
+          <ref name="x"/>
+        </left>
+        <right>
+          <ref name="y"/>
+        </right>
+      </binary>
+    </assign>
+    <assign name="z2">
+      <unary op="-">
+        <ref name="z"/>
+      </unary>
+    </assign>
+  </body>
+</function>

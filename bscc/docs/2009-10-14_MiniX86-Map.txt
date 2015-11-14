@@ -1,0 +1,140 @@
+Aleph Opcode Map
+
+	0		1		2		3
+0	add.rm,r8	add.rm,r32	add.r,rm8	add.r,rm32
+1	adc.rm,r8	adc.rm,r32	adc.r,rm8	adc.r,rm32
+2	and.rm,r8	and.rm,r32	and.r,rm8	and.r,rm32
+3	xor.rm,r8	xor.rm,r32	xor.r,rm8	xor.r,rm32
+4
+5	push.r	-		-		-
+6
+7	j*		-		-		-
+8	Grp80		Grp81				Grp83
+9	nop
+A
+B
+C	GrpC0		GrpC1
+D					GrpD2		GrpD3
+E
+F
+
+
+	4		5		6		7
+0
+1
+2
+3
+4
+5	push.r	-		-		-
+6
+7	j*		-		-		-
+8	test.r,rm8	test.r,rm	xchg.r,rm8	xcgh.r,rm
+9
+A
+B
+C					GrpC6		GrpC7
+D
+E
+F					GrpF6		GrpF7
+
+
+	8		9		A		B
+0	or.rm,r8	or.rm,r32	or.r,rm8	or.r,rm32
+1	sbb.rm,r8	sbb.rm,r32	sbb.r,rm8	sbb.r,rm32
+2	sub.rm,r8	sub.rm,r32	sub.r,rm8	sub.r,rm32
+3	cmp.rm,r8	cmp.rm,r	cmp.r,rm8	cmp.r,rm
+4
+5	pop.r		-		-		-
+6	push.i	imul.r,rm,i	push.i8	imul.r,rm,i8
+7	j*		-		-		-			
+8	mov.r,rm8	mov.rm,r	mov.r,rm8	mov.r,rm
+9
+A
+B
+C
+D
+E	call.i32	jmp.i				jmp.i8
+F
+
+
+	C		D		E		F
+0
+1
+2
+3
+4
+5	pop.r		-		-		-
+6
+7	j*		-		-		-
+8							Grp8F
+9
+A
+B
+C
+D			lea
+E
+F	-		-		GrpFE		GrpFF
+
+
+Grp80/81/83 (rm8,i8 / r32,i32 / rm32, i8)
+	/0	add
+	/1	or
+	/2	adc
+	/3	sbb
+	/4	and
+	/5	sub
+	/6	xor
+	/7	cmp
+
+Grp8F
+	/0	pop (rm16/32)
+	/1	XOP
+	..
+	/7	XOP
+
+GrpC0/C1/D2/D3
+	/0	rol
+	/1	ror
+	/2
+	/3
+	/4	shl
+	/5	shr
+	/6
+	/7	sar
+
+GrpC6 (rm8, i8)
+	/0	mov
+
+GtpC7 (rm16/32, i16/32)
+	/0	mov
+
+GrpF6/F7 (rm8 / rm16/32)
+	/0	test
+	/1
+	/2	not
+	/3	neg
+	/4	mul
+	/5	imul
+	/6	div
+	/7	idiv
+
+
+GrpFE (rm8)
+	/0 	inc
+	/1	dec
+
+GrpFF (rm16/32)
+	/0	inc
+	/1	dec
+	/2	call
+	/4	jmp
+	/6	push
+
+
+
+
+
+
+imul
+		WX0FAF/r		r16,rm16
+		TX0FAF/r		r32,rm32

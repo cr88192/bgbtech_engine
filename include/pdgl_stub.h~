@@ -1,0 +1,7 @@
+#ifdef WIN32
+#include <pdgl_stub_w32.h>
+#endif
+
+#ifdef LINUX
+#include <pdgl_stub_lnx.h>
+#endif

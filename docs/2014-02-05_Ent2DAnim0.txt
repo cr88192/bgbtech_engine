@@ -1,0 +1,12 @@
+Entity 2D Animations
+
+entity <entid> {
+texture "texname"
+origin <xpos> <ypos>
+size <xsize> <ysize>
+angle <angle>
+}
+
+frame <framenum> {
+entpos <entid> <xpos> <ypos> <angle> <scale>
+}

@@ -1,0 +1,34 @@
+//types and strings for lbxgl
+
+//types
+lbxgl_poly_t
+lbxgl_polyprim_t
+lbxgl_polygroup_t
+lbxgl_skelmesh_t
+lbxgl_bspmodel_t
+
+
+//movetypes
+move_none		//doesn't move
+move_push		//straight line, pushes some things, ignores collisions and gravity
+move_toss		//arc'ed path, stops when it lands
+move_bounce		//bounce of objects until running out of speed (consider: move_elastic)
+move_fly		//move in a straight line, blocked by collisions, ignores gravity
+move_slide		//slide along on ground
+move_slideresist	//slide along ground with friction
+move_character	//hmm... I forget why I added this
+
+//solidtypes
+//"basic" solidtypes
+solid_not		//non-solid
+solid_trigger	//bbox, detects collisions but does not block
+solid_bbox		//axis aligned bbox
+solid_prim		//brushmodels and such
+solid_bsp		//synonym for solid_prim
+
+//"complex" solidtypes
+solid_skel		//skeletal model, eventually may be a collection of obbs with ik and such
+solid_obb		//single obb
+solid_ocyl		//orientated cylinder, uses: solid_dir, solid_height, solid_radius
+solid_sphere	//sphere, uses: solid_radius
+solid_brep		//triangluar mesh, solid_mdl

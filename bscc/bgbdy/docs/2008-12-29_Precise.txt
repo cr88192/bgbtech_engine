@@ -1,0 +1,45 @@
+Idea:
+The possible addition of an alternative allocation mode for precise GC.
+
+Differences from normal mode:
+Precise references are not pointers to objects;
+Precise references are required to be registered;
+A precise object may be allowed to move in memory;
+Reference counting will be used;
+...
+
+So, a precise reference will be similar to, but different from, a conservative reference. Where a conservative reference will hold an exact pointer to an object, a precise reference will hold a handle, and thus will indicate object identity rather than location.
+
+Precise objects may be located in a different heap than conservative ones, and may differ semantically from their conservative counterparts:
+A precise object needs to provide a set of precise handlers (if it does not, it can only be conservative).
+
+
+It will be allowed, however, for a precise object to contain conservative references, and it will also be possible to store conservative objects in precise references (the objects themselves, however, will remain conservative).
+
+An attempt to gain a conservative reference to a precise object, however, will result in the object being downgraded to a conservative object (may involve relocating the object to the conservative heap).
+
+
+Precise references will be represented either as a special address range.
+
+Conservative mark functions will ignore precise references, but precise mark functions will respect conservative ones.
+
+
+void gcpMark(dyt obj);			//precise mark
+
+void gcpInc(dyt obj);			//inc ref count
+void gcpDec(dyt obj);			//dec ref count
+void gcpSafeDec(dyt obj);		//dec ref count, but do not free
+void gcpSet(dyt *ref, dyt obj);	//adj counts and assign
+void gcpClear(dyt obj);			//adj ref count and clear to NULL
+
+void gcpPushFrame();			//push local frame
+void gcpPopFrame();			//pop local frame
+void gcpRoot(dyt *ref);			//add root to frame
+
+dyt gcpDefile(dyt obj);			//get conservative reference
+
+void *gcpGrabPtr(dyt obj);		//get current pointer
+void gcpDropPtr(dyt obj);		//done with pointer
+
+dyt gcpAlloc(char *type, int sz);	//alloc precise object
+

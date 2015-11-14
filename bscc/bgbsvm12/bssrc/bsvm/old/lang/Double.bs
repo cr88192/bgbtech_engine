@@ -1,0 +1,88 @@
+package bsvm.lang;
+import bgb.vm.*;
+
+public final class Double extends Number
+{
+public static final double MAX_VALUE = 1.79769313486231570e+308;
+public static final double MIN_VALUE = 5e-324;
+public static final double NaN = 0.0 / 0.0;
+public static final double NEGATIVE_INFINITY = -1.0 / 0.0;
+public static final double POSITIVE_INFINITY = 1.0 / 0.0;
+
+private final double value;
+
+public Double(double value)
+	{ this.value=value; }
+public Double(String s)
+	{ this(parseDouble(s)); }
+
+public static long doubleToLongBits(double value)
+{
+	long t, sg, ex, m;
+
+	if(value<0) { value=-value; sg=1; } else { sg=0; }
+	ex=(long)(Math.floor(Math.log(value)/Math.log(2)));
+	m=(long)((1L<<52)*(value/Math.pow(2, (double)ex)-1));
+	t=m|((ex+1023)<<52)|(sg<<63);
+	return t;
+}
+
+public double doubleValue()
+	{ return value; }
+
+public boolean equals(Object obj)
+{
+	return (obj==this) ||
+		((obj instanceof Double) &&
+			(this.value==((Double)obj).value));
+}
+
+public float floatValue()
+	{ return (float)value; }
+public int hashCode()
+	{ long v; v=doubleToLongBits(value); return (int)(v^(v>>>32)); }
+public int intValue()
+	{ return (int)value; }
+public boolean isInfinite()
+	{ return isInfinite(value); }
+public static boolean isInfinite(double v)
+	{ return ((v==POSITIVE_INFINITY) || (v==NEGATIVE_INFINITY)); }
+public boolean isNaN()
+	{ return isNaN(value); }
+public static boolean isNaN(double v)
+	{ return false; }
+//	{ return v!=v; }
+
+public static double longBitsToDouble(long bits)
+{
+	double f;
+	int ex;
+
+	f=1.0+((double)(bits&((1L<<52)-1)))/((double)(1L<<52));
+	ex=(int)(((bits>>52)&2047)-1023);
+	f=f*Math.pow(2.0, (double)ex);
+	if((bits>>>63)!=0)f=(-f);
+	return f;
+}
+
+public long longValue()
+	{ return (long)value; }
+public String toString()
+	{ return toString(value); }
+
+public static String toString(double d)
+{
+	return(Z_SysUtil.FloatToStr(d));
+//	return null;
+}
+
+public static Double valueOf(String s)
+	{ return new Double(s); }
+
+public static double parseDouble(String str)
+{
+	return(Z_SysUtil.StrToFloat(str));
+//	return 0;
+}
+
+}

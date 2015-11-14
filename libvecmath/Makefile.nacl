@@ -1,0 +1,40 @@
+include Makefile.inc
+
+LIBVECMATH_OBJS = $(LIBVECMATH_SRCS:.c=.o)
+
+CFLAGS = -DX86 -Wall -Werror -Werror-implicit-function-declaration -I. -g
+EXE=elf
+
+all: includes libs
+
+FORCE:
+
+# %.o: %.c
+#	gcc $(CFLAGS) -c -o $@ $<
+
+%.ao: %.as
+	nasm -f win32 -o $@ $<
+
+autohead$(BINSUF): autohead.c
+	$(CC) -o autohead$(BINSUF) autohead.c
+
+libvecmath_auto.h: autohead$(BINSUF) $(LIBVECMATH_SRCS)
+	./autohead$(BINSUF) -api VECMATH_API $(LIBVECMATH_SRCS) > libvecmath_auto.h
+
+# libvecmath.a: libvecmath_auto.h $(LIBVECMATH_OBJS)
+#	ar -cr libvecmath.a $(LIBVECMATH_OBJS)
+
+$(DLLPF)vecmath$(DLLSUF): $(LIBVECMATH_SRCS)
+	$(CC_OUTDLL)$(DLLPF)vecmath$(DLLSUF) $(LIBVECMATH_SRCS) \
+		-I. -DVECMATH_DLL -p -fPIC
+
+includes: libvecmath_auto.h
+libs: $(DLLPF)vecmath$(DLLSUF)
+apps:
+
+clean:
+	rm -rf bsde_auto.h bsde_funcs.h
+	rm -rf $(shell find -name \*.o)
+	rm -rf $(shell find -name \*.a)
+	rm -rf $(shell find -name \*.obj)
+	rm -rf $(shell find -name \*.lib)

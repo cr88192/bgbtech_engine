@@ -1,0 +1,20 @@
+BUILD=.
+DLLPF=lib
+
+CC=$(TARG)-gcc
+CC_OUTEXE=$(CC) -o 
+CC_OUTDLL=$(CC) -shared -o 
+CC_OUTOBJ=$(CC) -c -o 
+CC_OUTTOOL=gcc -o 
+
+CFLAGS=-Iinclude -I../include -g
+DLL_CFLAGS=$(CFLAGS) -DBGBSVM_DLL
+LDFLAGS=-g -L. -lbgbsvm -L.. -lbgbgc -lbgbdy -lbgbasm -lzpack -lm \
+	-Wl,-rpath,"$$ORIGIN"
+DLL_LDFLAGS=-g -L.. -lbgbgc -lbgbdy -lbgbasm -lzpack -lm -fPIC \
+	-Wl,-rpath,"$$ORIGIN"
+
+BS_SRCS = $(shell find bssrc -name \*.bs)
+
+include Makefile.inc
+

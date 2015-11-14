@@ -1,0 +1,9 @@
+native import C;
+
+native package C.game_cm.cm_main
+{
+	public function BTCM_ScriptInit():void
+	{
+		printf("BTCM_ScriptInit: Called\n");
+	}
+}

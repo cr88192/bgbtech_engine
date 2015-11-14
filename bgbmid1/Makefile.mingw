@@ -1,0 +1,37 @@
+CFLAGS = -g -pg -I. -DLIBBMID_C
+
+EXE = .exe
+O = .o
+A = .a
+
+BMID_SRCS = \
+	bm_util$(O) \
+	bm_wave$(O) \
+	bm_patch$(O) \
+	bm_synth$(O) \
+	bm_file$(O) \
+	bm_api$(O)
+
+BMID_OBJS = $(BMID_SRCS:.c=.o)
+
+all: libbgbmid$(A) dmid2$(EXE) mid2asc$(EXE)
+
+%$(O): %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+libbgbmid$(A): $(BMID_OBJS)
+	ar -cr libbgbmid$(A) $(BMID_OBJS)
+
+dmid2$(EXE): dmid2.c libbgbmid$(A)
+	$(CC) -g -pg -I. -L. -o dmid2$(EXE) dmid2.c -lbgbmid
+
+mid2asc$(EXE): mid2asc.c libbgbmid$(A)
+	$(CC) -g -pg -I. -L. -o mid2asc$(EXE) mid2asc.c -lbgbmid
+
+clean:
+	rm -rf *.o
+
+includes:
+libs: libbgbmid$(A)
+apps: dmid2$(EXE)
+

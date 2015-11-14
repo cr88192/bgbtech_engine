@@ -1,0 +1,254 @@
+BMC: BGB Middle C
+
+BMC is basically a C variant intended to be used as the IL for other languages.
+
+BMC will be more or less C, but with a few notable differences:
+by default, no preprocessor is used (preprocessing may be done manually, if needed, by frontends);
+not all language features need to be supported (in particular, enum and other things may be left out);
+typedef should not be used (support for type declaration may be later dropped);
+...
+
+
+As well, there may be extensions:
+
+QNames:
+In names, '::' will work as an internal scope separator, such that 'Foo::bar' means that 'bar' is within 'Foo'. All scope resolution is to be done before getting to this stage (no attempt will be made to resolve unqualified names by namespaces, ...).
+
+Similarly, a toplevel name may be prefixed with '::', which will indicate that, even though it is not part of a namespace, it is still a QName. This prefix will also be required for any references to this QName.
+
+Names without this prefix (and without a namespace) will be assumed to be part of the C toplevel instead. Likewise, this prefix will also be required in order to make use of function overloading.
+
+
+example:
+void ::foo(int x);
+void ::foo(double x);	//OK
+
+void foo(int x);
+void foo(double x);	//BAD, C does not allow overloading
+
+
+More technically, the QName prefix will serve to indicate whether or not name mangling should be used.
+
+
+Extension Types:
+
+__int8, __uint8, __int16, __uint16,
+__int32, __uint32, __int64, __uint64,
+__int128, __uint128
+
+__float16, __float32, __float64, __float128
+
+__char8, __char16
+
+These will unambiguously identify the requested type, whereas the standard C types are allowed to vary (for example, whether 'long' is 32 or 64 bits, ...).
+
+'__proto <prototype>;'
+'__proto <name>' will allow declaring a function type in a manner similar to a struct.
+
+
+Structs:
+
+Structs are declared as in C, however, with a few alterations.
+Structs may only be declared at the toplevel (it is invalid for a struct declaration to appear either within the body of some other declaration, or as part of a declaration).
+
+struct Foo_s { ... };	//OK
+struct { ... } foo;	//BAD, part of a declaration
+
+void bar()
+{
+	struct Bar_s { ... };	//BAD, part of a declaration body
+}
+
+Likewise, struct definitions may not be nested:
+struct Foo_s {
+	...
+	struct Bar_s {
+	...
+	};	//BAD
+	struct Bar_s bar;
+}
+
+Instead, the inner struct may be declared externally, and then referenced:
+
+struct Foo_s::Bar_s {
+...
+};	//OK
+
+struct Foo_s {
+	...
+	struct Foo_s::Bar_s bar;	//OK
+}
+
+Unlike in C, all references to struct fields are to be via the '->' operator, regardless of whether the struct is a pointer or not.
+
+
+Objects:
+
+Several types of objects will exist, and each will have essentially different semantics:
+Unmanaged Classes;
+Managed Classes;
+Prototype Objects.
+
+
+An unmanaged class will be of a similar nature to a struct, however:
+An unmanaged class may contain method prototypes;
+An unmanaged class may only inherit from other unmanaged classes;
+An unmanaged class may implement interfaces.
+
+Similarly, an unmanaged class will have a defined in-memory layout, and so may be safely stored on the stack, or in memory gained via malloc or other means.
+
+
+__class <qname> [':' <classlist>] {
+<decls*>
+};
+
+However, a class may not contain method bodies, only declarations.
+For unmanaged classes, any superclasses need to be declared within the same compilation unit.
+
+It may also be noted that classes are not nestable.
+
+Note that an unmanaged class may contain multiple superclasses, as will as implement interfaces.
+
+
+Similarly, classes will be referenced in declarations via '__class <qname>'. Unmanaged classes will be referenced via a pointer to the class.
+
+
+Note that the implementation of methods will differ somewhat from C++ in several ways:
+the in-class method declaration and external method definition will differ, namely in that the external method definition will include as the first argument a declaration of the 'this' value.
+
+Example:
+__class Foo {
+	int x;
+	void foo(int x);
+};
+
+void Foo::foo(__class Foo *this, int x)
+{
+	...
+}
+
+Similarly, the 'this' argument is to be named 'this', and may infact be interpreted as a special command to the compiler, rather than as a traditional argument.
+
+This is not the case with static methods, which will are not to contain a 'this' argument.
+
+
+Unmanaged classes will follow similar semantics to C++ WRT virtual methods, and so if a method may be overridden, the 'virtual' keyword is to be used. Note that subclasses should not contain a redeclaration of the overloaded method.
+
+Fields and methods will be addressed with the same syntax as in C++:
+	foo->bar(foo->x, foo->y);
+
+
+A managed class will differ from an unmanaged class in several ways:
+'__gcclass' will be used for managed classes instead of '__class';
+Managed classes may only inherit from other managed classes;
+By default, managed classes are assumed to be reference types rather than value types, and as such pointers are not used to reference managed classes;
+Managed classes do not have a defined in-memory size or layout;
+Methods are virtual by default, and so the 'virtual' keyword is unnecessary.
+
+__gcclass Bar {
+	int x;
+	void bar(int x);
+};
+
+void Bar::bar(__gcclass Bar this, int x)
+{
+	...
+}
+
+
+Interfaces:
+
+An interface is like a class, but differs in several ways:
+An interface is declared via the '__interface' keyword;
+It is not valid to create an instance of an interface;
+An interface can only inherit from other interfaces (in this sense, an interface will inherit interfaces, rather than implement them, whereas classes will not inherit from interfaces, but will instead implement them);
+Interface methods are not to be defined externally.
+
+Note that a class implementing an interface will still need to include a declaration of any implemented methods.
+
+Example:
+__interface IFoo {
+	void foo();
+	void bar(int x, int y);
+};
+
+__class Bar:IFoo {
+	virtual void foo();
+	virtual void bar(int x, int y);
+};
+
+
+Prototype Objects
+
+Prototype Objects will be essentially similar to a managed class, but will also have some similarily to a struct in terms of declaration and use.
+
+Like structs, prototype objects may be declared individually as a collection of fields.
+
+Prototype objects may, but need not, inherit from managed classes (A prototype object may not, however, inherit from an unmanaged class).
+
+Unlike a struct, the layout of a prototype object is fluid, and as such a object may be accessed via a differently defined object definition.
+
+
+Prototype objects may also delegate to other objects, at which point any called methods will act as if they were part of the original object which had recieved the request. This is similar to class inheritence, but with the primary difference that delegation is to individual objects, rather than to classes, and so a delegate is itself a stateful object which may be assigned or replaced.
+
+Like classes, prototype objects may implement interfaces.
+
+__gcobj <qname> [':' <classlist>] {
+<decls*>
+};
+
+Like class methods, prototype object methods will recieve a this argument:
+
+
+__gcobj Bar {
+	int x;
+	void bar(int x);
+};
+
+void Bar::bar(__gcobj Bar this, int x)
+{
+	...
+}
+
+Delegation will be via the 'delegate' keyword (not to be confused with C# delegates):
+
+__gcobj Baz {
+	int y, z;
+	delegate __gcobj Bar bar;
+	void baz();
+};
+
+void Bar::baz(__gcobj Baz this)
+{
+	int w;
+	w=this->x*this->y+this->z;
+	...
+}
+
+
+Their main difference from classes though, will be in their fluid nature:
+
+__gcobj FooA {
+	int x, y;
+};
+
+__gcobj FooB {
+	int y, z;
+};
+
+__gcobj FooA a;
+__gcobj FooB b;
+
+...
+
+a=new __gcobj FooA;
+b=a;
+
+a->x=3;
+a->y=4;
+b->z=5;
+
+Note here that since a==b, and both a and b contain an equivalent field 'y', 'a->y==b->y'. It is presently undefined what will happen if the aliased fields differ in terms of type.
+
+As such, it is possible to use prototype objects to add new fields and methods to existing prototype objects, and to access these fields, or to access generalized objects with "views" specialized to a particular task.
+

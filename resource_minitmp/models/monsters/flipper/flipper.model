@@ -1,0 +1,10 @@
+//Flipper
+
+bones flipper1.bone
+
+vmesh flipper1.ac
+
+// anim death6 death6.anim
+
+origin 0 0 0
+scale 2 2 2

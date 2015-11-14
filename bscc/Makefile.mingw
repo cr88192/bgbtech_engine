@@ -1,0 +1,92 @@
+# BUILD = /usr
+BUILD = .
+TOOLS_BASE = .
+
+PATH := $(TOOLS_BASE):$(PATH)
+
+EXE = .exe
+BIN = .bin
+O = .o
+A = .a
+CC = gcc
+LD = gcc
+
+all: FORCE build
+
+FORCE:
+
+includes: FORCE
+	make -C bgbasm11 -f Makefile.mingw includes
+	make -C bgbgc1 -f Makefile.mingw includes
+	make -C bgbdy -f Makefile.mingw includes
+	make -C bgbccc1 -f Makefile.mingw includes
+	make -C bgbmcc -f Makefile.mingw includes
+	make -C bgbsxc -f Makefile.mingw includes
+	make -C bgbsxil -f Makefile.mingw includes
+	make -C zpak2 -f Makefile.mingw includes
+	cp -rf bgbasm11/include/*.h	$(BUILD)/include
+	cp -rf bgbgc1/include/*		$(BUILD)/include
+	cp -rf bgbdy/include/*		$(BUILD)/include
+	cp -rf bgbccc1/include/*	$(BUILD)/include
+	cp -rf bgbmcc/include/*		$(BUILD)/include
+	cp -rf bgbsxc/include/*		$(BUILD)/include
+	cp -rf bgbsxil/include/*	$(BUILD)/include
+	cp -rf zpak2/*.h		$(BUILD)/include
+
+libs: FORCE
+	make -C bgbasm11 -f Makefile.mingw libs
+	make -C bgbgc1 -f Makefile.mingw libs
+	make -C bgbdy -f Makefile.mingw libs
+	make -C bgbccc1 -f Makefile.mingw libs
+	make -C bgbmcc -f Makefile.mingw libs
+	make -C bgbsxc -f Makefile.mingw libs
+	make -C bgbsxil -f Makefile.mingw libs
+	make -C zpak2 -f Makefile.mingw libs
+	cp bgbasm11/*$(A)	$(BUILD)
+	cp bgbgc1/*$(A)		$(BUILD)
+	cp bgbdy/*$(A)		$(BUILD)
+	cp bgbccc1/*$(A)	$(BUILD)
+	cp bgbmcc/*$(A)		$(BUILD)
+	cp bgbsxc/*$(A)		$(BUILD)
+	cp bgbsxil/*$(A)	$(BUILD)
+	cp zpak2/*$(A)		$(BUILD)
+
+apps: libs FORCE
+	make -C bgbasm11 -f Makefile.mingw apps
+	make -C bgbgc1 -f Makefile.mingw apps
+	make -C bgbdy -f Makefile.mingw apps
+	make -C bgbccc1 -f Makefile.mingw apps
+	make -C bgbmcc -f Makefile.mingw apps
+	make -C bgbsxc -f Makefile.mingw apps
+	make -C bgbsxil -f Makefile.mingw apps
+	make -C zpak2 -f Makefile.mingw apps
+	cp bgbasm11/*$(EXE)	$(BUILD)
+	cp bgbgc1/*$(EXE)	$(BUILD)
+	cp bgbdy/*$(EXE)	$(BUILD)
+	cp bgbccc1/*$(EXE)	$(BUILD)
+	cp bgbmcc/*$(EXE)	$(BUILD)
+	cp bgbsxc/*$(EXE)	$(BUILD)
+	cp bgbsxil/*$(EXE)	$(BUILD)
+	cp zpak2/*$(EXE)	$(BUILD)
+
+build: includes libs apps FORCE
+
+clean: FORCE
+	rm -rf $(shell find -name \*$(O))
+	rm -rf $(shell find -name \*$(A))
+
+clean2: FORCE
+	rm -rf $(shell find -name \*$(O))
+	rm -rf $(shell find -name \*$(A))
+	rm -rf $(shell find -name \*$(EXE))
+	rm -rf $(shell find -name \*$(BIN))
+	rm -rf $(shell find -name \*\~)
+
+clean_o: FORCE
+	rm -rf $(shell find -name \*$(O))
+
+clean_a: FORCE
+	rm -rf $(shell find -name \*$(A))
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(G_CFLAGS) -o $@ $<

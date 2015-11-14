@@ -1,0 +1,180 @@
+As for another idle thought, I have another thought WRT adding custom 
+metadata/... to PE/COFF:
+A collection of "chunks" are linked into the image in a special section, such as ".chunks".
+
+In general, the chunks section is relatively unstructured, but each chunk could contain a header:
+{
+FOURCC magic1;	//"\x89\n\r\x1A"
+FOURCC magic2;	//"CHNK"
+FOURCC magic3;	//payload-fourcc
+u16 head_size;	//base header size
+u16 head_crc;	//checksum of header
+//(16-bytes)
+u32 chunk_size;	//total chunk size (includes headers)
+u32 flags;		//chunk flags
+//...
+}
+
+Beyond this, each chunk header would start on a 16-byte boundary (not 
+difficult, as linkers do this by default).
+
+Note that it is likely that some amount of scanning/matching would be used (this being a major reason for making the header so bulky and including a CRC).
+
+The idea for how this would get loaded into PE/COFF images would be that the data would be converted into COFF objects which would be linked into the image (I am assuming for now a stock linker, such as "link.exe" or similar...).
+
+I am also considering the possibility of this coexisting with CLR metadata.
+
+
+Now, what sorts of data would be encoded here?...
+Matadata-DB dumps (maybe a deflated version of a textual dump?... well, it is that or devise a binary serialization...);
+Maybe symbolic-linking info (would mostly be used to key the DB against the binary code/data/... mostly because my main DB does not directly hold references to code or data);
+JVM-style class and jar files;
+ZIP files (embedded sub-files, could be accessed via the VFS).
+
+The idea is that any unknown chunks will be ignored by default.
+
+
+Although, I guess it may be worth looking and seeing if there is some other established convention for doing something similar to this...
+
+However, at present I often store info like this in sideband files, but this would allow packaging the info directly into the PE/COFF image...
+
+Then, an API could be added which could iterate over the chunks, possibly looking for chunks with a given FOURCC and returning pointers to the payload, ... (technically, the core functionality for implementing this is provided by the Win32 API).
+
+
+CRC16-CCIT
+
+u16 CRC16_CCIT(byte *data, int sz)
+{
+	byte *cs, *ce;
+	u16 crc;
+
+	cs=data; ce=cs+sz; crc=0;
+	while(cs<ce)
+	{
+		crc  = ((crc>>8)&0xFF) | (crc<<8);
+		crc ^= (*cs++);
+		crc ^= (crc&0xFF)>>4;
+		crc ^= crc<<12;
+		crc ^= (crc&0xFF)<<5;
+	}
+
+	return(crc);
+}
+
+
+u16 Hash_BGB16(byte *data, int sz)
+{
+	byte *cs, *ce;
+	u16 hash;
+
+	cs=data; ce=cs+sz; hash=0;
+	while(cs<ce)
+		hash=(hash*31)+(*cs++);
+	return(hash);
+}
+
+
+Both algos seem to have a similar probability distribution.
+
+
+
+Basic Chunks
+
+'MTAZ': Deflated Metadata
+'JBC ': Java ByteCode Class
+'JAR ': JAR File
+'ZIP ': ZIP File (assumed to contain app data).
+
+'WAD2': Embedded WAD2 file
+
+Wad2Header
+{
+FOURCC magic;	//WAD2
+u32 dir_ents;	//directory entries
+u32 dir_offs;	//dirrectory offset (relative to header)
+}
+
+Wad2Entry
+{
+u32 offset;		//entry offset (relative to WAD2 header)
+u32 size;		//entry size (compressed)
+u32 dsize;		//entry size (uncompressed)
+byte dtype;		//data type
+byte dcomp;		//data compression
+u16 pad;		//padding (0)
+byte name[16];	//entry name, 0-padded
+}
+
+Data Types:
+	0: None
+	1: Label
+	64: Generic Lump, FOURCC=0
+	65: (reserved)
+	66: (reserved)
+	67: (reserved)
+	68: (reserved)
+	69+: Lump, FOURCC from "~Typetags"
+
+Compression:
+	0: None
+	1: LZSS
+	8: Deflate
+	9: Deflate64
+
+Special Lumps
+"~Strings", strings table;
+"~Typetags", type-tag FOURCC values (the dtype field indexes into this array with a base of 64).
+
+"|*": '|' will be a prefix for a 96-bit key encoded in base-85.
+
+
+Binary Metadata
+
+"~Strings",	strings table (UTF-8 + ASCIIZ)
+"~Blobs", binary blobs, length prefix MS-style
+
+"~Node"
+Key {
+uvli var;
+uvli val;
+}
+
+Node {
+uvli next_node;	//relative offset of next node (0=end of list)
+uvli first_node;	//relative offset of first sub-node (0=none)
+uvli name;		//offset of name in strings table
+uvli nkey;
+Key key[nkey];
+}
+
+also possible:
+nodeidx: node index, 16 or 32 bits
+stridx: string index, 16 or 32 bits
+keyidx: keyindex, 16 or 32 bits
+tagidx: multi-index, 16 or 32 bits, 4 bits tag
+	0: reserved
+	1: string
+	2: blob
+	3: key
+	4: node
+	5: integer
+	6-15: reserved
+
+"~Key"
+Key {
+stridx var;
+tagidx val;
+}
+
+"~Node"
+Node {
+nodeidx next_node;	//relative offset of next node (0=end of list)
+nodeidx first_node;	//relative offset of first sub-node (0=none)
+stridx name;		//offset of name in strings table
+keyidx key;			//index into keys
+u16 nkey;			//num keys
+}
+
+Special Keys
+"!<templatename>", value=blob, encodes keys packed according to a template.
+

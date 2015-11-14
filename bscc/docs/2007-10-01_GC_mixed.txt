@@ -1,0 +1,61 @@
+well, I have come up with a new and possibly interesting thought (may be used in a future collector). 
+figured, maybe people might be interested, or have useful comments.
+
+basically, the thought is this: 
+I implement a memeory manager / garbage collector setup that is both precise and conservative, where the exact behavior is not a fundamental part of the GC's operation, but is instead manifest based on how the memory and specific objects are used. 
+
+this would be combined with good ol' refcounting as well, to make it extra memory-preserving (however, refcounting is only meaningful for purely precise objects, where refcounting will cease operation on an object as soon as it is "dirtied" by conservative handling). 
+
+reason: 
+right now I have 2 somewhat different memory management systems; 
+one is precise, uses refcounting, and is based on tagged references; 
+the other is conservative, and makes use of implicitly-typed pointers. 
+these GC's are currently incompatible, and special handling (aka: pain) is required when attempting to mix them. 
+
+the thought is for an eventual path of merging them into a single system... 
+
+precise handling: 
+tagged references; 
+are only stored in registered roots or other precise objects; 
+can make use of refcounting. 
+
+conservative handling: 
+tagged references or pointers; 
+references are stored in any "visible" memory; 
+refcounting is effectively disabled; 
+objects are essentially "nailed down" in terms of memory address; 
+... 
+
+why precise, anyways?: 
+allows faster performance; 
+allows effective refcounting (can be used to automatically free memory absent having to wait for it to be garbage collected...). 
+
+and why imprecise?: 
+it is the only form really all that "usable" from normal C code (tagged references, roots, and other formalities become horribly painful...). 
+
+we will have 2 types of objects: 
+precise object types, which have a structure and behavior known to the garbage collector; 
+imprecise object types, which are viewed as unstructured memory (references, if found, are regarded as imprecise). 
+
+semantics: 
+an object is precise if only referenced in a precise manner; 
+as such, stuffing a tagged reference into a non-root variable will cause it to become "imprecise". 
+
+any imprecise references found here cause referenced objects to be marked imprecise, however the type of object is not changed, and thus any references held by this object will continue being precise. 
+
+an example here would be a list being stored as a raw pointer in a local variable (C-side). this head cons cell will become imprecise (and no longer subject to refcounting), however, all the remaining cons cells will remain uneffected. should then this cons cell be modified (using the usual precise operations) to no longer refer to the rest of the list, then the refcount may drop to 0 and the remainder of the list is freed. 
+
+if a GC pass is performed and discovers that a precise type is only referenced in a precise manner, it may regain its status (and also regain a working reference count...). 
+
+limitations: 
+sadly, for precise objects, ref-counting is either used or not used (inconsistent usage makes a horrible mess), so precise use necessarily requires correct treatment of reference counts (allthough different operations could exist depending on whether or not one was sure ref-counting is done correctly, effectively disabling it when one is unsure); 
+though in many cases, the conversion from precise to imprecise can be handled automatically, in many cases it would need to be done explicitly. 
+
+certain types, such as fixnums, lack a valid pointer-based representation (since they don't exist on the heap), in effect, conversions between pointer and tagged reference based representations could generate extra garbage. 
+
+in the past, for my conservative GC, I have used part of the address space for various built-in types, but this space is much smaller than that afforded to tagged references (at best, in 32-bit x86, I have the upper 1GiB of address space, but I have usually used less), so values falling outside this range (such as larger fixnums) necessarily end up as heap-based objects. 
+
+one possible option: 
+noting their infrequence and tendency to remain the same (the same large value being passed around), I could get by using a kind of "merge table", only using actual heap objects in edge cases (no space left, or hashing conflict). 
+
+or such... 

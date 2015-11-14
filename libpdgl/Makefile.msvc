@@ -1,0 +1,35 @@
+BUILD=.
+MKSUF=.msvc
+LIBSUF=.lib
+DLLSUF=.dll
+EXESUF=.exe
+OBJSUF=.obj
+BINSUF=.exe
+DLLPF=
+
+CC_OUTEXE=cl /Fe
+CC_OUTDLL=cl /LD /Fe
+CC_OUTOBJ=cl /c /Fo
+CC_OUTTOOL=cl /Fe
+
+OVR_CFLAGS=/DOVR_BUILD_DEBUG /DPDGLUI_HASRIFT \
+	/DWIN32 /D_LIB Setupapi.lib ole32.lib shell32.lib
+
+AUX_CFLAGS=
+
+CFLAGS=/Iinclude /I../include /O2 /Zi /arch:SSE2 /MP
+DLL_CFLAGS=$(CFLAGS) /DPDGL_DLL
+DLL_CFLAGS2=$(CFLAGS) /DPDGLUI_DLL $(AUX_CFLAGS)
+# LDFLAGS=bgbsvm.lib ../bgbgc.lib ../bgbdy.lib ../bgbasm.lib
+DLL_LDFLAGS=../bgbasm.lib ../bgbgc.lib ../bgbdy.lib \
+		../libbgbmid.lib ../libtrem.lib ../bgbbtjpg.lib \
+		../libvecmath.lib ../btgecm.lib \
+		opengl32.lib gdi32.lib user32.lib winmm.lib
+#  ../libbsgen.lib
+DLL_LDFLAGS2=libpdgl.lib $(DLL_LDFLAGS)
+
+include Makefile.inc
+
+PDGLUI_AUX_SRCS = $(PDGLUI_OVR_SRCS)
+PDGLUI_AUX_SRCS2 = $(PDGLUI_OVR_SRCS2)
+AUX_CFLAGS = $(OVR_CFLAGS)

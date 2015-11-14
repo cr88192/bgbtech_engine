@@ -1,0 +1,195 @@
+Fast Register IR:
+Low-level statically-untyped (weakly-typed) register-machine model.
+
+Operations are statically typed and operate on registers.
+Most operations will follow a 3 register form.
+
+add_i dest, srca, srcb
+
+so:
+add_i, add_l, add_f, add_d
+sub_i, sub_l, sub_f, sub_d
+...
+
+
+This will be used for a threaded-code interpreter.
+FRIR code will be organized into traces.
+
+FRIR will have up to 256 registers of each type.
+
+union FRIR_Value_u
+{
+	s32 i;
+	s64 l;
+	float f;
+	double d;
+	byte *pb;
+	dyt r;
+};
+
+struct FRIR_Frame_s {
+FRIR_Trace *trace;		//return trace
+int *ri;
+s64 *rl;
+float *rf;
+double *rd;
+byte **ra;
+FRIR_Value *vspos;	//var stack pos
+FRIR_Value *aspos;	//arg stack pos
+};
+
+struct FRIR_Context_s {
+FRIR_Trace *trace;				//current trace
+FRIR_Frame **framestack;		//frame stack base
+FRIR_Value *varstack;			//var stack base
+FRIR_Value *argstack;			//arg stack base
+
+FRIR_Frame *frame;				//active frame
+FRIR_Frame **fspos;				//frame stack position
+FRIR_Value *vspos;				//var stack pos
+FRIR_Value *aspos;				//arg stack pos
+
+int ret;	//ctx return state (0=normal execution)
+
+//register state (shared with frame)
+int *ri;
+s64 *rl;
+float *rf;
+double *rd;
+byte **ra;
+};
+
+The return state will be a magic number indicating the current state of the interpreter. This value will be kept to 0 during normal execution, but will be set for events such as an exception being thrown or a function call/return event, which will be handled outside the normal execution loop.
+
+
+A method will hold an array of opcodes and traces.
+The opcode array will hold all opcodes in the method.
+Traces will represent subsets of this opcode array.
+A trace may not contain a jump or an operation which may throw an exception, but may terminate with such an instruction.
+
+struct FRIR_Method_s {
+FRIR_Opcode *ops;		//first opcode in method
+FRIR_Trace *trace;		//first trace in method
+int n_ops;				//number of opcodes
+int n_trace;			//number of traces
+};
+
+struct FRIR_Trace_s {
+FRIR_Trace *next;		//next trace (linear, per-method)
+FRIR_Trace *jmpnext;	//jump-next trace (direct jump)
+FRIR_Opcode *ops;		//opcodes in trace
+// FRIR_Opcode *opse;	//end of opcodes
+int n_ops;				//number of opcodes
+FRIR_Trace *(*run)(FRIR_Context *ctx, FRIR_Trace *tr);
+FRIR_Trace *(*end)(FRIR_Context *ctx,
+	FRIR_Trace *tr, FRIR_Opcode *op);
+};
+
+run will be the function for handling executing a trace.
+end will be called at the end of a trace, and will give the next trace to execute.
+
+
+struct FRIR_Opcode_s {
+void (*fcn)(FRIR_Context *ctx, FRIR_Opcode *op);
+int op;
+int a, b, c;
+FRIR_Value i;
+};
+
+Registers:
+	RI#, Register Int
+	RL#, Register Long
+	RF#, Register Float
+	RD#, Register Double
+	RA#, Register Address (Raw Pointer)
+
+lea_b dest(RA), base(RA), index(RI)
+lea_w dest(RA), base(RA), index(RI)
+lea_i dest(RA), base(RA), index(RI)
+
+lea2_b dest(RA), base(RA), index(RI), offset(II)
+lea2_w dest(RA), base(RA), index(RI), offset(II)
+lea2_i dest(RA), base(RA), index(RI), offset(II)
+
+void ThOp_Add_I(FRIR_Context *ctx, FRIR_Opcode *op)
+{
+	ctx->ri[op->c]=ctx->ri[op->a]+ctx->ri[op->b];
+}
+
+void ThOp_Lea_I(FRIR_Context *ctx, FRIR_Opcode *op)
+{
+	ctx->ra[op->c]=ctx->ra[op->a]+
+		ctx->ri[op->b]*sizeof(int);
+}
+
+void ThOp_Lea2_I(FRIR_Context *ctx, FRIR_Opcode *op)
+{
+	ctx->ra[op->c]=ctx->ra[op->a]+
+		(ctx->ri[op->b]+op->i.i)*sizeof(int);
+}
+
+//default end function for trace
+void FRIR_Trace_EndDefault(FRIR_Context *ctx,
+	FRIR_Trace *tr, FRIR_Opcode *op)
+{
+	return(tr->next);
+}
+
+//default end function for trace (unconditional jump)
+void FRIR_Trace_EndJumpDefault(FRIR_Context *ctx,
+	FRIR_Trace *tr, FRIR_Opcode *op)
+{
+	return(tr->jmpnext);
+}
+
+//default run function for trace
+void FRIR_Trace_RunDefault(FRIR_Context *ctx, FRIR_Trace *tr)
+{
+	FRIR_Opcode *op, *ope;
+
+	op=tr->ops;
+	ope=tr->ops+tr->n_ops-1;
+	while(op<ope)
+		{ op->fcn(ctx, op); op++; }
+	return(tr->end(ctx, tr, op));
+}
+
+The above may be unrolled, as in:
+void FRIR_Trace_RunDefault4(FRIR_Context *ctx, FRIR_Trace *tr)
+{
+    FRIR_Opcode *op;
+
+    op=tr->ops;
+    op->fcn(ctx, op); op++;
+    op->fcn(ctx, op); op++;
+    op->fcn(ctx, op); op++;
+    return(tr->end(ctx, tr, op));
+}
+or:
+void FRIR_Trace_RunDefault8(FRIR_Context *ctx, FRIR_Trace *tr)
+{
+    FRIR_Opcode *op;
+
+    op=tr->ops;
+    op->fcn(ctx, op); op++;
+    op->fcn(ctx, op); op++;
+    op->fcn(ctx, op); op++;
+    op->fcn(ctx, op); op++;
+    op->fcn(ctx, op); op++;
+    op->fcn(ctx, op); op++;
+    op->fcn(ctx, op); op++;
+    return(tr->end(ctx, tr, op));
+}
+
+The combination of unrolling and possibly adding redundancy should allow some exploitation of the branch-predictor.
+
+
+void FRIR_Thread_RunStep(FRIR_Context *ctx)
+{
+	FRIR_Trace *tr;
+
+	tr=ctx->trace;
+	while(!ctx->ret)
+		{ tr=trace->run(ctx, tr); }
+	ctx->trace=tr;
+}

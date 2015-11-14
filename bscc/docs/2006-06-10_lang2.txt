@@ -1,0 +1,233 @@
+Redesign the core of the idea.
+
+The core language will not be statically typed, but dynamic with type annotation and constraints.
+
+The language used by the main compiler will be fairly close to being a lisp/scheme variant with a prototype object system.
+
+The Null Keyword (written as a single colon) will be used to seperate annotations from code. This will be followed by key/value pairs which will not represent executable expressions (any unknown keys are ignored, and there is not necissarily any relation between the keys and the expression being compiled).
+
+(defun foo x x)
+(foo 2 3 : bar: baz) => (2 3)
+
+
+Scoping:
+The default toplevel scope will be object based.
+
+
+Constant ID, or 'id'. Stores id numbers for constants.
+IDs and stack indices are stored as 1 or 2 bytes. 0..127 are coded as a signle byte, 128..255 are 2 bytes (high-low order).
+
+Jump addresses are always 16 bits, and are stored as a 2s complement LE short.
+
+Ops:
+NOP		0	()	//do nothing
+BLOCK		1	()	//blocks if limit!=0
+DBGMARK	2	()	//sets the filename and line number
+CGENAST	3	()	//syntax to be passed to code generator
+
+//16-31, variable ops
+PUSH		16	(id)	//push an item on the stack
+POP		17	()	//pop an item from the stack
+LOAD		18	(id)	//load an item from a variable onto stack
+STORE		19	(id)	//store an item on stack into a variable
+BIND		20	(id)	//bind item on stack to new variable
+DYNBIND	21	(id)	//dynamically bind an item on the stack
+LEXBIND	22	(id)	//lexically bind an item on the stack
+LOADINDEX	23	()	//load an index into an object
+STOREINDEX	24	()	//store into an index in an object
+PUSHSELF	25	()	//push 'self' onto stack
+CLEARENV	26	()	//clear lexical bindings to mark
+BINDPATTERN	27	()	//bind vars to a pattern
+LOADMINDEX	28	()	//load from a multi-index into an object
+STOREMINDEX	29	()	//store into a multi-index in an object
+TRYLOAD	30	()	//try to load an item
+
+//32-47 block ops
+MARK		32	//mark the current stack location
+CALL		33	//call a given function
+					//if an index is given, points to a
+					//function name
+TAILCALL	34	//tail call a given function
+					//if an index is given, points to a
+					//function name
+RET		35	//return from current function
+PUSHENV		36	//push a new level of dynamic bindings
+POPENV		37	//pop a level of dynamic bindings
+ENTER		38	//enter a block
+EXIT		39	//exit the current block
+METHODCALL	40	//call a given method
+BEGINCC		41	//begin a block with the current
+					//continuation
+BEGINOBJ	42	//begin a block with a new object
+CLOSE		43	//close over a block making a lambda
+METHODTAILCALL	44	//tail-call a given method
+FLINK		45	//link functions together
+FRAME		46	//create a new frame
+CLOSE2		47	//close, but have it bound in self
+
+//48-63 stack ops
+DUP		48	//dup items on stack
+EXCH		49	//swap items on stack
+INDEX		50	//refer to an item on stack
+RINDEX	51	//refer to an item relative to mark
+SETINDEX	52	//set an item on the stack
+SETRINDEX	53	//set an item on the stack
+					//relative to mark
+
+//64-111 misc ops
+UNARYOP	67	//unary operation
+BINARYOP	97	//binary operation
+
+//112-127 control flow ops
+THROW		112	//throw exception
+BEGINTRY	113	//begins the body of a try block
+ENDTRY	114	//ends the body of a try block
+CATCH		115	//add exception handler
+
+JMP		118	//jump to rel offset
+JMP_TRUE	119	//jump to rel offset if true
+JMP_FALSE	120	//jump to rel offset if false
+
+//128-143 data ops
+ARRAY		128	//new array from values
+DICT		129	//new dict from values
+ATTR		130	//new attribute from name and value
+OBJECT		131	//new empty object
+VECTOR		132	//new vector from values
+TERMINAL	133	//new terminal from value
+COMPLEX		134	//new complex from values
+MATRIX		135	//new matrix from values
+LIST		136	//new list from values
+
+				NOP		--
+				BLOCK		--
+				DBGMARK(if, ln)	--
+				CGENAST(index)	--
+
+				PUSH(index)	-- <value[index]>
+<value>			POP		--
+				LOAD(index)	-- <load(value[index])>
+<value>			STORE(index)	--
+<value>			BIND(index)	--
+<value>			DYNBIND(index)	--
+<value>			LEXBIND(index)	--
+<obj> <index>		LOADINDEX	-- <load_index(object, index)>
+<obj> <index> <val>	STOREINDEX	--
+				PUSHSELF	-- <self>
+				CLEARENV	--
+<pattern> <value>		BINDPATTERN	--
+<MARK> <obj> <index*>	LOADMINDEX	-- <load_index(object, index)>
+<MARK> <obj> <index*> <val>	STOREMINDEX	--
+				TRYLOAD(index)	-- <load(value[index])>
+
+				MARK		--
+<MARK> <*> <func>		CALL		-- <value>
+<MARK> <*> <func>		TAILCALL	--
+<value>			RET		--
+				PUSHENV		--
+				POPENV		--
+<block>			ENTER		--
+				EXIT		--
+<MARK> <*> <obj> <slot>	METHODCALL	-- <value>
+<MARK> <*> <obj> <slot>	METHODTAILCALL	--
+				BEGINCC(exit)	-- <cc>
+<object>			BEGINOBJ(exit)	--
+<block>			CLOSE		-- <lambda>
+<block>			CLOSE2		-- <lambda>
+<lambda> <lambda>		FLINK		-- <lambda>
+				FRAME(exit)	--
+
+<value>			DUP		-- <value> <value>
+<x> <y>			EXCH		-- <y> <x>
+<x[n]> <*> <x[0]>		INDEX(n)	-- <x[n]> <*> <x[0]> <x[n]>
+mark <x[0]> <*> <x[n]>	RINDEX(n)
+	-- mark <x[0]> <*> <x[n]> <*> <x[n]>
+<x[n]> <*> <x[0]> <val>	SETINDEX(n)	-- <x[n]> <*> <x[0]>
+mark <x[0]> <*> <x[n]> 	<val>	SETRINDEX(n)
+	-- mark <x[0]> <*> <x[n]>
+
+<value>			UNARYOP(op)	-- <\op\value>
+<left> <right>		BINARYOP(op)	-- <left\op\right>
+
+				JMP(rel)	--
+<cond>			JMP_TRUE(rel)	--
+<cond>			JMP_FALSE(rel)	--
+				THROW(index)	--
+				BEGINTRY	--
+				ENDTRY		--
+				CATCH(index, rel)	--
+
+<MARK> <values*>		ARRAY		-- <array[values]>
+<MARK> <values*>		DICT		-- <dict{values}>
+<name> <value>		ATTR		-- <attribute(name, value)>
+				OBJECT		-- <empty-object>
+<MARK> <values*>		VECTOR		-- <vector{values}>
+<value>			TERMINAL	-- <terminal(value)>
+<MARK> <values*>		COMPLEX		-- <complex{values}>
+<MARK> <values*>		MATRIX		-- <matrix{values}>
+<MARK> <values*> <rest>	LIST		-- <list{values; rest}>
+
+
+Function Syntax
+
+note the:
+fib(x)if(x>2)fib(x-1)+fib(x-2) else 1;
+example.
+
+unwinding each idea:
+int fib(int x)if(x>2)fib(x-1)+fib(x-2) else 1;
+int fib(int x) { if(x>2)fib(x-1)+fib(x-2); else 1; }
+int fib(int x)
+{
+    if(x>2)return(fact(x-1)+fact(x-2));
+        else return(1);
+}
+
+or:
+int fib(int x) { return((x>2)?(fib(x-1)+fib(x-2)):1); }
+
+or, js:
+function fib(x)
+{
+    if(x>2)return(fib(x-1)+fib(x-2));
+        else return(1);
+}
+
+
+note that, by itself, 'fib(x)' is ambiguous. it could be part of a definition, or it could be a function call.
+
+for now, the parser will assume it is parsing a function call.
+
+in general, 2 disjoint expressions in a row (without a seperating comma or semicolon). will be viewed as invalid.
+
+I will likely allow using this case for function definitions.
+
+fib(x)<EXPR>
+is a function.
+
+first is parses an expression:
+fib(x) and determines that there is nothing following.
+if something is there, it is parsed, and the original is re-interpreted as the definition part.
+
+great occurance:
+in c-style parsing, there are many (temporary) ambiguities.
+
+'foo.bar' looks like a slot access.
+'foo.bar()' is a method call.
+'foo.bar=3' is an assignment.
+
+each is rather different, but one does not know which until after they parse the first part.
+
+also very important is precedence and the (lack of) fixed special cases. fixed special cases (eg: <NAME>'(' that looks like a function call) generally have limited applicability, one needs to be more flexible. a lot comes down to precedence (as many things, including the function definition in the previous examples, are just a special case of operators).
+
+basically, I am attaching function definition to a conceptual "null" operator, which will have very low precedence (only slightly higher than the 'statement') and will be right associative (many other ops are left associative for the same level).
+
+(x)(y)x;
+
+it is useless to have it left associative, as (y) means something a little different as an expression than as a definition, and a function is not a valid args list for another function.
+
+so, the above will be equivalent to:
+(x)((y)x); //also valid
+
+note that, consequently, (<EXPR>) and <EXPR> will need different parse tree representations, but this is no big deal:
+(paren <EXPR>) will normally compile the same as <EXPR>.

@@ -1,0 +1,136 @@
+CFLAGS=-I. -Iinclude
+
+all: libpdgl.a libpdglui.a libpdgl.html
+
+FORCE:
+
+%.o: %.c
+	gcc $(CFLAGS) -pg -g -c -o $@ $<
+
+%.ao: %.as
+	nasm -f win32 -o $@ $<
+
+PDGL_G_OBJS = \
+	base/render/fonts.o \
+	base/render/console.o \
+	base/render/gl_draw.o \
+	base/render/gl_texture.o \
+	base/render/drawtext.o \
+	base/render/pcx.o \
+	base/render/png.o
+
+PDGL_OBJS = \
+	$(PDGL_G_OBJS) \
+	base/system/gl_win.o \
+	base/system/mouse_win.o \
+	base/system/input.o
+
+PDGLUI_OBJS = \
+	gui/forms.o \
+	gui/textarea.o \
+	gui/message.o \
+	gui/widget.o \
+	gui/widget_input.o \
+	gui/widget_box.o \
+	gui/widget_label.o \
+	gui/widget_scroll.o \
+	gui/widget_tree.o
+
+PD3D_OBJS = \
+	pd3d/core/geom.o \
+	pd3d/core/solid.o \
+	pd3d/core/solid_brep.o \
+	pd3d/core/solid_obb.o \
+	pd3d/core/solid_aabb.o \
+	pd3d/core/solid_cylinder.o \
+	pd3d/core/solid_sphere.o \
+	pd3d/core/model.o \
+	pd3d/core/model_generic.o \
+	pd3d/core/vector.o \
+	pd3d/core/math_quat.o \
+	pd3d/core/math_v3f.o \
+	pd3d/core/math_vnf.o \
+	pd3d/core/math_mf.o \
+	pd3d/core/math_plane.o \
+	pd3d/core/mathlib_d.o \
+	pd3d/core/mathlib_f.o \
+	\
+	pd3d/render/prim3d.o \
+	pd3d/render/draw2.o \
+	pd3d/render/light.o \
+	\
+	pd3d/solid/solid_base.o \
+	pd3d/solid/solid_core.o \
+	pd3d/solid/solid_math.o \
+	\
+	pd3d/entity/entity2.o \
+	pd3d/entity/pdsif2.o \
+	pd3d/entity/query.o \
+	\
+	pd3d/backend/geom_trimesh.o \
+	pd3d/backend/model_trimesh.o \
+	\
+	pd3d/format/fmt_ac3d.o \
+	pd3d/format/fmt_qmdl.o \
+	pd3d/format/fmt_qmd3.o \
+	pd3d/format/fmt_map.o \
+	pd3d/format/fmt_smd.o \
+	pd3d/format/loadsave.o \
+	pd3d/format/sprite.o \
+	pd3d/format/polys.o \
+	\
+	pd3d/format/geom_fmt.o \
+	\
+	pd3d/format/bspcache/bsp_build.o \
+	pd3d/format/bspcache/bsp_cache.o \
+	pd3d/format/bspcache/bsp_lmap.o \
+	pd3d/format/bspcache/bsp_phys2.o \
+	pd3d/format/bspcache/bsp_phys.o \
+	pd3d/format/bspcache/bsp_render.o \
+	pd3d/format/bspcache/bsp_util.o \
+	pd3d/format/bspcache/light_cmpr.o
+
+
+PDGL_SRCS = \
+	$(PDGL_OBJS:.o=.c)
+
+PDGLUI_SRCS = \
+	$(PDGLUI_OBJS:.o=.c)
+
+PD3D_SRCS = \
+	$(PD3D_OBJS:.o=.c)
+
+
+include/pdgl/auto.h: $(PDGL_SRCS)
+	autohead $(PDGL_SRCS) > include/pdgl/auto.h
+
+include/pdgl/tyauto.h: include/pdgl/types.txt
+	adler32 -header include/pdgl/types.txt include/pdgl/tyauto.h
+
+include/pdglui/auto.h: $(PDGLUI_SRCS)
+	autohead $(PDGLUI_SRCS) > include/pdglui/auto.h
+
+include/pdglui/tyauto.h: include/pdglui/types.txt
+	adler32 -header include/pdglui/types.txt include/pdglui/tyauto.h
+
+include/pd3d/auto.h: $(PD3D_SRCS)
+	autohead $(PD3D_SRCS) > include/pd3d/auto.h
+
+include/pd3d/tyauto.h: include/pd3d/types.txt
+	adler32 -header include/pd3d/types.txt include/pd3d/tyauto.h
+
+libpdgl.a: include/pdgl/auto.h include/pdgl/tyauto.h $(PDGL_OBJS)
+	ar -cr libpdgl.a $(PDGL_OBJS)
+
+libpdglui.a: include/pdglui/auto.h include/pdglui/tyauto.h $(PDGLUI_OBJS)
+	ar -cr libpdglui.a $(PDGLUI_OBJS)
+
+libpd3d.a: include/pd3d/auto.h include/pd3d/tyauto.h $(PD3D_OBJS)
+	ar -cr libpd3d.a $(PD3D_OBJS)
+
+libpdgl.html: $(PDGL_SRCS) $(PDGLUI_SRCS)
+	bgbdoc libpdgl.html $(PDGL_SRCS) $(PDGLUI_SRCS) $(PDGL_HDRS)
+
+clean:
+	rm -rf $(shell find -name \*.o)
+	rm -rf $(shell find -name \*.a)

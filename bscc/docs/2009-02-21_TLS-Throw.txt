@@ -1,0 +1,95 @@
+TLS and Exception Handling
+
+TLS will be handled by the compiler by emitting calls to special magic thunks. These thunks will be vaguely similar to those used in XCall.
+
+_XT_<name>__<size>_<reg>
+
+Where:
+'_XT_' means 'TLS'.
+'name' gives the mangled name for the variable.
+'size' gives the size (in bytes) needed for the TLS var.
+'reg' gives the register which should contain the returned pointer.
+
+So, when called, this function will return a pointer to the storage for the thread-local-variable in question. The value is returned in the requested register, but no other registers are to be effected.
+
+
+Throw
+
+Idea:
+A generic API will be used which will not particularly depend on where the chain is stored. Things will be defined in terms of C, but it is not assumed that this will be used from C (or be directly accessible).
+
+struct _BEH_CatchInfo_s {
+_BEH_CatchInfo *next;	//next info in list
+_BEH_CatchVTab *vtab;	//handler functions
+void *frame;		//frame of function (handler specific)
+};
+
+struct _BEH_CatchState_s {
+_BEH_CatchRegs *regs;	//state captured at throw
+_BEH_ResumeRegs *res;	//state to resume-to
+};
+
+struct _BEH_CatchRegs_s {
+#ifdef __i386__
+u32 eax, ecx, edx, ebx;
+u32 esi, edi, ebp, esp;
+//...
+#endif
+};
+
+struct _BEH_ResumeRegs_s {
+#ifdef __i386__
+u32 _p0, _p1, eip, ebx;
+u32 esi, edi, ebp, esp;
+#endif
+};
+
+struct _BEH_CatchVTab_s {
+int (*handle_f)(_BEH_CatchInfo *info, _BEH_CatchState *state);
+int (*unwind_f)(_BEH_CatchInfo *info, _BEH_CatchState *state);
+};
+
+
+Alternative:
+Much simpler approach, assume C-level API.
+
+tehState state;	//exception handling state
+
+state=tehBegin();
+if(tehTryP(state))
+{
+}else if(tehCatchP(state, "Foo"))
+{
+}...
+else
+{
+	//unknown state
+}
+//finally
+tehEnd(state);
+
+
+So, 'tehBegin()' creates and registers the handler, using 'state' to hold any specific info.
+'tehEnd()' unregisters the handler.
+
+'tehTryP()' will return true if we are in the 'try' branch of the process, and false if we are in some other state.
+
+int tehCatchP(tehState state, char *name);
+
+Will return true if a given exception (or a derived exception) has occured. If name is NULL, this will return true if any exception has occured (this being useful for handling unknown exceptions).
+
+
+tehThrow(char *name);
+tehRethrow(tehState state);
+
+Throw or Rethrow exception...
+
+
+'tehUnwindP()' will return true if currently unwinding, but no particular error handling is needed (the proper behavior will be to do any cleanup and rethrow the current state).
+
+if(tehUnwindP(state))
+{
+	//cleanup
+	tehRethrow(state);
+}
+

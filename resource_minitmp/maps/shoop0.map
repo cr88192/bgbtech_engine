@@ -1,0 +1,78 @@
+{
+"classname" "worldspawn"
+ cubeDef1 ( -128 -128 -70 ) ( 128 128 -58 ) skies/polluted_earth ( 0 0 0 ) 1
+ cubeDef1 ( -128 -128 58 ) ( 128 128 70 ) skies/polluted_earth ( 0 0 0 ) 1
+ cubeDef1 ( -134 -128 -64 ) ( -122 128 64 ) skies/polluted_earth ( 0 0 0 ) 1
+ cubeDef1 ( 122 -128 -64 ) ( 134 128 64 ) skies/polluted_earth ( 0 0 0 ) 1
+ cubeDef1 ( -128 -134 -64 ) ( 128 -122 64 ) skies/polluted_earth ( 0 0 0 ) 1
+ cubeDef1 ( -128 122 -64 ) ( 128 134 64 ) skies/polluted_earth ( 0 0 0 ) 1
+}
+{
+"classname" "light"
+"origin" "0.00 0.00 0.00"
+"light" "1000"
+"color" "0.58 0.58 0.58"
+"linear" "0"
+}
+{
+"classname" "info_player_fixed2d"
+"origin" "0.00 -100.00 -28.00"
+"angle" "90"
+"view_mins" "-128 -96 0"
+"view_maxs" "128 96 4096"
+}
+{
+"classname" "misc_squidship"
+"origin" "-30.17 56.41 0.57"
+"light" "100"
+"color" "0.58 0.58 0.58"
+"linear" "0"
+"model" "s_squidship"
+"target" "t0"
+}
+{
+"classname" "misc_model_breakable"
+"origin" "77.61 59.56 1.55"
+"light" "100"
+"color" "0.58 0.58 0.58"
+"linear" "0"
+"model" "s_planet"
+"targetname" "t0"
+}
+{
+"classname" "misc_model"
+"origin" "43.54 19.71 0.76"
+"light" "100"
+"color" "0.58 0.58 0.58"
+"linear" "0"
+"model" "s_tower_exp"
+"wait" "15"
+"count" "16"
+"delay" "4"
+"scale" "2"
+}
+{
+"classname" "target_speaker"
+"origin" "33.32 -20.11 -0.78"
+"light" "100"
+"color" "0.58 0.58 0.58"
+"linear" "0"
+"noise" "sound/voice/TowerExplode.wav"
+"wait" "15"
+}
+{
+"classname" "target_changelevel"
+"map" "start"
+"targetname" "t1"
+}
+{
+"classname" "trigger_always"
+"map" "start"
+// "target" "t1"
+"delay" "60"
+}
+{
+"classname" "light_sunrel"
+"light" "750"
+"origin" "0 0 0"
+}

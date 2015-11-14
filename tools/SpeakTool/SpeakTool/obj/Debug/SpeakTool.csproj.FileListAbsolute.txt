@@ -1,0 +1,16 @@
+F:\bgb.proj.pdsys52\tools\SpeakTool\SpeakTool\bin\Debug\SpeakTool.exe
+F:\bgb.proj.pdsys52\tools\SpeakTool\SpeakTool\bin\Debug\SpeakTool.pdb
+F:\bgb.proj.pdsys52\tools\SpeakTool\SpeakTool\obj\Debug\ResolveAssemblyReference.cache
+F:\bgb.proj.pdsys52\tools\SpeakTool\SpeakTool\obj\Debug\SpeakTool.Form1.resources
+F:\bgb.proj.pdsys52\tools\SpeakTool\SpeakTool\obj\Debug\SpeakTool.Properties.Resources.resources
+F:\bgb.proj.pdsys52\tools\SpeakTool\SpeakTool\obj\Debug\SpeakTool.csproj.GenerateResource.Cache
+F:\bgb.proj.pdsys52\tools\SpeakTool\SpeakTool\obj\Debug\SpeakTool.exe
+F:\bgb.proj.pdsys52\tools\SpeakTool\SpeakTool\obj\Debug\SpeakTool.pdb
+F:\bgb.proj.pdsys53\tools\SpeakTool\SpeakTool\bin\Debug\SpeakTool.exe
+F:\bgb.proj.pdsys53\tools\SpeakTool\SpeakTool\bin\Debug\SpeakTool.pdb
+F:\bgb.proj.pdsys53\tools\SpeakTool\SpeakTool\obj\Debug\ResolveAssemblyReference.cache
+F:\bgb.proj.pdsys53\tools\SpeakTool\SpeakTool\obj\Debug\SpeakTool.Form1.resources
+F:\bgb.proj.pdsys53\tools\SpeakTool\SpeakTool\obj\Debug\SpeakTool.Properties.Resources.resources
+F:\bgb.proj.pdsys53\tools\SpeakTool\SpeakTool\obj\Debug\SpeakTool.csproj.GenerateResource.Cache
+F:\bgb.proj.pdsys53\tools\SpeakTool\SpeakTool\obj\Debug\SpeakTool.exe
+F:\bgb.proj.pdsys53\tools\SpeakTool\SpeakTool\obj\Debug\SpeakTool.pdb

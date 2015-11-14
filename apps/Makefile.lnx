@@ -1,0 +1,30 @@
+BUILD=.
+MKSUF=.lnx
+LIBSUF=.a
+DLLSUF=.so
+EXESUF=.elf
+OBJSUF=.o
+DLLPF=lib
+
+CC_OUTEXE=gcc -o 
+CC_OUTDLL=gcc -shared -o 
+CC_OUTOBJ=gcc -c -o 
+
+EXE = .elf
+BIN = .bin
+O = .o
+A = .a
+
+CFLAGS=-Iinclude -I../include -g -pg
+DLL_CFLAGS=$(CFLAGS) -DBGBDY_DLL
+LDFLAGS=-g -pg -L.. -lbgbdy -lbgbgc -lbgbdy -lbgbasm -lzpack -lm \
+	 -lbgbsvm -lbgbcc -lbgbsxil \
+	-llbxgl2 -lpdglui -lpdgl \
+	-lbtgecm -lbgbnet \
+	-lbsde -lvecmath -lbsgen -lbgbmid -ltrem \
+	-lGL -ldl \
+	-Wl,-rpath,'$$ORIGIN'
+
+
+include Makefile.inc
+

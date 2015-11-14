@@ -1,0 +1,39 @@
+//Gunner
+
+bones proto_tnk0.bone
+
+vmesh proto_tnk0.ac
+
+anim stand stand0.anim
+anim walk walk1.anim
+
+anim attak1 attack1.anim
+anim attak2 attack2.anim
+anim attak3 attack3.anim
+anim attak4 attack4.anim
+
+anim pain1 pain1.anim
+anim pain2 pain2.anim
+anim pain3 pain3.anim
+
+anim death1 death1.anim
+
+// anim run run0.anim
+// anim run runs0.anim
+
+// anim gun0 gun0.anim
+
+// anim duck duck0.anim
+
+// anim death2 death2.anim
+// anim death3 death3.anim
+
+// anim block block0.anim
+
+// anim attak1 attack1.anim
+// anim attack2 attack2.anim
+
+
+origin 0 0 32
+scale 2.5 2.5 1.25
+xlat 0 0 30

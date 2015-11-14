@@ -1,0 +1,4 @@
+$flags voxel lightmat
+$vox_img_top_scale 2
+$vox_img_side_scale 2
+$vox_img_bot_scale 2

@@ -1,0 +1,469 @@
+BTIC2C is a possible simplification of BTIC2B.
+
+Idea:
+Simpler loosely JPEG-like format.
+The actual image format will be essentially JPEG with 4-component YUVA encoding, modified VLC, and possibly modified headers;
+Layering will be handled separately.
+
+Block size will remain 8x8.
+Will use WHT and the YCgCo colorspace (instead of DCT and YCbCr).
+
+HDR images:
+Encode Half-Floats as if they were 16-bit integer data;
+Also support linear-scale HDR, where the logical "normal" range remains 0-255, but brightness values may be outside this range.
+
+Canonical Modes:
+* 4:2:0, 2x2 Y blocks, U and V block
+* 4:2:0 A (4:2:0:2), 2x2 Y blocks, U, V, and A block
+* 4:2:0 B (4:2:0:4), 2x2 Y blocks, U, V, and 2x2 A blocks
+* 4:4:4, Full Sample Y, U, and V block
+* 4:4:4 A (4:4:4:4), Full Sample Y, U, V, and A block
+
+Baseline:
+WHT, LDR (8-bit), YCgCo or RCT.
+
+Optional:
+DCT, HDR, YCbCr.
+
+
+=== TLV ===
+
+Use a variant of the BTIC1C/BTIC1D TLV scheme.
+
+Possible:
+* 0xE0: Reserved or End-Of-Image
+* 0xE1: len=Word24, Image Data
+* 0xE2: Reserved
+* 0xE3: len=Word24, tag=TWOCC
+* 0xE4: len=Word24, tag=FOURCC
+* 0xE5: len=Byte, tag=TWOCC
+* 0xE6: len=Word56, tag=FOURCC
+
+Values will be encoded in big-endian ordering.
+
+
+=== Bitstream ===
+
+Bit values will be coded MSB first.
+
+==== Rice Codes ====
+
+Some headers and other data will use Rice codes.
+
+These will have the format:
+* Zero or more 1 bits terminated by a 0 bit (q).
+* An N bit suffix (r).
+
+The q value represents a unary code, where the number of 1 bits present gives its value.
+
+The logical value of a Rice code will be:
+* (q<<n)|r
+
+Where n is the Rice Factor (Rk).
+
+Rice codes may be sign-folded:
+* 0, -1, 1, -2, 2, ...
+
+Which will be referred to here as a Signed Rice value.
+
+
+==== Adaptive Rice ====
+
+Adaptive Rice codes will basically be the same as normal Rice codes, except with the special feature that they will adapt the rice-factor based on the values coded.
+
+The q value will influence the adjustment, where:
+* 0, decrement Rice Factor (Rk=Rk-1)
+* 1, leave Rice Factor as-is
+* 2+, increase Rice Factor by floor(log2(q))
+** 2,3 -> 1
+** 4-7 -> 2
+** 16-31 -> 3
+** ...
+
+
+=== Headers ===
+
+
+==== Huffman Tables ====
+
+TWOCC: 'H0'-'H9', 'Ha'-'Hf'
+
+Huffman Table.
+
+TableID:Byte
+* High 4 Bits, Table Type
+* Low 4 Bits, Table Special
+
+Table Type 0:
+* TS is unused, Must Be Zero
+* Followed by 16 bytes, which give the symbol counts for each length (1-16).
+* This is then followed by bytes indicating which symbols appear in each length.
+** Note: Symbols are required to be in lexicographic ordering.
+
+
+Table Type 1:
+* TS gives Rice Factor
+** 0 means Adaptive Rice
+*** Initial Rk=4
+** 1-15 give a fixed Rice Factor
+* This is followed by the encoded code-lengths.
+
+Where symbol values are as such:
+* 0: Non-Coded Symbol
+* 1-16: Symbol Code Length
+* 17: +3 Bits, encode a run of the prior length.
+* 18: +7 Bits, encode a run of the prior length.
+* 19: End of Table
+
+
+Huffman-Table symbols are encoded with a permutation:
+* 16, 17, 18, 0, 8,7, 9,6, 10,5, 11,4, 12,3, 13,2, 14,1, 15, 19
+* This organizes the symbols (roughly) in their order of probability
+** Rice-code 0 maps to 16, 1 maps to 17, ...
+
+
+==== Quantization Table ====
+
+TWOCC: 'Q0'-'Q9', 'Qa'-'Qf'
+
+Quantization table.
+
+TableID:Byte
+* High 4 Bits, Table Type
+* Low 4 Bits, Table Special
+
+Table Type 0:
+* TS gives the ID number of the table.
+* The quantization table is encoded as a raw 64 bytes.
+
+
+Table Type 1:
+* TS gives the Rice Factor
+** 0 means Adaptive Rice
+*** Initial Rk=4
+** 1-15 give a specific number of bits (constant Rice factor).
+
+Each coded table consists of an collection of Signed Rice-coded values, where values >0 are used to encode literal value deltas, and values <0 indicate runs of the prior value.
+
+Deltas are encoded with the Rice-coded value being interpreted as a VLC prefix (VLCB), which is used to encode a signed VLC value representing the difference from the prior quantization value.
+
+
+==== Start Of Frame ====
+
+TWOCC: 'SF'
+
+Start Frame Header.
+
+Defines some general information about the image.
+
+* BitCount:Byte
+** Image Target Bit Count
+*** Gives the bit-depth for each component.
+*** A 24 or 32-bit true-color image would have 8 here.
+* PixelType:Byte
+** Image Target Pixel Type
+*** Target pixel-type for the image.
+* Height:Word
+* Width:Word
+* NumComponents:Byte
+* For Each Component:
+** ComponentID:Byte
+** SampleFactor:Byte
+*** High 4: Horizontal Sampling
+*** Low 4: Vertical Sampling
+** QuantizationTable:Byte
+* Mini Headers:
+** Tag:Byte
+** Length:Byte
+** Value:Byte[Length]
+
+Mini Header Tags:
+* 0x00: End Of Mini Headers
+** No Data, Length Must Be Zero
+* 0x01: Transforms
+** ColorSpace:Byte
+*** 0=YCbCr
+*** 1=RCT
+*** 2=YCgCo
+** BlockTransform:Byte
+*** 0=DCT (Discrete Cosine Transform)
+*** 1=WHT (Walsh Hadamard Transform)
+*** 2=RDCT (Reversible DCT)
+* 0x02-0xFF
+** Reserved (for Primary Header Extensions)
+** Note that user-defined extension features should use FOURCC headers instead.
+** These headers are Must Understand.
+
+
+PixelType:
+* 0=RGBA (32-bit RGBA, LDR)
+* 1=RGB (24-bit RGB, LDR)
+* 2=BRGA (32-bit BGRA, LDR)
+* 3=BGR (24-bit BGR, LDR)
+* ...
+* 16=DXT1 (Opaque)
+* 18=DXT5
+* 23=DXT1F (DXT1 Fast)
+* 24=DXT5F (DXT5 Fast)
+* 25=DXT1A (DXT1+Alpha)
+* ...
+* 32=RGBA Q11.4 (64-bit fixed-point RGBA, HDR)
+* 33=RGB Q11.4 (48-bit fixed-point RGB, HDR)
+* 34=RGBA F32 (128-bit floating-point RGBA, HDR)
+* 35=RGB F32 (96-bit floating-point RGB, HDR)
+* 36=RGBA F16 (64-bit floating-point RGBA, HDR)
+* 37=RGB F16 (48-bit floating-point RGB, HDR)
+* 38=RGBA LS16 (64-bit linear-scale RGBA, HDR)
+* 39=RGB LS16 (48-bit linear-scale RGB, HDR)
+
+PixelType indicates the format which the image was encoded for, and may give a hint as to which format should be used to decode. Many of these will have little effect on the contents of the coded image with the exception of the HDR formats, which may indicate the representation of the pixel values.
+
+Q11.4 Pixels will store the pixels with 4 fractional bits and 3 additional value bits. In this format, the logical float=1.0 or byte=255 point is located at 4080 (255*16).
+
+F32 will encode 32-bit float values. If encoded with BitCount==16, these will be encoded equivalently to the F16 case, and if encoded with BitCount==32, the float values will be encoded directly.
+
+F16 will encode 16-bit float values in the Half-Float format. Within the codec, they will be treated as if they were 16-bit integer values.
+
+LS16 will basically be 16-bit integer values with the 1.0 point remaining at 255 (thus having an effective dynamic range of around +/- 128.5).
+
+
+==== Start Of Scan ====
+
+TWOCC: 'SS'
+
+Start Scan Header.
+
+* NumScanComponents:Byte
+* Scan Components
+** ComponentID:Byte
+** Tables:Byte
+*** High 4: DC Table
+*** Low 4: AC Table
+** Tables2:Byte (If(ComponentID&16))
+*** High 4: DC Table 2
+*** Low 4: AC Table 2
+* Scan Start (0)
+* Scan End (63)
+* Component Bit Range (0x00)
+* Mini Headers:
+** Tag:Byte
+** Length:Byte
+** Value:Byte[Length]
+
+The Huffman table indices will be raw table numbers.
+
+DC Table 2 and AC Table 2 will be alternate DC and AC tables.
+If present, these tables will be used for encoding Z-Escaped values, as opposed to using the primary tables.
+At present, DC==DC2.
+
+
+== Image Data ==
+
+This will be data inside the image data chunks.
+
+For P-Frames, the image-data chunk may appear by itself.
+
+Data within this lump is entropy coded according to the headers, and will consist primarily of a grid of macroblocks with some embedded commands.
+
+
+=== Block Structure ===
+
+Blocks will be laid out with their components in zigzag order.
+
+Within each macroblock, the blocks for each component will be encoded in raster-order.
+
+ Ex: YUV 4:2:0(A)
+  Y0 Y1 Y2 Y3 U0 V0 A0  Y4 Y5 Y6 Y7 U1 V1 A1
+
+
+==== (Possible) Coefficient Planes ====
+
+Potentially images can be laid out as coefficient planes (in zigzag order).
+
+For Planar Images:
+* DC Plane
+** DC coefficients for all blocks
+* AC1 Plane
+** First AC coefficient for each block
+* AC2 Plane
+* ...
+* AC63 Plane
+
+Then a plane is encoded for each component.
+
+Possibly this is done per macroblock scanline, or for a group of scanlines (may be whole image).
+
+The blocks would be laid out in raster order (within each plane).
+
+Ex:
+ Y0 Y1 U0 Y4 Y5 U1 Y8  Y9  U2
+ Y2 Y3 V0 Y6 Y7 V1 Y10 Y11 V2
+
+Would encode the blocks in the order:
+ Y0 Y1 Y4 Y5 Y8 Y9 Y2 Y3 Y6 Y7 Y10 Y11
+ U0 U1 U2
+ V0 V1 V2
+
+
+=== VLC ===
+
+Use a variant of the Z3V5 scheme.
+High 3 bits will be Z, and the low 5 bits will be V.
+
+* Z=0-6
+** Directly encode a run of 0-6 zeroes.
+* Z=7
+** Escape longer runs of 0, as well as out-of-range values.
+*** V encodes VLC for zero-count.
+*** Also allows encoding larger values or commands.
+
+
+ AC Coefficients will use a Z3.V5 scheme, with Z:
+ Z=0-6: Zero Count, V=AC Value (VLCA)
+ Z=7: Escape, V=Zero Count (VLCB)
+ 	T3.W5: T=Tag, W=Value
+ 		T=0-3, W=AC Value (VLCA)
+ 		T=4, W=Command Op (VLCB)
+ 		T=5, W=Command Arg (VLCA)
+ 		Z=6, Packed-Vector (PVA)
+ 		Z=7, Reserved
+ 
+ A Z3V5 variant will also be used for DC Coefficients:
+ 	Z=0-3: Value
+ 	Z=4, Command Op (VLCB)
+ 	Z=5, Command Arg (VLCA)
+ 	Z=6, Reserved
+ 	Z=7, Reserved
+ 
+ 
+ 
+ VLCA (Prefix, Range, Extra):
+  0- 3,     0-    3, 0
+  4/ 5,     4-    7, 1
+  6/ 7,     8-   15, 2
+  8/ 9,    16-   31, 3
+ 10/11,    32-   63, 4
+ 12/13,    64-  127, 5
+ 14/15,   128-  255, 6
+ 16/17,   256-  511, 7
+ 18/19,   512- 1023, 8
+ 20/21,  1024- 2047, 9
+ 22/23,  2048- 4095, 10
+ 24/25,  4096- 8191, 11
+ 26/27,  8192-16383, 12
+ 28/29, 16384-32767, 13
+ 30/31, 32768-65535, 14
+ -
+ 32/33,  65536-131071, 15
+ 34/35, 131072-262143, 16
+ ...
+ 
+ VLCB (Prefix, Range, Extra):
+  0- 7,   0-  7, 0
+  8-11,   8- 15, 1
+ 12-15,  16- 31, 2
+ 16-19,  32- 63, 3
+ 20-23,  64-127, 4
+ 24-27, 128-255, 5
+ 28-31, 256-511, 6
+ -
+ 32-33,  512-1023, 7
+ 34-35, 1024-2047, 8
+ ...
+
+Values and command-arguments have the sign folded into the LSB:
+* 0, -1, 1, -2, 2, -3, 3, -4, ...
+
+
+There may be a second AC Huffman table for Z-Escape symbols, where the first symbol (the Z-Escape) will be encoded using the primary table, but the escaped value/command/vector will be encoded via the second table.
+
+
+==== Packed Vector ====
+
+Will allow encoding short vectors of packed coefficients.
+
+The symbol for packed vectors will be encoded as:
+ 110ssccc
+ ss: element size (1-3 bits)
+ ccc: element count (3-10 coefficients)
+
+This will be followed by a bit vector.
+
+
+Bit-vector elements will be sign-folded:
+* 1-bit: 0, -1
+** Change(?): 1, -1
+* 2-bit: 0, -1, 1, -2
+* 3-bit: 0, -1, 1, -2, 2, -3, 3, -4
+
+If ss==3, ccc will encode an extended vector type:
+* 0, ss2(2 bits) ccc2(4 bits)
+** Encodes a vector with 1-4 bit values, and 3-18 coefficients.
+* 1, ss2(2 bits) ccc2(5 bits)
+** Encodes a vector with 1-4 bit values, and 3-34 coefficients.
+* 2, ss2(2 bits) ccc2(6 bits)
+** Encodes a vector with 1-4 bit values, and 3-66 coefficients (*).
+* 3, ss2(3 bits) ccc2(4 bits)
+** Encodes a vector with 1-8 bit values, and 3-18 coefficients.
+* 4, ss2(3 bits) ccc2(5 bits)
+** Encodes a vector with 1-8 bit values, and 3-34 coefficients.
+* 5, ss2(3 bits) ccc2(6 bits)
+** Encodes a vector with 1-8 bit values, and 3-66 coefficients (*).
+* 6, ss2(4 bits) ccc2(6 bits)
+** Encodes a vector with 1-16 bit values, and 3-66 coefficients (*).
+* 7, Esc2
+** tag2(4 bits)
+*** All values Reserved
+
+*: Logical range, it remains the case that coefficients may not be encoded past the end of the block.
+
+
+==== Commands ====
+
+The use of command values is reserved for future extension.
+
+Command values will precede their respective coefficients.
+
+A command may be followed by a list of 0 or more arguments (sign folded), the meaning of which will depend on the command.
+
+
+DC Commands will use the Form:
+ ( Command-Op Command-Arg* )+ DC-Value
+
+
+AC Commands will use the Form:
+ Z-Escape ( Command-Op Command-Arg* )+ AC-Value
+
+
+Note that unlike the normal VLC case, an AC command may encode a case of (Z==0)&&(V==0) without signalling the end of a block.
+
+Note that commands may also make use of or modify the interpretation of the coefficient value.
+
+
+Block-level Commands
+* 0=Unused / Invalid
+* 1=Skip
+** Skips 1 or more macroblocks.
+** Only used by the first sub-block in a macroblock, invalid elsewhere.
+** If an argument is present, it defines the number of macroblocks to skip.
+** The default value is 1, which will only skip the current macroblock.
+* 2=Block Mode
+** Changes the blending mode for the block (per-component).
+** 0=Replace
+*** New block will replace the prior contents.
+** 1=Difference
+*** New block will be added onto prior block (in-place).
+*** Invalid in mixed-mode 1C/2C video.
+** 2=Motion+Difference
+*** New block will be added onto a translated block.
+*** Invalid in mixed-mode 1C/2C video.
+** 3=Skip
+*** Block is skipped.
+** 4=Motion+Skip
+*** New block is translated from the prior block.
+*** Mixed 1C/2C Video: Deltas are constrained to a multiple of 4 pixels.
+* 3=Motion Vector (Absolute)
+** X and Y vectors are given as arguments, and will indicate how many pixels (relative to the then-current block's origin) to grab a block from the prior frame for M+D.
+** This command applies at the macroblock level.
+* 4=Motion Vector (Relative)
+** Similar, but the motion vectors are relative to their prior values.

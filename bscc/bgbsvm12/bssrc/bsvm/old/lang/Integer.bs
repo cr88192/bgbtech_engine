@@ -1,0 +1,75 @@
+package bsvm.lang;
+import bgb.vm.*;
+
+public final class Integer extends Number
+{
+private static final long serialVersionUID = 1360826667806852920L;
+
+public static final int MAX_VALUE = 2147483647;
+public static final int MIN_VALUE = -2147483648;
+public static Class TYPE = int.class;
+
+private final int value;
+
+public Integer(int value)
+	{ this.value=value; }
+public Integer(String s)
+	{ this(parseInt(s)); }
+
+public double doubleValue()
+	{ return (double)value; }
+
+public boolean equals(Object obj)
+{
+	return (obj==this) ||
+		((obj instanceof Integer) &&
+			(this.value==((Integer)obj).value));
+}
+
+public float floatValue()
+	{ return (float)value; }
+public static Integer getInteger(String nm)
+	{ return new Integer(nm); }
+public static Integer getInteger(String nm, int val)
+	{ return new Integer(parseInt(nm, val)); }
+public static Integer getInteger(String nm, Integer val)
+	{ return new Integer(parseInt(nm, val.intValue())); }
+public int hashCode()
+	{ return value; }
+public int intValue()
+	{ return value; }
+public long longValue()
+	{ return (long)value; }
+
+public static int parseInt(String s)
+	{ return parseInt(s, 10); }
+
+public static int parseInt(String s, int radix)
+{
+	return((int)Z_SysUtil.StrToInt(s, radix));
+//	return 0;
+}
+
+public static String toBinaryString(int i)
+	{ return toString(i, 2); }
+public static String toHexString(int i)
+	{ return toString(i, 16); }
+public static String toOctalString(int i)
+	{ return toString(i, 8); }
+public String toString()
+	{ return toString(value); }
+public static String toString(int i)
+	{ return toString(i, 10); }
+
+public static String toString(int i, int radix)
+{
+	return(Z_SysUtil.IntToStr((long)i, radix));
+//	return null;
+}
+
+public static Integer valueOf(String s)
+	{ return new Integer(s); }
+public static Integer valueOf(String s, int radix)
+	{ return new Integer(parseInt(s, radix)); }
+
+}

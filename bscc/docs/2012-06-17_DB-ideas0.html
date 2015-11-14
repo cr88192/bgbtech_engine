@@ -1,0 +1,230 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+
+    <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  </head>
+  <body>
+    <h1>Binary Database Ideas</h1>
+    <br>
+    <br>
+    <br>
+    <h2>Linear Serial Format (Idea 0)<br>
+    </h2>
+    Format indended to serialize databases in a linear format.<br>
+    Will be read-in sequentially, and all at once.<br>
+    <br>
+    Uses a string MRU.<br>
+    <br>
+    StringRef<br>
+    &nbsp;&nbsp;&nbsp; 00: EOL (End-Of-List)<br>
+    &nbsp;&nbsp;&nbsp; 01: Null (Value)<br>
+    &nbsp;&nbsp;&nbsp; 02: ASCIIZ (UTF-8)<br>
+    &nbsp;&nbsp;&nbsp; 20-7F: String MRU Reference (20=Newest,
+    7F=Oldest)<br>
+    <br>
+    NodeList = Node* EOL<br>
+    KeyList = Key* EOL<br>
+    <br>
+    Node {<br>
+    StringRef name;<br>
+    KeyList tags;<br>
+    NodeList child;<br>
+    }<br>
+    <br>
+    Key {<br>
+    StringRef name;<br>
+    StringRef value;<br>
+    }<br>
+    <br>
+    Observation: Resembles an XML serialization.<br>
+    <br>
+    <br>
+    <h2>Tree File Serial Format</h2>
+    &lt;Header&gt;<br>
+    &lt;Index Table&gt;<br>
+    &lt;Data Region&gt;<br>
+    <br>
+    Header {<br>
+    FOURCC magic1;&nbsp;&nbsp;&nbsp; //'BMDB'<br>
+    FOURCC magic2;&nbsp;&nbsp;&nbsp; //'TSF0'<br>
+    U32 offs_index;&nbsp;&nbsp;&nbsp; //offset of index table<br>
+    U32 n_index;&nbsp;&nbsp;&nbsp; //index count<br>
+    U32 flags;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //flags<br>
+    }<br>
+    <br>
+    Index Table<br>
+    Consists of an array of UVLI offsets.<br>
+    <br>
+    Data Region<br>
+    Contains lumps.<br>
+    <br>
+    0xFF, is a magic value.<br>
+    "0xFF, 0x00" will encode an escaped 0xFF.<br>
+    Other values will indicate a tag or a lump.<br>
+    <br>
+    0xFF, &lt;tag:SVLI&gt;<br>
+    <br>
+    Lump {<br>
+    byte esc=0xFF;<br>
+    SVLI tag;<br>
+    UVLI len;<br>
+    byte data[len];<br>
+    }<br>
+    <br>
+    Node {<br>
+    NodeIndex lnode;<br>
+    NodeIndex rnode;<br>
+    NodeIndex first;<br>
+    StringIndex name;<br>
+    UVLI n_keys;<br>
+    Key key[n_keys];<br>
+    };<br>
+    <br>
+    Key {<br>
+    StringIndex name;<br>
+    ValueIndex value;<br>
+    }<br>
+    <br>
+    <br>
+    Compacted String Table<br>
+    <br>
+    Idea for more compact representation of a string table.<br>
+    Goals:<br>
+    Retain the ability to access randomly in a compressed form;<br>
+    The compaction process should not introduce implicit 0 bytes or hide
+    the ends of strings;<br>
+    May be specialized to the UTF-8 format.<br>
+    <br>
+    <table style=" text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">0xxxxxxx<br>
+          </td>
+          <td style="vertical-align: top;">0-127<br>
+          </td>
+          <td style="vertical-align: top;">ASCII<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">10xxxxxx<br>
+          </td>
+          <td style="vertical-align: top;">N/A Start<br>
+          </td>
+          <td style="vertical-align: top;">N/A<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">110xxxxx 10xxxxxx<br>
+          </td>
+          <td style="vertical-align: top;">128-1023<br>
+          </td>
+          <td style="vertical-align: top;">BMP<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">1110xxxx 10xxxxxx 10xxxxxx<br>
+          </td>
+          <td style="vertical-align: top;">1024-65535<br>
+          </td>
+          <td style="vertical-align: top;">BMP<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">11110xxx 10xxxxxx 10xxxxxx
+            10xxxxxx</td>
+          <td style="vertical-align: top;">65536-2097151<br>
+          </td>
+          <td style="vertical-align: top;">SMP<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">111110xx 10xxxxxx 10xxxxxx
+            10xxxxxx 10xxxxxx</td>
+          <td style="vertical-align: top;">2097152-67108863<br>
+          </td>
+          <td style="vertical-align: top;">N/A<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">1111110x 10xxxxxx 10xxxxxx
+            10xxxxxx 10xxxxxx 10xxxxxx</td>
+          <td style="vertical-align: top;">67108864-2147483647<br>
+          </td>
+          <td style="vertical-align: top;">N/A<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    Note: Above 0xF4 can not be encoded (Valid UTF-8), and above 0xF0 is
+    outside the BMP.<br>
+    <br>
+    <table style=" text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Pattern<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">F4 &lt;byte&gt;<br>
+          </td>
+          <td style="vertical-align: top;">Escape Byte<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">F5 &lt;index: char&gt;<br>
+          </td>
+          <td style="vertical-align: top;">String Reference (Index gives
+            string index).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">F6 &lt;index: char&gt;
+            &lt;len: char&gt;<br>
+          </td>
+          <td style="vertical-align: top;">String Reference
+            (Length+Index)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">F7 &lt;cmd: char&gt; *<br>
+          </td>
+          <td style="vertical-align: top;">Command<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">F8-FC<br>
+          </td>
+          <td style="vertical-align: top;">Reserved<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">FE<br>
+          </td>
+          <td style="vertical-align: top;">N/E (Reserved, N/E for
+            strings)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">FF<br>
+          </td>
+          <td style="vertical-align: top;">N/E (Reserved, N/E for
+            strings)<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <br>
+    <br>
+    Block Random Format<br>
+    <br>
+    Idea: Block Oriented Random-Access format.<br>
+  </body>
+</html>

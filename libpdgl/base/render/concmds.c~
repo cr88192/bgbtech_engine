@@ -1,0 +1,176 @@
+#include <pdgl.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <unistd.h>
+
+struct ConCmds_Cmd_s {
+struct ConCmds_Cmd_s *next;
+char *name;
+char *desc;
+int (*func)(char **args);
+};
+
+struct ConCmds_Cmd_s *comcmds_root;
+
+int ConCmds_Handler(char *str)
+{
+	struct ConCmds_Cmd_s *cur;
+	char **a;
+
+	a=ksplit(str);
+	if(!a[0])return(0);
+
+	Con_Printf("$ %s\n", str);
+
+	cur=comcmds_root;
+	while(cur)
+	{
+		if(!strcmp(cur->name, a[0]))
+		{
+			cur->func(a);
+			return(0);
+		}
+		cur=cur->next;
+	}
+
+	Con_Printf("Unrecognized Command '%s'\n", a[0]);
+	return(-1);
+}
+
+char *ConCmds_Complete(char *str)
+{
+	struct ConCmds_Cmd_s *cur;
+	char **a;
+
+	a=ksplit(str);
+	if(!a[0])return(NULL);
+
+	cur=comcmds_root;
+	while(cur)
+	{
+		if(!strncmp(cur->name, a[0], strlen(a[0])))
+		{
+			return(cur->name);
+		}
+		cur=cur->next;
+	}
+
+	return(NULL);
+}
+
+int ConCmds_Register(char *name, char *desc, int (*func)(char **args))
+{
+	struct ConCmds_Cmd_s *cur, *tmp;
+
+	tmp=malloc(sizeof(struct ConCmds_Cmd_s));
+	memset(tmp, 0, sizeof(struct ConCmds_Cmd_s));
+
+	tmp->name=strdup(name);
+	tmp->desc=strdup(desc);
+	tmp->func=func;
+
+	if(comcmds_root)
+	{
+		cur=comcmds_root;
+		while(cur->next && (strcmp(cur->next->name, name)<0))
+			cur=cur->next;
+		tmp->next=cur->next;
+		cur->next=tmp;
+	}else comcmds_root=tmp;
+
+	return(0);
+}
+
+
+int ConCmds_Cwd(char **a)
+{
+	char buf[256];
+
+	getcwd(buf, 255);
+	Con_Printf("%s\n", buf);
+	return(0);
+}
+
+int ConCmds_Chdir(char **a)
+{
+	char buf[256];
+
+//	Con_Printf("chdir %s\n", a[1]);
+	chdir(a[1]);
+
+	getcwd(buf, 255);
+	Con_Printf("%s\n", buf);
+
+	return(0);
+}
+
+int ConCmds_Mkdir(char **a)
+{
+	char buf[256];
+//	mkdir(a[1]);
+	mkdir(a[1], 0);
+	return(0);
+}
+
+int ConCmds_Ls(char **a)
+{
+	char buf[256];
+	DIR *dir;
+	struct dirent *de;
+	int i, j, k, l;
+
+	getcwd(buf, 255);
+	dir=opendir(buf);
+
+	if(!dir)return(-1);
+
+	i=0;
+	while(1)
+	{
+		de=readdir(dir);
+		if(!de)break;
+		if(strlen(de->d_name)>i)i=strlen(de->d_name);
+	}
+
+	if(!i)return(0);
+	rewinddir(dir);
+
+	i++;
+	j=80/i;
+
+	k=0;
+	while(1)
+	{
+		de=readdir(dir);
+		if(!de)break;
+
+		Con_WriteString(de->d_name);
+		l=i-strlen(de->d_name);
+		while(l--)Con_WriteString(" ");
+
+		k++;
+		if(k>=j)
+		{
+			Con_WriteString("\n");
+			k=0;
+		}
+	}
+	if(k)Con_WriteString("\n");
+}
+
+int ConCmds_Init()
+{
+	Con_AddModeComplete('$', ConCmds_Handler, ConCmds_Complete);
+
+	ConCmds_Register("cwd", "Print working directory", ConCmds_Cwd);
+	ConCmds_Register("pwd", "Print working directory", ConCmds_Cwd);
+	ConCmds_Register("chdir", "Change working directory", ConCmds_Chdir);
+	ConCmds_Register("mkdir", "Make new directory", ConCmds_Mkdir);
+	ConCmds_Register("cd", "Change working directory", ConCmds_Chdir);
+	ConCmds_Register("md", "Make new directory", ConCmds_Mkdir);
+
+	ConCmds_Register("ls", "List Directory Contents", ConCmds_Ls);
+	ConCmds_Register("dir", "List Directory Contents", ConCmds_Ls);
+}

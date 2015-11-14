@@ -1,0 +1,26 @@
+BUILD=.
+MKSUF=.lnx
+LIBSUF=.a
+DLLSUF=.so
+EXESUF=.elf
+OBJSUF=.o
+DLLPF=lib
+
+CC=$(TARG)-gcc
+CC_OUTEXE=$(CC) -o 
+CC_OUTDLL=$(CC) -shared -o 
+CC_OUTOBJ=$(CC) -c -o 
+CC_OUTTOOL=gcc -o 
+
+EXE = .elf
+BIN = .bin
+O = .o
+A = .a
+
+CFLAGS=-Iinclude -g -pg
+DLL_CFLAGS=$(CFLAGS) -DBGBGC_DLL -fPIC
+LDFLAGS=-g -pg -L. -lbgbgc
+DLL_LDFLAGS=-lpthread
+
+include Makefile.inc
+

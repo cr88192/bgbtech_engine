@@ -1,0 +1,108 @@
+Idea:
+ASM-level interface for the object system.
+
+Will make use of the Link-Meta interface.
+
+Handlers:
+
+FieldRef <classname> <fieldname> <reg_ret> <reg_this>
+
+Will return the address of the requested field.
+
+The 'classname' and 'fieldname' arguments identify the field in question. The 'reg_ret' and 'reg_this' argument identify the registers used for returning the field address, and for passing in the object.
+
+This call is to be register-clean.
+
+
+MethodRef <classname> <methodname> <reg_ret> <reg_this>
+
+Will be similar, but will return a method.
+In this case, the method will be a valid function pointer, but with the first argument being the 'this' pointer.
+
+Methodname will combine the method name and signature.
+
+
+StaticFieldRef <classname> <fieldname> <reg_ret>
+StaticMethodRef <classname> <methodname> <reg_ret>
+
+Similar to the above, but will be specialized for static fields and methods. The returned static method will be called as an ordinary function call (no implicit 'this' argument).
+
+
+Misc Idea:
+Split info about namespaces and classes off into separate metadata files, which could be emitted during compilation, and demand-loaded as needed.
+
+Consider the possibility of some kind of database-like or registry-like structure. It should be possible to look up items by namespace, check if namespaces contain items, produce listings, ... Structure should also be flexible and capable of storing XML.
+
+Possible:
+Lower-level manages raw data chunks, where each chunk is identified by a number. Each node is given a chunk.
+
+head {
+fourcc magic;
+u32 offs_bitmap;
+u32 offs_index;
+u32 sz_bitmap;	//bitmap entries
+u32 sz_index;	//index entries
+}
+
+Bitmap has 1 bit per cell, where each cell is 16 bytes.
+
+hrmm...
+
+
+Idea:
+Tagged Compressed Item Table
+
+In memory, basically a big array of pointers.
+Each item is a glob of bytes.
+Each item in eac glob is a collection of VLI's, with the low 3 bits giving a tag.
+
+Tag:
+	0=Misc (0=EOI, 1=NULL, 2=True, 3=False, ...)
+	1=Integer (Sign Folded to bit 3).
+	2=Literal (Lit Tab Index)
+	3=Item Reference (TCIT Index)
+	4/5/6=Reserved
+	7=Extended Tag (Next 4 bits)
+
+The first VLI will be a tag, which will index the symbol table.
+Index 0 will be reserved/unused (a NULL index).
+EOI will be encoded as a literal byte 0.
+
+
+TCIT External
+Will be a line-orientated text file, with each item encoded on a line.
+<index> <tag> <items*>
+
+Index is included in part for readability.
+
+; comment
+;idx tag int dbl sym str idx
+1 foo 54321 3.14159 bar "string" 2
+2 bar "Foo/Bar"
+
+-	Null
+-T	True
+-F	False
+
+tag:
+class <name> <super> <flags>
+
+nametype <name> <sig>
+fieldref <classname> <nametype_idx>
+methodref <classname> <nametype_idx>
+
+literal <value>
+classfield <class_idx> <nametype_idx> <flags> <literal_idx|0>
+classmethod <class_idx> <nametype_idx> <flags>
+
+
+Change:
+Make TCIT be an essentially relational table structure.
+
+COL=<name> [':' <sig>]
+ROW=<index> <item*> '\n'
+
+TABLE <name> <COL*>
+<ROW*>
+
+The index is an essentialy invisible column, and is not required to be preserved.

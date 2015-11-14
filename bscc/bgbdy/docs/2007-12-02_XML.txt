@@ -1,0 +1,78 @@
+XML API
+
+This will be an effective replacement of the older NetParse API, but will otherwise be structured similarly.
+
+API Prefix: dyx
+
+dyxNode	Generic node object
+dyxAttr	Generic node attribute
+
+dyxAttr *dyxLookupAttr(dyxNode *n, char *var);
+dyxAttr *dyxLookupAttrNS(dyxNode *n, char *ns, char *var);
+dyxAttr *dyxFetchAttr(dyxNode *n, char *var);
+dyxAttr *dyxFetchAttrNS(dyxNode *n, char *ns, char *var);
+
+char *	dyxGet(dyxNode *n, char *var);
+int		dyxGetInt(dyxNode *n, char *var);
+double	dyxGetFloat(dyxNode *n, char *var);
+char *	dyxGetNS(dyxNode *n, char *ns, char *var);
+int		dyxGetIntNS(dyxNode *n, char *ns, char *var);
+double	dyxGetFloatNS(dyxNode *n, char *ns, char *var);
+
+void dyxSet(dyxNode *n, char *var, char *val);
+void dyxSetInt(dyxNode *n, char *var, int val);
+void dyxSetFloat(dyxNode *n, char *var, double val);
+void dyxSetNS(dyxNode *n, char *ns, char *var, char *val);
+void dyxSetIntNS(dyxNode *n, char *ns, char *var, int val);
+void dyxSetFloatNS(dyxNode *n, char *ns, char *var, double val);
+
+char *dyxNSURI(dyxNode *n, char *ns);
+char *dyxURINS(dyxNode *n, char *uri);
+
+char *dyxURI(dyxNode *n);
+char *dyxGetURI(dyxNode *n, char *uri, char *var);
+int dyxGetIntURI(dyxNode *n, char *uri, char *var);
+double dyxGetFloatURI(dyxNode *n, char *uri, char *var);
+void dyxSetURI(dyxNode *n, char *uri, char *var, char *val);
+void dyxSetIntURI(dyxNode *n, char *uri, char *var, int val);
+void dyxSetFloatURI(dyxNode *n, char *uri, char *var, double val);
+
+dyxNode *dyxNew(char *tag);
+dyxNode *dyxNewNS(char *ns, char *tag);
+
+dyxNode *dyxNewText(char *text);
+
+void dyxAdd(dyxNode *parent, dyxNode *child);
+
+dyxNode *dyxNew1(char *tag, dyxNode *a);
+dyxNode *dyxNew2(char *tag, dyxNode *a, dyxNode *b);
+... 4
+
+dyxNode *dyxNew1NS(char *ns, char *tag, dyxNode *a);
+dyxNode *dyxNew2NS(char *ns, char *tag, dyxNode *a, dyxNode *b);
+... 4
+
+int dyxNodeP(dyxNode *n);
+int dyxTextP(dyxNode *n);
+int dyxLeafP(dyxNode *n);
+int dyxChildP(dyxNode *n);
+
+dyxNode *dyxFindTag(dyxNode *parent, char *tag);
+dyxNode *dyxFindAttr(dyxNode *parent, char *var, char *val);
+dyxNode *dyxFindTagAttr(dyxNode *parent,
+	char *tag, char *var, char *val);
+
+dyxNode *dyxFindNextTag(dyxNode *last, char *tag);
+dyxNode *dyxFindNextAttr(dyxNode *last, char *var, char *val);
+dyxNode *dyxFindNextTagAttr(dyxNode *last,
+	char *tag, char *var, char *val);
+
+dyxNode *dyxNext(dyxNode *n);
+dyxNode *dyxPrev(dyxNode *n);
+dyxNode *dyxParent(dyxNode *n);
+dyxNode *dyxChild(dyxNode *n);
+
+char *dyxNS(dyxNode *n);
+char *dyxURI(dyxNode *n);
+char *dyxTag(dyxNode *n);
+char *dyxText(dyxNode *n);

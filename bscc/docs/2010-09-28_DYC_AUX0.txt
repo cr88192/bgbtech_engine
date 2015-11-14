@@ -1,0 +1,22 @@
+Thought: DYC Auxilary Objects
+
+Idea:
+System by which non-DYC objects may be made usable via the DYC system, and may gain features typical of DYC objects (such as inheritence).
+
+Limits:
+Will limit to BGBDY objects, with some features limited to registered structural types.
+
+
+Non-structural types will require using DYII.
+Conceptually, "object" will map to dyt and DYII, rather than to dycObject.
+
+Some means to associate a given type-name to a given class is needed.
+
+
+Structural Objects will be handled by an "Auxilary Class", which will be similar to a normal class, except it will be handled differently.
+
+An instance of an auxilary class will simply encode a reference to the auxilary object type (C struct with a dytname).
+
+A subclass of an auxilary class will include the auxilary type as a field.
+
+An auxilary class may not physically extend another class (it may only implement interfaces).

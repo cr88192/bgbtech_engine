@@ -1,0 +1,7 @@
+$flags window
+$shader bgb_anaglyph
+// $fparm 0 0.025
+// $fparm 1 0.1
+
+$vparm_cvar 0 leftColor r_anaglyph_lcolor
+$vparm_cvar 1 rightColor r_anaglyph_rcolor

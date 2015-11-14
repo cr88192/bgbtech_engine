@@ -1,0 +1,64 @@
+ARCH_CFLAGS=
+CFLAGS=/Iinclude /I../include $(ARCH_CFLAGS) /Z7
+LDFLAGS=../bgbdy.lib ../bgbgc.lib /Z7
+
+OBJS=\
+	bs1/svm/bsvm_ops.obj \
+	\
+	bs1/svm/s_interp.obj \
+	bs1/svm/s_compile.obj \
+	bs1/svm/sc_reduce.obj \
+	bs1/svm/sc_reverse.obj \
+	bs1/svm/sc_index.obj \
+	bs1/svm/sc_expr.obj \
+	bs1/svm/sc_gast.obj \
+	\
+	bs1/parse2/parse_token.obj \
+	bs1/parse2/parse.obj \
+	bs1/parse2/parse_expr2.obj \
+	bs1/parse2/parse_tyexpr.obj \
+	bs1/parse2/parse_stmt.obj \
+	\
+	bs1/builtin/builtin_base.obj \
+	bs1/builtin/builtin_math.obj
+
+SRCS=$(OBJS:.obj=.c)
+
+DEP_HDRS=\
+	include/bsvm_ops.h \
+	include/bsvm_auto.h
+
+all: libs apps
+
+FORCE:
+
+libs: bgbsvm.dll
+apps: bsvm1cc.exe
+
+includes: $(DEP_HDRS)
+
+include/bsvm_auto.h: autohead.exe $(SRCS)
+	./autohead -api BGBSVM_API $(SRCS) > include/bsvm_auto.h
+
+include/bsvm_ops.h: genops.exe bsvm_ops.txt
+	./genops
+
+%.obj: %.c
+	cl /c /Fo$@ $< $(CFLAGS)
+
+bgbsvm.dll: $(DEP_HDRS) $(SRCS)
+	cl /LD /Febgbsvm.dll $(SRCS) /Iinclude /Z7 /DBGBSVM_DLL \
+		$(CFLAGS) $(LDFLAGS)
+
+autohead.exe: autohead.c
+	cl /Feautohead.exe autohead.c
+
+genops.exe: genops.c
+	cl /Fegenops.exe genops.c
+
+
+bsvm1cc.exe: bs1cc.c $(DEP_HDRS) libs
+	cl /Febsvm1cc.exe bs1cc.c bgbsvm.lib $(CFLAGS) $(LDFLAGS)
+
+clean:
+clean2:

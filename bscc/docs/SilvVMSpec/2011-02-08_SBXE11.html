@@ -1,0 +1,462 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;
+      charset=ISO-8859-1">
+  </head>
+  <body>
+    Simplistic Binary XML Encoding<br>
+    <br>
+    Goals:<br>
+    Does not require a complicated encoder or decoder;<br>
+    Does not involve a seperate compression/decompression pass.<br>
+    <br>
+    Does Not Attempt:<br>
+    Large data sets or random access;<br>
+    Decent compression;<br>
+    Complete representation of XML features.<br>
+    <br>
+    <span style="color: rgb(204, 0, 0);">Note (BAD):</span><br
+      style="color: rgb(204, 0, 0);">
+    <span style="color: rgb(204, 0, 0);">
+      UVLI is a variable length integer format, which follows the
+      following
+      pattern.</span><br style="color: rgb(204, 0, 0);">
+    <br style="color: rgb(204, 0, 0);">
+    <table style="text-align: left; width: 100%; color: rgb(204, 0, 0);"
+      border="1" cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Low<br>
+          </td>
+          <td style="vertical-align: top;">High<br>
+          </td>
+          <td style="vertical-align: top;">Pattern<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">0<br>
+          </td>
+          <td style="vertical-align: top;">127<br>
+          </td>
+          <td style="vertical-align: top;">0xxxxxxx<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">128<br>
+          </td>
+          <td style="vertical-align: top;">16383<br>
+          </td>
+          <td style="vertical-align: top;">10xxxxxx xxxxxxxx<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">16384<br>
+          </td>
+          <td style="vertical-align: top;">2097151<br>
+          </td>
+          <td style="vertical-align: top;">110xxxxx xxxxxxxx xxxxxxxx</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">2097152<br>
+          </td>
+          <td style="vertical-align: top;">268435455<br>
+          </td>
+          <td style="vertical-align: top;">1110xxxx xxxxxxxx xxxxxxxx
+            xxxxxxxx</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">268435456<br>
+          </td>
+          <td style="vertical-align: top;">34359738367<br>
+          </td>
+          <td style="vertical-align: top;">11110xxx xxxxxxxx xxxxxxxx
+            xxxxxxxx xxxxxxxx</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">34359738368<br>
+          </td>
+          <td style="vertical-align: top;">...<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">...<br>
+          </td>
+          <td style="vertical-align: top;">...<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br style="color: rgb(204, 0, 0);">
+    <span style="color: rgb(204, 0, 0);">
+      SVLI uses the same basic encoding as above, but encodes a sign
+      into the
+      LSB.</span><br style="color: rgb(204, 0, 0);">
+    <span style="color: rgb(204, 0, 0);">
+      Thus, SVLI follows the pattern: 0, -1, 1, -2, 2, -3, 3, ...</span><br
+      style="color: rgb(204, 0, 0);">
+    <br>
+    The above was in error:<br>
+    SBXE in-fact uses a bit-chaining encoding.<br>
+    <br>
+    <br>
+    Corrected Numbers:<br>
+    UVLI is a variable length integer format, which follows the
+    following
+    pattern (high-low ordering).<br>
+    <br>
+    <table style="text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Low<br>
+          </td>
+          <td style="vertical-align: top;">High<br>
+          </td>
+          <td style="vertical-align: top;">Pattern<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">0<br>
+          </td>
+          <td style="vertical-align: top;">127<br>
+          </td>
+          <td style="vertical-align: top;">0xxxxxxx<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">128<br>
+          </td>
+          <td style="vertical-align: top;">16383<br>
+          </td>
+          <td style="vertical-align: top;">1xxxxxxx 0xxxxxxx<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">16384<br>
+          </td>
+          <td style="vertical-align: top;">2097151<br>
+          </td>
+          <td style="vertical-align: top;">1xxxxxxx 1xxxxxxx 0xxxxxxx</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">2097152<br>
+          </td>
+          <td style="vertical-align: top;">268435455<br>
+          </td>
+          <td style="vertical-align: top;">1xxxxxxx 1xxxxxxx 1xxxxxxx
+            0xxxxxxx</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">268435456<br>
+          </td>
+          <td style="vertical-align: top;">34359738367<br>
+          </td>
+          <td style="vertical-align: top;">1xxxxxxx 1xxxxxxx 1xxxxxxx
+            1xxxxxxx 0xxxxxxx</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">34359738368<br>
+          </td>
+          <td style="vertical-align: top;">...<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">...<br>
+          </td>
+          <td style="vertical-align: top;">...<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    SVLI uses the same basic encoding as above, but encodes a sign into
+    the
+    LSB.<br>
+    Thus, SVLI follows the pattern: 0, -0, 1, -1, 2, -2, 3, -3, ...<br>
+    <br>
+    <br>
+    The encoding is viewed as a stream of bytes.<br>
+    Strings are encoded as ASCII or UTF-8, and with '\0' as a
+    terminator.<br>
+    <br>
+    Files will begin with the string "SBXE".<br>
+    Later versions may alter the string to reflect the version, or
+    include
+    extra data after this string. This will not be required for inline
+    SBXE
+    chunks.<br>
+    <br>
+    <br>
+    0x00: general purpose ending marker<br>
+    0x01..0x1F: Special Features<br>
+    0x20..0x3E: Namespace Prefix MRU<br>
+    0x3F: Namespace String<br>
+    <br>
+    0x40..0x7E: Opening Tag/Attr MRU<br>
+    0x7F: Opening Tag/Attr String<br>
+    0x80..0xFE: Text MRU<br>
+    0xFF: Text String<br>
+    <br>
+    Node (Default)<br>
+    [&lt;NS&gt;] &lt;TAG&gt; &lt;ATTR*&gt; 0 &lt;BODY*&gt; 0<br>
+    <br>
+    Node<br>
+    [&lt;NS&gt;] &lt;TAG t&gt;<br>
+    &nbsp;&nbsp; &nbsp;{*t!=':'&amp;&amp;*t!='='}?(&lt;ATTR*&gt; 0)<br>
+    &nbsp;&nbsp; &nbsp;{*t!='/'&amp;&amp;*t!='='}?(&lt;BODY*&gt; 0)<br>
+    &nbsp;&nbsp; &nbsp;{*t!='/'||*t!=':'||*t!='='}?{t++}<br>
+    <br>
+    <br>
+    Attr<br>
+    [&lt;NS&gt;] &lt;TAG&gt; &lt;TEXT*&gt;<br>
+    <br>
+    Body<br>
+    &lt;NODE&gt;|&lt;TEXT&gt;<br>
+    <br>
+    Text is represented potentially as globs of raw strings and MRU
+    references. A single text string should be limited to 255 bytes or
+    less.<br>
+    <br>
+    By default, Nodes will include both a body and attributes along with
+    the appropiate end markers.<br>
+    As an exception to this, a prefix may be used with the tag name
+    which
+    will modify the interpretation:<br>
+    &nbsp;&nbsp; &nbsp;'/', omits contents and end marker;<br>
+    &nbsp;&nbsp; &nbsp;':', omits attributes and end marker;<br>
+    &nbsp;&nbsp; &nbsp;'=', omit both attributes and contents.<br>
+    <br>
+    For Example, "&lt;foo/&gt;" could be encoded as:<br>
+    0x7F '=' 'f' 'o' 'o' 0x00<br>
+    <br>
+    <br>
+    MRU Scheme<br>
+    The MRU lists will be linear within the file, assuming both linear
+    reading and writing.<br>
+    <br>
+    Whenever a given string is being encoded, it can be checked if it
+    were
+    encoded recently, and, if so, a reference to the correct spot in the
+    MRU list can be encoded and that value is moved to the front.<br>
+    Otherwise, the new string is encoded directly, and added to the
+    front
+    of the list.<br>
+    <br>
+    Higher numbers mean more recent matches, so things shift in the
+    direction of lower numbers. Upon shifting off the end a string is
+    essentially forgotten.<br>
+    <br>
+    Tags and Attributes will have the same space in the encoding, but
+    will
+    refer to different MRU lists.<br>
+    <br>
+    <br>
+    Feature Ideas<br>
+    <br>
+    0x1F, will escape another byte whose values may be used for encoding
+    more features.<br>
+    <br>
+    0x10, Integer Text String ('[-](1..9)(0..9)*'), text looked like an
+    integer,
+    and was encoded as such.<br>
+    The MSB will indicate the presence of more bytes (high-low order),
+    the
+    LSB of the final byte will give the sign. Range is limited to that
+    of a
+    32 bit signed integer. (Consider: Expand to 64 bits).<br>
+    This is not valid if using this encoding would not produce an
+    identical
+    string in the decoder.<br>
+    <br>
+    <br>
+    0x11, Markov Text String<br>
+    A variation of lz+markov modeling is used for encoding a string (as
+    before, the result is added to the MRU).<br>
+    <br>
+    0x12, CDATA<br>
+    0x12 &lt;TEXT*&gt; 0<br>
+    <br>
+    0x13, Binary Data (BDATA)<br>
+    0x13 [&lt;NS&gt;] &lt;TAG&gt; &lt;ATTR*&gt; 0 &lt;UVLI len&gt;
+    &lt;BYTES[len]&gt;<br>
+    <br>
+    Raw !BDATA<br>
+    0x13 0 &lt;UVLI len&gt; &lt;BYTES[len]&gt;<br>
+    <br>
+    <br>
+    0x14, External Tag String<br>
+    0x14 &lt;UVLI idx&gt;<br>
+    <br>
+    0x15, External Text String<br>
+    0x15 &lt;UVLI idx&gt;<br>
+    <br>
+    These will escape tags or strings incoded in some external string
+    table, where idx is the index into the string table. Reason: This
+    will
+    be used for encoding smaller XML blobs within a common container, or
+    for encoding multiple disjoint messages. The exact nature of the
+    index
+    will not be defined here (this is a matter for the enclosing
+    container).<br>
+    <br>
+    For external tags, a prefix will be used as before, except that '%'
+    will escape a namespace prefix.<br>
+    <br>
+    <br>
+    0x16, Float String (Special Case)<br>
+    Will encode a floating-point string of the form
+    '[-](1..9)(0..9)*.(0..9)+'.<br>
+    0x16 &lt;SVLI ip&gt; &lt;UVLI fp&gt;<br>
+    Where ip will represent the integer part (the integer before the
+    decimal point), and fp will encode the fractional part.<br>
+    The integer part may encode up to 64 bits (signed), and the
+    fractional
+    part may encode up to 16 digits.<br>
+    <br>
+    The fractional part will be lexically transposed(decimal), hence the
+    lowest digits in the encoded value are the leftmost in the
+    fractional
+    value. This will use a Base-11 encoding, with 0 encoding a null, and
+    1..10 encoding the digits 0..9. This will then allow encoding
+    slightly
+    over 2 digits per 7 bits.<br>
+    <br>
+    Example: 3.14159 would be encoded as:<br>
+    16 06 C2 5C 47<br>
+    <br>
+    <br>
+    0x17 Integer List (Special Case, Dropped)<br>
+    0x17 &lt;UVLI ty&gt; &lt;UVLI cnt&gt; &lt;SVLI data[cnt]&gt;<br>
+    Encodes a string representing a list of integers.<br>
+    The ty value will encode the type of separator: 1=space, 2=comma<br>
+    <br>
+    <br>
+    Markov+LZ Coding<br>
+    <br>
+    This algo will be specialized to encoding UTF-8 to try to avoid
+    inflation (except for naturally long characters...).<br>
+    <br>
+    0xF0..0xFF: Reference.<br>
+    The low 4 bits will give the index.<br>
+    The next byte will give the match length.<br>
+    As a special case, if the length is 0, this will serve as an escape
+    for
+    the previous byte (1 is reserved).<br>
+    <br>
+    For example: "F1 20" will be a run of 32 bytes, with an index of 1,
+    however "F1 00" will be an escaped "F1" byte.<br>
+    <br>
+    <br>
+    At present I will specify that the window is 16kB.<br>
+    A 12 bit hash will be used:
+    (((s[-3]&lt;&lt;8)^(s[-2]&lt;&lt;4)^s[-1])&amp;0xFFF).<br>
+    Updating a hash will consist of:<br>
+    hash=(hash&lt;&lt;4)^c;<br>
+    Each string will start with an initial hash key of 0x000.<br>
+    <br>
+    Basically, at each point the prior 3 bytes will serve as a hash-key
+    for
+    matching the following bytes. A match will be checked for at this
+    location. For every byte emitted, the given location in the window
+    will
+    be added to the hash, and hashed values will be chained (an index of
+    0
+    for any chain thus being the most recent occurence).<br>
+    <br>
+    TODO: make the above make more sense...<br>
+    <br>
+    <br>
+    XML Binary-Types Extension<br>
+    <br>
+    Change: BDATA is now preferable, with any more advanced tag
+    properties
+    going into a parent tag.<br>
+    <br>
+    Note, BDATA may be represented as an XML extension as:<br>
+    &lt;![BDATA[ <span style="font-style: italic;">base16</span> ]]&gt;<br>
+    <br>
+    So, sort of like CDATA, but a binary glob.<br>
+    <br>
+    <br>
+    This is not strictly a requirement, but things "should" be handled
+    this
+    way if there are no good alternatives (eg: alternative handling for
+    binary nodes within an implementation).<br>
+    <br>
+    Binary nodes will be represented textually as well.<br>
+    This will be done via a special namespace:<br>
+    &nbsp;&nbsp; &nbsp;"uuid:78422bcf-661a-470d-bcd0-cb592cb0f783".<br>
+    This will be required to be registered as some visible prefix if
+    used,
+    and will allow binary representation of said types.<br>
+    <br>
+    The namespace prefix 'dtx' will be special in that it will be a
+    'default' prefix, and should be assumed in the case the above
+    doesn't
+    hold. This will related to decoding binary content, whereby the
+    implementation may synthesize a namespace binding.<br>
+    An implementation should not generate content that does not conform
+    to
+    this rule.<br>
+    <br>
+    &lt;foo xmlns:dtx="uuid:78422bcf-661a-470d-bcd0-cb592cb0f783"&gt;<br>
+    &nbsp;&nbsp; &nbsp;&lt;bar&gt;<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;baz
+    dtx:type="binary.base64"&gt;<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+    &nbsp;Afg5G8a5Kw...<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&lt;/baz&gt;<br>
+    &nbsp;&nbsp; &nbsp;&lt;/bar&gt;<br>
+    &lt;/foo&gt;<br>
+    <br>
+    Likewise, as other namespaces, it may be registered within the node
+    in
+    question:<br>
+    &lt;baz xmlns:dtx="uuid:78422bcf-661a-470d-bcd0-cb592cb0f783"<br>
+    &nbsp;&nbsp; &nbsp;dtx:type="binary.base64"&gt;<br>
+    &nbsp;&nbsp; &nbsp;Afg5G8a5Kw...<br>
+    &lt;/baz&gt;<br>
+    <br>
+    Also present may be a "size" attribute (may be automatically
+    generated
+    on parsing), which will reflect the size of the binary payload.<br>
+    <br>
+    I will define the types:<br>
+    &nbsp;&nbsp; &nbsp;binary.base85&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+    &nbsp;A
+    base85 encoding as described below;<br>
+    &nbsp;&nbsp; &nbsp;binary.base64&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+    &nbsp;Base64 encoded data;<br>
+    &nbsp;&nbsp; &nbsp;binary.base16&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+    &nbsp;Data encoded in base16 (aka: hex).<br>
+    <br>
+    Base-64 is to be viewed as the "default" encoding for binary nodes.<br>
+    <br>
+    Base-85<br>
+    <br>
+    This will be a simplified subset of that used in the RFC draft.<br>
+    <br>
+    The characters will be as follows:<br>
+    &nbsp;&nbsp; &nbsp;0123456789ABCDEF<br>
+    &nbsp;&nbsp; &nbsp;GHIJKLMNOPQRSTUV<br>
+    &nbsp;&nbsp; &nbsp;WXYZabcdefghijkl<br>
+    &nbsp;&nbsp; &nbsp;mnopqrstuvwxy!#$<br>
+    &nbsp;&nbsp; &nbsp;()*+,-./:;=?@^`{<br>
+    &nbsp;&nbsp; &nbsp;|}~z_ <br>
+    <br>
+    Likewise, the encoded characters will be represented in big-endian
+    order. Padded quanta and zero-compression will not be allowed.<br>
+    Likewise, whitespace will only be allowed between quanta. Whitespace
+    within a quanta is to be viewed as invalid.<br>
+    <br>
+  </body>
+</html>

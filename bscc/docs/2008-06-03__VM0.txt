@@ -1,0 +1,71 @@
+Well, beyond the X-Exp idea.
+
+Tagged values (32 bit pointers):
+16MB area of address space.
+
+4 bit main tag, 20 bits payload.
+4 bit secondary tag, 16 bits payload.
+
+0-11: 20 bit payload
+12-15+4: 16 bit payload.
+
+Thus, 64 tags:
+0-11: 20 bit payload
+12-63: 16 bit payload
+
+there is a space of 12 free tags (the first 12 with a 16 bit payload), which will be reserved.
+
+Could be used for small integers and mini-floats.
+
+
+Tag 0: Small integers, range=-524288..524287
+
+Tag 1: Small floats, S.5.14, bias=8
+
+
+
+24 bit floats:
+S.7.16, bias=24
+
+28 bit floats:
+S.7.20, bias=24
+
+
+dyClass
+
+will be handled through the dyObject interface, however the mechanics will be different.
+
+dyt dyClass(char *name, char *super, char *slots);
+
+Create a new class with a given name and superclass, slots, if present, will specify any new slots to be added. Syntax will be 'name:type' and space-separated, type syntax being similar to that used in RPNIL.
+
+dyt dyNew(char *name, dyt *args, int nargs);
+dyt dyNew0(char *name);
+dyt dyNew1(char *name, dyt a);
+...
+
+dyt dyNewZ(char *name, char *sig, ...);
+
+Create an instance of a class, the args being passed to the constructor.
+
+
+dyt dyFuncZ(char *sig, void (*fcn)());
+dyt dyMethodZ(char *sig, void (*fcn)(dyt self, ...));
+
+dyClassMethodZ(char *classname, char *name, char *sig,
+	void (*fcn)(dyt self, ...));
+
+Declare a class method.
+
+
+Sig Strings
+
+These will encode the types of arguments, but omit names or other details, and will allow the typenames to be globbed.
+
+For example:
+	"ii": (int, int)
+	"PfPPv" (float *, void **)
+
+With these, a final type will indicate the return type.
+For example, "ii:f" accepts 2 integers and returns a float.
+

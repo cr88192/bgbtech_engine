@@ -1,0 +1,28 @@
+Th 0000003C 12356 00221069
+mounting F:\bgb.proj.pdsys52\btgecm as /
+mounting F:\bgb.proj.pdsys52\btgecm\resource as /
+DYLL_MetaPath_LoadDB2: bspkg2c_meta.txt bspkg2c
+Load DB 'bspkg2c_meta.txt': fail
+DYLL_MetaPath_LoadDB2: ntdll_meta.txt ntdll
+Load DB 'ntdll_meta.txt': fail
+DYLL_MetaPath_LoadDB2: kernel32_meta.txt kernel32
+Load DB 'kernel32_meta.txt': fail
+DYLL_MetaPath_LoadDB2: KERNELBASE_meta.txt KERNELBASE
+Load DB 'KERNELBASE_meta.txt': fail
+Got Module Data 06890020 983040
+DYLL_MetaPath_LoadDB2: bgbsvm_meta.txt bgbsvm
+DYLL_MetaPath_LoadDB2: exwad/bgbsvm/meta.txt bgbsvm
+Load DB 'exwad/bgbsvm/meta.txt': pass
+DYLL_MetaPath_LoadDB2: bgbgc_meta.txt bgbgc
+Load DB 'bgbgc_meta.txt': fail
+DYLL_MetaPath_LoadDB2: bgbdy_meta.txt bgbdy
+Load DB 'bgbdy_meta.txt': fail
+DYLL_MetaPath_LoadDB2: bgbasm_meta.txt bgbasm
+Load DB 'bgbasm_meta.txt': fail
+DYLL_MetaPath_LoadDB2: zpack_meta.txt zpack
+Load DB 'zpack_meta.txt': fail
+SpaceNew(0): _flonum_t C0000000..D0000000
+SpaceNew(1): _fixint_t D0000000..E0000000
+SpaceNew(2): _ustring_t E0000000..E1000000
+SpaceNew(3): _usymbol_t E1000000..E2000000
+SpaceNew(4): _char_t E2000000..E2010000

@@ -1,0 +1,11 @@
+package bsvm.lang;
+
+public abstract class Number extends Object
+{
+public Number() {}
+
+public abstract double doubleValue();
+public abstract float floatValue();
+public abstract int intValue();
+public abstract long longValue();
+}

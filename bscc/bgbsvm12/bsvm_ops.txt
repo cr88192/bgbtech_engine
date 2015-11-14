@@ -1,0 +1,810 @@
+//used for generating opcodes info
+//
+//basic line layout is:
+//<opname> <opnum> [args [flow]]
+//where args is a string identifying what immediately follows the
+//opcode. this is one of:
+//	I, literal index
+//	J, lexical variable index
+//	A, relative address
+//	N, numeric index (stack items, ...)
+//	M, signed numeric index
+//	S, symbolic index (special case of I)
+//	T, string index (special case of I)
+//	C, 8 bit signed byte
+//	B, 8 bit unsigned byte
+//	K, 16 bit signed short
+//	W, 16 bit unsigned short
+//	H, 16 bit fixed-point value (100 based)
+//	G, 16 bit fixed-point value (10000 based)
+//	D, Float (SVLI Pair, base, exp)
+//	L, 32-bit integer
+//	U, UVLI
+//	V, SVLI
+//	...
+//
+//flow:	in*=out*
+//	vv=v	Consumes 2 values and outputs a value
+//	!, non-local control flow (ends trace)
+//		(may call/jump, likely to throw, may block)
+//	@, start of trace.
+//	?, may potentially throw exception.
+//
+//flow types:
+//	v, generic variant value;
+//	i, generic fixnum;
+//	f, generic flonum;
+//	b, bool (variant).
+//	I, int
+//	L/J, long
+//	F, float
+//	D, double
+//flow special values:
+//	w/x/y/z, named variant;
+//	j/k/l, named fixnum;
+//	g/h, named flonum.
+//
+//if args is absent, it is assumed that the opcode is coded by itself.
+
+
+//0-15 base ops
+NOP					0 -	=		//do nothing
+BLOCK				1 -	=!		//blocks if limit!=0
+DBGMARK				2 TN	=	//sets the filename and line number
+CGENAST				3 I	-!		//syntax to be passed to code generator
+FN					4 T =		//filename
+LN					5 N =		//line number
+LABEL				6 S =@		//label
+
+//16-31, variable ops
+PUSH				16 I =v		//push item on the stack
+POP					17 - v=		//pop item from the stack
+LOAD				18 S =v?	//load item from variable onto stack
+STORE				19 S v=		//store item on stack into variable
+BIND				20 S v=		//bind item on stack to new variable
+DYNBIND				21 S v=		//dynamically bind an item on the stack
+LEXBIND				22 S v=		//lexically bind an item on the stack
+LOADINDEX			23 - vv=v?	//load from object index (arr, idx)
+STOREINDEX			24 - vvv=?	//store into object index (val, arr, idx)
+PUSH_SELF			25 - =v		//push 'self' onto stack
+CLEARENV			26 - =		//clear lexical bindings to mark
+// BINDPATTERN			27 - vv=	//bind vars to a pattern
+TRYCAST_S			27 S v=v	//cast to a specific type (null on fail)
+
+PF_HINT_PTR			28 - =		//pointer (generic)
+PF_HINT_S			29 S =		//type-hint about following opcode (sig)
+TRYLOAD				30 S =v		//try to load an item
+CAST_S				31 S v=v?	//cast to a specific type
+
+//32-47 block ops
+MARK				32 - =M		//mark the current stack location
+CALL				33 - M*v=v!	//call a given function
+TAILCALL			34 - M*v=!	//tail call a given function
+CALL_S				35 S M*=v!	//call a given function (named)
+TAILCALL_S			36 S M*=!	//tail call a given function (named)
+METHODCALL			37 - M*vv=v!	//call a given method
+METHODTAILCALL		38 - M*vv=!	//tail-call a given method
+METHODCALL_S		39 S M*v=v!	//call a given method (named)
+METHODTAILCALL_S	40 S M*v=!	//tail-call a given method (named)
+RET					41 - v=!		//return from current function
+TYMARK				42 S =M		//mark, but with a type-signature
+
+// PUSHENV			42 - =		//push a new level of dynamic bindings
+// POPENV			43 - =		//pop a level of dynamic bindings
+// BEGINCC			44 A =v		//begin block with current continuation
+// BEGINOBJ			45 A =		//begin a block with a new object
+// FRAME			46 A =		//create a new frame
+NEW_S				47 S M*=v?	//create new object instance
+
+//48-63 stack ops
+DUP					48 - x=xx	//dup items on stack
+EXCH				49 - xy=yx	//swap items on stack
+INDEX				50 N =v		//refer to an item on stack
+RINDEX				51 N =v		//refer to an item relative to mark
+SETINDEX			52 N v=		//set an item on the stack
+SETRINDEX			53 N v=		//set an item on the stack (rel mark)
+DUP_F				54 - x=xx	//dup items on stack (fast)
+
+// DUP_R				55 B v=v	//copy an item on stack into a register
+// DUP_RF				56 B v=v	//copy into a register (fast)
+// PUSH_R				57 B =v		//push an item on the stack (reg)
+// PUSH_RF				58 B =v		//push an item on the stack (reg, fast)
+// POP_R				59 B v=		//pop an item from the stack (reg)
+
+EXCH_SELF			60 - x=y	//swap 'self' with value on stack
+PUSH_CTV			61 B =v		//push a special value
+DELETE				62 - v=b	//delete an object, push a bool
+CAST				63 - vv=v	//cast a value to a given type
+
+
+//64-111 misc ops
+UNARYOP				64 u v=v?	//unary operation
+BINARYOP			65 b vv=v?	//binary operation
+PUSH_NULL			66 - =v		//push a null
+PUSH_TRUE			67 - =v		//push a true
+PUSH_FALSE			68 - =v		//push a false
+PUSH_SV				69 K =i		//push a small fixnum
+PUSH_0				70 - =i		//push 0
+PUSH_1				71 - =i		//push 1
+PUSH_2				72 - =i		//push 2
+PUSH_3				73 - =i		//push 3
+PUSH_4				74 - =i		//push 4
+PUSH_5				75 - =i		//push 5
+PUSH_6				76 - =i		//push 6
+PUSH_7				77 - =i		//push 7
+PUSH_CF				78 - =v		//push current function
+CALL_CF				79 - M*=v!	//call current function
+TAILCALL_CF			80 - M*=!	//tailcall current function
+
+CAR					81 - v=v	//head of a list
+CDR					82 - v=v	//tail of a list
+CAAR				83 - v=v	//list ops
+CDAR				84 - v=v	//list ops
+CADR				85 - v=v	//list ops
+CDDR				86 - v=v	//list ops
+
+PUSH_SV_P			87 B =i		//push a small fixnum (positive)
+PUSH_SV_N			88 B =i		//push a small fixnum (negative)
+PUSH_SV_F			89 H =f		//push a small flonum (fixed 100)
+
+LLOAD				90 J =v		//load an item from the lexical env
+LSTORE				91 J v=		//store an item to the lexical env
+LLOAD_F				92 J =v		//load an item from the lexical env
+LSTORE_F			93 J v=		//store an item to the lexical env
+LPOSTINC			94 J =v		//post-increment lexical var
+LPOSTDEC			95 J =v		//post-decrement lexical var
+LINC				96 J =		//i+1 -> i
+LDEC				97 J =		//i-1 -> i
+LPREINC				98 J =v		//pre-increment lexical var
+LPREDEC				99 J =v		//pre-decrement lexical var
+
+LOADINDEX_S			100 S v=v?	//load an index from an object
+STOREINDEX_S		101 S vv=?	//store into an object slot (val obj)
+LOADINDEX_I			102 B v=v?	//load an index from an object
+STOREINDEX_I		103 B vv=?	//store into an object index (val obj)
+LOADINDEX_0			104 - v=v?	//load an index from an object
+LOADINDEX_1			105 - v=v?	//load an index from an object
+LOADINDEX_2			106 - v=v?	//load an index from an object
+LOADINDEX_3			107 - v=v?	//load an index from an object
+STOREINDEX_0		108 - vv=?	//store into an object index (val obj)
+STOREINDEX_1		109 - vv=?	//store into an object index (val obj)
+STOREINDEX_2		110 - vv=?	//store into an object index (val obj)
+STOREINDEX_3		111 - vv=?	//store into an object index (val obj)
+
+//112-127 control flow ops
+THROW_S				112 S =!	//throw exception (simple name)
+BEGIN_TRY			113 - =		//begins the body of a try block
+END_TRY				114 - =		//ends the body of a try block
+CATCH				115 SA =	//add exception handler
+THROW_OBJ			116 - v=!	//throw exception object
+
+PF_WIDE				117 - =		//Wide Prefix
+
+JMP					118 A =!	//jump to rel offset
+JMP_TRUE			119 A v=!	//jump to rel offset if true
+JMP_FALSE			120 A v=!	//jump to rel offset if false
+JMP_COND_U			121 uA v=!	//jump to rel offset (unary condition)
+JMP_COND_B			122 bA vv=!	//jump to rel offset (binary condition)
+
+BEGIN_CATCH			123 S =v@	//begins the body of a catch block
+END_CATCH			124 - =		//ends the body of a catch block
+BEGIN_CATCH_FINAL	125 - =@	//begins the body of a finally block
+// JMP_COND_SWEQ	126 IA v=v	//jump to rel offset (switch-equal)
+
+//128-143 data ops
+ARRAY				128 - M*=v	//new array from values
+DICT				129 - M*=v	//new dict from values
+ATTR				130 - xy=v	//new attribute from name and value (name=y)
+OBJECT				131 - M*=v	//new empty object
+VECTOR				132 - M*=v	//new vector from values
+TERMINAL			133 - -		//new terminal from value
+COMPLEX				134 - ff=v	//new complex from values
+MATRIX				135 - M*=v	//new matrix from values
+LIST				136 - M*=v	//new list from values
+COMPLEX_I			137 - f=v	//new imaginary number from flonum
+CLOSE				138 - v=v	//close over a block making a lambda
+CLOSE2				139 - v=v	//close, but have it bound in self (?)
+FLINK				140 - vv=v	//link functions together
+CONS				141 - vv=v	//new cons cell
+QUAT				142 - ffff=v	//construct a quaternion (WXYZ)
+ENVCLOSE			143 - M*v=v	//close over block using supplied bindings
+
+
+//144..191 special ops
+
+NEG					144 - v=w	//negate
+LNOT				145 - v=w	//logical not
+DEFER				146 - v=w?	//deference / unary-multiply
+PUSH_SV_C			147 W =v	//push a character codepoint
+ARRAY_S				148 S M*=v	//new array from values (typed)
+CLONE				149 - v=w?	//clone an object
+TOSTRING			150 - v=w?	//convert object to a string
+TYBIND				151 SSS v=	//bind new variable (name, sig, flags)
+TYDYNBIND			152 SSS v=	//dynamically bind item on the stack
+TYLEXBIND			153 SSS v=	//lexically bind item on the stack
+IMPORT				154 SS =	//begin package (name, flags)
+LOADA_S				155 S =p?	//push pointer to a variable
+LOADINDEXA			156 - vv=v?	//load address of array index
+CLASS_IFACE			157 SS =	//implement interface (name, flags)
+INSTANCEOF_S		158 S v=b	//check if value is of a given type
+
+ADD					159 - vv=v	//add operator
+SUB					160 - vv=v	//sub operator
+MUL					161 - vv=v	//mul operator
+DIV					162 - vv=v	//div operator
+MOD					163 - vv=v	//mod operator
+AND					164 - vv=v	//and operator
+OR					165 - vv=v	//or operator
+XOR					166 - vv=v	//xor operator
+
+POSTINC_S			167 S =v?	//post-increment variable
+POSTDEC_S			168 S =v?	//post-decrement variable
+PREINC_S			169 S =v?	//pre-increment variable
+PREDEC_S			170 S =v?	//pre-decrement variable
+INC_S				171 S =?	//increment variable
+DEC_S				172 S =?	//decrement variable
+
+SETDEFER			173 - vw=?	//set deference (val ref)
+NOT					174 - v=w	//not
+INC					175 - v=w	//increment
+DEC					176 - v=w	//decrement
+PUSH_SV_FB			177 G =f	//push a small flonum (fixed 10000)
+ROLL_I				178 NM =	//rotate stack elements by a count
+COPY_I				179 N =		//duplicate the N top stack elements
+
+PF_HINT_XI			180 - =		//type-hint for integer
+PF_HINT_XL			181 - =		//type-hint for long
+PF_HINT_XF			182 - =		//type-hint for float
+PF_HINT_XD			183 - =		//type-hint for double
+
+PUSH_XI				184 V =I	//push a literal integer
+PUSH_XL				185 V =J	//push a literal long
+SHL					186 - xy=z	//shift left
+SHR					187 - xy=z	//shift right
+INC2				188 - v=w	//increment
+DEC2				189 - v=w	//decrement
+
+//192..255: reserved for 2 byte opcodes 256..16383
+//2 byte opcodes 0..255 are reserved
+
+//192..255 may not be assigned any opcodes
+
+//256..16384
+//2-byte opcodes range
+//opcodes here are theoretically of lower frequency than those in
+//the 0..191 range.
+
+JMP_L_FN		256 A ii=!	//i<j
+JMP_G_FN		257 A ii=!	//i>j
+JMP_LE_FN		258 A ii=!	//i<=j
+JMP_GE_FN		259 A ii=!	//i>=j
+JMP_L_FL		260 A ff=!	//f<g
+JMP_G_FL		261 A ff=!	//f>g
+JMP_LE_FL		262 A ff=!	//f<=g
+JMP_GE_FL		263 A ff=!	//f>=g
+JMP_E_LFN		264 JJA =!	//i==j
+JMP_NE_LFN		265 JJA =!	//i!=j
+JMP_L_LFN		266 JJA =!	//i<j
+JMP_G_LFN		267 JJA =!	//i>j
+JMP_LE_LFN		268 JJA =!	//i<=j
+JMP_GE_LFN		269 JJA =!	//i>=j
+JMP_E_ZFN		270 A i=!	//i==0
+JMP_NE_ZFN		271 A i=!	//i!=0
+JMP_L_ZFN		272 A i=!	//i<0
+JMP_G_ZFN		273 A i=!	//i>0
+JMP_LE_ZFN		274 A i=!	//i<=0
+JMP_GE_ZFN		275 A i=!	//i>=0
+JMP_E_LZFN		276 JA =!	//i==0
+JMP_NE_LZFN		277 JA =!	//i!=0
+JMP_L_LZFN		278 JA =!	//i<0
+JMP_G_LZFN		279 JA =!	//i>0
+JMP_LE_LZFN		280 JA =!	//i<=0
+JMP_GE_LZFN		281 JA =!	//i>=0
+JMP_E_FNC		282 CA i=!	//i==c
+JMP_NE_FNC		283 CA i=!	//i!=c
+JMP_L_FNC		284 CA i=!	//i<c
+JMP_G_FNC		285 CA i=!	//i>c
+JMP_LE_FNC		286 CA i=!	//i<=c
+JMP_GE_FNC		287 CA i=!	//i>=c
+JMP_E_LFNC		288 JCA =!	//i==c
+JMP_NE_LFNC		289 JCA =!	//i!=c
+JMP_L_LFNC		290 JCA =!	//i<c
+JMP_G_LFNC		291 JCA =!	//i>c
+JMP_LE_LFNC		292 JCA =!	//i<=c
+JMP_GE_LFNC		293 JCA =!	//i>=c
+
+//fixnum specific ops
+INC_FN			294 - i=i	//i+1
+DEC_FN			295 - i=i	//i-1
+INC2_FN			296 - i=i	//i+2
+DEC2_FN			297 - i=i	//i-2
+ADD_FN			298 - ii=i	//i+j
+SUB_FN			299 - ii=i	//i-j
+MUL_FN			300 - ii=i	//i*j
+DIV_FN			301 - ii=i	//i/j
+IDIV_FN			302 - ii=i	//i\j
+MOD_FN			303 - ii=i	//i%j
+AND_FN			304 - ii=i	//i&j
+OR_FN			305 - ii=i	//i|j
+XOR_FN			306 - ii=i	//i^j
+CMP_L_FN		307 - ii=b	//i<j
+CMP_G_FN		308 - ii=b	//i>j
+CMP_LE_FN		309 - ii=b	//i<=j
+CMP_GE_FN		310 - ii=b	//i>=j
+CMP_E_FN		311 - ii=b	//i==j
+CMP_NE_FN		312 - ii=b	//i!=j
+NEG_FN			313 - i=i	//-i
+NOT_FN			314 - i=i	//~i
+ADD_FN_C		315 B i=i	//i+c
+SUB_FN_C		316 B i=i	//i-c
+MUL_FN_C		317 B i=i	//i*c
+CONV_FN2FL		318 - i=f	//convert fixnum to flonum (i+f, ...)
+CONV_FL2FN		319 - f=i	//convert flonum to fixnum (int f, ...)
+ADD_FL			320 - ff=f	//f+g
+SUB_FL			321 - ff=f	//f-g
+MUL_FL			322 - ff=f	//f*g
+DIV_FL			323 - ff=f	//f/g
+CMP_L_FL		324 - ff=b	//f<g
+CMP_G_FL		325 - ff=b	//f>g
+CMP_LE_FL		326 - ff=b	//f<=g
+CMP_GE_FL		327 - ff=b	//f>=g
+CMP_E_FL		328 - ff=b	//f==g
+CMP_NE_FL		329 - ff=b	//f!=g
+NEG_FL			330 - f=f	//-f
+JMP_E_FN		331 A ii=	//i==j
+JMP_NE_FN		332 A ii=	//i!=j
+JMP_E_FL		333 A ff=	//f==g
+JMP_NE_FL		334 A ff=	//f!=g
+SHL_FN			335 - ii=i	//i<<j
+SHR_FN			336 - ii=i	//i>>j
+EXP_FN			337 - ii=i	//i**j
+SHL_FN_C		338 B i=i	//i<<c
+SHR_FN_C		339 B i=i	//i>>c
+EXP_FN_C		340 B i=i	//i**c
+
+// SHL_C			341 B v=v	//x<<c
+// SHR_C			342 B v=v	//x>>c
+// SHRR_C			343 B v=v	//x>>>c
+
+PUSH_XF			341 D =f	//push float literal
+PUSH_XD			342 D =f	//push double literal
+
+SHRR			344 - xy=z	//x>>>y
+
+LOADB_S			345 S =p?	//load variable reference
+LOADINDEXA_S	346 S v=v?	//load slot address
+LOADINDEXB_S	347 S v=v?	//load slot value or reference
+LOADINDEXA_I	348 B v=v?	//load index address
+LOADINDEXB_I	349 B v=v?	//load index value or reference
+LLOADA			350 J =v	//load address (lexical env)
+LLOADB			351 J =v	//load value or reference (lexical env)
+UNARYOP_S		352 S v=v?	//named unary operation
+BINARYOP_S		353 S vv=v?	//named binary operation
+
+ASSERT			354 - v=v!	//trap if value is false
+JOIN			355	- v=v!	//join on an async operation
+MULTIJOIN		356	- M*=v!	//join on multiple async operations
+
+UNARYINTRIN_S	357 S v=v?	//named unary intrinsic
+BINARYINTRIN_S	358 S vv=v?	//named binary intrinsic
+TRINARYINTRIN_S	359 S vv=v?	//named trinary intrinsic
+
+// LXBLOAD		354 bJJ =v	//load 2 values from lex env and do binary op
+// LXBSTORE		355 bJ v=	//store a value to lexical env, doing binary op
+// LXBLOAD_FN	356 bJJ =v	//load 2 values from lex env and do binary op
+// LXBSTORE_FN	357 bJ v=	//store a value to lexical env, doing binary op
+// LXBLOAD_FL	358 bJJ =v	//load 2 values from lex env and do binary op
+// LXBSTORE_FL	359 bJ v=	//store a value to lexical env, doing binary op
+// LXBLOAD_FNC	360 bJK =v	//load values from lex env and do const binary op
+
+
+CONV_FN2XI		360 - i=I	//fixnum to int32 (1)
+CONV_FN2XL		361 - i=J	//fixnum to long (1)
+CONV_FL2XF		362 - f=F	//flonum to float32 (1)
+CONV_FL2XD		363 - f=D	//flonum to double (1)
+CONV_XI2FN		364 - I=i	//int32 to fixnum
+CONV_XL2FN		365 - J=i	//long to fixnum (2)
+CONV_XF2FL		366 - F=f	//float32 to flonum
+CONV_XD2FL		367 - D=f	//double to flonum (2)
+
+ADD_C			368 V v=v	//add operator
+SUB_C			369 V v=v	//sub operator
+MUL_C			370 V v=v	//mul operator
+DIV_C			371 V v=v	//div operator
+MOD_C			372 V v=v	//mod operator
+AND_C			373 V v=v	//and operator
+OR_C			374 V v=v	//or operator
+XOR_C			375 V v=v	//xor operator
+SHL_C			376 V v=v	//x<<c
+SHR_C			377 V v=v	//x>>c
+SHRR_C			378 V v=v	//x>>>c
+
+CMP_EQ_C		380 V x=b	//f==c
+CMP_NE_C		381 V x=b	//f!=c
+CMP_LT_C		382 V x=b	//f<c
+CMP_GT_C		383 V x=b	//f>c
+CMP_LE_C		384 V x=b	//f<=c
+CMP_GE_C		385 V x=b	//f>=c
+JMP_EQ_C		386 VA x=!	//i==c
+JMP_NE_C		387 VA x=!	//i!=c
+JMP_LT_C		388 VA x=!	//f<c
+JMP_GT_C		389 VA x=!	//f>c
+JMP_LE_C		390 VA x=!	//f<=c
+JMP_GE_C		391 VA x=!	//f>=c
+JMP_EQ_LC		392 JVA =!	//i==c
+JMP_NE_LC		393 JVA =!	//i!=c
+JMP_LT_LC		394 JVA =!	//f<c
+JMP_GT_LC		395 JVA =!	//f>c
+JMP_LE_LC		396 JVA =!	//f<=c
+JMP_GE_LC		397 JVA =!	//f>=c
+
+PF_HINT_XUBI	400 - =		//array type prefix (ubyte[*], int)
+PF_HINT_XSBI	401 - =		//array type prefix (sbyte[*], int)
+PF_HINT_XUSI	402 - =		//array type prefix (ushort[*], int)
+PF_HINT_XSSI	403 - =		//array type prefix (sshort[*], int)
+PF_HINT_XUDI	404 - =		//array type prefix (uint[*], int)
+PF_HINT_XSDI	405 - =		//array type prefix (sint[*], int)
+PF_HINT_XUDL	406 - =		//array type prefix (uint[*], long)
+PF_HINT_XSDL	407 - =		//array type prefix (sint[*], long)
+PF_HINT_XUBI_IX	408 - =		//array type prefix (ubyte[int], int)
+PF_HINT_XSBI_IX	409 - =		//array type prefix (sbyte[int], int)
+PF_HINT_XUSI_IX	410 - =		//array type prefix (ushort[int], int)
+PF_HINT_XSSI_IX	411 - =		//array type prefix (sshort[int], int)
+PF_HINT_XUDI_IX	412 - =		//array type prefix (uint[int], int)
+PF_HINT_XSDI_IX	413 - =		//array type prefix (sint[int], int)
+PF_HINT_XUDL_IX	414 - =		//array type prefix (uint[int], long)
+PF_HINT_XSDL_IX	415 - =		//array type prefix (sint[int], long)
+PF_HINT_XII		416 - =		//array type prefix (int[*]->int)
+PF_HINT_XLL		417 - =		//array type prefix (long[*]->long)
+PF_HINT_XFF		418 - =		//array type prefix (float[*]->float)
+PF_HINT_XDD		419 - =		//array type prefix (double[*]->double)
+PF_HINT_XII_IX	420 - =		//array type prefix (int[int]->int)
+PF_HINT_XLL_IX	421 - =		//array type prefix (long[int]->long)
+PF_HINT_XFF_IX	422 - =		//array type prefix (float[int]->float)
+PF_HINT_XDD_IX	423 - =		//array type prefix (double[int]->double)
+// PF_HINT_PTR		424 - =		//pointer (generic)
+PF_HINT_IX		425 - =		//integer index
+PF_HINT_FN		426 - =		//prefix hint (fixnum)
+PF_HINT_FL		427 - =		//prefix hint (flonum)
+PF_HINT_V2F		428 - =		//prefix hint (vec2)
+PF_HINT_V3F		429 - =		//prefix hint (vec3)
+PF_HINT_V4F		430 - =		//prefix hint (vec4)
+PF_HINT_QUAT	431 - =		//prefix hint (quat)
+PF_HINT_VOID	432 - =		//prefix hint (void)
+PF_HINT_PVAR	433 - =		//prefix hint (void pointer)
+
+PF_HINT_RESV2	434 - =		//reserved hint
+PF_HINT_RESV3	435 - =		//reserved hint
+
+CONV_XI2XL		436 - I=J	//
+CONV_XI2XF		437 - I=F	//
+CONV_XI2XD		438 - I=D	//
+CONV_XL2XI		439 - J=I	//
+CONV_XL2XF		440 - J=F	//
+CONV_XL2XD		441 - J=D	//
+CONV_XF2XI		442 - F=I	//
+CONV_XF2XL		443 - F=J	//
+CONV_XF2XD		444 - F=D	//
+CONV_XD2XI		445 - D=I	//
+CONV_XD2XL		446 - D=J	//
+CONV_XD2XF		447 - D=F	//
+
+EXCH_YXZ		448 - xyz=yxz
+EXCH_YZX		449 - xyz=yzx
+EXCH_ZXY		450 - xyz=zxy
+EXCH_ZYX		451 - xyz=zyx
+
+JMP_SWEQ		456 IA	v=v!	//jump to rel offset (switch-equal)
+JMP_SWEQF		457 IA	v=v!	//jump to rel offset (switch-equal, fast)
+JMP_SWDFL		458 A	v=!	//jump to rel offset (switch-default)
+JMP_SWB			459 bIA	v=v!	//jump to rel offset (switch-binary)
+
+JMP_U			462 A xy=!	//x<>y, jump if unordered
+CMP_U			463 - xy=b	//x<>y, compare if unordered
+
+JMP_EQ			464 A xy=!	//i==j
+JMP_NE			465 A xy=!	//i!=j
+JMP_LT			466 A xy=!	//f<g
+JMP_GT			467 A xy=!	//f>g
+JMP_LE			468 A xy=!	//f<=g
+JMP_GE			469 A xy=!	//f>=g
+
+CMP_EQ			470 - xy=b	//f==g
+CMP_NE			471 - xy=b	//f!=g
+CMP_LT			472 - xy=b	//f<g
+CMP_GT			473 - xy=b	//f>g
+CMP_LE			474 - xy=b	//f<=g
+CMP_GE			475 - xy=b	//f>=g
+
+JMP_EQQ			476 A xy=!	//x===y
+CMP_EQQ			477 - xy=b	//x===y
+JMP_NEQ			478 A xy=!	//x!==y
+CMP_NEQ			479 - xy=b	//x!==y
+
+EXCH_WXYZ		480 - wxyz=wxyz		//
+EXCH_WXZY		481 - wxyz=wxzy		//
+EXCH_WYXZ		482 - wxyz=wyxz		//
+EXCH_WYZX		483 - wxyz=wyzx		//
+EXCH_WZXY		484 - wxyz=wzxy		//
+EXCH_WZYX		485 - wxyz=wzyx		//
+EXCH_XWYZ		486 - wxyz=xwyz		//
+EXCH_XWZY		487 - wxyz=xwzy		//
+EXCH_XYWZ		488 - wxyz=xywz		//
+EXCH_XYZW		489 - wxyz=xyzw		//
+EXCH_XZWY		490 - wxyz=xzwy		//
+EXCH_XZYW		491 - wxyz=xzyw		//
+EXCH_YWXZ		492 - wxyz=ywxz		//
+EXCH_YWZX		493 - wxyz=ywzx		//
+EXCH_YXWZ		494 - wxyz=yxwz		//
+EXCH_YXZW		495 - wxyz=yxzw		//
+EXCH_YZWX		496 - wxyz=yzwx		//
+EXCH_YZXW		497 - wxyz=yzxw		//
+EXCH_ZWXY		498 - wxyz=zwxy		//
+EXCH_ZWYX		499 - wxyz=zwyx		//
+EXCH_ZXWY		500 - wxyz=zxwy		//
+EXCH_ZXYW		501 - wxyz=zxyw		//
+EXCH_ZYWX		502 - wxyz=zywx		//
+EXCH_ZYXW		503 - wxyz=zyxw		//
+
+SLEEP			504	- v=v!		//sleep (milliseconds)
+SLEEP_SV		505	W =v!		//sleep constant (milliseconds)
+UNQUOTE			506	- v=v!		//evaluate expression
+LOCK_OBJ		507 - v=!		//lock object (generic)
+UNLOCK_OBJ		508 - v=!		//unlock object (generic)
+LOADMINDEX		509 - M*v=v?	//(deprecated) load multi-index
+STOREMINDEX		510 - M*vv=?	//(deprecated) store multi-index
+BINDPATTERN		511 - vv=?		//bind vars to a pattern
+
+//512..543
+BEGIN_PACKAGE	512 SS =v		//begin package (name, flags)
+BEGIN_STRUCT	513 SSS =v		//begin struct
+BEGIN_CLASS		514 SSS =v		//begin class (name, super, flags)
+BEGIN_IFACE		515 SSS =v		//begin interface
+END_PACKAGE		516 - v=w		//end package
+END_STRUCT		517 - v=w		//end struct
+END_CLASS		518 - v=w		//end class
+END_IFACE		519 - v=w		//end interface
+OFFSETOF		520 SS =i		//offsetof (type, slot)
+SIZEOF			521 - v=i		//sizeof (expression)
+SIZEOF_S		522 S =i		//sizeof (type)
+NEWARRAY_S		523 S i=v		//create a new array
+NEWMARRAY_S		524 S M*=v!		//create a new multi-dimensional array
+CALL_THIS		525 - M*=v!		//call another constructor in "this"
+CALL_SUPER		526 - M*=v!		//call another constructor in "super"
+
+NEW				527 - M*v=w!	//create new object
+
+PUSH_ERROR		528 - =v!		//push related to compiler error
+POP_ERROR		529 - v=!		//pop related to compiler error
+INSTANCEOF		530 - vw=b		//check if value is of a given type
+
+LDJMP			531 A =v?		//load a jump-target address
+JMPIA			532 - v=!		//jump to an indirect address
+EXCH_TOP		533 - x=y?		//swap 'top' with value on stack
+CALL_ASYNC		534	- M*v=v!	//call an async block
+CALL_IFDEF		535	S M*v=v!	//call a block if S is defined
+CALL_IFNDEF		536	S M*v=v!	//call a block if S is not defined
+
+BEGIN_SYNC		537 - =!		//begin critical section
+END_SYNC		538 - =!		//end critical section
+BEGIN_SYNC_OBJ	539 - v=!		//lock object (via "synchronized")
+END_SYNC_OBJ	540 - v=!		//unlock object (via "synchronized")
+
+//Misc, relocated
+// PUSHENV				642 - =		//push a new level of dynamic bindings
+// POPENV				643 - =		//pop a level of dynamic bindings
+// BEGINCC				644 A =v		//begin block with current continuation
+// BEGINOBJ			645 A =		//begin a block with a new object
+// FRAME				646 A =		//create a new frame
+
+// DUP_R				655 B v=v	//copy an item on stack into a register
+// DUP_RF				656 B v=v	//copy into a register (fast)
+// PUSH_R				657 B =v	//push an item on the stack (reg)
+// PUSH_RF				658 B =v	//push an item on the stack (reg, fast)
+// POP_R				659 B v=	//pop an item from the stack (reg)
+
+//Statically Typed Opcodes
+
+// PF_HINT_V2F		684 - =		//prefix hint (vec2)
+// PF_HINT_V3F		685 - =		//prefix hint (vec3)
+// PF_HINT_V4F		686 - =		//prefix hint (vec4)
+// PF_HINT_QUAT		687 - =		//prefix hint (quat)
+
+PF_HINT_PUB		688 - =		//prefix hint (*byte)
+PF_HINT_PSB		689 - =		//prefix hint (*sbyte)
+PF_HINT_PUS		690 - =		//prefix hint (*ushort)
+PF_HINT_PSS		691 - =		//prefix hint (*short)
+PF_HINT_PUD		692 - =		//prefix hint (*uint)
+PF_HINT_PSD		693 - =		//prefix hint (*int)
+PF_HINT_PUL		694 - =		//prefix hint (*ulong)
+PF_HINT_PSL		695 - =		//prefix hint (*long)
+PF_HINT_PF		696 - =		//prefix hint (*float)
+PF_HINT_PD		697 - =		//prefix hint (*double)
+PF_HINT_PV		698 - =		//prefix hint (*void)
+PF_HINT_PP		699 - =		//prefix hint (** -)
+// PF_HINT_PTR		700 - =		//pointer (generic)
+// PF_HINT_IX		701 - =		//integer index
+
+// PF_HINT_FN		702 - =		//prefix hint (fixnum)
+// PF_HINT_FL		703 - =		//prefix hint (flonum)
+
+
+//array type prefixes / hints
+// PF_HINT_XUBI	704 - =		//array type prefix (ubyte[*], int)
+// PF_HINT_XSBI	705 - =		//array type prefix (sbyte[*], int)
+// PF_HINT_XUSI	706 - =		//array type prefix (ushort[*], int)
+// PF_HINT_XSSI	707 - =		//array type prefix (sshort[*], int)
+// PF_HINT_XUDI	708 - =		//array type prefix (uint[*], int)
+// PF_HINT_XSDI	709 - =		//array type prefix (sint[*], int)
+// PF_HINT_XUDL	710 - =		//array type prefix (uint[*], long)
+// PF_HINT_XSDL	711 - =		//array type prefix (sint[*], long)
+// PF_HINT_XUBI_IX	712 - =		//array type prefix (ubyte[int], int)
+// PF_HINT_XSBI_IX	713 - =		//array type prefix (sbyte[int], int)
+// PF_HINT_XUSI_IX	714 - =		//array type prefix (ushort[int], int)
+// PF_HINT_XSSI_IX	715 - =		//array type prefix (sshort[int], int)
+// PF_HINT_XUDI_IX	716 - =		//array type prefix (uint[int], int)
+// PF_HINT_XSDI_IX	717 - =		//array type prefix (sint[int], int)
+// PF_HINT_XUDL_IX	718 - =		//array type prefix (uint[int], long)
+// PF_HINT_XSDL_IX	719 - =		//array type prefix (sint[int], long)
+
+// PF_HINT_XII		720 - =		//array type prefix (int[*]->int)
+// PF_HINT_XLL		721 - =		//array type prefix (long[*]->long)
+// PF_HINT_XFF		722 - =		//array type prefix (float[*]->float)
+// PF_HINT_XDD		723 - =		//array type prefix (double[*]->double)
+// PF_HINT_XII_IX	724 - =		//array type prefix (int[int]->int)
+// PF_HINT_XLL_IX	725 - =		//array type prefix (long[int]->long)
+// PF_HINT_XFF_IX	726 - =		//array type prefix (float[int]->float)
+// PF_HINT_XDD_IX	727 - =		//array type prefix (double[int]->double)
+
+//typed jump equal/non-equal
+JMP_EQ_XI		728 A II=!	//i==j
+JMP_NE_XI		729 A II=!	//i!=j
+JMP_EQ_XL		730 A JJ=!	//i==j
+JMP_NE_XL		731 A JJ=!	//i!=j
+JMP_EQ_XF		732 A FF=!	//i==j
+JMP_NE_XF		733 A FF=!	//i!=j
+JMP_EQ_XD		734 A DD=!	//i==j
+JMP_NE_XD		735 A DD=!	//i!=j
+
+//typed jump relative compare
+JMP_LT_XI		736 A II=!	//f<g
+JMP_GT_XI		737 A II=!	//f>g
+JMP_LE_XI		738 A II=!	//f<=g
+JMP_GE_XI		739 A II=!	//f>=g
+JMP_LT_XL		740 A JJ=!	//f<g
+JMP_GT_XL		741 A JJ=!	//f>g
+JMP_LE_XL		742 A JJ=!	//f<=g
+JMP_GE_XL		743 A JJ=!	//f>=g
+JMP_LT_XF		744 A FF=!	//f<g
+JMP_GT_XF		745 A FF=!	//f>g
+JMP_LE_XF		746 A FF=!	//f<=g
+JMP_GE_XF		747 A FF=!	//f>=g
+JMP_LT_XD		748 A DD=!	//f<g
+JMP_GT_XD		749 A DD=!	//f>g
+JMP_LE_XD		750 A DD=!	//f<=g
+JMP_GE_XD		751 A DD=!	//f>=g
+
+//typed load/store
+LLOAD_XI		752 J =I	//load an item from the lexical env
+LSTORE_XI		753 J I=	//store an item to the lexical env
+LLOAD_XL		754 J =J	//load an item from the lexical env
+LSTORE_XL		755 J J=	//store an item to the lexical env
+LLOAD_XF		756 J =F	//load an item from the lexical env
+LSTORE_XF		757 J F=	//store an item to the lexical env
+LLOAD_XD		758 J =D	//load an item from the lexical env
+LSTORE_XD		759 J D=	//store an item to the lexical env
+
+//typed dup ops
+DUP_XI			760	- I=II	//duplicate values
+DUP_XL			761	- J=JJ	//duplicate values
+DUP_XF			762	- F=FF	//duplicate values
+DUP_XD			763	- D=DD	//duplicate values
+
+//Type Conversion Functions
+//1: These functions may accept other compatible types.
+//2: may produce out-of-range values
+
+// CONV_FN2XI		764 - i=i	//fixnum to int32 (1)
+// CONV_FN2XL		765 - i=i	//fixnum to long (1)
+// CONV_FL2XF		766 - i=i	//flonum to float32 (1)
+// CONV_FL2XD		767 - i=i	//flonum to double (1)
+// CONV_XI2XL		768 - i=i	//
+// CONV_XI2XF		769 - i=i	//
+// CONV_XI2XD		770 - i=i	//
+// CONV_XI2FN		771 - i=i	//int32 to fixnum
+// CONV_XL2XI		772 - i=i	//
+// CONV_XL2XF		773 - i=i	//
+// CONV_XL2XD		774 - i=i	//
+// CONV_XL2FN		775 - i=i	//long to fixnum (2)
+// CONV_XF2XI		776 - i=i	//
+// CONV_XF2XL		777 - i=i	//
+// CONV_XF2XD		778 - i=i	//
+// CONV_XF2FL		779 - i=i	//float32 to flonum
+// CONV_XD2XI		780 - i=i	//
+// CONV_XD2XL		781 - i=i	//
+// CONV_XD2XF		782 - i=i	//
+// CONV_XD2FL		783 - i=i	//double to flonum (2)
+
+//statically-typed arithmetic ops
+ADD_XI			784 - II=I	//i+j
+SUB_XI			785 - II=I	//i-j
+MUL_XI			786 - II=I	//i*j
+DIV_XI			787 - II=I	//i/j
+ADD_XL			788 - JJ=J	//i+j
+SUB_XL			789 - JJ=J	//i-j
+MUL_XL			790 - JJ=J	//i*j
+DIV_XL			791 - JJ=J	//i/j
+ADD_XF			792 - FF=F	//i+j
+SUB_XF			793 - FF=F	//i-j
+MUL_XF			794 - FF=F	//i*j
+DIV_XF			795 - FF=F	//i/j
+ADD_XD			796 - DD=D	//i+j
+SUB_XD			797 - DD=D	//i-j
+MUL_XD			798 - DD=D	//i*j
+DIV_XD			799 - DD=D	//i/j
+//several more ops
+MOD_XI			800 - II=I	//i%j
+AND_XI			801 - II=I	//i&j
+OR_XI			802 - II=I	//i|j
+XOR_XI			803 - II=I	//i^j
+MOD_XL			804 - JJ=J	//i%j
+AND_XL			805 - JJ=J	//i&j
+OR_XL			806 - JJ=J	//i|j
+XOR_XL			807 - JJ=J	//i^j
+//static equal and non-equal
+CMP_EQ_XI		808 - II=b	//i==j
+CMP_NE_XI		809 - II=b	//i!=j
+CMP_EQ_XL		810 - JJ=b	//i==j
+CMP_NE_XL		811 - JJ=b	//i!=j
+CMP_EQ_XF		812 - FF=b	//i==j
+CMP_NE_XF		813 - FF=b	//i!=j
+CMP_EQ_XD		814 - DD=b	//i==j
+CMP_NE_XD		815 - DD=b	//i!=j
+//static relative compare ops
+CMP_LT_XI		816 - II=b	//i<j
+CMP_GT_XI		817 - II=b	//i>j
+CMP_LE_XI		818 - II=b	//i<=j
+CMP_GE_XI		819 - II=b	//i>=j
+CMP_LT_XL		820 - JJ=b	//i<j
+CMP_GT_XL		821 - JJ=b	//i>j
+CMP_LE_XL		822 - JJ=b	//i<=j
+CMP_GE_XL		823 - JJ=b	//i>=j
+CMP_LT_XF		824 - FF=b	//i<j
+CMP_GT_XF		825 - FF=b	//i>j
+CMP_LE_XF		826 - FF=b	//i<=j
+CMP_GE_XF		827 - FF=b	//i>=j
+CMP_LT_XD		828 - DD=b	//i<j
+CMP_GT_XD		829 - DD=b	//i>j
+CMP_LE_XD		830 - DD=b	//i<=j
+CMP_GE_XD		831 - DD=b	//i>=j
+//static value/immed ops
+ADD_XI_C		832 V I=i	//i+c
+SUB_XI_C		833 V I=i	//i-c
+MUL_XI_C		834 V I=i	//i*c
+DIV_XI_C		835 V I=i	//i*c
+ADD_XL_C		836 V J=i	//i+c
+SUB_XL_C		837 V J=i	//i-c
+MUL_XL_C		838 V J=i	//i*c
+DIV_XL_C		839 V J=i	//i*c
+//statically-typed unary ops
+NEG_XI			840 - I=I	//-i
+NOT_XI			841 - I=I	//~i
+NEG_XL			842 - J=J	//-i
+NOT_XL			843 - J=J	//~i
+NEG_XF			844 - F=F	//-i
+NOT_XF			845 - F=F	//~i
+NEG_XD			846 - D=D	//-i
+NOT_XD			847 - D=D	//~i
+//statically-typed shift ops
+SHL_XI			848 - II=I	//i<<j
+SHR_XI			849 - II=I	//i>>j
+SHL_XI_C		850 B I=I	//i<<c
+SHR_XI_C		851 B I=I	//i>>c
+SHL_XL			852 - JJ=J	//i<<j
+SHR_XL			853 - JJ=J	//i>>j
+SHL_XL_C		854 B J=J	//i<<c
+SHR_XL_C		855 B J=J	//i>>c
+SHRR_XI			856 - I=I	//i>>>j
+SHRR_XL			857 - J=J	//i>>>j
+SHRR_XI_C		858 B I=I	//i>>>c
+SHRR_XL_C		859 B J=J	//i>>>c

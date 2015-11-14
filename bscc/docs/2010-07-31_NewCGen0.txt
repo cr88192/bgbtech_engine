@@ -1,0 +1,25 @@
+idle:
+GAST->TVIR
+TVIR->ASM
+
+
+TVIR: TVar IR.
+
+will be internal to the codegen;
+likely SSA form;
+likely to be handled as arrays of struct pointers.
+
+General Form:
+<opcode> <type> <dest> <src*>
+
+Opcode is a magic opcode number;
+Type is a type handle;
+Dest is the target tvar (generally created via said operation);
+Src is 0 or more source operands.
+
+
+Traditional (named) variables will not be TVars, and unlike TVars, will remain mutable.
+TVars will be identified via handles, which will generally be linearly increasing integers.
+
+TVars will be merged via phi operators, which will directly follow labels.
+

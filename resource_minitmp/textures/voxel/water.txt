@@ -1,0 +1,5 @@
+$flags voxel alpha water warpst
+
+$vox_img_top_scale 4
+
+$video textures/voxel/water.avi

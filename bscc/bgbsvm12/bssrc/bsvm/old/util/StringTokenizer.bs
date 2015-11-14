@@ -1,0 +1,26 @@
+package bsvm.util;
+
+public class StringTokenizer extends Object implements Enumeration
+{
+public StringTokenizer(String str)
+	{ }
+public StringTokenizer(String str, String delim)
+	{ }
+public StringTokenizer(String str, String delim, boolean returnTokens)
+	{ }
+
+public int countTokens()
+	{ return 0; }
+public boolean hasMoreElements()
+	{ return false; }
+public boolean hasMoreTokens()
+	{ return false; }
+public Object nextElement()
+	{ return null; }
+public String nextToken()
+	{ return null; }
+public String nextToken(String delim)
+	{ return null; }
+
+}
+

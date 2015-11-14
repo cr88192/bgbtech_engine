@@ -1,0 +1,55 @@
+Misc Stuff related to project's use of UTF-8 and UTF-16.
+
+BGBASM string notations:
+'\xhh'	hex character, limited to 00-7F for 'dw'.
+'\Xhhhh'	16-bit literal (only allowed with 'dw') is same as '\uhhhh'
+
+
+General:
+
+UTF-8 code will generally accept all of proper UTF-8, CESU-8, and Modified UTF-8.
+
+UTF-8 strings will generally follow the Modified UTF-8 convention of allowing embedded NULLs encoded as 0xC0 0x80. Conversions from UTF-16 will generally translate surrogate pairs into the proper codepoints.
+
+
+UTF-16 Embeddable NULL
+
+UTF-16 will make use of the Non-Character Special U+10FFFF as an embeddable NULL in some cases (BGBDY wide strings), where it is encoded as 0xDBFF 0xDFFF. This will be due to the inability to encode literal NULL's in NULL-terminated strings.
+
+The reason for choosing this value is that it would allow exact preservation of the 0x0000-0xFFFF range. Note that an escape encoding may be used in this case, where the space for surrogate pairs (D800-DFFF) will be mapped to 10D800-10DFFF (likely not used in the general case, as raw-data encoded as UTF-16 will not be assumed).
+
+Also possible: 0xFDDF escape notation:
+0xFDDF 0xDFFD: Self-escape
+0xFDDF 0x08FF: Escaped surrogate D8FF.
+This would avoid needing to map into the PUA.
+
+
+BGBASM, and other places, are not likely to use the above conversions, instead converting an embedded NULL into a literal 0.
+
+When printing, this should be treated as U+0000 or similar.
+
+
+Special: "Super Surrogate"
+
+Could use PUA Space 0xF800-0xF8FF as a prefix, followed by PUA characters in the range 0xE000-0xEFFF as a suffix.
+
+0xF800-0xF80F <suffix[1]> 0-(2^16-1)
+0xF810-0xF81F <suffix[2]> (2^16)-(2^28-1)
+0xF820-0xF82F <suffix[3]> (2^28)-(2^40-1)
+0xF830-0xF83F <suffix[4]> (2^48)-(2^52-1)
+0xF840-0xF84F <suffix[5]> (2^52)-(2^64-1)
+
+
+For reference:
+Special Non-Characters
+These are 66 characters which Unicode will not assign, and which are reserved for app internal usage.
+
+U+FDD0 to U+FFDF
+U+FFFE, U+FFFF
+U+01FFFE, U+01FFFF
+U+02FFFE, U+02FFFF
+U+03FFFE, U+03FFFF
+...
+U+10FFFE, U+10FFFF
+
+

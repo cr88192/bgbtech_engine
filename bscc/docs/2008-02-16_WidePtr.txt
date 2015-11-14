@@ -1,0 +1,70 @@
+Plans for wide-pointers, DSM, and persistent storage.
+
+Basic idea:
+A system is created whereby we have 128 bit pointers, representing a potentially very large address space. These pointers will be generally stored in SSE registers or similar.
+
+They will be given a wrapper interface, such that they retain the "look and feel" of traditional pointers. When working with them, the compiler will generate code to handle accesses through alternative means (aka: hidden function calls, which will direct the accesses to various handlers).
+
+Technically, each specific wide-pointer will be regarded as machine local by default, however, it may be used to represent a theoretically "machine absolute" address (may not be reasonable in practice, but is something that could be approximated).
+
+
+Pointer Layout:
+The high 16 bits of the pointer are reserved for use by the wide-pointer system (encoding a handler tag). The remaining 112 are available to the current handler.
+
+The tag value of 0 will be special, and will encode machine-local addresses. The low portion of this pointer will thus be encoded and treated the same as arch-specific narrow pointer.
+
+Other tags will be assigned, much like IP protocol numbers or similar.
+
+NULL will be encoded as all 0's.
+
+
+Universal Address Space:
+This will represent a (theoretically) universal address space.
+For this, I will assign the tag value of 'UA' (0x4155 LSB, in the high 16 bits).
+
+In this scheme, the high 48 bits (just below the tag), will serve as a Segment ID, and the low 64 bits will serve as a Offset.
+
+Segment:
+This will be a randomly generated number (or otherwise), with a best-effort of being unique. This number will be technically a MAC address, and as such will have bit 41 set to indicate that it is "locally administered". Additionally, a valid MAC address may be used as well, however, only a single segment (either active or inactive) will be allowed to use the same address (for example, a given device would represent a particular address space, but only this address space exists on this device).
+
+Offset:
+This will be an offset within the segment, and will represent a presumably linear space.
+
+
+Potential uses for this addressing scheme would include DSM and Persistent Storage (potentially, both could work together, for example, several nodes in a cluster sharing memory in the same persistent store).
+
+However, the workings of either DSM or Persistent Stores are outside the scope of this addressing scheme.
+
+
+C level interface:
+Wide pointers will use the '__wide' keyword. This will indicate that a pointer is wide, but will apply to the type in general (as such, it will not be possible to have a wide pointer to an array of narrow pointers, or a narrow pointer to an array of wide pointers).
+
+It will be possible to cast-convert pointers, but the implementation is allowed to fault if a conversion is not possible (for example, an attempt to cast a non-local address to a narrow pointer...).
+
+example:
+int *piA;		//pointer to integer
+int __wide *wpiB;	//wide pointer to integer
+int i;
+
+piA=&i;		//OK
+wpiB=&i;		//also OK (local pointer)
+piA=wpiB;		//OK (pointer is local)
+
+wpiB=dsmGetRoot("192.168.1.25", "foo");	//get some remote root
+
+*wpiP=25;	//OK (unless ptr is NULL...)
+piA=wpiB;	//BAD, pointer is not local
+
+
+int **ppiA;			//pointer to integer
+int __wide **wppiB;	//wide pointer to integer
+
+...
+
+ppiA=wppiB;			//BAD, pointer-type mismatch (int __wide **)
+wppiB=ppiA;			//BAD, pointer-type mismatch (int **)
+
+*wppiB=*ppiA;		//OK, (int *) => (int __wide *)
+*ppiA=*wppiB;		//OK, pointer is converted back
+
+

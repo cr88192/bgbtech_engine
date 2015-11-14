@@ -1,0 +1,28 @@
+//Infantry
+
+bones proto_inf0.bone
+
+vmesh proto_inf0.ac
+
+anim gun0 gun0.anim
+anim stand stand0.anim
+anim walk walk1.anim
+anim run run0.anim
+
+anim pain1 pain1.anim
+anim pain2 pain2.anim
+
+anim duck duck0.anim
+
+anim death1 death1.anim
+anim death2 death2.anim
+anim death3 death3.anim
+
+anim block block0.anim
+
+anim attak1 attack1.anim
+anim attak2 attack2.anim
+
+
+origin 0 0 32
+scale 1 1 0.8

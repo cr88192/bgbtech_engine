@@ -1,0 +1,8 @@
+Yet more codegen thoughts.
+
+Stack based, with all stack elements as pointer-sized words.
+Larger types will be represented as either references to the value, or as boxed-types.
+
+May cache values in registers.
+Will not (initially) use tvars.
+Will use signature-based canonical types.

@@ -1,0 +1,23 @@
+Basically, a packaging format and ciphering scheme.
+Deflate will first be used to compress the data, and then a cipher will be applied to the compressed data.
+
+File
+{
+FOURCC magic;	//'BCE0'
+u32 size;
+byte data[size];
+}
+
+The 'data' field will contain the ciphered data.
+This will contain a deflated data stream followed by a checksum.
+
+
+Key State:
+A 256-byte permutation will be maintained;
+A 32-bit and 64-bit running hash will also be maintained.
+
+32-bit hash update:
+x'=x*65521+c
+
+64-bit hash update:
+

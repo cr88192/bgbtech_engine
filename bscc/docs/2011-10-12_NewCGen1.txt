@@ -1,0 +1,24 @@
+More thoughts for another codegen.
+
+Goals:
+Uses GC this time.
+	Sufficiently "proven" with 3D engine.
+Internally register-based.
+Uses TVars.
+Uses stack-based IL (again, based on BGBScriptVM IL).
+Readily supports plug-in logic (new types, new operations).
+Decent support for OO and variants.
+
+Types:
+Canonical Type Object
+	Map 1:1 with signature-strings.
+
+Stack:
+Uses traditional stack-frames;
+Ideally supports split stacks.
+
+Registers:
+Use TVar register caching.
+TVars are the primary means of performing operations.
+TVars will not be reused (but their underlying register and/or stack
+location may be reused).

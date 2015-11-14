@@ -1,0 +1,261 @@
+VM Internals
+
+This is not set in stone, but more comming up with ideas as to how the VM will be implemented.
+
+The lang will be implemented as 2 major parts:
+The compiler, which will only do compilation, and generate object files or c source/headers;
+The VM, which will interpret said objects, and presumably be included in a host app.
+
+
+Heap
+
+Normally, the vm will retain a level of abstraction from the memory manager, but for now I will define the basics.
+
+The heap will consist of cells. Each cell will be the size of 2 void pointers (enough space for a cons). Objects stored here may have some max size (somewhere between 16 and 64kB probably).
+
+Garbage collection will be precise mark/sweep (maybe conservative, but for now I am thinking precise).
+
+Each cell will be managed with a bitmask, where each cell is given 8 bits (2 for type, 2 for gc state, 2 for count, and 2 reserved).
+Low 2: 0=free; 1=cons; 2=object start; 3=object body.
+Next 2: 0=white, 1=black, 2=grey, 3=locked;
+Next 2: 0/1/2/many;
+High 2: reserved.
+	
+
+Each type will have an index, which will be 16 bits (limiting to a max of 64k types).
+
+As a general rule, the type indices will be used instead of the names for type comparisons (or may also be used for indexing tables in some cases).
+
+
+Each object header will thus consist of 2 16 bit words, the first giving the type and the latter giving the object length.
+These types will serve as hash indices for a table giving the full type names (looking up the type for a given name will consist of indexing the hash).
+
+Hash, probably several steps:
+Gen hash for full name;
+While not found/free, update hash for each character;
+Do a brute-force lookup (using the final hash to seed a PRNG);
+Try to compact the hash types (preserving any constant types).
+
+Hash (initial 0):
+	h'=((h>>14)^(h<<2)^c)&65535;
+
+PRNG (initial i=h)
+	i=i*65521;
+	h'=(i>>16)&65535;
+
+
+Likely, the basic set of types will be converted into a generated source file (listing the types to be added first) and a header (listing those types which are constant).
+
+
+Objects will be passed as pointers, and the pointers will only point to the start of an object.
+
+As such, the low 3 bits will always be 0 for a generic pointer. Note that the NULL pointer, and -1 pointer will be special cases.
+
+Other cases will be different:
+0=generic pointer (possible weak pointer);
+1=fixnum (+-2^28-1 twos complement);
+2=minireal (S.16.12, -65535 .. 65535, fraction in 1/4000 increments allowing accuracy of 1/32 and 1/1000);
+3=special values;
+4=cons cell;
+5=small object;
+6=large object;
+7=reserved.
+
+Special Values
+
+Special Values have an additional low 5 bits giving type, with the high 24 giving type specific data.
+
+Types
+	0=special constants;
+	1=character values;
+	2=symbols (high portion is the hash index);
+	3=keywords (likewise);
+	4..31=reserved.
+
+
+Basic Dynamic Types
+
+cons, cons cell (special, mm type);
+vector, array of variants;
+string, string;
+symbol, name (special value, hashed with types);
+keyword, keyword (special value, hashed in same table as symbols);
+int, integer (special, fixnum if possible, 64 bit on heap);
+float, float (special, may be a minifloat).
+
+
+Parse Trees
+
+Likely to be an S-Expression like representation.
+S-Expressions will allow inclusion of other data in the trees, and will be easier to work with than XML (albeit will give a more rigid structure). The representation will be somewhat more verbose than Lisp or Scheme as it will be necessary to be able to represent all possible constructs.
+
+The structure will be that of an expression type, any fixed arguments, and a set of key/value pairs (keywords and values). Thus, keywords will not be allowed in the basic args list.
+
+(if cond then else)
+(apply func (args*))
+
+(begin exp*)
+(unary op exp)
+(binary op left right)
+(list (expr*))
+(listi (expr*) terminal)
+
+(vardef name type [value])
+
+(apply foo (x y) file: "foo.bs1" line: 191)
+
+
+Types
+
+(base ext mode order [type-specific*])
+
+A basic type with a mode and order of 0 may be represented as a symbol or string.
+Ext is required for some base types but ignored for all others.
+
+(vardef x int)
+(vardef y (int _ 2 0) 3)
+
+Basic types are represented as is.
+Classes will have a 'class' basetype and ext will give the classname.
+
+
+Objects
+
+Objects will be given typenames, and will be represented as structs.
+Any specialized fields will precede the object's members.
+When passed to c code, the object's reference will be changed into a pointer.
+For the C side, consider making a header generation tool to allow conviniently accessing object slots.
+
+Consider making the object system accept definitions in the form of s-expressions.
+(classdef name super (interfaces*) (members*))
+
+name, super, and each interface will be fully qualified strings.
+Each member will be defined as (name type [value]).
+
+
+VM
+
+Bytecode, stack, and registers.
+
+Regs
+	I0..I15:	int/reference regs (hold longs)
+	F0..F15:	float regs (hold doubles)
+
+I0 and F0 are special in that they are used for return values.
+
+As a general rule, most types will take a single stack item. Assuming a 32 bit implementation, for now long and double will take 2 items.
+
+Regs will not remember value width.
+
+Thought: opcodes may as well just use bytes.
+Binary ops take 3 bytes: bini/binf op,dest left,right
+Unary take 2: uni/unf op,reg
+
+Alternate thought:
+Opcodes can index stack.
+Multiple variations of the unary and binary ops would exist for different uses:
+reg/reg->reg, reg/stack->reg, stack/reg->stack, stack/stack->stack.
+
+That or maybe just a pure stack machine, distinguishing based on types (but requiring all args of the same type).
+
+For GC reasons, a flag may be used to mark whether or not stack items are references. As such, ops will need to distinguish references from integer values.
+
+
+Variable Index Table
+
+Locals and intermediate values will be kept on the stack.
+Any values which fall outside this will be moved to a "variable index table". These tables may be implicitly linked together into the form of a tree (linking from the leaves to the root).
+
+The purpose of this structure is for linking together lexical environments for use in implementing closures.
+
+References into this table will consist of a level index and an offset.
+
+Top Level Index Table
+
+Seperate will be the modular toplevel. The module toplevel will be special and will be directly associated with the module that owns a function. Table indices may be used for referring to the top-levels of other modules.
+
+References into this table will consist of a table index and an offset.
+
+
+Binary Ops
+Int:		add, sub, mul, div, mod, and, or, xor, shl, shr
+Long:		addl, subl, mull, divl, modl, andl, orl, xorl, shll, shrl
+Ref/Var:	addv, subv, mulv, divv, modv, andv, orv, xorv, shlv, shrv
+Float:	addf, subf, mulf, divf
+
+Compare Ops
+Int:		eq, neq, cmpg, cmpl, cmpge, cmple
+Long:		eql, neql, cmpgl, cmpll, cmpgel, cmplel
+Ref/Var:	eqv, neqv, cmpgv, cmplv, cmpgev, cmplev
+Float:	eqf, neqf, cmpgf, cmplf, cmpgef, cmplef
+
+binary_{i/l/f/d/v} <op>
+cmp_{i/l/f/d/v} <op>
+unary_{i/l/f/d/v} <op>
+
+pop, popl, dup, dupl, swap, swapl
+
+conv_{u8/s8/u16/s16/u32/s32}
+Zero or sign extend values of various sizes.
+u32/s32 will be used for longs, others for ints.
+
+conv_{ul/sl/li}
+Zero or Sign-extend an integer to a long.
+Truncate a long to an integer.
+
+conv_{if/fi/ld/dl}
+Convert between float and integer representations.
+
+conv_{fd/df}
+Convert between float and double representations.
+
+load_{i/l/v} <index>			=> value
+store_{i/l/v} <index>			value =>
+Load/Store item on the front of the stack to an item on the stack.
+
+rload_{i/l/v} <index>			=> value
+rstore_{i/l/v} <index>			value =>
+Load/Store item on the front of the stack to an item on the stack (relative to the last mark).
+
+
+lload_{b/w/i/l/v} <tab> <offs>	=> value
+lstore_{b/w/i/l/v} <tab> <offs>	value =>
+Load/store a value from the VIT.
+
+gload_{b/w/i/l/v} <tab> <offs>	=> value
+gstore_{b/w/i/l/v} <tab> <offs>	value =>
+Load/store a value from the TLIT.
+
+oload_{b/w/i/l/v} <offs>		obj => value
+ostore_{b/w/i/l/v} <offs>		obj value =>
+Load/store a value from an object.
+
+aload_{b/w/i/l/v}				obj index => value
+astore_{b/w/i/l/v}			obj index value =>
+Load/store a value from an array.
+
+vload_{b/w/i/l/v}				obj ref => value
+vstore_{b/w/i/l/v}			obj ref value =>
+Load/store a value from a dictionary (using a variant as an index).
+
+jmp <offs>					=>
+jmp_true <offs>				bool =>
+jmp_false <offs>				bool =>
+Jump to a relative offset (relative to the next opcode).
+
+mark
+Mark the current stack position.
+
+apply						MARK args* func => value
+Apply a function.
+
+ret_{i/l/v}					value =>
+retn_{i/l/v}				=>
+Return a value (retn returns 0/NULL).
+
+tailapply					MARK args* func =>
+Apply a function in tail position, returning the value to the caller.
+
+invoke					MARK args* obj method => value
+tailinvoke					MARK args* obj method =>
+Invoke a method.

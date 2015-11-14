@@ -1,0 +1,12 @@
+//Super Shotgun
+
+bones v_bones.bone
+
+vmesh v_shotg2_0.ac
+
+anim active active0.anim
+anim pow pow0.anim
+anim idle idle0.anim
+anim putway putaway0.anim
+
+origin 0 0 0

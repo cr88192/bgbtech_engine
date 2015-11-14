@@ -1,0 +1,124 @@
+This is an intended continuation of the last BGBScript2 effort.
+This will be a prelimiary attempt to organize thoughts.
+
+
+Core Design Ideas:
+C/Java style syntax;
+Class/Instance OO;
+Static Typing (except variant, which is a special case);
+Functional/Imperative semantics;
+Modular toplevel, unlike C (global toplevel) or Java (classes only);
+Persistency and Concurrency via the Actor Model (where appropriate).
+
+
+Basic Types:
+void, no value;
+class, pointer value;
+var, a variant, any type/value (dynamically typed);
+string, a string value;
+
+bool, true/false, may be bit-packed;
+char, character, unspecified size (likely int);
+
+byte, 8 bits, default unsigned;
+sbyte, signed, 8 bits;
+ubyte, unsigned, 8 bits;
+short, signed, 16 bits;
+ushort, unsigned, 16 bits;
+int, signed, 32 bits;
+uint, unsigned, 32 bits;
+long, signed, 64 bits;
+ulong, unsigned, 64 bits;
+float, 32 bits;
+double, 64 bits.
+
+Special Types:
+fcomplex, complex as a 32 bit float (64 bits);
+dcomplex, complex as a 64 bit double (128 bits);
+vec2/3/4, 2/3/4 element vector;
+mat2/3/4, 2x2/3x3/4x4 matrix.
+
+
+Modules
+
+The lang will be based around the concept of a module.
+
+Modules will follow a naming convention based on their path (extensions will be removed and slashes replaced by periods), and will correspond with particular source/object files.
+
+import <module> [as <name>];
+Import a module.
+It will only be possible to import 1 module at a time, however, importing a module will implicitly import all modules it depends on, and so forth.
+
+Cyclic module dependencies are not allowed, but a particular module may be imported more than once.
+
+In the case where vars/functions/classes conflict between imported modules, the one from the most recently imported module is assumed.
+
+If a module is imported as a given name, then that module's contents need to be qualified on use, but conflicts may be avoided in this way.
+
+Any given module will have identity, which will be consistent however it may be included. It will be assumed that any 2 modules with the same module name share the same identity (but in the case of multiple nodes, are not required to share state).
+
+
+Class Definitions
+
+class <name> [extends <super>] [implements <interface+>]
+	['{' <contents*> '}']
+
+Multiple classes may exist per file (given the toplevel is based on modules).
+
+Classes will have Identity, and this will be based on both the class name and the module identity of the first definition.
+
+Classes need to be defined prior to first reference, however, this definition can be a stub:
+class <name>;
+
+In which case, a true class definition will override the stub, and the true definition will take on the identity of the original stub. Likewise, only a single true definition is allowed for a stub and only a single stub is allowed for a true definition.
+
+A class definition is invalid if another class with the same name exists within the defining scope.
+
+Class indentity will be important. Two classes will be viewed as equivalent only if they have the same identity.
+
+
+
+Modifiers
+
+extern
+	variable is external.
+const
+	var or return value is constant.
+static
+	toplevel: function/var is hidden.
+	class method/variable: var is shared between instances.
+	function/method variable: var is preserved between calls.
+native
+	function/method is defined in c.
+	an array refers to unmanaged memory.
+
+public
+	variable can be accessed externally to a class.
+private
+	variable can only be accessed from methods in the same class
+protected
+	variable can only be accessed in the same or inherited classes
+
+abstract
+virtual
+	methods: to be overloaded in derived classes
+	vars: create var in dynamic scope
+
+volatile
+	value may blow up
+
+
+Operators
+Lit:		Literal values/builtin expressions
+PE:		(<expr>) <expr>'['<expr>']' <expr>.<name>
+IncDec:	++<name> --<name> + - ! ~ ... <name>++ <name>--
+			<expr>'('<args>')'
+E:		<expr>**<expr>
+MD:		* / % \ &
+AS:		+ - | ^
+SHLR:		<< >>
+RCmp:		< > <= >= == != <=> <<== >>==
+Lop:		&&
+Lop2:		||
+TCond:	<expr>?<expr>:<expr>
+Equals:	= += -= *= /= \= %= &= |= ^= >>= <<=

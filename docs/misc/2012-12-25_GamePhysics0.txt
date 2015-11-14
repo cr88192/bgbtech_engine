@@ -1,0 +1,241 @@
+Simple Game Physics.
+
+...
+
+...
+
+
+Vectors.
+
+Represent a position or direction in space.
+Consist of values: X, Y, Z.
+
+Exact definitions vary, but I prefer:
+X=right, Y=forward, Z=up.
+Common Values.
+Origin, Velocity, …
+Bounding Volume.
+Rotation.
+
+...
+
+Common Values.
+
+Origin, which represents an object's position in space.
+Velocity, which Represents how quickly it is moving.
+Rotation, which Represents how the object is oriented.
+What about what it looks like?
+Usually, this is ignored in the game physics.
+
+...
+
+Vectors (Overview).
+
+Vectors Can be added and subtracted.
+
+Dot Product, calculates how similar these vectors are.
+
+Cross Product, calculates a vector orthogonal to the input vectors.
+
+...
+
+Bounding Volumes (AABB).
+
+Very Common is a Box.
+Has minimum and maximum bounds relative to origin (say: mins, maxs).
+Often, an Absolute bounding-box is used.
+
+These bounding boxes are useful even if a more advanced type of solid is used.
+Collisions can be checked-for and eliminated fairly efficiently.
+Often called an AABB, which stands for Axis Aligned Bounding Box.
+
+...
+
+Bounding Volumes (AABB, 2).
+
+Typically, this is all we really need for players and AI controlled characters.
+
+Usually, these only have simple movements (sliding around and falling under gravity).
+
+It usually makes more sense to drive the movement of an NPC via simple movement impulses and logic to negotiate movements, than to try to model this with realistic bounding volumes and physics.
+
+Many games get by pretty well only using AABBs.
+
+
+...
+
+Bounding Volumes (OBB).
+
+Also uses bounds, but is more often a size relative to the origin.
+Is subject to rotation (its main difference from an AABB).
+Added Concept: Rotational Inertia.
+Advanced Concept, used for “realistic” physics.
+Typically excluded in older/simpler games.
+Or is a purely cosmetic “angular velocity”.
+
+Often, we will project it along the unit axes to generate an AABB for the object.
+Bounding Volumes (Spheres, etc).
+May use other values, such as a radius or radii.
+Conceptually, not much different from the OBB case, but may have many “subtle” differences.
+A sphere can be easily converted to a box.
+
+...
+
+Bounding Volumes (Polyhedra).
+
+A polyhedron may be defined as a convex shape made from a collection of intersecting planes.
+May be a box, prism, spheroid or cylindrical, ...
+
+A polyhedron may much more accurately model the shape of many objects, and may be generated to approximate a solid mesh.
+It may require multiple polyhedra to represent a complex (non-convex) shape.
+Collision checks are similar to those of an OBB.
+An OBB may be regarded as a simple 6-face polyhedron with all axes orthogonal.
+
+...
+
+Bounding Volumes (Meshes).
+
+A mesh may represent an arbitrary shape.
+May or may not be convex.
+Is typically defined in terms of vertices and faces.
+Can't usually reliably separate the “inside” from the “outside”, only detects contact along its faces.
+Drawback in that collision checks may also be computationally expensive.
+May be optimized via a BSP or OBB-tree or similar.
+
+...
+
+Separating Axis Theorem.
+
+In we can find an axis which separates two volumes, they don't touch.
+We project the volumes as extents along the axis, and see whether or not the ranges overlap.
+For example, for checking against a box, we can project the primitives along each axis for each box.
+If this fails, we may check cross-products.
+For spheres, we may check a line between the origins.
+
+...
+
+Separating Axis Theorem (2).
+
+Special Per-Primitive checks are possible.
+In the naïve case, we can simply take the dot-product of each (absolute) vertex and the axis, and note the minimum and maximum values.
+The main issue is mostly that this isn't very efficient.
+For spheres, it is the dot-product of the origin +/- the radius.
+For boxes, we can note the sign of each component of the axis vector
+
+...
+
+Movement.
+
+Predict Ending Positions for all objects.
+
+Check for collisions and enumerate contacts.
+
+Calculate contact forces, and or “solve” for constraints.
+Ideally, we want the “least energy” solution.
+Update objects to their final positions.
+
+...
+
+Time Steps.
+
+Sometimes it may make sense to use a different timestep from the framerate.
+Framerates are variable, and may lead to instability.
+We may want a different and more specialized rate.
+
+For example, It may make sense to run a global world-tick at 10Hz-20Hz, and subdivide this for rigid-body physics.
+A 100Hz tick may make sense for rigid-body physics, but may unneeded for simple AABBs
+Some simple checks, like whether or not anything is moving, or whether non-AABB objects are moving, can lead to performance improvements by avoiding unnecessary subdivision.
+
+...
+
+Time Steps (2).
+
+We May want to stabilize the world tick-rate.
+One option is to accumulate the frametime.
+
+
+Subdivisions are then relative to these ticks, not real-time.
+Makes math more consistent.
+For rendering, we can interpolate values as-needed.
+
+...
+
+Rotation.
+
+Commonly one of: Angles, Matrices, or Quaternions.
+Trade-offs are made in terms of the properties.
+
+...
+
+Rotation: Angles.
+
+Some combination of: Yaw, Pitch, Roll
+Yaw: rotation along vertical axis (heading).
+Pitch: upwards/downwards tilt.
+Roll: tilt along forwards axis (left/right tilt).
+Makes intuitive sense for ground-based objects.
+Not very good for simulating freely moving objects, or for interpolation. This will lead to movements which don't really make sense.
+However, their usefulness for player and AI movement justifies their usefulness for these cases.
+
+...
+
+Rotation: Matrices.
+
+Very useful for transforming vertices.
+Allows readily extracting the local unit axes.
+We can see the local space as a free-floating set of coordinate axes within the larger space.
+However, these require around 9 or 16 floats.
+Interpolation is also a little tricky.
+Linearly interpolating matrices does not normally yield particularly good results.
+Better interpolation is complicated and expensive.
+
+...
+
+Rotation: Quaternions.
+
+Represent a rotation as a collection of 4 numbers (as a point along a 4D sphere).
+WIJK, RIJK, or XYZW
+Can be more readily interpolated to good effect.
+Either LERP or SLERP.
+Can be readily converted to/from matrices and axis-angle.
+So matrices will still be used when rendering stuff.
+Useful for calculations, such as those involving torque.
+
+...
+
+Rotation: Quaternions (2).
+
+Has its own sets of math properties:
+ii=jj=kk=ijk=-1, ij=k, jk=i, ki=j, ji=-k, kj=-i, ik=-j.
+Technically, a superset of complex numbers.
+And have uses / properties beyond those used in rotations.
+For rotations, they are normally kept normalized.
+
+Rotation: Quaternions (3).
+
+A*B (Quaternion Multiply).
+
+A%B (Quaternion Cross Product).
+
+
+...
+
+Rotational Movement.
+
+This is where things start to get ugly.
+Generally involves making use of specific contact points (figuring out where and how the objects are colliding).
+Makes use of “moment of inertia”.
+Typically a matrix, but may be simplified as a scalar.
+A scalar assumes a uniform roughly spherical mass distribution.
+Makes use of angular momentum and torque.
+Typically a vector.
+
+...
+
+Rotational Movement (2)
+
+A downside of this is that it reduces the simulation stability of the simulated bodies (it is harder to get working reliably).
+However, it is very useful for creating realistic falling objects.
+Such as crates which will flip and tumble as they fall, and come to rest on the ground.
+Depending on other factors, it may make stable stacks of objects more complicated.
+For example, stacks are much harder with elastic contact forces than with a constraint solver.

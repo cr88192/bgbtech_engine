@@ -1,0 +1,16 @@
+Alternate VM:
+All stack items are value-references (rather than values);
+Scope has delegation;
+VM has packages/namespaces (implemented via delegation);
+No built in operator behavior (overloading only);
+Core language operators implemented via a package.
+
+Type Model:
+Variant + Inferred Static;
+Variables are explicitly typed;
+Type information exists at the point of declaration (not reference).
+
+Scope:
+Lexical Scope may be referenced by index, and is treated like a lexical variable stack;
+Toplevel and Object variables are referenced symbolically.
+

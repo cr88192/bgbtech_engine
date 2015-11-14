@@ -1,0 +1,25 @@
+Vector Heap (Idea)
+
+Idea:
+Special side heap for storage of vectors and other small packed numeric types (all items are fixed size);
+This heap will have a small and finite size.
+
+Purpose:
+This will allow more efficient inference and processing of common vector types and allow making use of the SSE and SSE2 instruction sets.
+
+Implementation
+An array of 16 byte (128 bit) members;
+An array of 16 bit ushorts (serving both header and GC purposes);
+A misc type BS1_MM_VECOBJ, which will hold a handle (currently 20 bits, with an additional 4 low bits which are always 0);
+Values may be regarded as mutable (consider, maybe too problematic implementation wise);
+...
+
+Likely Types
+double, 64 bit double using 1/2 object;
+complex, 2 64 bit doubles;
+widenum-128, 128 bit widenum.
+
+vec2, 2-float vector;
+vec3, 3-float vector;
+vec4, 4-float vector.
+

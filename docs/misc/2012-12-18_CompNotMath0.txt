@@ -1,0 +1,21 @@
+Why Computers Don't Run Math
+
+Many people assert that computers run math.
+
+Here is a few ways in which they don't:
+Math assumes a stateless universe, whereas computers are (very) stateful;
+Math runs on decimal, computers run on binary (more often presented as decimal or hexadecimal);
+Math assumes everything is based on continuous functions, but computers run on discrete values and time-steps;
+In math, people take the derivitive of things, but in computers, this makes little sense;
+Math does not clearly distinguish between integer and real-valued arithmetic;
+In math, people use set-theory as gravy to rub on pretty much everything, but computers use Boolean Logic instead;
+In math, (R+2G+B)/4 = G+(B+R-2G)/4, in computers, not necessarily (they may have different roundoff behavior);
+Most things which exist in computers don't exist in math (everything from Procedural programming to OOP and Class Heirarchies);
+Many things that exist in math don't map cleanly to computers (pretty much everything much past Algebra, *1);
+In math, people "solve" and "prove" things, and mostly try to show identity, whereas computers exist to complete tasks (if it works, good enough);
+Math people look down on trial-and-error, whereas for computers, this is one of the most powerful tools in the toolbox (why reason when you can test?);
+And so on...
+
+*1: Except maybe vectors, matrices, and quaternions, which math people often relagate off to some corner somewhere, but these are pretty major and fundamental parts of things like 3D Engines.
+
+This is not to say that math is broken (or the reverse), but that it is misguided to claim that they are the same thing.

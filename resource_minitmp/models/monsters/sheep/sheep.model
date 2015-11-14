@@ -1,0 +1,14 @@
+//Parasite
+
+bones parasite2.bone
+
+vmesh parasite2.ac
+
+// anim gun0 gun0.anim
+// anim stand stand0.anim
+anim walk1 parasite2_walk1.anim
+anim walk2 parasite2_walk0.anim
+anim run parasite2_run0.anim
+
+origin 0 0 18
+scale 1 1 1

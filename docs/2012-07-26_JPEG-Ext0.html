@@ -1,0 +1,1326 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+
+    <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  </head>
+  <body>
+    /*<br>
+    BGB Extensions:<br>
+    APP11: BGBTech Tag<br>
+    &nbsp;&nbsp; &nbsp;FF,APP11,xx,xx,&lt;ASCIZ TagName&gt;, ...<br>
+    &nbsp;&nbsp; &nbsp;Tag-specific data until next marker.<br>
+    &nbsp;&nbsp; &nbsp;<br>
+    &nbsp;&nbsp; &nbsp;"AlphaColor":<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;AlphaColor<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;RGBA as string ("red green
+    blue alpha").<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;Specifies a "Alpha Color"
+    extension, where any color sufficiently<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;close to the given color
+    (determined by 'alpha'), will be assumed<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;to be a transparent pixel.
+    These values are given in decimal.<br>
+    <br>
+    &nbsp;&nbsp; &nbsp;APP11 markers may indicate component layer:<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;FF,APP11,xx,xx,"CompLayer\0",
+    &lt;layername:ASCIZ&gt;<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;"RGB": Base
+    RGB<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;"XYZ":
+    Normal XYZ<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;"SpRGB":
+    Specular RGB<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;"DASe":
+    Depth, Alpha, Specular-Exponent<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;"LuRGB":
+    Luma RGB<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;"Alpha":
+    Mono alpha layer<br>
+    <br>
+    &nbsp;&nbsp; &nbsp;Component Layouts:<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;3 component: (no marker, RGB)<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;4 component: RGB+Alpha<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;7 component: RGB+Alpha+LuRGB<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;8 component: RGB+XYZ+DASe<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;12 component:
+    RGB+XYZ+SpRGB+DASe<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;16 component:
+    RGB+XYZ+SpRGB+DASe+LuRGB<br>
+    <br>
+    &nbsp;&nbsp; &nbsp;The APP11 tag for a layer will be followed by the
+    layer<br>
+    &nbsp;&nbsp; &nbsp;(as a JPEG image), which may be placed within
+    LDAT tags.<br>
+    &nbsp;&nbsp; &nbsp;<br>
+    &nbsp;&nbsp; &nbsp;Images lacking DHT and DQT will reuse those from
+    the base image.<br>
+    <br>
+    APP12: BGBTech Tag 2<br>
+    &nbsp;&nbsp; &nbsp;FF,APP12,xx,xx,tt,tt,tt,tt<br>
+    &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;tt=FOURCC Tag.<br>
+    <br>
+    &nbsp;&nbsp; &nbsp;'LDAT': Layer Data.<br>
+    &nbsp;&nbsp; &nbsp;Gives an image/layer spread across a span of
+    'LDAT' tags.<br>
+    &nbsp;&nbsp; &nbsp;The encoded image will be split linearly across
+    the tags.<br>
+    */<br>
+    <br>
+    <br>
+    <h2> <span class="mw-headline" id="JPEG"> JPEG </span></h2>
+    <p>JPEG is a format specified by the ITU-T.81 document, for which I
+      will assume some basic familiarity here.
+    </p>
+    <p><br>
+    </p>
+    <h2> <span class="mw-headline" id="BGBTech_JPEG_Extensions">
+        BGBTech JPEG Extensions </span></h2>
+    <p>These extensions allow several features to be added to the JPEG
+      format, including:
+    </p>
+    <ul>
+      <li> Alpha Blending;
+      </li>
+      <li> Normal Maps;
+      </li>
+      <li> Bump Maps;
+      </li>
+      <li> Luma Maps.
+      </li>
+    </ul>
+    <p><br>
+      This format is backwards compatible with normal JPEG, although the
+      extended features will not be available in implementations which
+      don't have support for these extensions.
+    </p>
+    <p>The main purpose for this at present is to allow higher-component
+      images in cases where it is not readily possible to load this data
+      from multiple files.
+    </p>
+    <p><br>
+      These are facilitated via the APP11 and APP12 markers.
+    </p>
+    <pre>FF,APP11, xx,xx, &lt;tag: ASCIIZ&gt;, &lt;args:ASCIIZ[]&gt;
+FF,APP12, xx,xx, &lt;tag: FOURCC&gt;, &lt;data:byte[]&gt;
+</pre>
+    <p>Where xx,xx will give the length of the marker in big-endian
+      ordering. This will include itself and all data following, but
+      will omit the FF or APP markers.
+    </p>
+    <p>The APP11 marker will generally give a tag name as an ASCIIZ
+      string, and generally give the arguments as 1 or more strings.
+    </p>
+    <p>The APP12 marker will generally give a data payload identified
+      via a FOURCC.
+      Payload may be split over multiple adjacent markers if it does not
+      fit within a single marker.
+    </p>
+    <p><br>
+      APP11: "AlphaColor"
+    </p>
+    <ul>
+      <li> Argument: "red green blue alpha"
+        <ul>
+          <li> Gives the transparency color for "simple" transparency,
+            where any pixel sufficiently close to the alpha color
+            (defined by the alpha value, which represents the "color
+            distance") will be regarded as transparent.
+          </li>
+          <li>This distance is based on the euclidian color distance
+            (may be calculated in YUV space).<br>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <p><br>
+      APP11: "CompLayer"
+    </p>
+    <ul>
+      <li> Argument: Component Layer Name
+        <ul>
+          <li> Identifies the start of an embedded sub-image giving a
+            component layer.
+            <ul>
+              <li> Each layer is encoded as a sub-image using an LDAT
+                tag.
+              </li>
+              <li> The images themselves use the typical YUV / YCbCr
+                colorspace and 4:2:0 or 4:4:4 downsampling.
+              </li>
+              <ul>
+                <li>Considered: Alternate colorspaces<br>
+                </li>
+              </ul>
+              <li> Sub-Images will have the same resolution as the
+                parent image.
+              </li>
+              <li> The Sub-images need not be "complete", and may reuse
+                parts from the parent image.
+              </li>
+            </ul>
+          </li>
+          <li> "RGB": RGB Base Image, not generally used (the base image
+            is the main image in the file).
+          </li>
+          <li> "Alpha": Monochrome Alpha layer, encodes the alpha
+            channel as an image (not used with "DASe").
+          </li>
+          <li>"Depth": Monochrome Depth layer, encodes the depth channel
+            as an image (not used with "DASe").</li>
+          <li> "XYZ": Gives the Normal Map, although stored in XZY
+            ordering (R=X, G=Z, B=Y).
+          </li>
+          <li> "SpRGB": Specular RGB components.
+          </li>
+          <li> "DASe": Depth, Alpha, Specular Exponent
+          </li>
+          <li> "LuRGB": Luma RGB
+          </li>
+          <li>"LeBe": Base Exponent, Luma Exponent, Depth Exponent<br>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <p>Internal Layers:<br>
+    </p>
+    <ul>
+      <li>RGBA, RGBA Base Layer<br>
+      </li>
+      <li>XYZD, XYZ+Depth<br>
+      </li>
+      <li>SpRGBe, Specular<br>
+      </li>
+      <li>LuRGBe, Luma</li>
+      <li>DeBe--<br>
+      </li>
+    </ul>
+    <p>APP11: "ClrSp" (possible)<br>
+    </p>
+    <ul>
+      <li>May&nbsp; indicate alternate color-spaces</li>
+      <li>YCbCr: Default</li>
+      <li>YCbCrE: YCbCr+Exponent, increased dynamic range.</li>
+      <li>YUV_XR:</li>
+      <ul>
+        <li>V=B-R</li>
+        <li>U=G-R-0.5V<br>
+        </li>
+        <li>Y=G-0.5U</li>
+        <li><br>
+        </li>
+        <li>Y=1G+0.5R+0.25B</li>
+        <li>U=1G-1.5R-0.5B</li>
+        <li>V=0G-1R+1B</li>
+      </ul>
+      <li>YUV_XRE: YUV_XR+Exponent</li>
+      <li>YUV_RCT:</li>
+      <ul>
+        <li>Y=(R+2G+B)/4</li>
+        <ul>
+          <li>Y=G+(B+R-2G)/4</li>
+          <ul>
+            <li>This form works better (avoids truncation issue).</li>
+          </ul>
+          <li>Y=G+(U+V)/4</li>
+          <ul>
+            <li>Equivalent to the above.<br>
+            </li>
+          </ul>
+        </ul>
+        <li>U=B-G</li>
+        <li>V=R-G</li>
+        <li><br>
+        </li>
+        <li>G=Y-(U+V)/4</li>
+        <li>R=V+G</li>
+        <li>B=U+G<br>
+        </li>
+      </ul>
+    </ul>
+    <p><br>
+    </p>
+    <p>
+      APP12: "LDAT"
+    </p>
+    <ul>
+      <li> Gives "Layer Data", as an encoded sub-image.
+      </li>
+      <li> Directly follows the "CompLayer" marker.
+      </li>
+      <li> The sub image is broken into 64kB chunks, and spread over 1
+        or more LDAT markers.
+      </li>
+      <li> When reading a sub-image, all directly adjacent LDAT markers
+        are appended prior to decoding the sub-image.
+      </li>
+      <li> The data within the markers is escape coded using the
+        FF-&gt;FF,00 mapping.
+      </li>
+    </ul>
+    <p>APP12: "BCST"<br>
+      Gives a small header.<br>
+    </p>
+    <pre>WORD version=0x0100<br>BYTE trans;		//colorspace transform<br>BYTE bpp;		//target image bit-depth<br>DWORD flags;		//codec flags<br></pre>
+    <p>Transform:<br>
+      &nbsp;&nbsp;&nbsp; 0=YCbCr<br>
+      &nbsp;&nbsp;&nbsp; 1=RCT<br>
+      &nbsp;&nbsp;&nbsp; 2=RGB<br>
+      &nbsp;&nbsp;&nbsp; 3=YCCK / CMYK<br>
+    </p>
+    <p>
+      Example Image Layout:
+    </p>
+    <pre>SOI
+[APP0: JFIF]
+DHT/DQT/SOF0/SOS: Base Image
+[Component Layers]
+EOI
+</pre>
+    <p>With Component Layers taking the form:
+    </p>
+    <pre>APP11, "CompLayer", "..."
+APP12, LDAT segment
+APP12, LDAT segment
+...
+APP11, "CompLayer", "..."
+APP12, LDAT segment
+...
+</pre>
+    <p><br>
+      Sub-Images may omit both Huffman and Quantization tables, and will
+      reuse those from the parent.
+    </p>
+    <p>Note that it is all or none, namely that either all sub-images
+      omit these tables, or all include them. Note that in the case of
+      MJPEG, a similar rule applies, namely that if the prior image
+      contains sub-images which define new tables, then the new frame
+      will be required to define its own tables.
+    </p>
+    <p>This is to allow for naive codecs which will simply read the new
+      tables as replacing the old ones, as well as those which may or
+      may-not decode sub-images.
+    </p>
+    <p>Example Coded Sub-Image:
+    </p>
+    <pre>SOI
+SOF0
+SOS
+... Huffman coded DCT blocks ...
+EOI
+</pre>
+    <p><br>
+    </p>
+    <h3> <span class="mw-headline" id="Normal_Maps"> Normal Maps </span></h3>
+    <p>Internally, a normal map will be represented as XYZD
+      (X,Y,Z,Depth), despite being split up and having Y and Z swapped
+      for storage.
+    </p>
+    <p>The XYZ pixels will represent values in the range of -1 to 1, so
+      for example, the RGB value of 128,128,255 would encode the normal
+      value 0,0,1. Normal values are stored in texture-space, with
+      X=right, Y=up, and Z pointing out of the image (towards the
+      viewer).
+    </p>
+    <p>Depth values range from 0 to 1 (255), with 0 as the lowest point,
+      and 1 as the highest point (along the Z axis). The scale factors
+      are not currently specified here, but are defined as part of the
+      texture definition.
+    </p>
+    <p>Possible:
+      APP11, "DepthScaleBias", "scale bias"
+    </p>
+    <p><br>
+    </p>
+    <h3> <span class="mw-headline" id="Specular_Map"> Specular Map </span></h3>
+    <p>These will give the specular component pixels for each location.
+      Specular is used as part of the lighting model to calculate the
+      reflected color at a given pixel.
+      Specular Exponent represents a scale factor for the Specular
+      Exponent (multiplied with the specular exponent for the texture
+      definition).
+    </p>
+    <p><br>
+    </p>
+    <h3> <span class="mw-headline" id="Luma_RGB"> Luma RGB </span></h3>
+    <p>This is an image representing the light emission from a surface.
+      Presently, this is a simple glow value.
+    </p>
+    <p>Potentially, later it may make sense to support an emission
+      intensity value, which could be used for materials which emit
+      light into the environment.
+    </p>
+    <p>Possible:
+      APP11, "LumaIntensity", "value"</p>
+    <p><br>
+      Luma Exponent may be given, which will use the calculation
+      2^((Le-128)/8).<br>
+    </p>
+    <p>The same calculation will be used for the base-exponent.<br>
+    </p>
+    <p>e=abs(Le-128);<br>
+    </p>
+    <p>sc=2^ssqr(e-64)/240.0;<br>
+    </p>
+    <p>This is combined with the use of indices which are forced into
+      being a power-of-2.<br>
+    </p>
+    <br>
+    Power-of-2 Index values.<br>
+    <br>
+    <table border="1" cellpadding="2" cellspacing="2" width="100%">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Exponent<br>
+          </td>
+          <td style="vertical-align: top;">Partial Index<br>
+          </td>
+          <td style="vertical-align: top;">+(+e)<br>
+          </td>
+          <td style="vertical-align: top;">+(-e)<br>
+          </td>
+          <td style="vertical-align: top;">-(+e)<br>
+          </td>
+          <td style="vertical-align: top;">-(-e)<br>
+          </td>
+        </tr>
+        <tr>
+          <td>0</td>
+          <td>0</td>
+          <td>192</td>
+          <td>192</td>
+          <td>63</td>
+          <td>63</td>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>15</td>
+          <td>207</td>
+          <td>177</td>
+          <td>48</td>
+          <td>78</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>22</td>
+          <td>214</td>
+          <td>170</td>
+          <td>41</td>
+          <td>85</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>27</td>
+          <td>219</td>
+          <td>165</td>
+          <td>36</td>
+          <td>90</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>31</td>
+          <td>223</td>
+          <td>161</td>
+          <td>32</td>
+          <td>94</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>35</td>
+          <td>227</td>
+          <td>157</td>
+          <td>28</td>
+          <td>98</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>38</td>
+          <td>230</td>
+          <td>154</td>
+          <td>25</td>
+          <td>101</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td>41</td>
+          <td>233</td>
+          <td>151</td>
+          <td>22</td>
+          <td>104</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td>44</td>
+          <td>236</td>
+          <td>148</td>
+          <td>19</td>
+          <td>107</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td>46</td>
+          <td>238</td>
+          <td>146</td>
+          <td>17</td>
+          <td>109</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td>49</td>
+          <td>241</td>
+          <td>143</td>
+          <td>14</td>
+          <td>112</td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td>51</td>
+          <td>243</td>
+          <td>141</td>
+          <td>12</td>
+          <td>114</td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td>54</td>
+          <td>246</td>
+          <td>138</td>
+          <td>9</td>
+          <td>117</td>
+        </tr>
+        <tr>
+          <td>13</td>
+          <td>56</td>
+          <td>248</td>
+          <td>136</td>
+          <td>7</td>
+          <td>119</td>
+        </tr>
+        <tr>
+          <td>14</td>
+          <td>58</td>
+          <td>250</td>
+          <td>134</td>
+          <td>5</td>
+          <td>121</td>
+        </tr>
+        <tr>
+          <td>15</td>
+          <td>60</td>
+          <td>252</td>
+          <td>132</td>
+          <td>3</td>
+          <td>123</td>
+        </tr>
+        <tr>
+          <td>16</td>
+          <td>62</td>
+          <td>254</td>
+          <td>130</td>
+          <td>1</td>
+          <td>125</td>
+        </tr>
+        <tr>
+          <td>17</td>
+          <td>64</td>
+          <td>256</td>
+          <td>128</td>
+          <td>-1</td>
+          <td>127</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><br>
+    </p>
+    <p>Combined Exponent/Scale Table.<br>
+    </p>
+    <br>
+    <table border="1" cellpadding="2" cellspacing="2" width="100%">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Index<br>
+          </td>
+          <td style="vertical-align: top;">Exponent, Scale<br>
+          </td>
+          <td style="vertical-align: top;">Index<br>
+          </td>
+          <td style="vertical-align: top;">Exponent, Scale<br>
+          </td>
+        </tr>
+        <tr>
+          <td>0:</td>
+          <td>16.5375,-95122.59375000</td>
+          <td>1:</td>
+          <td>16.0000,-65536.00000000</td>
+        </tr>
+        <tr>
+          <td>2:</td>
+          <td>15.5042,-46474.98046875</td>
+          <td>3:</td>
+          <td>15.0000,-32768.00000000</td>
+        </tr>
+        <tr>
+          <td>4:</td>
+          <td>14.5042,-23237.49023438</td>
+          <td>5:</td>
+          <td>14.0000,-16384.00000000</td>
+        </tr>
+        <tr>
+          <td>6:</td>
+          <td>13.5375,-11890.32421875</td>
+          <td>7:</td>
+          <td>13.0000,-8192.00000000</td>
+        </tr>
+        <tr>
+          <td>8:</td>
+          <td>12.6042,-6226.33300781</td>
+          <td>9:</td>
+          <td>12.0000,-4096.00000000</td>
+        </tr>
+        <tr>
+          <td>10:</td>
+          <td>11.7042,-3336.60791016</td>
+          <td>11:</td>
+          <td>11.2667,-2463.79492188</td>
+        </tr>
+        <tr>
+          <td>12:</td>
+          <td>11.0000,-2048.00000000</td>
+          <td>13:</td>
+          <td>10.4167,-1366.87634277</td>
+        </tr>
+        <tr>
+          <td>14:</td>
+          <td>10.0000,-1024.00000000</td>
+          <td>15:</td>
+          <td>9.6000,-776.04705811</td>
+        </tr>
+        <tr>
+          <td>16:</td>
+          <td>9.2042,-589.83453369</td>
+          <td>17:</td>
+          <td>9.0000,-512.00000000</td>
+        </tr>
+        <tr>
+          <td>18:</td>
+          <td>8.4375,-346.68942261</td>
+          <td>19:</td>
+          <td>8.0000,-256.00000000</td>
+        </tr>
+        <tr>
+          <td>20:</td>
+          <td>7.7042,-208.53805542</td>
+          <td>21:</td>
+          <td>7.3500,-163.14375305</td>
+        </tr>
+        <tr>
+          <td>22:</td>
+          <td>7.0000,-128.00000000</td>
+          <td>23:</td>
+          <td>6.6667,-101.59365845</td>
+        </tr>
+        <tr>
+          <td>24:</td>
+          <td>6.3375,-80.86817169</td>
+          <td>25:</td>
+          <td>6.0000,-64.00000000</td>
+        </tr>
+        <tr>
+          <td>26:</td>
+          <td>5.7042,-52.13451385</td>
+          <td>27:</td>
+          <td>5.4000,-42.22425461</td>
+        </tr>
+        <tr>
+          <td>28:</td>
+          <td>5.0000,-32.00000000</td>
+          <td>29:</td>
+          <td>4.8167,-28.18130684</td>
+        </tr>
+        <tr>
+          <td>30:</td>
+          <td>4.5375,-23.22328186</td>
+          <td>31:</td>
+          <td>4.2667,-19.24840355</td>
+        </tr>
+        <tr>
+          <td>32:</td>
+          <td>4.0000,-16.00000000</td>
+          <td>33:</td>
+          <td>3.7500,-13.45434284</td>
+        </tr>
+        <tr>
+          <td>34:</td>
+          <td>3.5042,-11.34643078</td>
+          <td>35:</td>
+          <td>3.2667,-9.62419987</td>
+        </tr>
+        <tr>
+          <td>36:</td>
+          <td>3.0000,-8.00000000</td>
+          <td>37:</td>
+          <td>2.8167,-7.04532671</td>
+        </tr>
+        <tr>
+          <td>38:</td>
+          <td>2.6042,-6.08040237</td>
+          <td>39:</td>
+          <td>2.4000,-5.27803183</td>
+        </tr>
+        <tr>
+          <td>40:</td>
+          <td>2.2042,-4.60808277</td>
+          <td>41:</td>
+          <td>2.0000,-4.00000000</td>
+        </tr>
+        <tr>
+          <td>42:</td>
+          <td>1.8375,-3.57390165</td>
+          <td>43:</td>
+          <td>1.6667,-3.17480206</td>
+        </tr>
+        <tr>
+          <td>44:</td>
+          <td>1.5042,-2.83660793</td>
+          <td>45:</td>
+          <td>1.3500,-2.54912138</td>
+        </tr>
+        <tr>
+          <td>46:</td>
+          <td>1.2042,-2.30404139</td>
+          <td>47:</td>
+          <td>1.0667,-2.09458828</td>
+        </tr>
+        <tr>
+          <td>48:</td>
+          <td>1.0000,-2.00000000</td>
+          <td>49:</td>
+          <td>0.8167,-1.76133180</td>
+        </tr>
+        <tr>
+          <td>50:</td>
+          <td>0.7042,-1.62920332</td>
+          <td>51:</td>
+          <td>0.6000,-1.51571655</td>
+        </tr>
+        <tr>
+          <td>52:</td>
+          <td>0.5042,-1.41830385</td>
+          <td>53:</td>
+          <td>0.4167,-1.33483982</td>
+        </tr>
+        <tr>
+          <td>54:</td>
+          <td>0.3375,-1.26356506</td>
+          <td>55:</td>
+          <td>0.2667,-1.20302510</td>
+        </tr>
+        <tr>
+          <td>56:</td>
+          <td>0.2042,-1.15202069</td>
+          <td>57:</td>
+          <td>0.1500,-1.10956943</td>
+        </tr>
+        <tr>
+          <td>58:</td>
+          <td>0.1042,-1.07487333</td>
+          <td>59:</td>
+          <td>0.0667,-1.04729414</td>
+        </tr>
+        <tr>
+          <td>60:</td>
+          <td>0.0375,-1.02633381</td>
+          <td>61:</td>
+          <td>0.0167,-1.01161945</td>
+        </tr>
+        <tr>
+          <td>62:</td>
+          <td>0.0042,-1.00289226</td>
+          <td>63:</td>
+          <td>0.0000,-1.00000000</td>
+        </tr>
+        <tr>
+          <td>64:</td>
+          <td>-0.0042,-0.99711609</td>
+          <td>65:</td>
+          <td>-0.0167,-0.98851401</td>
+        </tr>
+        <tr>
+          <td>66:</td>
+          <td>-0.0375,-0.97434187</td>
+          <td>67:</td>
+          <td>-0.0667,-0.95484161</td>
+        </tr>
+        <tr>
+          <td>68:</td>
+          <td>-0.1042,-0.93034220</td>
+          <td>69:</td>
+          <td>-0.1500,-0.90125048</td>
+        </tr>
+        <tr>
+          <td>70:</td>
+          <td>-0.2042,-0.86803997</td>
+          <td>71:</td>
+          <td>-0.2667,-0.83123785</td>
+        </tr>
+        <tr>
+          <td>72:</td>
+          <td>-0.3375,-0.79141158</td>
+          <td>73:</td>
+          <td>-0.4167,-0.74915355</td>
+        </tr>
+        <tr>
+          <td>74:</td>
+          <td>-0.5042,-0.70506752</td>
+          <td>75:</td>
+          <td>-0.6000,-0.65975398</td>
+        </tr>
+        <tr>
+          <td>76:</td>
+          <td>-0.7042,-0.61379695</td>
+          <td>77:</td>
+          <td>-0.8167,-0.56775218</td>
+        </tr>
+        <tr>
+          <td>78:</td>
+          <td>-1.0000,-0.50000000</td>
+          <td>79:</td>
+          <td>-1.0667,-0.47742081</td>
+        </tr>
+        <tr>
+          <td>80:</td>
+          <td>-1.2042,-0.43401998</td>
+          <td>81:</td>
+          <td>-1.3500,-0.39229202</td>
+        </tr>
+        <tr>
+          <td>82:</td>
+          <td>-1.5042,-0.35253373</td>
+          <td>83:</td>
+          <td>-1.6667,-0.31498027</td>
+        </tr>
+        <tr>
+          <td>84:</td>
+          <td>-1.8375,-0.27980626</td>
+          <td>85:</td>
+          <td>-2.0000,-0.25000000</td>
+        </tr>
+        <tr>
+          <td>86:</td>
+          <td>-2.2042,-0.21700999</td>
+          <td>87:</td>
+          <td>-2.4000,-0.18946457</td>
+        </tr>
+        <tr>
+          <td>88:</td>
+          <td>-2.6042,-0.16446280</td>
+          <td>89:</td>
+          <td>-2.8167,-0.14193806</td>
+        </tr>
+        <tr>
+          <td>90:</td>
+          <td>-3.0000,-0.12500000</td>
+          <td>91:</td>
+          <td>-3.2667,-0.10390474</td>
+        </tr>
+        <tr>
+          <td>92:</td>
+          <td>-3.5042,-0.08813344</td>
+          <td>93:</td>
+          <td>-3.7500,-0.07432544</td>
+        </tr>
+        <tr>
+          <td>94:</td>
+          <td>-4.0000,-0.06250000</td>
+          <td>95:</td>
+          <td>-4.2667,-0.05195236</td>
+        </tr>
+        <tr>
+          <td>96:</td>
+          <td>-4.5375,-0.04306024</td>
+          <td>97:</td>
+          <td>-4.8167,-0.03548452</td>
+        </tr>
+        <tr>
+          <td>98:</td>
+          <td>-5.0000,-0.03125000</td>
+          <td>99:</td>
+          <td>-5.4000,-0.02368307</td>
+        </tr>
+        <tr>
+          <td>100:</td>
+          <td>-5.7042,-0.01918115</td>
+          <td>101:</td>
+          <td>-6.0000,-0.01562500</td>
+        </tr>
+        <tr>
+          <td>102:</td>
+          <td>-6.3375,-0.01236580</td>
+          <td>103:</td>
+          <td>-6.6667,-0.00984313</td>
+        </tr>
+        <tr>
+          <td>104:</td>
+          <td>-7.0000,-0.00781250</td>
+          <td>105:</td>
+          <td>-7.3500,-0.00612956</td>
+        </tr>
+        <tr>
+          <td>106:</td>
+          <td>-7.7042,-0.00479529</td>
+          <td>107:</td>
+          <td>-8.0000,-0.00390625</td>
+        </tr>
+        <tr>
+          <td>108:</td>
+          <td>-8.4375,-0.00288443</td>
+          <td>109:</td>
+          <td>-9.0000,-0.00195313</td>
+        </tr>
+        <tr>
+          <td>110:</td>
+          <td>-9.2042,-0.00169539</td>
+          <td>111:</td>
+          <td>-9.6000,-0.00128858</td>
+        </tr>
+        <tr>
+          <td>112:</td>
+          <td>-10.0000,-0.00097656</td>
+          <td>113:</td>
+          <td>-10.4167,-0.00073160</td>
+        </tr>
+        <tr>
+          <td>114:</td>
+          <td>-11.0000,-0.00048828</td>
+          <td>115:</td>
+          <td>-11.2667,-0.00040588</td>
+        </tr>
+        <tr>
+          <td>116:</td>
+          <td>-11.7042,-0.00029971</td>
+          <td>117:</td>
+          <td>-12.0000,-0.00024414</td>
+        </tr>
+        <tr>
+          <td>118:</td>
+          <td>-12.6042,-0.00016061</td>
+          <td>119:</td>
+          <td>-13.0000,-0.00012207</td>
+        </tr>
+        <tr>
+          <td>120:</td>
+          <td>-13.5375,-0.00008410</td>
+          <td>121:</td>
+          <td>-14.0000,-0.00006104</td>
+        </tr>
+        <tr>
+          <td>122:</td>
+          <td>-14.5042,-0.00004303</td>
+          <td>123:</td>
+          <td>-15.0000,-0.00003052</td>
+        </tr>
+        <tr>
+          <td>124:</td>
+          <td>-15.5042,-0.00002152</td>
+          <td>125:</td>
+          <td>-16.0000,-0.00001526</td>
+        </tr>
+        <tr>
+          <td>126:</td>
+          <td>-16.5375,-0.00001051</td>
+          <td>127:</td>
+          <td>-17.0000,-0.00000763</td>
+        </tr>
+        <tr>
+          <td>128:</td>
+          <td>-17.0000,0.00000763</td>
+          <td>129:</td>
+          <td>-16.5375,0.00001051</td>
+        </tr>
+        <tr>
+          <td>130:</td>
+          <td>-16.0000,0.00001526</td>
+          <td>131:</td>
+          <td>-15.5042,0.00002152</td>
+        </tr>
+        <tr>
+          <td>132:</td>
+          <td>-15.0000,0.00003052</td>
+          <td>133:</td>
+          <td>-14.5042,0.00004303</td>
+        </tr>
+        <tr>
+          <td>134:</td>
+          <td>-14.0000,0.00006104</td>
+          <td>135:</td>
+          <td>-13.5375,0.00008410</td>
+        </tr>
+        <tr>
+          <td>136:</td>
+          <td>-13.0000,0.00012207</td>
+          <td>137:</td>
+          <td>-12.6042,0.00016061</td>
+        </tr>
+        <tr>
+          <td>138:</td>
+          <td>-12.0000,0.00024414</td>
+          <td>139:</td>
+          <td>-11.7042,0.00029971</td>
+        </tr>
+        <tr>
+          <td>140:</td>
+          <td>-11.2667,0.00040588</td>
+          <td>141:</td>
+          <td>-11.0000,0.00048828</td>
+        </tr>
+        <tr>
+          <td>142:</td>
+          <td>-10.4167,0.00073160</td>
+          <td>143:</td>
+          <td>-10.0000,0.00097656</td>
+        </tr>
+        <tr>
+          <td>144:</td>
+          <td>-9.6000,0.00128858</td>
+          <td>145:</td>
+          <td>-9.2042,0.00169539</td>
+        </tr>
+        <tr>
+          <td>146:</td>
+          <td>-9.0000,0.00195313</td>
+          <td>147:</td>
+          <td>-8.4375,0.00288443</td>
+        </tr>
+        <tr>
+          <td>148:</td>
+          <td>-8.0000,0.00390625</td>
+          <td>149:</td>
+          <td>-7.7042,0.00479529</td>
+        </tr>
+        <tr>
+          <td>150:</td>
+          <td>-7.3500,0.00612956</td>
+          <td>151:</td>
+          <td>-7.0000,0.00781250</td>
+        </tr>
+        <tr>
+          <td>152:</td>
+          <td>-6.6667,0.00984313</td>
+          <td>153:</td>
+          <td>-6.3375,0.01236580</td>
+        </tr>
+        <tr>
+          <td>154:</td>
+          <td>-6.0000,0.01562500</td>
+          <td>155:</td>
+          <td>-5.7042,0.01918115</td>
+        </tr>
+        <tr>
+          <td>156:</td>
+          <td>-5.4000,0.02368307</td>
+          <td>157:</td>
+          <td>-5.0000,0.03125000</td>
+        </tr>
+        <tr>
+          <td>158:</td>
+          <td>-4.8167,0.03548452</td>
+          <td>159:</td>
+          <td>-4.5375,0.04306024</td>
+        </tr>
+        <tr>
+          <td>160:</td>
+          <td>-4.2667,0.05195236</td>
+          <td>161:</td>
+          <td>-4.0000,0.06250000</td>
+        </tr>
+        <tr>
+          <td>162:</td>
+          <td>-3.7500,0.07432544</td>
+          <td>163:</td>
+          <td>-3.5042,0.08813344</td>
+        </tr>
+        <tr>
+          <td>164:</td>
+          <td>-3.2667,0.10390474</td>
+          <td>165:</td>
+          <td>-3.0000,0.12500000</td>
+        </tr>
+        <tr>
+          <td>166:</td>
+          <td>-2.8167,0.14193806</td>
+          <td>167:</td>
+          <td>-2.6042,0.16446280</td>
+        </tr>
+        <tr>
+          <td>168:</td>
+          <td>-2.4000,0.18946457</td>
+          <td>169:</td>
+          <td>-2.2042,0.21700999</td>
+        </tr>
+        <tr>
+          <td>170:</td>
+          <td>-2.0000,0.25000000</td>
+          <td>171:</td>
+          <td>-1.8375,0.27980626</td>
+        </tr>
+        <tr>
+          <td>172:</td>
+          <td>-1.6667,0.31498027</td>
+          <td>173:</td>
+          <td>-1.5042,0.35253373</td>
+        </tr>
+        <tr>
+          <td>174:</td>
+          <td>-1.3500,0.39229202</td>
+          <td>175:</td>
+          <td>-1.2042,0.43401998</td>
+        </tr>
+        <tr>
+          <td>176:</td>
+          <td>-1.0667,0.47742081</td>
+          <td>177:</td>
+          <td>-1.0000,0.50000000</td>
+        </tr>
+        <tr>
+          <td>178:</td>
+          <td>-0.8167,0.56775218</td>
+          <td>179:</td>
+          <td>-0.7042,0.61379695</td>
+        </tr>
+        <tr>
+          <td>180:</td>
+          <td>-0.6000,0.65975398</td>
+          <td>181:</td>
+          <td>-0.5042,0.70506752</td>
+        </tr>
+        <tr>
+          <td>182:</td>
+          <td>-0.4167,0.74915355</td>
+          <td>183:</td>
+          <td>-0.3375,0.79141158</td>
+        </tr>
+        <tr>
+          <td>184:</td>
+          <td>-0.2667,0.83123785</td>
+          <td>185:</td>
+          <td>-0.2042,0.86803997</td>
+        </tr>
+        <tr>
+          <td>186:</td>
+          <td>-0.1500,0.90125048</td>
+          <td>187:</td>
+          <td>-0.1042,0.93034220</td>
+        </tr>
+        <tr>
+          <td>188:</td>
+          <td>-0.0667,0.95484161</td>
+          <td>189:</td>
+          <td>-0.0375,0.97434187</td>
+        </tr>
+        <tr>
+          <td>190:</td>
+          <td>-0.0167,0.98851401</td>
+          <td>191:</td>
+          <td>-0.0042,0.99711609</td>
+        </tr>
+        <tr>
+          <td>192:</td>
+          <td>0.0000,1.00000000</td>
+          <td>193:</td>
+          <td>0.0042,1.00289226</td>
+        </tr>
+        <tr>
+          <td>194:</td>
+          <td>0.0167,1.01161945</td>
+          <td>195:</td>
+          <td>0.0375,1.02633381</td>
+        </tr>
+        <tr>
+          <td>196:</td>
+          <td>0.0667,1.04729414</td>
+          <td>197:</td>
+          <td>0.1042,1.07487333</td>
+        </tr>
+        <tr>
+          <td>198:</td>
+          <td>0.1500,1.10956943</td>
+          <td>199:</td>
+          <td>0.2042,1.15202069</td>
+        </tr>
+        <tr>
+          <td>200:</td>
+          <td>0.2667,1.20302510</td>
+          <td>201:</td>
+          <td>0.3375,1.26356506</td>
+        </tr>
+        <tr>
+          <td>202:</td>
+          <td>0.4167,1.33483982</td>
+          <td>203:</td>
+          <td>0.5042,1.41830385</td>
+        </tr>
+        <tr>
+          <td>204:</td>
+          <td>0.6000,1.51571655</td>
+          <td>205:</td>
+          <td>0.7042,1.62920332</td>
+        </tr>
+        <tr>
+          <td>206:</td>
+          <td>0.8167,1.76133180</td>
+          <td>207:</td>
+          <td>1.0000,2.00000000</td>
+        </tr>
+        <tr>
+          <td>208:</td>
+          <td>1.0667,2.09458828</td>
+          <td>209:</td>
+          <td>1.2042,2.30404139</td>
+        </tr>
+        <tr>
+          <td>210:</td>
+          <td>1.3500,2.54912138</td>
+          <td>211:</td>
+          <td>1.5042,2.83660793</td>
+        </tr>
+        <tr>
+          <td>212:</td>
+          <td>1.6667,3.17480206</td>
+          <td>213:</td>
+          <td>1.8375,3.57390165</td>
+        </tr>
+        <tr>
+          <td>214:</td>
+          <td>2.0000,4.00000000</td>
+          <td>215:</td>
+          <td>2.2042,4.60808277</td>
+        </tr>
+        <tr>
+          <td>216:</td>
+          <td>2.4000,5.27803183</td>
+          <td>217:</td>
+          <td>2.6042,6.08040237</td>
+        </tr>
+        <tr>
+          <td>218:</td>
+          <td>2.8167,7.04532671</td>
+          <td>219:</td>
+          <td>3.0000,8.00000000</td>
+        </tr>
+        <tr>
+          <td>220:</td>
+          <td>3.2667,9.62419987</td>
+          <td>221:</td>
+          <td>3.5042,11.34643078</td>
+        </tr>
+        <tr>
+          <td>222:</td>
+          <td>3.7500,13.45434284</td>
+          <td>223:</td>
+          <td>4.0000,16.00000000</td>
+        </tr>
+        <tr>
+          <td>224:</td>
+          <td>4.2667,19.24840355</td>
+          <td>225:</td>
+          <td>4.5375,23.22328186</td>
+        </tr>
+        <tr>
+          <td>226:</td>
+          <td>4.8167,28.18130684</td>
+          <td>227:</td>
+          <td>5.0000,32.00000000</td>
+        </tr>
+        <tr>
+          <td>228:</td>
+          <td>5.4000,42.22425461</td>
+          <td>229:</td>
+          <td>5.7042,52.13451385</td>
+        </tr>
+        <tr>
+          <td>230:</td>
+          <td>6.0000,64.00000000</td>
+          <td>231:</td>
+          <td>6.3375,80.86817169</td>
+        </tr>
+        <tr>
+          <td>232:</td>
+          <td>6.6667,101.59365845</td>
+          <td>233:</td>
+          <td>7.0000,128.00000000</td>
+        </tr>
+        <tr>
+          <td>234:</td>
+          <td>7.3500,163.14375305</td>
+          <td>235:</td>
+          <td>7.7042,208.53805542</td>
+        </tr>
+        <tr>
+          <td>236:</td>
+          <td>8.0000,256.00000000</td>
+          <td>237:</td>
+          <td>8.4375,346.68942261</td>
+        </tr>
+        <tr>
+          <td>238:</td>
+          <td>9.0000,512.00000000</td>
+          <td>239:</td>
+          <td>9.2042,589.83453369</td>
+        </tr>
+        <tr>
+          <td>240:</td>
+          <td>9.6000,776.04705811</td>
+          <td>241:</td>
+          <td>10.0000,1024.00000000</td>
+        </tr>
+        <tr>
+          <td>242:</td>
+          <td>10.4167,1366.87634277</td>
+          <td>243:</td>
+          <td>11.0000,2048.00000000</td>
+        </tr>
+        <tr>
+          <td>244:</td>
+          <td>11.2667,2463.79492188</td>
+          <td>245:</td>
+          <td>11.7042,3336.60791016</td>
+        </tr>
+        <tr>
+          <td>246:</td>
+          <td>12.0000,4096.00000000</td>
+          <td>247:</td>
+          <td>12.6042,6226.33300781</td>
+        </tr>
+        <tr>
+          <td>248:</td>
+          <td>13.0000,8192.00000000</td>
+          <td>249:</td>
+          <td>13.5375,11890.32421875</td>
+        </tr>
+        <tr>
+          <td>250:</td>
+          <td>14.0000,16384.00000000</td>
+          <td>251:</td>
+          <td>14.5042,23237.49023438</td>
+        </tr>
+        <tr>
+          <td>252:</td>
+          <td>15.0000,32768.00000000</td>
+          <td>253:</td>
+          <td>15.5042,46474.98046875</td>
+        </tr>
+        <tr>
+          <td>254:</td>
+          <td>16.0000,65536.00000000</td>
+          <td>255:</td>
+          <td>16.5375,95122.59375000</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><br>
+    </p>
+    <p><br>
+    </p>
+  </body>
+</html>

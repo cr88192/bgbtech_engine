@@ -1,0 +1,71 @@
+ARCH_CFLAGS=
+# CFLAGS=-g -pg -Iinclude -I../include -Werror-implicit-function-declaration $(ARCH_CFLAGS)
+# CFLAGS=-O3 -Iinclude -I../include -Werror-implicit-function-declaration $(ARCH_CFLAGS)
+
+CFLAGS=-g -pg -Iinclude -Werror-implicit-function-declaration $(ARCH_CFLAGS)
+
+# LDFLAGS=-g -pg -L. -lbgbgc -L.. -lbgbasm -lzpack
+LDFLAGS=-g -pg -L. -lbgbgc
+
+EXE=.exe
+O=.o
+A=.a
+CC=gcc
+
+#	base/memory2_2$(O) \
+
+OBJS=\
+	base/int128$(O) \
+	base/th_api$(O) \
+	base/th_queue$(O) \
+	\
+	base/mm_lobj$(O) \
+	base/mm_cell$(O) \
+	base/mm_cons$(O) \
+	base/mm_gc$(O) \
+	base/mm_space$(O) \
+	base/objtype$(O) \
+	\
+	base/bgbgc_api$(O) \
+	base/gcp_api$(O)
+
+SRCS=$(OBJS:$(O)=.c)
+
+DEP_HDRS=\
+	include/bgbgc_auto.h
+
+all: libs apps
+
+FORCE:
+
+libs: libbgbgc$(A)
+apps: gctst0$(EXE)
+
+includes: $(DEP_HDRS)
+
+include/bgbgc_auto.h: autohead$(EXE) $(SRCS)
+	./autohead$(EXE) $(SRCS) > include/bgbgc_auto.h
+
+libbgbgc$(A): $(DEP_HDRS) $(OBJS)
+	ar -cr libbgbgc$(A) $(OBJS)
+
+autohead$(EXE): autohead.c
+	$(CC) -o autohead$(EXE) autohead.c
+
+gctst0$(EXE): gctst0.c $(DEP_HDRS) $(OBJS)
+	$(CC) -o gctst0$(EXE) gctst0.c $(CFLAGS) $(LDFLAGS)
+
+tst_class0$(EXE): tst_class0.c $(DEP_HDRS) $(OBJS)
+	$(CC) -o tst_class0$(EXE) tst_class0.c $(CFLAGS) $(LDFLAGS)
+
+gatst0$(EXE): gatst0.c $(DEP_HDRS) $(OBJS)
+	$(CC) -o gatst0$(EXE) gatst0.c $(CFLAGS) $(LDFLAGS)
+
+clean:
+	rm -rf $(shell find -name \*$(A))
+	rm -rf $(shell find -name \*$(O))
+
+clean2:
+	rm -rf $(shell find -name \*$(A))
+	rm -rf $(shell find -name \*$(O))
+	rm -rf $(shell find -name \*$(EXE))

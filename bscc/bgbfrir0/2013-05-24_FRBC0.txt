@@ -1,0 +1,938 @@
+FRIL ByteCode (Preliminary Idea Spec)
+
+
+== Execution Model ==
+
+FRIL ByteCode:
+
+FRIL will be based on a register-machine execution model.
+Normally, arguments, local variables, and temporaries will be mapped to registers. The partial exception to this rule will be captured lexical bindings, which will be instead located within "lexical frames".
+
+Registers will be assigned numbers linearly, starting from the first argument at 1, followed by any locals, followed by any temporaries.
+Register 0 will be reserved for the 'this' object.
+
+Note that register indices will still be used, including for lexical arguments or variables.
+
+Within a given lexical frame, lexical arguments will come first, followed by locals. Frame 0 will be the current frame, 1 will be the captured parent frame, ...
+
+
+* Registers:
+**	Arguments
+**	Locals
+**	Temporaries
+
+* Lexical Env:
+**	Parent Frames
+**	Lexical Args
+**	Lexical Locals
+
+
+=== Type Model ===
+
+This will use the ILFDA type model, where core types are one of:
+* Int: Will be 32-bits and with an undefined sign.
+* Long: Will be 64-bits and with an undefined sign.
+* Float: Will be a 32-bit float.
+* Double: Will be a 64-bit double.
+* Address: Will hold the address of a value.
+
+For Int/Long, the sign will be left formally undefined, but except where otherwise noted will be assumed to be signed. Unsigned numbers will be treated as a special case.
+
+Integer types are assumed to behave as they would on a two's complement system. The default endianess of numeric types will be left undefined, but the ability to tag the endianess of values will be provided.
+
+All smaller integer types will be implicitly promoted to Int (via sign or zero extension).
+
+Address will hold pretty much everything else. This will include both pointer-based objects, as well as value-types.
+
+Explicit operations will be provided to copy and discard the contents of value-types. Note that the lifetime of a value-type will not extend beyond that of the function which created it. For sake of this IL, explicit pointers will be regarded as value-types.
+
+
+=== Pointers ===
+
+Pointers may be one of several forms:
+* Addresses or Narrow Pointers
+* Fat Pointers
+
+A narrow pointer will be stored directly in an address-type register, and will behave (more or less) as a native machine pointer.
+
+A fat pointer will be treated as a value-type. Unlike a narrow pointer, it will store the memory-bounds for the object, and will perform bounds-checking on access.
+
+Most operations operating on pointers will take a type to indicate both the type of the pointer, as well as the type of value being operated on.
+
+
+==== Rationale ====
+
+Fat Pointers will come, however, at some performance cost, but the cheaper of the options in this cases is to generally use fat-pointers for areas of code making frequent use of pointers, but possibly falling back to narrow pointers for cases where fat-pointers are unnecessary, or would create other issues (such as hindering inter-operation with native code, which generally uses solely narrow pointers).
+
+An alternative to the use of fat-pointers is basically to use lookups on access to implement barrier checks, but this has a few drawbacks:
+* Lookups aren't free (they would cost more than validating that a pointer is still in range);
+* They wont detect cases where the pointer has "jumped ship" from one memory object to another, which is possible if intermediate operations are done with fat pointers.
+
+However, by themselves, fat-pointers still don't necessarily address the matter of type-safety, namely validating that a pointer held within a data-structure is not overwritten.
+
+However: many of these cases can be at least partially detected and dealt with:
+the code can't be "proven safe" in this case, meaning that it can be possible to fall back to the use of explicit checks;
+Fat-pointers can be kept outside of memory areas writable to the code itself (in these cases, things like structures will typically only contain narrow pointers, and if the VM has reason to suspect that a pointer might have been overwritten by an operation, it can be verified that whatever address is held is still "valid" in that it refers to an accessible region of memory).
+
+This sort of validation is likely to be needed in cases involving things like accessing pointers within unions, explicit conversions between pointers and integers, and generally cases where "suspicious" memory operations are performed involving an object (such as a memset or memcpy call, ...).
+
+In this sense, the memory manager will also take up a role in terms of memory-access validation (well, and probably also things, like performing leak detection, ...).
+
+Granted, to go well with C tradition, we can't necessarily trap as soon as an invalid pointer is generated (this could prevent some otherwise valid code from working), but ideally need to trap when either:
+memory is actually accessed via such an invalid pointer (behaving in this case more like a traditional memory access exception);
+such a pointer moves into a "required safe" area, which basically means where it is known statically that an access will occur via this pointer (or alternatively, where no later validation checks would be possible).
+
+The latter case is likely to be more of an effect when converting fat-pointers back into narrow pointers, where it could be required that whenever such an operation occurs, the pointer will need to be pointing at a "valid" address for the source object.
+
+If code is "untrusted", all this probably also means denying access to any memory which it doesn't specifically have access to, and similarly placing limits on what sorts of API functions may be used (say, untrusted code is limited to a set of white-listed wrapper APIs, and may not have direct access to the underlying native APIs).
+
+
+== VLI ==
+
+VLI will be a variable-length integer. These will come in multiple forms, and may or may not be signed.
+
+
+=== UVLI ===
+
+This will use a bit pattern in the first byte to indicate how many bytes follow.
+
+ 0xxxxxxx                       0-127
+ 10xxxxxx yyyyyyyy              128-16383
+ 110xxxxx yyyyyyyy zzzzzzzz     16384-2097151
+ ...
+
+
+==== SVLI ====
+
+This will encode a signed value by folding the sign into the LSB.
+
+So, values will follow the pattern:
+* 0, -1, 1, -2, 2, ...
+
+Where 0 -> 0, 1 -> (-1), 2 -> 1, 3 -> (-2), 4 -> 2, ...
+
+
+==== VLI2 / UVLI2 / SVLI2 ====
+
+UVLI but limited to only 1 and 2 byte forms.
+
+This limits the effective range to 0-16383, and (-8192)-8191
+
+
+=== UVLIW ===
+
+Will follow a similar pattern to UVLI, except being based on 16-bit values.
+
+ 0xxxxxxx yyyyyyyy                      0-32767
+ 10xxxxxx yyyyyyyy zzzzzzzz wwwwwwww    32768-1073741823
+ 110xxxxx ...                           1073741824-35184372088831
+ ...
+
+Note that for UVLIW bits will be stored in big-endian ordering.
+
+
+==== SVLIW ====
+
+Basically the same as SVLI just using UVLIW as the basic storage.
+
+==== UVLIW2 / SVLIW2 ====
+
+These are basically the same as UVLIW and SVLIW, except limited to 16 and 32-bit forms.
+
+
+==== UVLIW_Tag ====
+
+This will consist of a UVLIW value holding a tagged value.
+The tag will be stored in the low 3-bits.
+
+* 0, Small Integer (LSB Sign Folded);
+* 1, Constant Pool Index;
+* 2, String Index;
+* 3, Data Blob Index;
+* 4, Meta Node Index;
+* 5, Bytecode Index;
+* 6, Grab 5 more tag bits (for an 8-bit tag)
+* 7, Grabs 9 more tag bits (for a 12-bit tag)
+
+
+=== FVLI ===
+
+Floating point value encoded as:
+ base:SVLI 
+ exponent:SVLI
+ 
+ If base==0, the exponent may hold one of several special values:
+  0: 0.0;
+ -1: -NaN
+  1: +NaN
+ -2: -Inf
+  2: +Inf
+ 
+ Otherwise, the value is defined as: base*pow(2.0, exponent);
+
+
+=== Opcode ===
+
+* 00-BF: 1 Byte Opcodes (0-191)
+* C0-EF: 2 Byte Opcodes (192-12287)
+* F0-FB: 3 Byte Opcodes (12288-786431)
+* FC-FE: 4 Byte Opcodes (786432-50331647)
+* FF-FF: 5 Byte Opcodes (50331648-4294967295)
+
+As of present, only 1 and 2 byte opcodes will be used.
+Longer opcode forms will be reserved for possible future extension.
+
+
+== Image Format ==
+
+Image Format:
+
+[[ExWAD]] based container.
+
+* Lumps:
+** 'frbc/strings'
+*** Holds string table.
+** 'frbc/datablob'
+*** Holds binary data blobs.
+** 'frbc/bytecode'
+*** Holds raw bytecode blobs.
+** 'frbc/metakeys'
+*** Holds key/value pairs.
+** 'frbc/metaindex'
+*** Holds node indices.
+** 'frbc/metanode'
+*** Holds metadata node declarations.
+** 'frbc/constdata'
+*** Constant-pool data.
+** 'frbc/constindex'
+*** Constant-pool indices.
+** ...
+
+
+=== Strings ===
+
+Strings will be represented as Modified UTF-8.
+A string index will consist of the offset of the start of the string in the strings table.
+
+Index 0 will be reserved for the NULL string.
+This is an empty string which will represent a NULL value.
+
+
+=== DataBlob ===
+
+Datablob will consist of raw data blobs with a tag and length prefix, both will be VLI-W values. Tag will be an index into strings.
+
+ DataBlob[]:
+   tag:UVLI_String
+   length:UVLI
+   data:byte[length]
+
+A DataBlob index will be the offset of the blob within the lump.
+
+Index 0 will be reserved for the NULL blob.
+
+The tag will be a string identifying the format of the data held in this blob (given as a name). If the tag is null, then this blob will contain a blob of bytes of an undefined type.
+
+
+=== Bytecode ===
+
+Bytecode will use a similar format to datablob, except that the tag will be a node-index.
+
+ ByteCode[]:
+   tag:UVLI_Node
+   length:UVLI
+   data:byte[length]
+
+
+A ByteCode index will be the offset of the blob within the lump.
+
+Index 0 will be reserved for NULL.
+
+
+=== MetaKeys ===
+
+Will consist of key/value pairs.
+
+ MetaKey[]:
+   key:UVLI_String
+   value:UVLIW_Tag
+
+
+=== MetaIndex ===
+
+Will consist of arrays of node offsets.
+Ideally nodes should be organized in an top-down manner, with node 0 being the root node, followed by any top-level nodes, followed by the children of the toplevel nodes, then the children of these nodes, ...
+
+All node indices are to be stored sorted in lexiographic order.
+
+ MetaIndex[]:
+   index:UVLIW_NodeOffset
+
+Node references will hold the index of the appropriate entry in this table.
+
+Note that the root node will be special in that it will lack a name, and references to it will be regarded as NULL.
+
+
+=== MetaNode ===
+
+ MetaNode[]:
+   name:UVLI_String		//node name
+   type:UVLI_String		//node type
+   keyOffset:UVLI		//offset of first key
+   keyCount:UVLI			//number of keys
+   childIndex:UVLI		//index of first child
+   childCount:UVLI		//number of children
+   parent:UVLI_Node		//index of parent node.
+   data:UVLI_Blob		//optional node-type specific data blob
+
+
+=== ConstData ===
+
+Stores data-payload for the constant pool.
+The format of the contents is equivalent to DataBlob.
+
+
+=== ConstIndex ===
+
+Stores the offset of each entry in the constant pool.
+
+ ConstIndex[]:
+   index:UVLIW_ConstantOffset
+
+Note that there is no particular ordering of entries in the constant pool, and constant pool entries may refer to both prior and subsequent entries.
+
+The entry 0 will be reserved for a null entry.
+
+
+== MetaNode Types ==
+
+MetaNodes form a sort of heirarchical database based on the concept of a QName, or Qualified Name. A valid QName will also have a corresponding node in the metadata database.
+
+The toplevel nodes represent the global namespace, and sub-nodes represent contained members.
+
+The goal of the data-blob member attached to nodes is to allow the possibility of more compact storage of node keys. If NULL, all keys will be represented directly.
+
+The node type will conceptually be stored in a "null" key (may also be considered as having a single underscore for a name).
+
+
+=== Metadata Node Types ===
+
+* Types:
+** func
+*** Function definition
+** var
+*** Variable definition
+** type
+*** Typedef definition
+** struct
+*** Struct definition
+** union
+*** Union definition
+** class
+*** Class definition
+** interface
+*** Interface definition
+** field
+*** Struct/Union/Class field
+** method
+*** Class method
+** property
+*** Property definition
+** namespace
+*** Namespace (or package) definition
+
+* Common Keys:
+** sig
+*** Gives the [[Type Signature|type signature]] of an item
+*** For functions/methods, this is the signature of the argument list.
+** flagstr
+*** gives the flags of an item (serialized as a string)
+** field.#
+*** identifies a sub-field, value holds the name of the field.
+** method.#
+*** identifies a sub-field, value holds the name of the method.
+** property.#
+*** identifies a sub-field, value holds the name of the property.
+
+
+Fields or methods will be defined in the relevant sub-nodes, using the field/method name as the name. A similar '.#' name suffix will be used in the case of overloaded members.
+
+
+* Function/Method Keys:
+** arg.#
+*** Identifies a function argument.
+** var.#
+*** Identifies a body variable.
+** lexarg.#
+*** Identifies an argument as part of the lexical environment.
+** lexvar.#
+*** Identifies a variable as part of the lexical environment.
+** code
+*** Links to the bytecode for a function or method.
+** maxregs
+*** Identifies the max number of used registers.
+
+
+== Constant Pool Entry Types ==
+
+ "Int32"		32-bit Integer
+ "Int64"		64-bit Long
+ "Int128"	128-bit Integer
+ "Float32"	32-bit Float
+ "Float64"	64-bit Double
+ "Float128"	128-bit Float
+
+These represent literal values. These values will be stored in their respective raw formats in little-endian ordering.
+
+
+ "IntTable8"				Table of 8-bit integer values
+ "IntTable16"			Table of 16-bit integer values
+ "IntTable32"			Table of 32-bit integer values
+ "IntTable64"			Table of 64-bit integer values
+ "FloatTable32"			Table of 32-bit float values
+ "FloatTable64"			Table of 64-bit double values
+
+These represent tables of literal values. These values will be stored in their respective raw formats in little-endian ordering.
+
+
+ "RefTable"
+   table:UVLIW_Tag[]
+
+This is a table of references (Address) values.
+
+
+ "CallInfo"
+   qname:UVLI_String		//QName of called method
+   sig:UVLI_String		//Signature of called method
+   args:UVLI_Blob		//Argument register indices
+ 
+ "FieldInfo"
+    qname:UVLI_String	//QName of field
+    sig:UVLI_String		//Signature of field
+ 
+ "TypeInfo"
+    sig:UVLI_String		//Signature of value
+
+These define information about operations.
+
+CallInfo will describe a function or method being called.
+For overloaded methods, the qname will also identify which form is being used.
+In certain cases, the signature used for the call may differ from that of the function or method being called, generally this will be in the case of vararg functions.
+
+FieldInfo describes a field being accessed.
+
+
+ "IndexTable"
+   table:UVLIW2[]
+
+Index table values.
+
+These may be used by the JMPTAB instruction, in which case they will contain the bytecode addresses of the various jump-targets (relative to min and max), with the final entry being for the 'default' case.
+
+The JMPLOOKUPTAB instruction will instead use a pair of tables, with one table holding the target addresses, and the other table containing the values to be matched against. These tables are to be sorted by value.
+
+
+== ISA Listing ==
+
+ //<name>	<num> <args> <flow>
+ //args:
+ //	a, a-register (VLI2), left-source
+ //	b, b-register (VLI2), right-source
+ //	c, c-register (VLI2), destination
+ //
+ //	i, integer-immediate (SVLI)
+ //	l, long-immediate (SVLI)
+ //	f, float-immediate (FVLI)
+ //	d, double-immediate (FVLI)
+ //	r, dynamic pointer immediate (UVLI_Const)
+ //
+ //	j, variable index (VLI2)
+ //	k, lexical index (VLI2 pair (x, y))
+ //
+ //	A, jump address (SVLIW2)
+ //   Relative to the start of the following instruction.
+ //	I, literal index (UVLI_Const)
+ //	S, Symbol (UVLI_String)
+ //	T, String (UVLI_String)
+ //	C, TypeInfo (UVLI_Const)
+ //	M, CallInfo (UVLI_Const)
+ //	F, FieldInfo (UVLI_Const)
+ //
+ //flow:
+ //	<in*>=<out*>
+ //	!, non-local control flow (ends trace)
+ //	@, start of trace.
+ //	?, May potentially throw an exception.
+ //
+ //Type Suffixes:
+ //  I: Int32
+ //  L: Long
+ //  F: Float
+ //  D: Double
+ //  A: Reference/Pointer (Pretty much everything else).
+ //    Typically used with a TypeInfo.
+ //
+ 
+ NOP					  0 - =		//do nothing
+ BLOCK				  1 - =!	//blocks if limit!=0
+ DBGMARK				  2 Ti =	//sets the filename and line number
+ CGENAST				  3 I -!	//syntax to be passed to code generator
+ FN					  4 T =		//filename
+ LN					  5 i =		//line number
+ LABEL				  6 S =@	//named label
+ 
+ //Binary Arithmetic Operators
+ ADD_I				 16 cab =
+ ADD_L				 17 cab =
+ ADD_F				 18 cab =
+ ADD_D				 19 cab =
+ ADD_A				 20 cabC =
+ SUB_I				 21 cab =
+ SUB_L				 22 cab =
+ SUB_F				 23 cab =
+ SUB_D				 24 cab =
+ SUB_A				 25 cabC =
+ MUL_I				 26 cab =
+ MUL_L				 27 cab =
+ MUL_F				 28 cab =
+ MUL_D				 29 cab =
+ DIV_I				 30 cab =
+ DIV_L				 31 cab =
+ DIV_F				 32 cab =
+ DIV_D				 33 cab =
+ MOD_I				 34 cab =
+ MOD_L				 35 cab =
+ AND_I				 36 cab =
+ AND_L				 37 cab =
+ OR_I				 38 cab =
+ OR_L				 39 cab =
+ XOR_I				 40 cab =
+ XOR_L				 41 cab =
+ SHL_I				 42 cab =
+ SHL_L				 43 cab =
+ SHR_I				 44 cab =
+ SHR_L				 45 cab =
+ SHRR_I				 46 cab =
+ SHRR_L				 47 cab =
+ 
+ //Unary Arithmetic Operators
+ NEG_I				 48 ca =	//c=-a
+ NEG_L				 49 ca =	//c=-a
+ NEG_F				 50 ca =	//c=-a
+ NEG_D				 51 ca =	//c=-a
+ NOT_I				 52 ca =	//c=~a
+ NOT_L				 53 ca =	//c=~a
+ 
+ //Move Operators (simple copy between registers)
+ MOV_IC				 54 ci =
+ MOV_LC				 55 cl =
+ MOV_FC				 56 cf =
+ MOV_DC				 57 cd =
+ MOV_I				 58 ca =
+ MOV_L				 59 ca =
+ MOV_F				 60 ca =
+ MOV_D				 61 ca =
+ MOV_A				 62 caC =
+ 
+ //Value Conversion Operators
+ CONV_I2L			 63 ca =
+ CONV_I2F			 64 ca =
+ CONV_I2D			 65 ca =
+ CONV_I2A			 66 caC =
+ CONV_L2I			 67 ca =
+ CONV_L2F			 68 ca =
+ CONV_L2D			 69 ca =
+ CONV_L2A			 70 caC =
+ CONV_F2I			 71 ca =
+ CONV_F2L			 72 ca =
+ CONV_F2D			 73 ca =
+ CONV_D2I			 74 ca =
+ CONV_D2L			 75 ca =
+ CONV_D2F			 76 ca =
+ CONV_A2I			 77 caC =
+ CONV_A2L			 78 caC =
+ JMP				 79 A =!	//unconditional jump
+ 
+ //Compare And Jump
+ //Note: comparing addresses will compare the address values.
+ JMP_LT_I			- abA =!	//jump if a<b (int)
+ JMP_LT_L			- abA =!
+ JMP_LT_F			- abA =!
+ JMP_LT_D			- abA =!
+ JMP_LT_A			- abCA =!
+ JMP_GT_I			- abA =!
+ JMP_GT_L			- abA =!
+ JMP_GT_F			- abA =!
+ JMP_GT_D			- abA =!
+ JMP_GT_A			- abCA =!
+ JMP_LE_I			- abA =!
+ JMP_LE_L			- abA =!
+ JMP_LE_F			- abA =!
+ JMP_LE_D			- abA =!
+ JMP_LE_A			- abCA =!
+ JMP_GE_I			- abA =!
+ JMP_GE_L			- abA =!
+ JMP_GE_F			- abA =!
+ JMP_GE_D			- abA =!
+ JMP_GE_A			- abCA =!
+ JMP_EQ_I			- abA =!
+ JMP_EQ_L			- abA =!
+ JMP_EQ_F			- abA =!
+ JMP_EQ_D			- abA =!
+ JMP_EQ_A			- abCA =!
+ JMP_NE_I			- abA =!
+ JMP_NE_L			- abA =!
+ JMP_NE_F			- abA =!
+ JMP_NE_D			- abA =!
+ JMP_NE_A			- abCA =!
+ 
+ //Compare With Constant And Jump
+ JMP_LT_IC			- aiA =!	//jump if a<i (int)
+ JMP_LT_LC			- alA =!
+ JMP_LT_FC			- afA =!
+ JMP_LT_DC			- adA =!
+ JMP_GT_IC			- aiA =!
+ JMP_GT_LC			- alA =!
+ JMP_GT_FC			- afA =!
+ JMP_GT_DC			- adA =!
+ JMP_LE_IC			- aiA =!
+ JMP_LE_LC			- alA =!
+ JMP_LE_FC			- afA =!
+ JMP_LE_DC			- adA =!
+ JMP_GE_IC			- aiA =!
+ JMP_GE_LC			- alA =!
+ JMP_GE_FC			- afA =!
+ JMP_GE_DC			- adA =!
+ JMP_EQ_IC			- aiA =!
+ JMP_EQ_LC			- alA =!
+ JMP_EQ_FC			- afA =!
+ JMP_EQ_DC			- adA =!
+ JMP_NE_IC			- aiA =!
+ JMP_NE_LC			- alA =!
+ JMP_NE_FC			- afA =!
+ JMP_NE_DC			- adA =!
+ 
+ //Compare With Zero And Jump
+ JMP_LT_IZ			- aA =!		//jump if a<0 (int)
+ JMP_GT_IZ			- aA =!
+ JMP_LE_IZ			- aA =!
+ JMP_GE_IZ			- aA =!
+ JMP_EQ_IZ			- aA =!		//jump if (a==0) (int)
+ JMP_NE_IZ			- aA =!		//jump if (a!=0) (int)
+ 
+ //Load And Jump To Address
+ LDJMPADDR			- cA =		//load jump address into register
+ JMPADDR			- a =?		//jump to address
+ //Note: JMPADDR may only jump to a valid instruction within the same function
+ //Trying to jump outside of the current function should raise an exception
+ 
+ //Arithmetic With Constant Operators
+ ADD_IC				- cai =
+ ADD_LC				- cal =
+ SUB_IC				- cai =
+ SUB_LC				- cal =
+ MUL_IC				- cai =
+ MUL_LC				- cal =
+ DIV_IC				- cai =
+ DIV_LC				- cal =
+ MOD_IC				- cai =
+ MOD_LC				- cal =
+ AND_IC				- cai =
+ AND_LC				- cal =
+ OR_IC				- cai =
+ OR_LC				- cal =
+ XOR_IC				- cai =
+ XOR_LC				- cal =
+ SHL_IC				- cai =
+ SHL_LC				- cai =
+ SHR_IC				- cai =
+ SHR_LC				- cai =
+ SHRR_IC			- cai =
+ SHRR_LC			- cai =
+ 
+ //Increment / Decrement Operators
+ POSTINC_I			- ca =		//c=a++
+ POSTINC_L			- ca =		//c=a++
+ POSTDEC_I			- ca =		//c=a--
+ POSTDEC_L			- ca =		//c=a--
+ PREINC_I			- ca =		//c=++a
+ PREINC_L			- ca =		//c=++a
+ PREDEC_I			- ca =		//c=--a
+ PREDEC_L			- ca =		//c=--a
+ POSTINC_A			- caC =		//c=a++
+ POSTDEC_A			- caC =		//c=a--
+ PREINC_A			- caC =		//c=++a
+ PREDEC_A			- caC =		//c=--a
+ INC_I				- ca =		//c=a+1
+ INC_L				- ca =		//c=a+1
+ INC_A				- caC =		//c=a+1
+ DEC_I				- ca =		//c=a-1
+ DEC_L				- ca =		//c=a-1
+ DEC_A				- caC =		//c=a-1
+ 
+ //Logical Not
+ LNOT_I				- ca =		//c=!a
+ LNOT_L				- ca =		//c=!a
+ 
+ //Unsigned Arithmetic Operators
+ UMUL_I				- cab =
+ UMUL_L				- cab =
+ UDIV_I				- cab =
+ UDIV_L				- cab =
+ UMOD_I				- cab =
+ UMOD_L				- cab =
+ UMUL_IC			- cai =
+ UMUL_LC			- cal =
+ UDIV_IC			- cai =
+ UDIV_LC			- cal =
+ UMOD_IC			- cai =
+ UMOD_LC			- cal =
+  
+ //compare operators, 1=true, 0=false
+ CMP_LT_I			- cab =		//compare if a<b (int)
+ CMP_LT_L			- cab =
+ CMP_LT_F			- cab =
+ CMP_LT_D			- cab =
+ CMP_LT_A			- cabC =
+ CMP_GT_I			- cab =
+ CMP_GT_L			- cab =
+ CMP_GT_F			- cab =
+ CMP_GT_D			- cab =
+ CMP_GT_A			- cabC =
+ CMP_LE_I			- cab =
+ CMP_LE_L			- cab =
+ CMP_LE_F			- cab =
+ CMP_LE_D			- cab =
+ CMP_LE_A			- cabC =
+ CMP_GE_I			- cab =
+ CMP_GE_L			- cab =
+ CMP_GE_F			- cab =
+ CMP_GE_D			- cab =
+ CMP_GE_A			- cabC =
+ CMP_EQ_I			- cab =
+ CMP_EQ_L			- cab =
+ CMP_EQ_F			- cab =
+ CMP_EQ_D			- cab =
+ CMP_EQ_A			- cabC =
+ CMP_NE_I			- cab =
+ CMP_NE_L			- cab =
+ CMP_NE_F			- cab =
+ CMP_NE_D			- cab =
+ CMP_NE_A			- cabC =
+ 
+ //compare against a constant
+ CMP_LT_IC			- cai =		//compare if a<i (int)
+ CMP_LT_LC			- cal =
+ CMP_LT_FC			- caf =
+ CMP_LT_DC			- cad =
+ CMP_GT_IC			- cai =
+ CMP_GT_LC			- cal =
+ CMP_GT_FC			- caf =
+ CMP_GT_DC			- cad =
+ CMP_LE_IC			- cai =
+ CMP_LE_LC			- cal =
+ CMP_LE_FC			- caf =
+ CMP_LE_DC			- cad =
+ CMP_GE_IC			- cai =
+ CMP_GE_LC			- cal =
+ CMP_GE_FC			- caf =
+ CMP_GE_DC			- cad =
+ CMP_EQ_IC			- cai =
+ CMP_EQ_LC			- cal =
+ CMP_EQ_FC			- caf =
+ CMP_EQ_DC			- cad =
+ CMP_NE_IC			- cai =
+ CMP_NE_LC			- cal =
+ CMP_NE_FC			- caf =
+ CMP_NE_DC			- cad =
+ 
+ //Pointer-Related Operations
+ //Add Offset To Pointer
+ LEA_AC				- calC =	//c=a+l
+ LEA_AI				- cabC =	//c=a+b
+ LEA_AIC			- cabiC =	//c=a+(b+i)
+ LEA_AL				- cabC =	//c=a+b
+ LEA_ALC			- cablC =	//c=a+(b+l)
+ //Subtract Offset From Pointer
+ LEAS_AC			- calC =	//c=a-l
+ LEAS_AI			- cabC =	//c=a-b
+ LEAS_AIC			- cabiC =	//c=a-(b+i)
+ LEAS_AL			- cabC =	//c=a-b
+ LEAS_ALC			- cablC =	//c=a-(b+l)
+ //Subtract Pointers
+ SUB_AA2I			- cabC =	//c=a-b
+ SUB_AA2L			- cabC =	//c=a-b
+ 
+ // LEA_B				 - cabC =	//c=a+b
+ // LEA_S				 - cabC =	//c=a+b(short)
+ // LEA_I				 - cabC =	//c=a+b(int)
+ // LEA_L				 - cabC =	//c=a+b(long)
+ // LEA_F				 - cabC =	//c=a+b(float)
+ // LEA_D				 - cabC =	//c=a+b(double)
+ // LEA_A				 - cabC =	//c=a+b(other)
+ // LEA2_B				 - cabiC =	//c=a+b+i
+ // LEA2_S				 - cabiC =	//c=a+(b+i)(short)
+ // LEA2_I				 - cabiC =
+ // LEA2_L				 - cabiC =
+ // LEA2_F				 - cabiC =
+ // LEA2_D				 - cabiC =
+ // LEA2_A				 - cabiC =
+ 
+ //Lexical Load/Store
+ LLLOAD_I			- cj =	//lexical local load
+ LLLOAD_L			- cj =
+ LLLOAD_F			- cj =
+ LLLOAD_D			- cj =
+ LLLOAD_A			- cjC =
+ LLSTORE_I			- ja =	//lexical local store
+ LLSTORE_L			- ja =
+ LLSTORE_F			- ja =
+ LLSTORE_D			- ja =
+ LLSTORE_A			- jaC =
+ LXLOAD_I			- ck =	//lexical load
+ LXLOAD_L			- ck =
+ LXLOAD_F			- ck =
+ LXLOAD_D			- ck =
+ LXLOAD_A			- ckC =
+ LXSTORE_I			- ka =	//lexical store
+ LXSTORE_L			- ka =
+ LXSTORE_F			- ka =
+ LXSTORE_D			- ka =
+ LXSTORE_A			- kaC =
+ 
+ //Call/Return
+ CALL				- caM =?	//call, function-handle, args-info
+ CALL_S				- cM =?		//call, args-info
+ METHODCALL			- cabM =?	//call, object, method-handle, args-info
+ METHODCALL_S		- caM =?	//call, object, args-info
+ TAILCALL			- caM =?	//tailcall, function-handle, args-info
+ TAILCALL_S			- cM =?		//tailcall, args-info
+ TAILMETHODCALL		- cabM =?	//tailcall, object, method-handle, args-info
+ TAILMETHODCALL_S	- caM =?	//tailcall, object, args-info
+ RET_I				- a =		//function return (int)
+ RET_L				- a =		//function return (long)
+ RET_F				- a =		//function return (float)
+ RET_D				- a =		//function return (double)
+ RET_A				- aC =		//function return (ref)
+ RET_V				- - =		//function return (void)
+ 
+ //CALL: Call static function via function pointer
+ //CALL_S: Call static function via name
+ //METHODCALL: Call virtual method via a method pointer
+ //METHODCALL_S: Call virtual method via name
+ //TAIL*CALL*: Basically the same, except performing a tail-call
+ //A tail-call basically calls the function and returns directly:
+ //    return(someFunction());
+ 
+ //Load Constant From Constant Pool
+ LDCONST_I			- cI =		//load constant
+ LDCONST_L			- cI =		//load constant
+ LDCONST_F			- cI =		//load constant
+ LDCONST_D			- cI =		//load constant
+ LDCONST_A			- cIC =		//load constant
+ 
+ //Load From Array (Pointer or Array Object)
+ ALOAD_I			- cabC =?	//load from array, c=a[b]
+ ALOAD_L			- cabC =?	//load from array
+ ALOAD_F			- cabC =?	//load from array
+ ALOAD_D			- cabC =?	//load from array
+ ALOAD_A			- cabCC =?	//load from array
+ 
+ //Store Into Array
+ ASTORE_I			- abcC =?	//store from array, a[b]=c
+ ASTORE_L			- abcC =?	//store from array, a[b]=c
+ ASTORE_F			- abcC =?	//store from array, a[b]=c
+ ASTORE_D			- abcC =?	//store from array, a[b]=c
+ ASTORE_A			- abcCC =?	//store from array, a[b]=c
+ 
+ //Load From Array with Sign or Zero Extension
+ ALOAD_SB			- cabC =?	//load from array, c=a[b]
+ ALOAD_UB			- cabC =?	//load from array
+ ALOAD_SS			- cabC =?	//load from array, c=a[b]
+ ALOAD_US			- cabC =?	//load from array
+ ASTORE_SB			- abcC =?	//store from array, a[b]=c
+ ASTORE_UB			- abcC =?	//store from array, a[b]=c
+ ASTORE_SS			- abcC =?	//store from array, a[b]=c
+ ASTORE_US			- abcC =?	//store from array, a[b]=c
+ 
+ //Load From Array With Constant Index
+ ALOAD_IC			- caiC =?	//load from array, c=a[i]
+ ALOAD_LC			- caiC =?	//load from array
+ ALOAD_FC			- caiC =?	//load from array
+ ALOAD_DC			- caiC =?	//load from array
+ ALOAD_AC			- caiCC =?	//load from array
+ 
+ //Store Into Array With Constant Index
+ ASTORE_IC			- aciC =?	//store from array, a[i]=c
+ ASTORE_LC			- aciC =?	//store from array, a[i]=c
+ ASTORE_FC			- aciC =?	//store from array, a[i]=c
+ ASTORE_DC			- aciC =?	//store from array, a[i]=c
+ ASTORE_AC			- aciCC =?	//store from array, a[i]=c
+ 
+ //Load From Array With Constant Index and Extension
+ ALOAD_SBC			- caiC =?	//load from array, c=a[i]
+ ALOAD_UBC			- caiC =?	//load from array
+ ALOAD_SSC			- caiC =?	//load from array, c=a[i]
+ ALOAD_USC			- caiC =?	//load from array
+ ASTORE_SBC			- aciC =?	//store from array, a[i]=c
+ ASTORE_UBC			- aciC =?	//store from array, a[i]=c
+ ASTORE_SSC			- aciC =?	//store from array, a[i]=c
+ ASTORE_USC			- aciC =?	//store from array, a[i]=c
+ 
+ //Get/Set Global/Static Variables or Object Fields
+ GETSTATIC_S		- cF =?		//get static field/variable
+ SETSTATIC_S		- cF =?		//set static field/variable
+ GETFIELD_S			- caF =?		//get object field
+ SETFIELD_S			- abF =?		//set object field
+ 
+ //Working With Value-Types
+ COPY_A				- caC =?		//value-type is copied
+ DROP_A				- caC =?		//value-type is dropped
+ INIT_A				- cC =?		//init register with new value-type
+ CAST_A2A			- caCC =?	//convert between address types
+ TRYCAST_A2A		- caCC =?	//try to convert between address types
+ 
+ //CAST will convert types, and throw if the conversion is invalid.
+ //TRYCAST will convert types, returning NULL if the conversion is invalid.
+ //Both will throw if the address is not valid.
+ 
+ //Get Value From Pointer
+ GETDEFER_I			- caC =?	//c=*a
+ GETDEFER_L			- caC =?	//c=*a
+ GETDEFER_F			- caC =?	//c=*a
+ GETDEFER_D			- caC =?	//c=*a
+ GETDEFER_A			- caCC =?	//c=*a
+ 
+ //Set Value In Pointer
+ SETDEFER_I			- abC =?	//*a=b
+ SETDEFER_L			- abC =?	//*a=b
+ SETDEFER_F			- abC =?	//*a=b
+ SETDEFER_D			- abC =?	//*a=b
+ SETDEFER_A			- abCC =?	//*a=b
+ 
+ //Named Operators
+ UNARYOP_IS			- caS =		//named unary operator
+ UNARYOP_LS			- caS =		//named unary operator
+ UNARYOP_FS			- caS =		//named unary operator
+ UNARYOP_DS			- caS =		//named unary operator
+ UNARYOP_AS			- caSC =	//named unary operator
+ BINARYOP_IS		- caS =		//named binary operator
+ BINARYOP_LS		- caS =		//named binary operator
+ BINARYOP_FS		- caS =		//named binary operator
+ BINARYOP_DS		- caS =		//named binary operator
+ BINARYOP_AS		- caSC =	//named binary operator
+ //These will handle built-in operators which lack explicit opcodes.
+ 
+ //Explicit Sign Extension
+ CONV_SB2I			- ca =		//signed byte -> int
+ CONV_UB2I			- ca =		//unsigned byte -> int
+ CONV_SS2I			- ca =		//signed short -> int
+ CONV_US2I			- ca =		//unsigned short -> int
+ CONV_SI2L			- ca =		//signed int -> long
+ CONV_UI2L			- ca =		//unsigned int -> long
+ 
+ //Switch / Jump Table
+ JMPTAB_I			- aiiI =	//(reg, min, max, jmptab)
+ JMPLOOKUPTAB_I		- aiII =	//(reg, count, jmptab, idxtab)
+
+== ISA Elaboration ==

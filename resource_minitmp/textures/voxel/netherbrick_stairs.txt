@@ -1,0 +1,11 @@
+$flags voxel alpha lightmat
+
+$vox_img_top textures/voxel/netherbrick
+$vox_img_side textures/voxel/netherbrick
+$vox_img_bot textures/voxel/netherbrick
+
+$vox_EmitBlock BTGE_Voxel_EmitBlock_Stairs
+// $vox_BlockUpdate BTGE_VoxelPower_UpdateVoxel
+$vox_GetWorldVoxelBBoxList BTGE_VoxelStairs_GetWorldVoxelBBoxList
+$vox_mins 0 0 0
+$vox_maxs 32 32 16

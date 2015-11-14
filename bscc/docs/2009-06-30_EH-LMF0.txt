@@ -1,0 +1,49 @@
+Will be an LinkMeta-based Exception Handling interface.
+
+Handler+Notify:
+
+EhTryStart+ <seq>
+EhTryEnd+ <seq>
+
+Indicates main try block.
+The 'seq' argument identifies a unique name for the exception-construct in question.
+
+
+Notify:
+
+EhCatch: <seq> <reg_ctx>
+
+Control transfers to EhCatch if an exception is thrown within the TryStart/TryEnd block. This is for generic exceptions.
+
+EhCatchClass: <seq> <reg_ctx> <classname>
+
+Control transfers to EhCatchClass if an exception is thrown within the TryStart/TryEnd block which inherits from classname. This is for specific exceptions.
+
+
+EhUnwind: <seq> <reg_ctx>
+
+Control transfers to EhUnwind if unwinding through the current handler (this will typically happen) if the exception is being handled by a higher-level handler.
+
+
+EhExit: <seq>
+
+Control transfers here if either EhTryEnd is reached, or if control is transferred here.
+
+
+Handler:
+
+// EhBeginUnwind <seq> <reg_ctx>
+// EhEndUnwind <seq> <rex_ctx>
+
+
+EhUnwindNext <seq> <reg_ctx>
+Continues an unwind operation, transferring control to the next handler.
+
+EhGetObj <seq> <reg_ctx> <reg_obj>
+
+Get the object associated with a given exception.
+
+
+EhEndCatch <seq> <reg_ctx>
+Indicate that we are now done handling exception, transfers control to the associated EhExit.
+

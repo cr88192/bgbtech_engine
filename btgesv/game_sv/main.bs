@@ -1,0 +1,14 @@
+native import C;
+
+printf("BGBScript Server Start\n");
+
+native package C.game_sv.main
+{
+	public function BTSV_ScriptInit():void
+	{
+		printf("BTSV_ScriptInit: Called\n");
+	}
+}
+
+extern import game_sv.EntityBase;
+extern import game_sv.MonsterGeneric;

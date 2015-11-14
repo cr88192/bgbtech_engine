@@ -1,0 +1,49 @@
+package bsvm.io;
+
+public class StreamTokenizer extends Object
+{
+public double nval;
+public String sval;
+public static int TT_EOF;
+public static int TT_EOL;
+public static int TT_NUMBER;
+public static int TT_WORD;
+public int ttype;
+
+public StreamTokenizer(InputStream I)
+	{}
+
+public void commentChar(int ch)
+	{}
+public void eolIsSignificant(boolean flag)
+	{}
+public int lineno()
+	{ return 0; }
+public void lowerCaseMode(boolean fl)
+	{}
+public int nextToken()
+	{ return 0; }
+public void ordinaryChar(int ch)
+	{}
+public void ordinaryChars(int low, int hi)
+	{}
+public void parseNumbers()
+	{}
+public void pushBack()
+	{}
+public void quoteChar(int ch)
+	{}
+public void resetSyntax()
+	{}
+public void slashSlashComments(boolean flag)
+	{}
+public void slashStarComments(boolean flag)
+	{}
+public String toString()
+	{ return null; }
+public void whitespaceChars(int low, int hi)
+	{}
+public void wordChars(int low, int hi)
+	{}
+
+}

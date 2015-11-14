@@ -1,0 +1,11 @@
+package bsvm.lang;
+
+public class AbstractMethodError extends IncompatibleClassChangeError
+{
+private static final long serialVersionUID = -7034897190745766939L;
+
+public AbstractMethodError()
+	{ super(); }
+public AbstractMethodError(String s)
+	{ super(s); }
+}

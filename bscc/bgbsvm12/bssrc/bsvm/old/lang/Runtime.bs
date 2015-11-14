@@ -1,0 +1,39 @@
+package bsvm.lang;
+import bsvm.io.*;
+
+public class Runtime extends Object
+{
+public Process exec(String command)
+	{ return null; }
+public Process exec(String[] cmdarray)
+	{ return null; }
+public Process exec(String[] cmdarray, String[] envp)
+	{ return null; }
+public Process exec(String command, String[] envp)
+	{ return null; }
+public void exit(int status)
+	{ }
+public long freeMemory()
+	{ return 0; }
+public void gc()
+	{ }
+public InputStream getLocalizedInputStream(InputStream in)
+	{ return null; }
+public OutputStream getLocalizedOutputStream(OutputStream out)
+	{ return null; }
+public static Runtime getRuntime()
+	{ return null; }
+public void load(String filename)
+	{ }
+public void loadLibrary(String libname)
+	{ }
+public void runFinalization()
+	{ }
+public long totalMemory()
+	{ return 0; }
+public void traceInstructions(boolean on)
+	{ }
+public void traceMethodCalls(boolean on)
+	{ }
+
+}

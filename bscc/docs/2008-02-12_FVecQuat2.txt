@@ -1,0 +1,140 @@
+Primary Change:
+The specified interface is being replaced (by one much closer to GLSL).
+This is restricted to portions implementable within standard C.
+
+Header:
+#include <vecnf.h>
+
+Types:
+
+vec2, vec3, vec4, quat
+
+vec2/3/4 contain components named x, y, z, and w (vec2 having xy, vec3 having xyz, and vec4 having xyzw).
+
+
+quat will have different members, namely, r, i, j, and k, where r is the real component, and i, j, and k are imaginary.
+
+Notationally: Ar, Ai, Aj, and Ak will refer to the individual components of a Quaternion A. Ax, Ay, and Az in this context, will refer to these components interpreted as scalars rather than as imaginary.
+
+As can also be noted:
+ii=jj=kk=ijk=-1
+ij=k	jk=i	ki=j
+ji=-k	kj=-i	ik=-j
+
+So, for exampe: 3i*4j=12k, 3i*3i=-9, ...
+
+
+vec3 v;
+v=vec3(1,0,0);
+
+Constructors:
+	vec2(x,y)
+	vec3(x,y,z)
+	vec4(x,y,z,w)
+	quat(r,i,j,k)
+
+Auxilary:
+	vec3_v2(v2)
+	vec3_v2z(v2, z)
+	vec3_q(q)
+	vec4_v3(v3)
+	vec4_v3w(v3, w)
+	vec4_q(q)
+	quat_v3(v3)
+	quat_v4(v4)
+
+Functions (N={2/3/4}, may be implemented as macros):
+	vNdot(a,b)		Dot Product
+	vNcross(a,b)	Cross Product
+
+	vNlen(a)		Vector Length
+	vNnorm(a)		Normalized Vector
+	vNscale(a,f)	Scale Vector
+	vNdist(a,b)		Distance from A to B
+
+	vNadd(a,b)		(Ax,Ay,Az)+(Bx,By,Bz)=(Ax+Bx,Ay+By,Az+Bz)
+	vNsub(a,b)		(Ax,Ay,Az)-(Bx,By,Bz)=(Ax-Bx,Ay-By,Az-Bz)
+	vNmul(a,b)		(Ax,Ay,Az)*(Bx,By,Bz)=(Ax*Bx,Ay*By,Az*Bz)
+	vNdiv(a,b)		(Ax,Ay,Az)/(Bx,By,Bz)=(Ax/Bx,Ay/By,Az/Bz)
+
+	vNneg(a)		(-Ax,-Ay,-Az)
+
+	vNlerp(a,b,f)	(a+(b-a)*f)
+	vNnlerp(a,b,f)	vNnorm(a+(b-a)*f)
+
+	v2cross(a,b)	AxBy-AyBx
+	v3cross(a,b)	(AyBz-AzBy,AzBx-AxBz,AxBy-AyBx)
+	v4cross(a,b)	(AyBz-AzBy,AzBx-AxBz,AxBy-AyBx,0)
+
+
+	qlen(a)		|A| = sqrt(A^A)
+	qnorm(a)		A/|A|
+	qscale(a,f)		A*f=Ar*f+Ai*f+Aj*f+Ak*f
+	qdist(a,b)		|B-A|
+
+	qdot(a,b)		(A^B) = ArBr-AiBi-AjBj-AkBk = 
+					ArBr+AxBx+AyBy+AzBz
+	qcross(a,b)		(A%B) = AjBk-AkBj + AkBi-AiBk + AiBj-AjBi 
+
+	qadd(a,b)		A+B = Ar+Br + Ai+Bi + Aj+Bj + Ak+Bk
+	qsub(a,b)		A-B = Ar-Br + Ai-Bi + Aj-Bj + Ak-Bk
+
+	qmul(a,b)		A*B = ArBr-(A^B)+ArB+BrA+(A%B)
+	qdiv(a,b)		A/B = A*(B^-1)
+	qrdiv(a,b)		A\B = (B^-1)*A
+	qneg(a)		-A = -Ar-Ai-Aj-Ak
+	qconj(a)		[A] = Ar-Ax-Ay-Az
+	qrcp(a)		A^-1 = (Ar-Ai-Aj-Ak)/(A^A)
+
+
+	qlerp(a,b,f)	(a+(b-a)*f)
+	qnlerp(a,b,f)	qnorm(a+(b-a)*f)
+
+	qrot3(a,b)		vec3_q(qmul(qmul(a, quat_v3(b)), qconj(a)))
+	qrot4(a,b)		vec4_q(qmul(qmul(a, quat_v4(b)), qconj(a)))
+	qaxis(a,th)		quat rotation th (radians) around axis a
+
+
+Functions will also exist for the various vector permutations.
+
+float v2x(vec2 a);	float v2y(vec2 a);
+vec2 v2xy(vec2 a);	vec2 v2yx(vec2 a);
+
+
+float v3x(vec3 a);	float v3y(vec3 a);	float v3z(vec3 a);
+
+vec2 v3xy(vec3 a);	vec2 v3xz(vec3 a);	vec2 v3yx(vec3 a);
+vec2 v3yz(vec3 a);	vec2 v3zx(vec3 a);	vec2 v3zy(vec3 a);
+
+vec3 v3xyz(vec3 a);	vec3 v3xzy(vec3 a);	vec3 v3yxz(vec3 a);
+vec3 v3yzx(vec3 a);	vec3 v3zxy(vec3 a);	vec3 v3zyx(vec3 a);
+
+
+float v4x(vec4 a);	float v4y(vec4 a);
+float v4z(vec4 a);	float v4w(vec4 a);
+
+vec2 v4xy(vec4 a);	vec2 v4xz(vec4 a);	vec2 v4xw(vec4 a);
+vec2 v4yx(vec4 a);	vec2 v4yz(vec4 a);	vec2 v4yw(vec4 a);
+vec2 v4zx(vec4 a);	vec2 v4zy(vec4 a);	vec2 v4zw(vec4 a);
+vec2 v4wx(vec4 a);	vec2 v4wy(vec4 a);	vec2 v4wz(vec4 a);
+
+vec3 v4xyz(vec4 a);	vec3 v4xyw(vec4 a);	vec3 v4xzy(vec4 a);
+vec3 v4xzw(vec4 a);	vec3 v4xwy(vec4 a);	vec3 v4xwz(vec4 a);
+vec3 v4yxz(vec4 a);	vec3 v4yxw(vec4 a);	vec3 v4yzx(vec4 a);
+vec3 v4yzw(vec4 a);	vec3 v4ywx(vec4 a);	vec3 v4ywz(vec4 a);
+vec3 v4zxy(vec4 a);	vec3 v4zxw(vec4 a);	vec3 v4zyx(vec4 a);
+vec3 v4zyw(vec4 a);	vec3 v4zwx(vec4 a);	vec3 v4zwy(vec4 a);
+vec3 v4wxy(vec4 a);	vec3 v4wxz(vec4 a);	vec3 v4wyx(vec4 a);
+vec3 v4wyz(vec4 a);	vec3 v4wzx(vec4 a);	vec3 v4wzy(vec4 a);
+
+vec4 v4xyzw(vec4 a);	vec4 v4xywz(vec4 a);	vec4 v4xzyw(vec4 a);
+vec4 v4xzwy(vec4 a);	vec4 v4xwyz(vec4 a);	vec4 v4xwzy(vec4 a);
+vec4 v4yxzw(vec4 a);	vec4 v4yxwz(vec4 a);	vec4 v4yzxw(vec4 a);
+vec4 v4yzwx(vec4 a);	vec4 v4ywxz(vec4 a);	vec4 v4ywzx(vec4 a);
+vec4 v4zxyw(vec4 a);	vec4 v4zxwy(vec4 a);	vec4 v4zyxw(vec4 a);
+vec4 v4zywx(vec4 a);	vec4 v4zwxy(vec4 a);	vec4 v4zwyx(vec4 a);
+vec4 v4wxyz(vec4 a);	vec4 v4wxzy(vec4 a);	vec4 v4wyxz(vec4 a);
+vec4 v4wyzx(vec4 a);	vec4 v4wzxy(vec4 a);	vec4 v4wzyx(vec4 a);
+
+float qi(quat a);	float qj(quat a);	float qk(quat a);	float qr(quat a);
+

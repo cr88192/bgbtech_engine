@@ -1,0 +1,75 @@
+EXE = .exe
+A = .a
+CC = gcc
+LD = gcc
+
+G_CFLAGS=-I../include -pg -g -c 
+G_LDFLAGS=-L.. -pg -g
+
+#	-Wl,-allow-multiple-definition -Wl,-whole-archive \
+#	-Wl,-no-whole-archive \
+
+LBX_LDFLAGS= \
+	-llbxgl2 -lpdglui -lpdgl -lbsde \
+	-lvecmath  \
+	-lbgbcc -lsxil -lbgbdy -lbgbgc -lbgbasm -lzpack -lbsgen \
+	-lopengl32  -lglu32 -lgdi32 -lglaux -lole32 -lwinmm -lwsock32
+
+# -lwinmm
+
+TOOL_LDFLAGS= -lvecmath -lbgbasm -lbgbgc -lbsgen -lzpack -lwsock32 -lole32
+
+BINS = \
+	autohead$(EXE) \
+	bgbdoc$(EXE) \
+	adler32$(EXE) \
+	grandhash$(EXE) \
+	itcfdump$(EXE) \
+	bsodump$(EXE)
+
+# lbx_app0$(EXE) mapper1$(EXE) rt_tst0$(EXE)
+
+APPS = \
+	gui_app0$(EXE) bonetool2$(EXE) lbx_app1$(EXE) \
+	csgtool$(EXE) meshtool$(EXE) mapper1$(EXE) mapper2$(EXE) \
+	firegen0$(EXE)
+
+all: FORCE apps
+
+FORCE:
+
+autohead$(EXE): tools/autohead.c
+	$(CC) $(CFLAGS) -o autohead$(EXE) tools/autohead.c
+
+adler32$(EXE): tools/adler32.c
+	$(CC) $(CFLAGS) -o adler32$(EXE) tools/adler32.c
+
+grandhash$(EXE): tools/grandhash.c
+	$(CC) $(CFLAGS) -o grandhash$(EXE) tools/grandhash.c
+
+itcfdump$(EXE): tools/itcfdump.c
+	$(CC) $(CFLAGS) -o itcfdump$(EXE) tools/itcfdump.c
+
+bsodump$(EXE): tools/bsodump.c
+	$(CC) $(CFLAGS) -o bsodump$(EXE) tools/bsodump.c
+
+bgbdoc$(EXE): FORCE
+	make -C tools/bgbdoc -f Makefile.mingw
+	cp tools/bgbdoc/bgbdoc$(EXE) .
+
+includes:
+libs:
+
+apps: $(APPS) FORCE
+
+clean:
+	rm -rf $(APPS)
+	rm -rf $(shell find -name \*.o)
+	rm -rf $(shell find -name \*.a)
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(G_CFLAGS) -o $@ $<
+
+
+%$(EXE): %.o
+	$(LD) -o $@ $< $(G_LDFLAGS) $(LBX_LDFLAGS)

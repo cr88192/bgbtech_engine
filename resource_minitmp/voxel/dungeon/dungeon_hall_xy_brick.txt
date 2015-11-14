@@ -1,0 +1,19 @@
+$dung_vox air		  0   0   0
+$dung_vox brick		128   0   0
+$dung_vox torch				255 255   0
+
+$dung_allow_nx	hall_x_brick
+$dung_allow_nx	break_nx_brick
+$dung_allow_nx	hall_xy_brick
+
+$dung_allow_px	hall_x_brick
+$dung_allow_px	break_px_brick
+$dung_allow_px	hall_xy_brick
+
+$dung_allow_ny	hall_y_brick
+$dung_allow_ny	break_ny_brick
+$dung_allow_ny	hall_xy_brick
+
+$dung_allow_py	hall_y_brick
+$dung_allow_py	break_py_brick
+$dung_allow_py	hall_xy_brick

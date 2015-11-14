@@ -1,0 +1,34 @@
+FUNC fib:i x:i VARS BODY 
+$"fibtst.c" fn 17 ln %x 2 <=GS1 
+$"fibtst.c" fn fib( %x 1 - , ) fib( %x 2 - , ) + ret GS1: 
+$"fibtst.c" fn 18 ln 1 ret ret_v END
+
+FUNC hash_str:i s:Pc VARS i:i BODY 
+$"fibtst.c" fn 59 ln 
+$"fibtst.c" fn 61 ln 0 =i 
+$"fibtst.c" fn 62 ln GS2: %s 0 loadindex !GS3 
+$"fibtst.c" fn %i 251 * %s dup inc =s 0 loadindex + =i *GS2 GS3: 
+$"fibtst.c" fn 63 ln %i 0xFFF & ret ret_v END
+
+FUNC bscc_main:i VARS li:x i:i t:i dt:i BODY 
+$"fibtst.c" fn 68 ln 
+$"fibtst.c" fn 69 ln 
+$"fibtst.c" fn 71 ln printf( "test\n" , ) pop 
+$"fibtst.c" fn 73 ln clock( ) =t 
+$"fibtst.c" fn 74 ln fib( 36 , ) =i 
+$"fibtst.c" fn 75 ln clock( ) %t - =dt 
+$"fibtst.c" fn 77 ln printf( %dt , %i , "fibtst %d %d\n" , ) pop 
+$"fibtst.c" fn 79 ln printf( hash_str( "foobarbaz" , ) , "hashtst %d\n" , ) pop 
+$"fibtst.c" fn 81 ln 0 =li 
+$"fibtst.c" fn 83 ln %li ?GS4 
+$"fibtst.c" fn printf( "LI-Z\n" , ) pop GS4: 
+$"fibtst.c" fn 87 ln 0 ret ret_v END
+
+FUNC main:i VARS i:i t:i dt:i BODY 
+$"fibtst.c" fn 92 ln 
+$"fibtst.c" fn 94 ln clock( ) =t 
+$"fibtst.c" fn 98 ln fib( 36 , ) =i 
+$"fibtst.c" fn 101 ln clock( ) %t - =dt 
+$"fibtst.c" fn 102 ln printf( %dt 1000.0 * 60 / , %i , "%d %fms\n" , ) pop 
+$"fibtst.c" fn 104 ln printf( hash_str( "foobarbaz" , ) , "hashtst %d\n" , ) pop ret_v END
+

@@ -1,0 +1,10 @@
+native package C.tstpkg
+{
+	function foo(x:int, y:int):void
+	{
+	}
+
+	function bar(x:float, y:float):double
+	{
+	}
+}

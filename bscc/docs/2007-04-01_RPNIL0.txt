@@ -1,0 +1,50 @@
+RPN-Based Intermediate Language
+
+Goal:
+an RPN based language existing for the purpose of developing the low-level VM.
+
+the goal of the language will be to compile directly to assembler and make use of the C calling convention. types will be largely resolved by the time they reach this language.
+
+Different opcodes will be provided for different types, and different operations will be applied to these types. Types will be generally encoded within the opcodes, and conversion operations will be provided for incompatible types.
+
+This language will feature multiple stacks, some of which may or may not exist at runtime.
+
+Some of these stacks may or may not be interlaced, and so, code is to properly maintain a correct LIFO ordering (as if they were a single stack), but is not alowed to assume this (for example, by using an operation presumably targeted for a different stack).
+
+An example of this is ints and floats, where at any given time, a value may be stored on the cpu stack, on a specialized stack (for example, the x87 fpu stack), in a reg (for example, a GPR or SSE reg), ...
+
+As such, conversion operators will be required.
+
+
+Oragnization
+
+This language, rather than consisting of a single instruction stream, will be organized into a sequence of blocks. Each block will correspond to a function, method, or anything else needing a block.
+
+A block will define any args or locals, and will then contain a sequence of instructions.
+
+The file will be parsed as a linear token stream. In this lang, each token will be regarded as a sequence of non-whitespace characters, and seperated by whitespace. Quoted strings, however, will be treated as a single token, and comments will be simply ignored.
+
+BLOCK <name> <args> VARS <vars> BODY <ops> END
+
+Each arg or var will be given as a single token, with a suffix giving the type (ignored in the name).
+
+'name:type', where type is:
+	I, integer (32bit or smaller);
+	L, long (64 bit);
+	F, float;
+	D, double;
+	P, pointer (generic);
+	B, byte (vars only);
+	W, word (vars only).
+
+if the type is followed by a number (vars only), it indicates that this is an array (1D only, multidimensional arrays are to be treated as a special case of 1D arrays).
+
+
+Body Syntax
+
+$<name>	Symbol, pushed onto symbolic stack
+$<int>	Literal int, pushed onto literal int stack
+<name>	Generally an opcode name.
+<int>		Integer, pushed onto value stack
+<int>L	Long integer, pushed onto value stack
+<name>:	Label

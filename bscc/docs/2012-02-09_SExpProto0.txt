@@ -1,0 +1,344 @@
+Purpose:
+Message Coding scheme for S-Expressions.
+
+Currently, this will not address the matter of value 'identity' or of encoding cycles (conceptually, any encoded expressions will be assumed to be acyclic).
+
+
+== Stream Marker Tags ==
+
+These tags will define the major structure of the stream.
+Individial bitstreams will exist in relation to these marker tags.
+Note that encoded data may not contain markers, and any marker which may appear by chance will need to be escaped. This is to allow the markers to be unambiguously identified in the stream.
+
+
+Marker codes used between coded messages.
+	magic='x7F,xFF,xFE'
+	magic,x00		Escape Marker (Escaped version of magic).
+	magic,x01		Start of Message
+	magic,x02		End of Message
+	magic,x03		Reset Marker
+	magic,x04-x07	Huffman Table 0-3
+	magic,x08		End Huffman Table (1)
+	magic,x09		Start of Deflated Message
+	magic,x0A		End of Deflated Message
+
+1: The EHT marker is optional if the next marker is another Huffman table, or is an SOM marker (Note: Minilumps may also be used instead of free-standing Huffman tables).
+
+
+== Reset Marker ==
+
+The Reset Marker is followed by:
+A 2 byte protocol version, currently x00,x01;
+A 1 byte command tag;
+A 1 byte auxilary tag;
+Data, 0 or more bytes.
+
+
+=== Reset Command Tag ===
+
+x00: Stream Abort, (Indicates that the stream is being closed).
+After a sender sends a stream abort, it is no longer expected to respond to messages, and may also close the socket.
+x01: Stream Init, Indicates that the stream has been newly opened, and both sides should begin usual initialization processes.
+x02: Stream Reset, Indicates that an error has occured and the stream should reset to its default initial state.
+
+
+== Deflated Message ==
+
+Start Marker followed by 32-bit size (LE).
+End Marker followed by 32-bit Adler-32 (LE).
+Escape-filtered Deflated data is present between the markers.
+
+
+== Message ==
+
+The bitstream will start packing bits in a low-high order (similar to deflate). Multi-bit values will be encoded starting with the LSB.
+
+The message structure will consist of a number of minilumps in a shared bitstream.
+
+Minilumps will begin with a 4 bit tag:
+	0=End Of Message
+	1=Message Payload (Coded Value)
+	2=Reserved (XML Message)
+	3=Multiplex Data
+	4=Huffman Table 0
+	5=Huffman Table 1
+	6=Huffman Table 2
+	7=Huffman Table 3
+	8-15=Reserved
+
+
+=== Coded Value ===
+
+Will consist of a sequence of command-codes, which will in turn describe the encoded list structure. Each coded value will be treated as a separate message datum. Coded values are self-terminating.
+
+Command codes will be encoded using Huffman Table 0.
+
+Command Code Ranges
+x00-x3F: Built-in Operations
+x40-x7F: reserved
+x80-xFF: MRU Reference
+
+Operations
+	x00, End Of List
+	x01, Start Of List
+	x02, Symbol (Coded String)
+	x03, String (Coded String)
+	x04, Keyword (Coded String)
+	x05, Fixnum/Integer (Signed Coded Integer)
+	x06, Flonum (Coded Real)
+	x07, Double (Coded Real)
+	x08, Start Of Dotted List
+	x09, Start Of Array
+	x0A, Byte Array (Size: Signed Coded Integer, Coded Data [size])
+	x0B, Uncached Byte Array (same, but is not added to MRU)
+	...
+	x10, EOL ("()")
+	x11, True ("#t")
+	x12, False ("#f")
+	x13, Null ("#z")
+	x14, Undefined ("#u")
+	x15, Flonum Escape (Coded Real Escape)
+	x16, Double Escape (Coded Real Escape)
+	...
+//	x20, Multiplexed Data
+
+=== Value MRU ===
+
+An MRU is used for recent values.
+The MRU will have a bounded size, and stale values will "fall off the end".
+Making a reference into the MRU will move the value to the front of the list.
+Uses Huffman Table 0
+
+Change: Value MRU will use this table.
+
+Prefix	Value Range				Suffix Bits
+80-87	0-7						0
+88-8B	8-15					1
+8C-8F	16-31					2
+90-93	32-63					3
+94-97	64-127					4
+98-9B	128-255					5
+9C-9F	256-511					6
+A0-A3	512-1023				7
+A4-A7	1024-2047				8
+A8-AB	2048-4095				9
+AC-AF	4096-8191				10
+B0-B3	8192-16383				11
+B4-B7	16384-32767				12
+B8-BB	32768-65535				13
+
+
+=== Coded String/Data ===
+
+Will use LZ77 for coding data, and strings will be encoded using Modified UTF-8.
+
+The LZ77 coding uses Huffman Table 1.
+
+x00-xFF: Raw Values
+x100: End Of String
+x101-x13F: LZ Run
+
+LZ Run Values
+101-107		1-7			0
+108-10B		8-15		1
+10C-10F		16-31		2
+110-113		32-63		3
+114-117		64-127		4
+118-11B		128-255		5
+11C-11F		256-511		6
+120-123		512-1023	7
+124-127		1024-2047	8
+128-12C		2048-4095	9
+
+Distances will be an Unsigned Coded Integer representing the relative position of the run within the sliding window. Currently, the sliding window will be defined to be 64kB (May be potentially extended).
+
+Note that the value 2 will be added to the length of runs, such that the shortest encodable run is 3. Runs are allowed to have a length between 3 and 4096 bytes.
+
+Note that short distances may be used for sake of implementing RLE or repeating patterns.
+
+=== Multiplexed Data ===
+
+Consists ot several members:
+	Tag: Signed Coded Integer
+	Muxid: Signed Coded Integer
+	Offset: Signed Coded Integer
+	Size: Signed Coded Integer
+	[ Data: Coded Data ] (Tag=1)
+
+Tag:
+	0: Reserved
+	1: Generic multiplexed data.
+	2: Confirm Recieved Data
+
+Muxid: Identifies a multiplexed stream or buffer, with values >0.
+Offset: Identifies the offset within a buffer.
+Size: Gives the size (in bytes) of the decompressed data.
+Data: Compressed data payload.
+
+Values <0 for these fields is reserved.
+
+
+=== Coded Integers ===
+
+Distances and Integers will use Huffman Table 2.
+
+Prefix	Value Range				Suffix Bits
+00-07	0-7						0
+08-0B	8-15					1
+0C-0F	16-31					2
+10-13	32-63					3
+14-17	64-127					4
+18-1B	128-255					5
+1C-1F	256-511					6
+20-23	512-1023				7
+24-27	1024-2047				8
+28-2B	2048-4095				9
+2C-2F	4096-8191				10
+30-33	8192-16383				11
+34-37	16384-32767				12
+38-3B	32768-65535				13
+
+3C-3F	65536-131071			14
+40-43	131072-252143			15
+44-47	262144-524287			16
+48-4B	524288-1048575			17
+4C-4F	1048576-2097151			18
+50-53	2097152-4194303			19
+54-57	4194304-8388607			20
+58-5B	8388608-16777215		21
+5C-5F	16777216-33554431		22
+60-63	33554432-67108863		23
+64-67	67108864-134217727		24
+68-6B	134217728-268435455		25
+6C-6F	268435456-536870911		26
+70-73	536870912-1073741823	27
+74-77	1073741824-2147483647	28
+78-7B	2147483648-4294967295	29
+
+7C-7F	4294967296-8589934591						30
+80-83	8589934592-17179869183						31
+84-87	17179869184-34359738367						32
+88-8B	34359738368-68719476735						33
+8C-8F	68719476736-137438953471					34
+90-93	137438953472-274877906943					35
+94-97	274877906944-549755813887					36
+98-9B	549755813888-1099511627775					37
+9C-9F	1099511627776-2199023255551					38
+A0-A3	2199023255552-4398046511103					39
+A4-A7	4398046511104-8796093022207					40
+A8-AB	8796093022208-17592186044415				41
+AC-AF	17592186044416-35184372088831				42
+B0-B3	35184372088832-70368744177663				43
+B4-B7	70368744177664-140737488355327				44
+B8-BB	140737488355328-281474976710655				45
+BC-BF	281474976710656-562949953421311				46
+C0-C3	562949953421312-1125899906842623			47
+C4-C7	1125899906842624-2251799813685247			48
+C8-CB	2251799813685248-4503599627370495			49
+CC-CF	4503599627370496-9007199254740991			50
+D0-D3	9007199254740992-18014398509481983			51
+D4-D7	18014398509481984-36028797018963967			52
+D8-DB	36028797018963968-72057594037927935			53
+DC-DF	72057594037927936-144115188075855871		54
+E0-E3	144115188075855872-288230376151711743		55
+E4-E7	288230376151711744-576460752303423487		56
+E8-EB	576460752303423488-1152921504606846975		57
+EC-EF	1152921504606846976-2305843009213693951		58
+F0-F3	2305843009213693952-4611686018427387903		59
+F4-F7	4611686018427387904-9223372036854775807		60
+F8-FB	9223372036854775808-18446744073709551615	61
+
+// FC-FF	18446744073709551616
+// 18446744073709551616
+
+For signed values, the sign will be folded into the LSB, following the pattern 0, -1, 1, -2, 2, ...
+
+
+=== Coded Real ===
+
+Reals will be encoded as a pair of Signed Coded Integers.
+First will be the mantissa, followed by the exponent.
+The exponent will specify how many bits to shift the mantissa left or right, with positive values indicating a left-shift, and negative values indicating a right shift.
+
+For example, 480.0 may be coded as the integer pair: 15,5.
+
+
+==== Coded Real Escape ====
+
+Encodes certain special cases with real values.
+
+It is a signed integer currently with several defined values:
+	0=NaN, 1=Inf, -1=-Inf.
+
+
+== Huffman Table ==
+
+The Huffman Tables will use Rice Codes and Runs to encode an array of symbol lengths. A given Huffman table will remain in effect until a new table is defined. As a result, tables may be shared between subsequent messages.
+
+Symbols with a length of 0 are not present in the encodable character set, as are any symbols past the end of the Huffman table (they will implicitly have values of 0).
+
+The layout of a Huffman Table will be:
+	4 bits: Table Type (0=Fixed, 1=Dynamic)
+	4 bits: Table Index, or K-Factor (Rice Codes)
+	if(type==Dynamic)
+		<n bits>: coded length runs.
+
+Huffman codes will be assigned starting with 0, starting with shortest lengths first, and starting with the smallest symbol within that code-length. This way, the symbol lengths are sufficient to unambiguously define the layout of the Huffman table.
+
+For example, if one has the symbols A-H, with the lengths (3,3,3,3,3,2,4,4), then the assigned Huffman codes will be:
+F=00, A=010, B=011, C=100, D=101, E=110, G=1110, H=1111
+
+
+=== Fixed Tables ===
+
+	0, The table will have 256 symbols all with a length of 8.
+	1, The length ranges will be:
+		0-143, 8
+		144-255, 9
+		256-279, 7
+		280-287, 8
+	2, Length Ranges will be:
+		0-15, 5
+		16-31, 6
+		32-63, 8
+		64-127, 9
+		128-255, 11
+
+		0xxxx		(00-0F)
+		10xxxx		(10-1F)
+		110xxxxx	(20-3F)
+		1110xxxxx	(40-7F)
+		11110xxxxxx	(80-BF)
+		11111xxxxxx	(C0-FF)
+
+Note: Fixed Table Layout 2 seems to be broken (over-subscribed?).
+
+
+=== Rice Codes ===
+
+Will consist of a prefix consisting of 0 or more 1 bits terminated by a 0 bit (giving the value 'n'), and a fixed value of k bits (v). The value will be 'value=(n<<k)|v'.
+
+For example, 42 coded with k=3 will be encoded as 111110 010.
+
+
+=== Dynamic Tables ===
+
+Coded Length Table
+
+The length table is encoded as an array of values:
+	0-16: Code Length
+	17: RLE Run of 3-10 (3 bit length + 3)
+	18: RLE Run of 11-138 (7 bit length + 11)
+		RLE Runs will repeat the prior value a certain number of times.
+	19: End Of Table
+
+Each value is encoded as a rice-code using the permutation:
+	16, 17, 18, 0, 8,7, 9,6, 10,5, 11,4, 12,3, 13,2, 14,1, 15, 19
+
+With the inverted (decoder) mapping being:
+	3, 17, 15, 13, 11,9, 7,5, 4,6, 8,10, 12,14, 16,18, 0,1, 2, 19
+
+The reordering is mostly intended to make more common values appear closer to 0, so that Rice coding can deal with them more effectively.
+
+When an End Of Table value is seen, any code lengths until the end of the table will be filled with 0s.
+

@@ -1,0 +1,574 @@
+BTIC 2 (Idea)
+
+Format loosely based on BTIC and BTJ.
+
+== VLI (Variable Length Integer) ==
+
+VLI will encode a variable length integer.
+
+ 00-7F					0-127
+ 80-BF XX				128-16383
+ C0-DF XX XX				16384-2097151
+ E0-EF XX XX XX			2097152-268435455
+ F0-F7 XX XX XX XX		268435456-34359738367
+ F8-FB XX XX XX XX XX	34359738368-4398046511103
+ FC-FD XX XX XX XX XX XX	4398046511104-562949953421311
+ FE    XX(7)				562949953421312-...
+ FF 00-7F XX(7)			...-...
+ FF 80-BF XX(8)			...-...
+ ...
+
+The bytes in a VLI value are in big-endian ordering.
+
+Whether or not the encoded datum is 64 bits or greater, for the 64-bit case the encoding will behave as if the pattern expanded past 64 bits, using up bits within the following byte.
+
+UVLI denotes an Unsigned VLI, which is encoded as a raw VLI.
+
+
+=== SVLI ===
+
+Signed variable-length integer.
+
+Will sign-fold the VLI following the pattern:
+0, -1, 1, -2, 2, -3, 3, -4, ...
+
+
+=== VLT (Variable Length Tag) ===
+
+VLT will be a VLI value used to encode a tag.
+A tag will conceptually be an ASCII string encoded as a VLI value.
+Conceptually, characters will be in big-endian ordering, but right aligned within the integer (left padded with zeroes), and constrained to cases where a whole character can be encoded (fractional characters are ignored, and may be treated as flags).
+
+ 00-7F			1 Character (*1)
+ 80 XX			1 Character (Alternate)
+ C0 XX(2)		2 Character
+ D0 XX(3)		3 Character
+ F0 XX(4)		4 Character
+ F8 XX(5)		5 Character
+ FC XX(6)		6 Character (*1)
+ FE XX(7)		7 Character (*1)
+ FF XX(8)		8 Character (*1)
+ FF 80 XX(8)	8 Character (Alternate)
+
+Tags with characters outside the printable ASCII range (0x20-0x7E) are currently reserved. Tags will generally be limited to 64 bits.
+
+A few special VLT cases will be defined:
+ XX(1)			ONECC (*1)
+ 80 XX(1)		ONECC
+ C0 XX(2)		TWOCC
+ F0 XX(4)		FOURCC
+ FF XX(8)		EIGHTCC (*1)
+ FF 80 XX(8)	EIGHTCC
+
+If the left-most character is between 0x01 and 0x1F, then the value is regarded as a context-dependent tag. These may only appear in certain contexts.
+
+* Flags bits:
+** 1&=Optional (Default=Must Understand)
+** 2&=Private (Default=Public)
+
+Note *1: No flag bits exist for these forms, these markers are always public and must-understand.
+
+If a tag has a defined size, then it is required to be encoded as this size.
+
+By convention:
+* Must Understand tags will be upper case.
+* Optional tags will be lower case.
+
+
+== Packaging ==
+
+Basically, a TLV format will be used:
+ 	tag:VLT
+ 	size:UVLI
+ 	data:BYTE[size]
+
+=== Top Level ===
+
+Top-Level Lump is EIGHTCC("BTIC2B00").
+
+This lump will contain all the data for the image.
+
+
+=== "TLYR" (Tag Layer) ===
+
+FOURCC:"TLYR"
+ 	name:ASCIIZ			Tag Layer Name
+ 	layerID:UVLI		LayerID of Layer
+ 	xorg:SVLI			X Origin of Layer
+ 	yorg:SVLI			Y Origin of Layer
+ 	xsize:UVLI			X Size of Layer
+ 	ysize:UVLI			Y Size of Layer
+ 	xcenter:SVLI		X Center of Layer
+ 	ycenter:SVLI		Y Center of Layer
+ 	flags:UVLI			Layer Flags
+
+This lump denotes the start of a Tag Layer.
+
+
+=== CLYR (Component Layer) ===
+
+FOURCC:"CLYR"
+ 	name:ASCIIZ			Component Layer Name
+ 	layerID:UVLI		LayerID of Image
+ 	flags:UVLI			Layer Flags
+
+Flags:
+ 	IFRAME	1
+ 	PFRAME	2
+
+Note that it is currently invalid to have both IFRAME and PFRAME set.
+
+If neither is set, then the image is a Base Image.
+
+
+Denotes the start of a given Component Layer.
+
+This marker is directly followed by the relevant image data (terminated by a FOURCC:"CEND" marker).
+
+Componrnt Layer Names:
+ 	"RGBA": RGBA Base Layer
+ 	"XYZD": XYZ Normals+Depth
+ 	"SpRGBS": Specular RGB+Scale
+ 	"LuRGBS": Luma RGB+Scale
+
+Note that the specular exponent scale will represent a normalized value to be multiplied with the value given in the material definition.
+
+Likewise for the Luma scale, which will indicate the brightness of the emitted light.
+
+=== CLID (Component Layer ID) ===
+
+FOURCC: "CLID" (Component Layer ID)
+ 	layerID:UVLI		LayerID of Image
+ 	flags:UVLI			Image Flags
+
+The flags will be the same as those for CompLayer.
+
+=== CEND/TEND (Layer End) ===
+
+
+FOURCC: "CEND"
+
+Denotes the end of the data for a Component Layer.
+
+
+FOURCC: "TEND"
+
+Denotes the end of the data for a Tag Layer.
+
+ONECC: "Z"
+
+Possible shorthand for "CEND"/"TEND"
+
+
+== CIMG (Coded Image) ==
+
+FOURCC: "CIMG"
+
+This lump contains the lumps for the coded image, where each lump uses TWOCC values.
+
+ TWOCC:
+ 	'IH': Image Header
+ 	'ID': Image Data
+ 	'H0'-'HF': Huffman Tables 0-15
+ 	'Q0'-'QF': Quantization Tables 0-15
+
+Each lump will then encode its own bitstream.
+
+Note that bitstream bits will be packed starting with the LSB (Least Significant Bit).
+
+
+=== IHDR (Image Header) ===
+
+ IHDR
+ 	Xs(24)			Image X Size (24-bits)
+ 	Ys(24)			Image Y Size (24-bits)
+ 	MipStart(8)		MipMap Level Start
+ 	MipEnd(8)		MipMap Level End
+ 	Flags(32)		Image Flags
+ 	ImgType(8)		Image Type
+ 	Pb(8)			Pixel Bits
+ 	Pt(4)			Pixel Type
+ 	Nf(4)			Number of Components
+ 	Components*
+
+For Each Component:
+ 	Ci(4)			Component ID
+ 	Tqi(4)			Quantization Table Selector
+ 	Hi(4)			Horizontal Sample Factor
+ 	Vi(4)			Vertical Sample Factor
+ 	Tdi(4)			DC Huffman Table
+ 	Tai(4)			AC Huffman Table
+ 	Bt(4)			Block Type
+ 	Bs(4)			Block Size
+
+ImageType indicates the target image type.
+
+Image Type:
+ 	0	RGB(A)
+ 	1	YCbCr(A)
+ 	2	RCT(A)
+ 	3	YCoCg(A)
+ 	4	YWCoCg(A)
+ 	5	Y(A)		(Raw Luma)
+
+Whether or not Alpha is present depends on the number of components, say:
+YCbCr with 3 components lacks alpha, but with 4 components, Alpha is present.
+
+Alpha will generally ba passed through unmodified.
+
+
+Support Subsampling modes:
+* 4:4:4, 4:2:0, 4:1:0
+
+Will use YCoCg and YWCoCg colorspaces. YWCoCg is mostly intended for 4:1:0 modes.
+
+RCT:
+ 	Y=(R+2G+B)/4
+ 		Y=G+(B+R-2*G)/4
+ 	U=B-G
+ 	V=R-G
+ Inverse:
+ 	G=Y-(U+V)/4
+ 	B=G+U
+ 	R=G+V
+
+YCoCg:
+ 	Y=G-(2*G-B-R)/4
+ 	U=B-R
+ 	V=(2*G-B-R)/2
+ Inverse:
+ 	G=Y+V/2
+ 	R=G-V-U/2
+ 	B=G-V+U/2
+
+YWCoCg:
+ 	Ya=Y*W		Ua=Y*U			Va=Y*V
+ 	G=Ya+Va/2	R=G-Va-Ua/2		B=G-Va+Ua/2
+ 	or:
+ 	Gv=W+V/2	Rv=Gv-V-U/2		Bv=Gv-V+U/2
+ 	R=Y*Rv		G=Y*Gv			B=Y*Bv
+
+	Note: YWCoCg does imply the use of fixed-point multiplies.
+	The size of the RGB color sphere will be 2^Pb.
+
+Sample Bits gives the number of bits encoded for each target sample.
+
+Currently defined values are 8, 12, 16, 24, and 32.
+
+Note that this doesn't necessarily define the range of intermediate coefficients, but may may be used to infer a "reasonable upper limit".
+
+For sake of this codec, these coefficient values are internally assumed to be integer values of a particular size.
+
+Pixel Type will encode the intended interpretation of the pixel value:
+*	0=Unsigned Normalized Integer(UNI) (0.0 to 1.0)
+*	1=Signed Normalized Integer(SNI) (-1.0 to 1.0)
+*	2=Unsigned Denormalized Integer (UDI)
+*	3=Signed Denormalized Integer (SDI)
+*	4=Float (16/24/32)
+
+Denormalized Integers (per bits):
+*	12=4.8, 16=4.12, 24=8.16, 32=16.16
+
+Pixel Type and Bits will refer to the logical pixel type, not the output pixel format. Higher precision encodings may not be used with low-precision output (RGBA8 and DXTn output will be limited to limited to UNI8 encoding).
+
+Note that this format will not use DC bias adjustment.
+
+Float types will be internally handled as if they were signed integer types.
+* Float16 will be a half-float (S5.10).
+* Float24 will be a float with the low 8 bits shaved (S8.15).
+* Float32 will be an ordinary IEEE 32-bit float.
+
+Support for modes other than UNI8 will be optional.
+
+
+Component ID
+This will identify which image component this is.
+
+Components will generally be named as:
+	1=Y (Luma)
+	2=U (Chroma)
+	3=V (Chroma)
+	4=W (Chroma)
+	5=A (Alpha)
+	6=B (Special Purpose)
+	7=C (Special Purpose)
+	8=D (Special Purpose)
+
+The exact meaning of these components will depend on the colorspace.
+An image may omit components which are not used.
+
+Note that if a component is used by the colorspace in use, it is required to be present.
+
+
+Block Type will indicate the type of block transform used:
+*	0=DCT (Discrete Cosine Transform)
+*	1=RDCT (SERMS RDCT)
+*	2=WHT (Walsh Hadamard Transform)
+
+Block Size:
+*	0=4x4	1=8x8	2=16x16
+
+Currently, a few restrictions will be placed on allowed configurations:
+* All components are required to use the same block size;
+* Only block-sizes of 4x4, 8x8, and 16x16 will be allowed;
+* Currently, a maxium of 8 components will be allowed.
+
+
+Sample Factors will specify the relative number of blocks per macroblock.
+
+They will do so indirectly by specifying the relative numbers of component pixels. This will be used to calculate the macroblock size and, in turn, the number of component-blocks.
+
+For example, a 4:2:0 image might be encoded as:
+*	H0=2, V0=2 (Y)
+*	H1=1, V1=1 (U)
+*	H2=1, V2=1 (V)
+*	H3=2, V3=2 (A)
+
+And, a 4:1:0(A) YWCoCg image as:
+*	H0=4, V0=4 (Y)
+*	H1=1, V1=1 (W)
+*	H2=1, V2=1 (Co)
+*	H3=1, V3=1 (Cg)
+*	H4=4, V4=4 (A)
+
+Example Configurations:
+	4x4 or 8x8 Blocks, 4:2:0
+		2x2 Y, 1x1 U, 1x1 V, 2x2 A
+	4x4 or 8x8 Blocks, 4:1:0(A)
+		4x4 Y, 1x1 W, 1x1 Co, 1x1 Cg, 4x4 A
+	4x4 or 8x8 Blocks, 4:1:0(B)
+		4x2 Y, 1x1 W, 1x1 Co, 1x1 Cg, 4x2 A
+
+
+=== Quantization Tables ===
+
+The Quantization Tables will be Rice-coded.
+
+The layout of a Quantization Table will be:
+* 	4 bits: Table Size
+**		0=4x4, 1=8x8, 2=16x16
+* 	4 bits: Table Index, or K-Factor (Rice Codes)
+* 	QTab Values
+
+A table will consist of NxN values representing the coefficient scale factors.
+
+These tables will use sign-folded rice codes, where:
+* >0 = Encoded scale-factor.
+* 0 = End-Of-Table.
+* <0 = RLE Run of repeating prior value.
+
+
+=== Huffman Table ===
+
+The Huffman Tables will use Rice Codes and Runs to encode an array of symbol lengths. A given Huffman table will remain in effect until a new table is defined. As a result, tables may be shared between subsequent images.
+
+Symbols with a length of 0 are not present in the encodable character set, as are any symbols past the end of the Huffman table (they will implicitly have values of 0).
+
+The layout of a Huffman Table will be:
+*	4 bits: Table Type (0=Fixed, 1=Dynamic)
+*	4 bits: Table Index, or K-Factor (Rice Codes)
+*	if(type==Dynamic)
+**		<n bits>: coded length runs.
+
+Huffman codes will be assigned starting with 0, starting with shortest lengths first, and starting with the smallest symbol within that code-length. This way, the symbol lengths are sufficient to unambiguously define the layout of the Huffman table.
+
+For example, if one has the symbols A-H, with the lengths (3,3,3,3,3,2,4,4), then the assigned Huffman codes will be:
+F=00, A=010, B=011, C=100, D=101, E=110, G=1110, H=1111
+
+
+==== Fixed Tables ====
+
+* 	0, The table will have 256 symbols all with a length of 8.
+* 	1, The table will have 16 symbols all with a length of 4.
+* 	2, Rice, k=2.
+* 	3, Rice, k=3.
+* 	4, Rice, k=4.
+* 	5, Rice, k=5.
+* 	6, Rice, k=6.
+* 	7, -
+* 	8, Rice Pair, j=0, k=2.
+* 	9, Rice Pair, j=0, k=3.
+* 	10, Rice Pair, j=1, k=2.
+* 	11, Rice Pair, j=1, k=3.
+** 		The first pair represents the high 3 bits.
+** 		The second pair represents the low 5 bits.
+
+
+==== Dynamic Tables ====
+
+Coded Length Table
+
+The length table is encoded as an array of values:
+* 	0-16: Code Length
+* 	17: RLE Run of 3-10 (3 bit length + 3)
+* 	18: RLE Run of 11-138 (7 bit length + 11)
+** 		RLE Runs will repeat the prior value a certain number of times.
+* 	19: End Of Table
+
+Each value is encoded as a rice-code using the permutation:
+* 	16, 17, 18, 0, 8,7, 9,6, 10,5, 11,4, 12,3, 13,2, 14,1, 15, 19
+
+With the inverted (decoder) mapping being:
+* 	3, 17, 15, 13, 11,9, 7,5, 4,6, 8,10, 12,14, 16,18, 0,1, 2, 19
+
+The reordering is mostly intended to make more common values appear closer to 0, so that Rice coding can deal with them more effectively.
+
+When an End Of Table value is seen, any code lengths until the end of the table will be filled with 0s.
+
+
+==== Rice Codes ====
+
+Will consist of a prefix consisting of 0 or more 1 bits terminated by a 0 bit (giving the value 'n'), and a fixed value of k bits (v). The value will be 'value=(n<<k)|v'.
+
+For example, 42 coded with k=3 will be encoded as 111110 010.
+
+A Signed Rice code will be a Rice code with the folding scheme:
+* 0, -1, 1, -2, 2, ...
+
+==== Exponential Rice Codes ====
+
+This effectively codes a value by rice-coding the number of bits required to represent the value, followed by the raw binary value.
+
+==== UNn Code ====
+
+Unary Coded value giving the size of the suffix in multiples of n bits.
+
+n=3:
+0-7			0xxx
+8-63		10xxxxxx
+64-511		110xxxxxxxxx
+512-4095	1110xxxxxxxxxxxx
+...
+
+n=7:
+0-127		0xxxxxxx
+128-16383	10xxxxxxxxxxxxxx
+...
+
+
+=== Image Data ===
+
+Image Data will consist of blocks.
+
+Images will be organized into macroblocks, the exact size of which will depend on the image block size and sample factors.
+
+Blocks within a macroblock will be coded with all blocks of a given component, followed by all blocks of the next component.
+
+examples:
+* 4:2:0 with 8x8 blocks would lead to a 16x16 macroblock (2x2Y U V).
+* 4:2:0 with 4x4 blocks would lead to an 8x8  macroblock (2x2Y U V).
+* 4:1:0 with 8x8 blocks would lead to a 32x32 macroblock (4x4Y U V).
+* 4:1:0 with 4x4 blocks would lead to a 16x16 macroblock (4x4Y U V).
+
+Note: BTIC2B will define 4:1:0 as a 4x4 block of pixels with a shared UV, rather than as a 4x2 block.
+
+
+Blocks will be encoded into a macroblock in raster order.
+
+The DC coefficient for each block will be predicted using the Paeth filter from the DC coefficients of adjacent blocks.
+
+Each block will be encoded as the DC coefficient followed by the AC coefficients in zigzag ordering.
+
+
+==== Block VLC ====
+
+VLC values will consist of a prefix byte followed by 0 or more "extra bits".
+
+ Z3.P5
+ Z=Zero Count
+ P=Prefix
+
+The zero count ranges between 0 and 5, with 6 and 7 used for escape cases.
+Zero Count will indicate the number of preceding 0 values.
+
+A literal value of 0 will indicate an EOB.
+
+* Z=6: Escaped VLC
+** P=Zero Count Prefix
+** This is followed by another value encoding the value (with 6 bits for the prefix).
+
+* Z=7: Meta Escape
+** P=Meta Tag Prefix
+** This is followed by coded by a coded argument list.
+
+For normal blocks, meta escapes may only be used preceding the DC coefficient (and will use the DC Huffman Table), and are invalid inside the body of normal blocks.
+
+Value Prefix (Prefix, Extra Bits, Range)
+  0- 3	0	0-3
+  4/ 5	1	4-7
+  6/ 7	2	8-15
+  8/ 9	3	16-31
+ 10/11	4	32-63
+ 12/13	5	64-127
+ 14/15	6	128-255
+ 16/17	7	256-511
+ 18/19	8	512-1023
+ 20/21	9	1024-2047
+ 22/23	10	2048-4095
+ 24/25	11	4096-8191
+ 26/27	12	8192-16383
+ 28/29	13	16384-32767
+ 30/31	14	32768-65535
+ (Escape VLC)
+ 32/33	15	65536-131071
+ ...
+ 62/63	30	2147483648-4294967295
+
+Zero Count/Tag Prefix
+  0- 7	0	0-7
+  8-11	1	8-15
+ 12-15	2	16-31
+ 16-19	3	32-63
+ 20-23	4	64-127
+ 24-27	5	128-255
+ 28-31	6	256-511
+
+
+For coefficient values, the coded value will be sign-folded.
+
+
+Meta Tags:
+*	0=(PG) Predictor Guess
+**		The predictor has predicted which tag will be used.
+*	1=(AFS) Alternate Filter Select
+**		0=DCT or WHT
+**		1=Left
+**		2=Up
+**		3=Average
+**		4=Paeth
+**		5=Linear
+**		6=None
+*	2=(QSC) Quantization Scale Factor
+**		Set a scale factor which is applied to the use of AFS filters.
+*	3=(QTSC) Quantization Table Scale Factor
+**		Sets a quantization scale for the DCT/WHT.
+
+*	4=(MVx) Motion Vector X
+*	5=(MVy) Motion Vector Y
+**		Relative X/Y factors for Motion Vector.
+*	6=(BM) Block Filter Mode
+**		0=None
+**		1=Delta
+
+
+Predictor Guess:
+Meta tags will use an order-1 predictor, in that the prior tag will predict the next tag. If the predictor will have guessed correctly, then the PG tag may be used instead of giving the tag explicitly.
+
+
+Note AFS and QSC will apply to subsequent blocks, making these settings sticky. These factors will be independent for each component, and will apply to blocks in the order in which they are encoded into the bitstream.
+
+If AFS is used, these filters will be used in place of the DCT or WHT transforms, with linear quantization of the prediction error.
+
+For a pixel block:
+* C B
+* A x
+
+* Left will use A as the prediction.
+* Up will use B as the prediction.
+* Average will use (A+B)/2.
+* Paeth will use the value closest to A+B-C.
+* Linear will use A+B-C as the prediction.
+* None will use 0.
+
+
+Motion vector coefficients will be relative to predicted values. If absent, the predicted value will be used. Motion vectors are not used in I-Frames or standalone images. As with AFS, the last coded value for the plane will be used as the prediction.

@@ -1,0 +1,206 @@
+BS2-0
+
+Another idea for the ressurection of 'BS2'.
+
+General
+
+BS2 will have syntax and semantics falling largely between those of C and Java.
+
+The language will be based around the concept of the module, where each source file is its own module, and thus has its own toplevel. Importing will be used to make the toplevel of one module visible from another.
+
+The language will be a mix of static and dynamic typing. Static types will be used for any variables with declared static types.
+
+Dynamic typing will be used for variables with a variant type, and to a lesser extent, also for objects, strings, ... (object structure will be largely fixed at compile time, but objects will be passed as tagged references and will retain type info).
+
+The language will also largely retain partial C backwards compatibility (unlike Java, the language will retain pointers and structs). Unlike C, however, pointers will not be the primary means of managing memory and data (and are not required to be able to point at all data, and could potentially even be ommited from the implementation).
+
+
+As a result, valid C code need not be valid in this language (interaction with C will be in a more or less "modular" manner).
+
+This language will need to be able to directly call and share data with C code, but special care will be needed to make code in this lang callable from C land.
+
+This language will not aim to be ABI compatible with C++.
+
+Special Variables/Keywords:
+this, refers to the current object;
+true, boolean true;
+false, boolean fasle;
+null, special NULL value (rather than being strictly a pointer or a tagged value, it may also by assigned to either).
+
+
+Types
+
+char, character, undefined width;
+byte/sbyte, unsigned and signed bytes (technically, C chars);
+short/ushort, 16 bits;
+int/uint, 32 bits;
+long/ulong, 64 bits.
+
+bool, 'true' or 'false';
+string, builtin string;
+var, variant;
+vec2/vec3/vec4/quat, builtin vector types.
+
+Variant types will normally be stored as tagged references or dynamic types, but if the compiler can correctly infer types, this may be instead regarded as a static type.
+
+Struct types will be regarded as 'solid' memory/types, and will as such be passed by value. Likewise, a pointer to a struct is valid, and members may be accessed manually through pointer operations (subject of course to endianess, type size, and alignment issues).
+
+Class types, however, will be anomolous. Classes will always be passed by reference, and it will be viewed as invalid to try to introspect their contents via pointers.
+
+
+I will not view primitive and object types as somehow equivalent.
+As such, the language will have a non-orthogonal typesystem.
+
+
+Strings
+
+'char[]' and 'char *' will not be valid string types within this language. Instead, they will be possible buffers in which to hold strings (and if needed can be converted to strings).
+
+When stored as buffers, they will be null-terminated.
+
+'char *' needs to not be confused with a C string (in fact, this type may even be disallowed, viewing char itself as an essentially non-fixed type). 'sbyte *' will infact be the equivalent of C's 'char *'. C strings will be zero terminated.
+
+A string may be unpacked into a character array, but a string need not be implemented as a character array. Strings will be viewed as immutable (altering a string unpacked into a character array will not effect the original string).
+
+A string may not always be a string proper, however. It will be possible to subset and offset pre-existing strings. The result will look and behave as a string (and consequently use the same type), but will share the same memory as the parent string, but not necessarily have the same start or length.
+
+Addition and subtraction will operate on strings or subsets to offset the base relative to the parent.
+
+"foobar"+3 => "bar"
+
+string foo, bar;
+foo="foobar";		//foo is a string
+bar=foo+3;			//bar is a subset
+(bar-1) => "obar"		//bar-1 is a new subset
+
+String subsets may also be compared:
+<, >, <=, >=, ==, !=.
+
+Which will compare based on the base offset.
+These are invalid for subsets of different strings (and may be invalid if the subjets have different end-points).
+
+(foo==bar) => false
+(foo==bar-3) => true
+(foo<=bar) => true
+(bar>foo) => true
+(foo>=bar) => false
+...
+
+
+
+Type Handling
+
+int i;
+int *a;
+int b[4];
+int[] c;
+
+'i' is a raw/statically-typed integer;
+'a' is an integer pointer.
+'b' is a raw fixed-size array.
+'c' is a reference to an array (tagged reference).
+
+so:
+c=new int[4];
+is valid, however:
+a=new int[4];
+is not.
+
+and:
+a=(int *)malloc(4*sizeof(int));
+is valid, but:
+a=(int[])malloc(4*sizeof(int));
+is not...
+
+a=&i;
+is allowed, however:
+'a=c;' or 'a=&c;' are not.
+actually, it may depend, I may allow '&' to 'unwrap' arrays in some cases.
+
+Note that the styles may not be mixed:
+int[] a[4];
+int[] *b;
+
+These are invalid on the grounds of mixing tagged and untagged types.
+
+
+Note that I may allow dynamically sized arrays.
+
+c=new int[];
+Creates an array with a non-fixed size. As a result, the memory may be relocated and resized as needed when modifying the array. Note that although the memory may move around, the array will maintain the same identity.
+
+Typedefs will be allowed, but may only appear at the toplevel.
+
+
+Objects
+
+class Foo
+{
+	int x, y;
+}
+
+class Bar extends Foo
+{
+	int z;
+}
+
+Foo foo;
+note that in the above, 'foo' does not hold the object itself, rather a reference (initially 'null').
+
+foo=new Foo;
+set 'foo' to a new instance of 'Foo'.
+
+The object model will only offer single inheritence.
+Interfaces will also be usable.
+
+
+Unlike Java or C#, I will not define inner classes.
+
+Like typedefs, classes, interfaces, and structs are only allowed to be declared at the toplevel.
+
+
+Scoping
+
+Scoping will be essentially lexical, with the object scope being regarded based on its lexical position.
+
+For example, within a method, it will first check visible locals, then arguments, then the enclosing object, and then the toplevel.
+
+However, a function being used as a mixin, will not implicitly use the object.
+
+If object delegation is used and a hash or prototype object is reachable, unless explicitly used this will only be checked after any staticly reachable options have been ruled out.
+
+In general, delegates and interfaces will be checked prior to parent objects, which are checked prior to the enclosing scope.
+
+
+Delegate
+
+class Foo
+{
+	void Foo(int x, int y) { this.x=x; this.y=y; }
+	int x, y;
+}
+
+class Bar
+{
+	void Bar(Foo foo, int z) { this.foo=foo; this.z=z; }
+	int z;
+	delegate Foo foo;
+}
+
+Delegate slots will resolve slots and methods not found in the current object (much like a kind of run-time inheritence).
+
+More so, a delegate variable with a type of 'var' will be 'open', allowing reference to slots and methods that may only exist at runtime (with restrictions, namely that any unknown slots are by default variant, and unknown methods can only accept and return variants...).
+
+
+This need not be confused with the C# delegate or closure.
+If present, closures will likely use the keyword 'fun'.
+
+
+Modules
+
+import <module>;
+Will import another module.
+This will also be the primary means of interfacing with C, namely that C headers can be compiled into modules.
+
+Like Java, much of the time the module name will be closely tied to the filename. Much like C's include system, a kind of 'mini-VFS' may be used for resolving modules.
+

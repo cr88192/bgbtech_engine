@@ -1,0 +1,1406 @@
+== Overview ==
+
+FRBC2C is a VM/Bytecode aiming for use with C.
+
+It may be used as an abstraction layer to aide with portability of C code to targets for which native C code is problematic.
+
+Support for some non-C languages may also be considered.
+
+
+It is a statically-typed 3-Address-Code IR (Non-SSA).
+
+
+=== Types ===
+
+Core Types:
+*	I (Int, 32 Bit)
+*	L (Long, 64 Bit)
+*	F (Float, 32 Bit)
+*	D (Double, 64 Bit)
+*	P (Pointer, 32/64/+ Bit)
+
+Secondary Types:
+*	SB (Signed Byte),
+*	UB (Unsigned Byte),
+*	SS (Signed Short),
+*	US (Unsigned Short),
+*	UI (Unsigned Int),
+*	UL (Unsigned Long),
+*	NL (Native Long, 32/64 Bit)
+*	UNL (Unsigned Native Long, 32/64 Bit)
+*	V (Void)
+*	S (Struct/Union)
+*	R (Variant)
+
+Long here maps to "long" and "long long" in C.
+However, C long may also map to Native Long, which will be interpreted as a subset of Long for which the number of bits will depend on the target.
+
+The size of pointers will be target-specific.
+If pointers are used in arithmetic operations, they will be interpreted as a pointer-sized integer type. Arithmetic performed on pointer values will be be done in terms of byte-offsets (LEA and friends should be used for typed pointer displacement).
+
+Pointers may or may not be raw addresses, and it is undefined as to whether a flat or segmented address space is used.
+
+It will be assumed though that anything which may be accessed via a pointer be representable within any pointer, and that it is possible to convert between pointers and an integer representation (namely: Long). It it thus implicitly required that the address space be representable in under 64 bits. However, a pointer may hold additional data, which should (ideally) be recovered if a pointer is converted to Long and then back to a Pointer.
+
+The VM may be allowed to swizzle pointers as-needed, however memory offsets (up to 4GB from the base) should be representable via direct arithmetic on the pointers' value. For smaller objects, the linearly addressable region need only be large enough to cover the object's data area.
+
+For example, a logical pointer (for large objects) could be represented as:
+* SSSSSSSS_AAAAAAAA
+Where SS=Swizzled Object ID, and AA=Logical Address within the object.
+
+Whereas for smaller objects it could be, for example:
+* XXXXSSSS_SSSSAAAA
+Where XX=Address-Space subdivision, SS=Swizzled Object, AA=Linear Address.
+
+This could be relevant, say, in environments where the address space is implemented on top of integer arrays or via some other mechanism.
+
+
+It will not be defined whether the targets' execution environment is big-endian or little-endian. If there is an equal choice between big-endian and little-endian, little-endian is preferred (despite the bytecode and packaging being big-endian).
+
+Normal pointer loads/stores will be required to be alignment-safe (results are undefined if an attempt is made to load/store to a pointer with incorrect alignment).
+
+However, LOADVSF and STOREVSF will allow misaligned pointers.
+
+
+Variant will exist as a special subtype of Long.
+The size and contents of a variant are undefined here, though as far as operations go, it is to be treated as an unsigned long.
+
+The variant type may be used to hold dynamically-typed values.
+
+
+=== Registers ===
+
+Registers (R/Reg, Temp):
+*	R0..R15, Basic
+*	R0..R255, Extended
+
+Args (A/Arg, Caller Argument):
+*	A0..A15, Basic
+*	A0..A255, Extended
+
+Locals (L/Loc, Local Variables):
+*	L0..L15
+*	L0..L255, Extended
+*	L0..L65535, Extended 2 (Load/Store)
+
+Globals
+*	G0..Gn (Load/Store)
+**	Global Scope includes both global variables and functions.
+**  Static variables will also be located in globals.
+
+
+Lexical (Special)
+*	Xnn (Load/Store)
+**	Explicitly managed scope, may hold variables and function pointers.
+**	Not generally used in C.
+
+Dynamic (Special)
+*	Gn (Load/Store)
+**	Uses same opcodes and image representation as globals.
+
+
+Note that a register may only be accessed using the same type-class in which it was previously stored. Explicit conversions are required to move values between registers of different types.
+
+Note however that registers may be reused any number of times with any type of values, provided that any reads from the register match the type previously stored into a register.
+
+If a label is used and a register is accessed, all control-flow paths leading to this label are to have the same register type.
+
+Note that this bytecode does not make use of Phi operators, and as a result is is required that all control flow paths reaching a given target store their results into a given unified set of target registers.
+
+
+It will be invalid both to assume that different basic types will share the same register bits, as well as to assume disjoint storage of types.
+
+However, Integer types smaller than Int may be implicitly held in Int.
+This will be referred to as the SmallInt pseudo-type.
+
+Long may similarly hold any smaller types as values (as an analogous SmallLong) pseudo type. However, like with Int and Long, a conversion will still be required to move a value between SmallInt and SmallLong, even if both cases still represent the same logical type.
+
+Normally, operations on Sub-Int values will assume SmallInt, with NativeLong as the sole dedicated SmallLong type.
+
+
+=== Literals ===
+
+Loads of literals of integer primitive types will load from the LVT4 or LVT8 tables.
+
+Loads of Pointers (such as via LDCONST or LDCONSTW) will use tagged-indices, which may refer to one of several tables.
+
+LDCONSTW may also be used to value-load Structs or Unions, but will still require the structure to be initializad prior to the load.
+
+Doing a pointer load of a global or literal array or struct will load a pointer to the array or struct data.
+
+Doing a pointer load of a function will return a pointer which may be used to call the function (a function handle). This does not point to the function bytecode. Attempts to call a pointer which does not point to a valid function-handle are undefined.
+
+
+=== Calls ===
+
+For calls, the CALL/CSRV pairing is mandatory.
+
+Each call operation is to be followed by a matching CSRV, and all CSRV operations are to be preceded by a matching CALL.
+
+Possible Change: Use of CSRV.V is Optional, if no CSRV follows a call, then CSRV.V behavior will be assumed.
+
+Add: CSRV may also be omitted for functions which return primitive types if the return value is not used. The return value will be silently discarded.
+
+
+For normal (non-vararg) calls, the caller and callee argument list is required to match exactly (in terms of argument counts and types). The caller is to ensure the correct argument types are passed.
+
+For vararg functions, the caller list may be longer than the callee list, and the length of the argument list will be that supplied by the caller.
+
+A "va_list" object may then be created representing the argument list (Specifics TBD).
+
+
+RET.V will be allowed for non-void-returning functions, however, the return value in this case will be undefined.
+
+
+=== EBBs / Traces ===
+
+The representation for the bytecode will exist in terms of Basic Blocks or Traces.
+
+A basic block will exist as a non-branching sequence of instructions with a single entry point and a single exit point.
+
+A 'LABEL' Operation may be used to signal the end of a given basic block and the start of a new basic block. It is then valid for jumps to target the following instruction. It is otherwise invalid to encode a jump into the middle of a trace, and it is similarly invalid to encode a jump into the body of another instruction.
+
+LABEL is not required, however, if the preceding instruction will have already ended the preceding block. This will apply, for example, when the preceding instruction is a jump or return. Implicitly, a label may be regarded as an unconditional jump to the following instruction.
+
+However, units larger than a single basic-block may be considered. For example, a basic block ending in an unconditional jump may be treated as if both basic blocks were appended together. This is in turn defined as an EBB or Extended Basic Block (may still also be called a Trace).
+
+Likewise, there is little requirement that the layout of the bytecode within a function match that of the function layout in the original source-code.
+
+However, the entry point for a function will still always be the first instruction.
+
+
+=== Arrays and Value Objects ===
+
+Local Arrays, Structs, and other Value-Objects will be logically represented using Pointer registers and operation.
+
+An appropriate INITARR/INITOBJ operation is required prior to the use of variables of these types. For locals, these are to be used only once, and prior to other executable instructions. The array or object will be implicitly destroyed when the scope exits (DROPOBJ is not used).
+
+COPYOBJ may be used to copy contents between structures.
+
+INITOBJ/DROPOBJ may also be used for structures to be held in temporary registers. DROPOBJ is required prior to either the register leaving scope or the register being reused for a value of a different type, or for any subsequent use of INITOBJ.
+
+Note also that both the static and dynamic lifetime of an object held in a register are required to match (jumps out-of or into the lifetime of an object are not allowed).
+
+INITOBJ is to also be used for function arguments holding a struct or union, and will follow similar rules to those of locals.
+
+Both Value-Objects and Arrays will implicitly decay into pointers.
+As a result, it is not necessary to take the address of these types.
+
+Note, however, that these pointers are only valid within the lifetime of the object. Pointers to value-objects will be invalid once the object in question leaves scope.
+
+Each copy of a given value object will generally have its own address, as these objects will be passed-by-copy rather than passed-by-reference.
+
+INITOBJARR will be used to initialize an array of objects.
+
+
+=== Lexical Environment ===
+
+If used by a language, the lexical environment is a linked list of environment frames. Frames are created and destroyed explicitly.
+
+On entering a normal function, the lexical environment used is set to NULL.
+After a new frame is created, it will link onto and replace the prior frame.
+
+Releasing a frame may free its resources (if it was not captured) and will reset the lexical environment to point to the parent frame.
+
+A closure may be created which is a function which captures the current environment frame. When called, a closure will use the caotured frame as its initial lexical environment frame (rather than NULL). Capture will prevent a frame from being destroyed immediately.
+
+Deleting the closure may cause its associated environment frames to also be released, likely using reference-counting and similar.
+
+
+=== Classes ===
+
+Will use an "augmented single inheritance" object system.
+
+Each class will have at most a single direct superclass, from which it will inherit fields and methods. A class may then declare any new fields and methods.
+
+Additionally, classes may implement interfaces. A class may export both fields and methods via an interface.
+
+In this VM, an interface may not directly contain a method body, though the HLL may still implement default methods or other similar features.
+
+A field may be qualified by an interface, and will apply to this interface.
+
+
+Class fields and methods will use the same numbering, with the numbering of subclasses directly following that of superclasses.
+
+ Class A:
+ 	int x, y;			//0, 1
+ 	virtual void fn();	//2
+ 
+ Class B:A
+ 	int z;				//3
+ 	virtual void fn2();	//4
+
+
+== Opcodes ==
+
+=== Opcode Ranges: === 
+
+
+*	00-7F: Single-Byte Opcodes
+*	80-DF: More Single-Byte Opcodes
+*	E0-EF: 2-Byte Opcode Range (0000-0FFF)
+**		E0: 0000-00FF
+**		E1: 0100-01FF
+**		E2: 0200-02FF
+**		...
+*	F0-F7: 3-Byte Range (00000000-0007FFFF)
+*	F8-FB: 4-Byte Range (00000000-03FFFFFF)
+*	FC: 5-byte Opcode Range (00000000-FFFFFFFF)
+
+
+Note: Opcodes may only be encoded in the form they are defined as.
+Overlong encodings are not allowed.
+
+As a result, E0-XX is effectively reserved, and valid opcodes may not be assigned in this range.
+
+
+=== Opcode Bits ===
+
+
+Opcode Bits Notation (Per Nibble):
+* X=Opcode
+* O=Operation (Unary/Binary)
+* Y=Mode
+* W=Mode 2
+* D=Dest
+* S=Source (Left)
+* T=Source (Right)
+* Z=Type
+* C=Constant
+* A=Address
+** For jumps/etc, these are relative to the following instruction
+* L=Constant Pool
+** Int/Float=LVT4 Index
+** Long/Double=LVT8 Index
+** Pointer=Tagged Literal Index
+** Other=Literal Table Index
+* I=Index
+* G=Global Index
+
+
+=== Opcode Parameters ===
+
+
+Binary Operations (O):
+* 0	ADD
+* 1 SUB
+* 2 MUL
+* 3 DIV
+* 4 MOD
+* 5 AND
+* 6 OR
+* 7 XOR
+* 8 SHL
+* 9 SHR
+* A SHRR
+* B MULH (Multiply High)
+* C UMULH (Unsigned Multiply High)
+* D UDIV (Unsigned Divide)
+* E -
+* F -
+
+
+Unary Operations (U):
+* 0 MOV (D=S)
+* 1 NEG (D=-S)
+* 2 NOT (D=~S)
+* 3 LNOT (D=!S)
+* 4 INC (D=S+1)
+* 5 DEC (D=S-1)
+* 6 -
+* 7 -
+* 8..F, (IC/LC/FC/DC) Same as above, Just interpret Const12 as Lit12
+** (FC/DC) Const 12 is High 12-bits from a Half-Float
+
+
+Compare Operations:
+* 0 EQ (Equal)
+* 1 NE (Not Equal)
+* 2 LT (Less Than)
+* 3 GT (Greater Than)
+* 4 LE (Less Than Or Equal)
+* 5 GE (Greater Than Or Equal)
+* 6 AL (Always) / EQQ (Strict Equal, Variant)
+* 7 NV (Never) / NEQ (Strict Not Equal, Variant)
+* 8..F, (IC/LC/FC/DC) Same as above, Just interpret Const12 as Lit12
+** (FC/DC) Const 12 is High 12-bits from a Half-Float
+* For Variant:
+** EQ/NE compare values by value.
+** EQQ/NEQ compare by identity.
+*** Equality will be if both references have the exact same bit pattern.
+
+Operation Mode (Y):
+* 0 Reg,Reg,Reg
+* 1 Reg,Reg,Arg
+* 2 Reg,Reg,Loc
+* 3 Reg,Arg,Reg
+* 4 Reg,Arg,Arg
+* 5 Reg,Arg,Loc
+* 6 Reg,Loc,Reg
+* 7 Reg,Loc,Arg
+* 8 Reg,Loc,Loc
+* 9 Arg,Reg,Reg
+* A Loc,Reg,Reg
+* B Loc,Reg,Arg
+* C Loc,Arg,Reg
+* D Loc,Reg,Loc
+* E Loc,Loc,Reg
+* F Loc,Loc,Loc
+** Will depend on the registers used for a given operation.
+*** Values outside those used for a given operation are Reserved/Invalid.
+** Example Ops:
+*** UNOP.C	(-, -, D)
+*** RET		(-, -, S)
+*** UNOP	(-, D, S)
+*** JCMP	(-, S, T)
+*** BINOPW	(D, S, T)
+
+
+Operation Mode 2 (W):
+* 0: Int,Reg
+* 1: Int,Arg
+* 2: Int,Local
+* 3: Long,Reg
+* 4: Long,Arg
+* 5: Long,Local
+* 6: Float,Reg
+* 7: Float,Arg
+* 8: Float,Local
+* 9: Double,Reg
+* A: Double,Arg
+* B: Double,Local
+* C: Pointer,Reg
+* D: Pointer,Arg
+* E: Pointer,Local
+
+
+Return Type (Z: CALL, RET, LOADSLOT, etc):
+* 0: Int
+* 1: Long
+* 2: Float
+* 3: Double
+* 4: Pointer
+* 5: Void / Variant
+** Interpreted as Variant in cases where Void is N/A
+** For example, operations using values.
+** For compare operations with variant, uses EQQ/NEQ rather than AL/NV.
+* 6: Struct / Union (Extended type info is to be provided)
+* 7: Native Long
+* 8: Signed Byte
+* 9: Unsigned Byte
+* A: Signed Short
+* B: Unsigned Short
+* C: Unsigned Int
+* D: Unsigned Long
+* E: Unsigned Native Long
+* F: Undefined / Trap (Invalid or Extended Type)
+
+Type Conversion (Z: CONV):
+* 0: Int->Long
+* 1: Int->Float
+* 2: Int->Double
+* 3: Int->Pointer
+* 4: Long->Int
+* 5: Long->Float
+* 6: Long->Double
+* 7: Long->Pointer
+* 8: Float->Int
+* 9: Float->Long
+* A: Float->Double
+* B: Double->Int
+* C: Double->Long
+* D: Double->Float
+* E: Pointer->Int
+* F: Pointer->Long
+
+
+Conversion (Z: CONV.I / CONV.L):
+* 0: Sign Extend Byte ("(signed char)i")
+* 1: Zero Extend Byte ("(unsigned char)i")
+* 2: Sign Extend Short ("(signed short)i")
+* 3: Zero Extend Short ("(unsigned short)i")
+* 4: Sign Extend Int ("(signed int)i")
+* 5: Zero Extend Int ("(unsigned int)i")
+* 6: Sign Extend Byte 2 ("(signed char)(i>>8)")
+* 7: Zero Extend Byte 2 ("(unsigned char)(i>>8)")
+* 8: Sign Extend Short 2 ("(signed short)(i>>16)")
+* 9: Zero Extend Short 2 ("(unsigned short)(i>>16)")
+* A: Sign Extend Byte 3 ("(signed char)(i>>16)")
+* B: Zero Extend Byte 3 ("(unsigned char)(i>>16)")
+* C: Sign Extend Byte 4 ("(signed char)(i>>24)")
+* D: Zero Extend Byte 4 ("(unsigned char)(i>>24)")
+* E: Sign Extend Int 2 ("(signed int)(i>>32)")
+* F: Zero Extend Int 2 ("(unsigned int)(i>>32)")
+
+
+Call Argument:
+* 0S, Reg.I
+* 1S, Reg.L
+* 2S, Reg.F
+* 3S, Reg.D
+* 4S, Reg.P
+* 5S, Loc.I
+* 6S, Loc.L
+* 7S, Loc.F
+* 8S, Loc.D
+* 9S, Loc.P
+* A0..AE SS, Reg(ILFDP), Arg(ILFDP), Loc(ILFDP)
+* AF SS, Local.A (&Src)
+* B0 CC, Const.I (-128..127)
+* B1 CC, Const.L (-128..127)
+* B2 CC CC, Const.I (-32768..32767)
+* B3 CC CC, Const.L (-32768..32767)
+* B4 LL LL LL, Const.I
+* B5 LL LL LL, Const.L
+* B6 LL LL LL, Const.F
+* B7 LL LL LL, Const.D
+* B8 LL LL LL, Const.P
+* B9 GG GG GG, Global.I
+* BA GG GG GG, Global.L
+* BB GG GG GG, Global.F
+* BC GG GG GG, Global.D
+* BD GG GG GG, Global.P
+* BE GG GG GG, Global.A (&Global)
+* BF TI II, Tagged 12-bit Index
+** 0: Z(4), Reg(8)
+** 1: Z(4), Arg(8)
+** 2: Z(4), Loc(8)
+*** Z interpreted as a 4-bit type-tag.
+** 3: Reserved
+** 4..8: (I/L/F/D/P) Literal-12
+** 9..E: (I/L/F/D/P/A) Global-12
+** F: Reserved
+* C0..CE, Reserved
+* CF SS, Arg.A (&Src)
+* DS, Arg.I
+* ES, Arg.D
+* FS, Arg.P
+
+
+=== Instruction Listing ===
+
+==== Basic Opcodes ====
+
+* 00 BINOP.I		//Binary Operation (Int)
+* 01 BINOP.L		//Binary Operation (Long)
+* 02 BINOP.F		//Binary Operation (Float)
+* 03 BINOP.D		//Binary Operation (Double)
+** 	XX OD ST
+*** Only works on Temporary Registers
+
+* 04 BINOP.IC		//Binary Operation (Int, Const12)
+* 05 BINOP.LC		//Binary Operation (Long, Const12)
+**	XX OD SC CC
+*** Only works on Temporary Registers
+
+* 06 BINOP.FC		//Binary Operation (Float, Lit12)
+* 07 BINOP.DC		//Binary Operation (Double, Lit12)
+**	XX OD SL LL
+*** Only works on Temporary Registers
+
+* 08 UNOP.I			//Unary Operation (Int)
+* 09 UNOP.L			//Unary Operation (Long)
+* 0A UNOP.F			//Unary Operation (Float)
+* 0B UNOP.D			//Unary Operation (Double)
+** 	XX OY DS
+
+* 0C UNOP.IC		//Unary Operation (Int, Const12/Lit12)
+* 0D UNOP.LC		//Unary Operation (Long, Const12/Lit12)
+* 0E UNOP.FC		//Unary Operation (Float, Const12/Lit12)
+* 0F UNOP.DC		//Unary Operation (Double, Const12/Lit12)
+**	XX OY DC CC
+**	XX OY DL LL
+
+* 10 CMP.I			//Compare (Int)
+* 11 CMP.L			//Compare (Long)
+* 12 CMP.F			//Compare (Float)
+* 13 CMP.D			//Compare (Double)
+** 	XX OD ST
+*** Compares values, stores boolean result in Dst
+*** Only works on Temp Registers
+
+* 14 CMP.IC			//Compare (Int, Const12/Lit12)
+* 15 CMP.LC			//Compare (Long, Const12/Lit12)
+* 16 CMP.FC			//Compare (Float, Const12/Lit12)
+* 17 CMP.DC			//Compare (Double, Const12/Lit12)
+**	XX OD SC CC
+**	XX OD SL LL
+*** Compares values, stores boolean result in Dst
+*** Only works on Temp Registers
+
+* 18 JCMP.I			//Jump+Compare (Int)
+* 19 JCMP.L			//Jump+Compare (Long)
+* 1A JCMP.F			//Jump+Compare (Float)
+* 1B JCMP.D			//Jump+Compare (Double)
+**	XX OY ST AA AA
+
+* 1C JCMP.IC		//Jump+Compare (Int, Const12/Lit12)
+* 1D JCMP.LC		//Jump+Compare (Long, Const12/Lit12)
+* 1E JCMP.FC		//Jump+Compare (Float, Const12/Lit12)
+* 1F JCMP.DC		//Jump+Compare (Double, Const12/Lit12)
+**	XX OY SC CC AA AA
+**	XX OY SL LL AA AA
+
+* 20 JMP			//Unconditional Jump
+** XX AA AA
+
+* 21 JMPW			//Unconditional Jump (Wide)
+** XX AA AA AA AA
+
+* 22 LDLVAR			//Load Local Variable (256-65535)
+* 23 STLVAR			//Store Local Variable (256-65535)
+** XX WD II II
+
+* 24 LDGVAR			//Load Global Variable
+* 25 STGVAR			//Store Global Variable
+** XX WD GG GG
+
+* 26 LDCONST		//Load Literal
+** XX WD LL LL
+*** I/L/F/D: Index is direct (LVT4/8).
+*** P: Index is a tagged literal index.
+
+* 27 LDCONSTW		//Load Literal (Wide)
+** XX ZY DD LL LL LL LL
+*** I/L/F/D: Index is direct (LVT4/8).
+*** P: Index is a tagged literal index.
+
+* 28 CONV			//Type Convert (Basic)
+** XX ZY DS
+
+* 29 LDAGVAR		//Load Address Of Global Variable
+** XX WD GG GG
+
+* 2A CONV.I			//Convert SmallInt
+* 2B CONV.L			//Convert SmallLong
+** XX ZY DS
+
+* 2C SHRMASK.I		//Shift Right And Mask
+* 2D SHRMASK.L		//Shift Right And Mask
+* 2E SHLMASK.I		//Shift Left And Mask
+* 2F SHLMASK.L		//Shift Left And Mask
+** XX YD SC CC
+** C: High 6 Bits=Shift, Low 6 Bits=Mask
+*** SHRMASK: Dst=(Src>>Shr)&((1<<Mask)-1)
+*** SHLMASK: Dst=(Src&((1<<Mask)-1))<<Shl
+
+* 30 JCMP.RZI		//Jump-Compare Register Zero Int
+* 31 JCMP.RZL		//Jump-Compare Register Zero Long
+* 32 JCMP.RZF		//Jump-Compare Register Zero Float
+* 33 JCMP.RZD		//Jump-Compare Register Zero Double
+* 34 JCMP.AZI		//Jump-Compare Arg Zero Int
+* 35 JCMP.AZL		//Jump-Compare Arg Zero Long
+* 36 JCMP.AZF		//Jump-Compare Arg Zero Float
+* 37 JCMP.AZD		//Jump-Compare Arg Zero Double
+* 38 JCMP.LZI		//Jump-Compare Local Zero Int
+* 39 JCMP.LZL		//Jump-Compare Local Zero Long
+* 3A JCMP.LZF		//Jump-Compare Local Zero Float
+* 3B JCMP.LZD		//Jump-Compare Local Zero Double
+* 3C JCMP.RZP		//Jump-Compare Register Zero Pointer
+* 3D JCMP.AZP		//Jump-Compare Arg Zero Pointer
+* 3E JCMP.LZP		//Jump-Compare Local Zero Pointer
+**	XX OS AA AA
+
+* 3F JCMP.P			//Jump+Compare (Pointer)
+**	XX OY ST AA AA
+
+* 40 LOADINDEX.I
+* 41 LOADINDEX.L
+* 42 LOADINDEX.F
+* 43 LOADINDEX.D
+* 44 LOADINDEX.SB
+* 45 LOADINDEX.UB
+* 46 LOADINDEX.SS
+* 47 LOADINDEX.US
+* 48 LOADINDEX.P
+** XX YD ST
+** Dst=((Type*)Src)[SrcT]
+
+* 49 LOADINDEX.IC
+* 4A LOADINDEX.LC
+* 4B LOADINDEX.FC
+* 4C LOADINDEX.DC
+* 4D LOADINDEX.SBC
+* 4E LOADINDEX.SSC
+* 4F LOADINDEX.PC
+** XX YD SC CC
+** Dst=((Type*)Src)[Const]
+
+* 50 STOREINDEX.I
+* 51 STOREINDEX.L
+* 52 STOREINDEX.F
+* 53 STOREINDEX.D
+* 54 STOREINDEX.B
+* 55 STOREINDEX.S
+* 56 STOREINDEX.P
+** XX YD ST
+** ((Type*)Dst)[Src]=SrcT
+
+* 57 LOADINDEX.UBC
+* 58 LOADINDEX.USC
+** XX YD SC CC
+** Dst=((Type*)Src)[Const]
+
+* 59 STOREINDEX.IC
+* 5A STOREINDEX.LC
+* 5B STOREINDEX.FC
+* 5C STOREINDEX.DC
+* 5D STOREINDEX.BC
+* 5E STOREINDEX.SC
+* 5F STOREINDEX.PC
+** XX YD SC CC
+** ((Type*)Dst)[Const]=Src
+
+* 60 LEA.I
+* 61 LEA.L
+* 62 LEA.F
+* 63 LEA.D
+* 64 LEA.B
+* 65 LEA.S
+* 66 LEA.P
+** XX YD ST
+** Dst=((Type*)Src)+SrcT
+
+* 67 LEALVAR.V
+** XX YD ST
+** Dst=((VOID*)(&Src))+SrcT
+
+* 68 LEA.IC
+* 69 LEA.LC
+* 6A LEA.FC
+* 6B LEA.DC
+* 6C LEA.BC
+* 6D LEA.SC
+* 6E LEA.PC
+** XX YD SC CC
+** Dst=((Type*)Src)+Const
+
+* 6F LEALVAR.VC
+** XX YD SC CC
+** Dst=((VOID*)(&Src))+Const
+
+* 70 CALL			//Function Call
+** XX GG GG GG Na Arg[Na] <CSRV>
+
+* 71 CALLP			//Call via Pointer
+** XX YS Na Arg[Na] <CSRV>
+
+* 72 RET.V
+** 72
+
+* 73 RET
+** 73 WS
+
+* 74 RETW
+** 74 ZY SS
+** Z: Return Type
+
+* 75 LOADSLOT		//Load Structure Slot
+** XX ZY DS LL LL II
+*** Dst=((TLit *)Src)->Idx
+*** LL Indentifies the structure definition.
+*** II gives the index of the slot within the structure.
+
+* 76 STORESLOT		//Store Structure Slot
+** XX ZY ST LL LL II
+*** ((TLit *)Src)->Idx=SrcT
+
+* 77 INITOBJ		//Initialize Object (Struct/Union/Array)
+** XX WD LL LL
+** LL gives the object definition
+
+* 78 CSRV.V			//Call Save Return Value, Void
+** 78
+
+* 79 CSRV			//Call Save Return Value
+** 79 WD
+
+* 7A CSRVW			//Call Save Return Value
+** 73 ZY DD
+
+* 7B INITARR		//Initialize Local Array
+** XX ZD CC CC
+** CC gives the array size
+** D=Local
+
+* 7C LABEL			//Marks Jump Targets
+** XX
+*** Indicates that a jump may occur to the following instruction.
+*** Marks the end of the current basic-block.
+
+* 7D LABEL2			//Marks Jump Target (with LabelID)
+** XX LL LL LL
+*** Basically the same as LABEL, but may point to metadata.
+*** If it is a string or keyword literal, this gives the name of the label.
+
+* 7E NOP2			//Does Nothing (Multi-Byte)
+** XX Nc Pad[Nc-2]
+*** Multi-Byte Nop. Can pad between 2 and 256 bytes.
+
+* 7F NOP			//Does Nothing
+** XX
+*** Nop instructions are discared and have no effect.
+
+* 80 BINOP2			//Binary Operation 2
+** 	XX ZY OD ST
+
+* 81 BINOP2.C		//Binary Operation 2 Const
+**	XX ZY OD SL LL
+
+* 82 UNOP2			//Unary Operation 2
+** 	XX ZY OD S0
+
+* 83 UNOP2.C		//Unary Operation 2 Const
+**	XX ZY OD LL LL
+
+* 84 CMP2			//Compare Operation 2
+** 	XX ZY OD ST
+
+* 85 CMP2.C			//Compare Operation 2 Const
+**	XX ZY OD SC CC
+**	XX ZY OD SL LL
+
+* 86 LDAVAR			//Load Address Of Variable
+** XX YD SS
+
+* 87 COPYOBJ		//Copy Value-Object
+** XX YD SL LL
+
+* 88 DROPOBJ		//Drop Value-Object
+** XX SL LL
+** S=Reg
+
+* 89 SIZEOF.I		//Load Sizeof into Integer Register
+** XX YD LL LL
+*** Used when the sizeof is not known at compile time.
+
+* 8A OFFSETOF.I		//Load Sizeof into Integer Register
+** XX YD LL LL II
+*** Used to find the field offset.
+
+* 8B RET.C
+** XX ZC CC
+** XX ZL LL
+** 0-7: ILFDPxxx (Constant)
+** 8-F: ILFDPxxx (Literal)
+
+* 8C INITOBJARR		//Initialize Local Object-Array
+** XX WD LL LL CC CC
+** LL gives object definition
+** CC gives the array size
+** D=Local
+
+* 8D CALL2			//Function Call 2
+** XX NG GG Arg[N] <CSRV>
+
+* 8E MOV			//MOV D,S
+** 	XX ZY DS
+
+* 8F LEAJ			//Load Effective Address
+** XX ZY DS TC CC
+** Dst=((Type*)Src)+(SrcT*Const)
+
+* 90 BINOP3.C		//Binary Operation 2 Const
+** XX ZY OD SC CC
+
+* 91 UNOP3.C		//Unary Operation 2 Const
+** XX ZY OD LC CC
+
+* 92 ADDMUL			//Multiply Accumulate
+** XX ZY DS TC CC
+** Dst=SrcS+(SrcT*Const)
+
+* 93 ADDOP.IC		//Accumulate Operator
+** 93 OY DS TC CC	//
+** 94 OY DS TL LL	//
+** Dst=SrcS+(SrcT Op Const)
+
+
+==== Two-Byte Opcodes ====
+
+
+* 0100 BINOPW.I
+* 0101 BINOPW.L
+* 0102 BINOPW.F
+* 0103 BINOPW.D
+** 	E1-XX OY DD SS TT
+
+* 0104 BINOPW.IC
+* 0105 BINOPW.LC
+* 0106 BINOPW.FC
+* 0107 BINOPW.DC
+**	E1-XX OY DD SS LL LL LL
+
+* 0108 UNOPW.I
+* 0109 UNOPW.L
+* 010A UNOPW.F
+* 010B UNOPW.D
+** 	E1-XX OY DD SS
+
+* 010C UNOPW.IC
+* 010D UNOPW.LC
+* 010E UNOPW.FC
+* 010F UNOPW.DC
+**	E1-XX OY DD LL LL LL
+
+* 0110 CMPW.I			//Compare (Int)
+* 0111 CMPW.L			//Compare (Long)
+* 0112 CMPW.F			//Compare (Float)
+* 0113 CMPW.D			//Compare (Double)
+** 	E1-XX OY DD SS TT
+*** Compares values, stores boolean result in Dst
+
+* 0114 CMPW.IC			//Compare (Int, Const12)
+* 0115 CMPW.LC			//Compare (Long, Const12)
+* 0116 CMPW.FC			//Compare (Float, Lit12)
+* 0117 CMPW.DC			//Compare (Double, Lit12)
+**	E1-XX OY DD SS LL LL LL
+*** Compares values, stores boolean result in Dst
+
+* 0118 JCMPW.I
+* 0119 JCMPW.L
+* 011A JCMPW.F
+* 011B JCMPW.D
+**	E1-XX OY SS TT AA AA AA AA
+
+* 011C JCMPW.IC
+* 011D JCMPW.LC
+* 011E JCMPW.FC
+* 011F JCMPW.DC
+**	E1-XX OY SS LL LL LL AA AA AA AA
+
+* 0120 SIZEOFW.I	//Load Sizeof into Integer Register
+** E1-20 DD LL LL LL
+*** Used when the sizeof is not known at compile time.
+
+* 0121 OFFSETOFW.I	//Load Sizeof into Integer Register
+** E1-21 DD LL LL LL II II
+*** Used to find the field offset.
+
+* 0122 LOADSLOTW	//Load Structure Slot
+** E1-22 ZY DD SS LL LL LL II II
+
+* 0123 STORESLOTW	//Store Structure Slot
+** E1-23 ZY SS TT LL LL LL II II
+
+* 0124 LOADSLOTAW	//Load Structure Slot Address
+** E1-24 ZY DD SS LL LL LL II II
+
+* 0125 INITOBJW		//Initialize Object (Struct/Union/Array)
+** E1-25 ZY DD LL LL LL
+** LL gives the object definition
+
+* 0126 COPYOBJW		//Copy Value-Object Wide
+** E1-26 ZY DD SS LL LL LL
+
+* 0127 DROPOBJW		//Drop Value-Object
+** E1-27 ZY SS LL LL LL
+
+* 0128 LOADINDEXW
+* 0129 STOREINDEXW
+* 012A LOADINDEXAW
+* 012B LEAW
+** E1-XX ZY DD SS TT
+
+* 012C LOADINDEXW.C
+* 012D STOREINDEXW.C
+* 012E LOADINDEXAW.C
+* 012F LEAW.C
+** E1-XX ZY DD SS II II II II
+
+* 0130 LOADSLOTOW	//Load Structure Slot Object
+** E1-30 ZY DD SS LL-LL-LL II-II LL-LL-LL
+
+* 0131 STORESLOTOW	//Store Structure Slot Object
+** E1-31 ZY SS TT LL-LL-LL II-II LL-LL-LL
+
+* 0132 LOADINDEXOW
+* 0133 STOREINDEXOW
+* 0134 LEAOW
+** E1-XX ZY DD SS TT LL LL LL
+
+* 0135 LOADINDEXOW.C
+* 0136 STOREINDEXOW.C
+* 0137 LEAOW.C
+** E1-XX ZY DD SS II II II II LL LL LL
+
+* 0138 RETOBJ		//Return Value-Object
+** E1-38 YS LL LL
+
+* 0139 CSRVOBJ		//CSRV Value-Object
+** E1-39 YD LL LL
+
+* 013A RETOBJW		//Return Value-Object
+** E1-3A ZY SS LL LL LL
+
+* 013B CSRVOBJW		//CSRV Value-Object
+** E1-3B ZY DD LL LL LL
+
+* 013C RETW.C		//Return Constant
+** E1-3C Z0 CC CC CC
+** E1-3C Z8 LL LL LL
+
+* 013D CONVW		//Type Convert (Wide)
+** E1-3D ZY Z0 DD SS
+** First Z: Dest Type
+** Second Z: Source Type
+
+* 013E LOADVSF		//Load (Variable Size/Format)
+** E1-3E ZY GV DD SS
+** Z: Dest Logical Type
+*** Source is Pointer
+** G: &3=Endianess
+*** 0=Local Endianess
+*** 1=Big-Endian
+*** 2=Little-Endian
+*** 3=Resv
+** V: Walue Width (1-16 Bytes)
+
+* 013F STOREVSF		//Store (Variable Size/Format)
+** E1-3F ZY GV DD SS
+** Z: Source Logical Type
+*** Dest is Pointer
+** G: &3=Endianess
+** V: Walue Width (1-16 Bytes)
+
+
+* 0140 LOADXVAR		//Load Lexical Var
+** E1-40 ZY DD II JJ
+** Load value from lexical environment.
+** II: Encodes how many levels up to go.
+** JJ: Encodes the variable position within the level.
+
+* 0141 STOREXVAR	//Store Lexical Var
+** E1-41 ZY SS II JJ
+** Store value to lexical environment.
+
+* 0142 CLOSEFCN		//Create Lexical Closure
+** E1-42 WD GG GG
+** Creare a new closure from a function and store it in D.
+
+* 0143 DELCXFCN		//Delete Lexical Closure
+** E1-43 WS
+** Delete lexical closure.
+** May release captured frames.
+
+** XX-XX YD SC CC OL LL AA AA
+
+* 0144 LEAJW		//Load Index Times Number
+** E1-XX ZY DD SS TT II II
+** D=S+(T*I);
+
+
+== Packaging ==
+
+TLV Based.
+
+Use BTIC-Style Packaging.
+
+
+* 0x00-0x1F: Public Primitive (Class=0)
+* 0x20-0x3F: Public Composite (Class=1)
+* 0x40-0x5F: Private Primitive (Class=2)
+* 0x60-0x7F: Private Composite (Class=3)
+* 0x80-0x9F: Context Primitive (Class=4)
+* 0xA0-0xBF: Context Composite (Class=5)
+** ccct-tttt:
+*** ccc=class, ttttt=tag
+*** tag=0..30, tag encoded directly
+*** tag=31, tag is escape coded.
+* 0xC0-0xDF: Reserved
+* 0xE0-0xFF: Special Markers
+** 0xE0, End Of Data
+** 0xE1, len:WORD24
+** 0xE2, len:BYTE
+*** Context Dependent Untagged Data
+** 0xE3, len:WORD24, tag:TWOCC
+** 0xE4, len:WORD24, tag:FOURCC
+** 0xE5, len:BYTE, tag:TWOCC
+** 0xE6, len:Word56, tag:FOURCC
+** 0xE7, len:WORD24, tag:EIGHTCC
+** 0xE8, len:WORD24, tag:SIXTEENCC
+** 0xE9, len:Word56, tag:EIGHTCC
+** 0xEA, len:WORD56, tag:SIXTEENCC
+*** Tagged Markers
+* 0xFF, FF-Escaped Markers (Not Currently Used Here)
+** Markers where payload is 0xFF Escape-Coded.
+*** Literal unescaped 0xFF bytes are not allowed in payload data.
+** FF 0X
+*** FF Escape, X=Escape-Level
+*** At each level of decoding, X is decremented, and FF-00 decodes to FF.
+*** After encoding reaches FF-0F, it wraps to FF-00-0F, FF-01-0F, ...
+** FF 1L LL LL TT TT
+*** 6-Byte TWOCC, Len=1M
+** FF 2L LL LL TT TT TT TT
+*** 8-Byte FOURCC, Len=1M
+** FF 30 LL LL LL LL TT TT
+*** 8-Byte TWOCC, Len=4G
+** FF 31 LL LL LL LL TT TT TT TT
+*** 10-Byte FOURCC, Len=4G
+
+
+Primitive tags are directly followed by data.
+Composite tags are followed by a length, followed by any data.
+
+VLIE
+* 0xxx-xxxx: 0..127
+* 10xx-xxxx: Special/Escape
+* 110x-xxxx xxxx-xxxx: 0..8191
+* 1110-xxxx xxxx-xxxx(x2): 8192..1M
+* ...
+
+SVLIE: Sign-Folded VLIE
+* 0, -1, 1, -2, 2, ...
+
+FVLIE:
+* Exponent:SVLIE, Fraction:SVLIE
+* Value=Fraction*(2^Exponent)
+
+Tags (Class=0):
+* 0=EOL
+* 1=Bool (Byte)
+* 2=Integer (SVLIE)
+* 3=BitArray
+* 4=ByteArray
+* 5=Null
+* 6=UUID / SIXTEENCC
+* 9=Float (FVLIE)
+* 11=Raw Symbol (UTF-8)
+* 12=Raw String (UTF-8)
+* 13=Raw Keyword (UTF-8)
+* 14=Begin Node (Raw UTF-8 Name)
+
+Tags (Class=2):
+* 1=String Ref (VLIE String-Table Index)
+* 2=Keyword Ref (VLIE String-Table Index)
+* 3=Begin Node (VLIE String-Table Index)
+* 4=VLIE Literal Table Reference
+* 5=VLIE Global Table Reference
+
+
+=== Top Level Header ===
+
+* QWORD magic="FRBC2C00";	//file magic
+* DWORD szImage;			//size of image (includes magic and self)
+* <lumps>
+
+
+=== Top-Level Lumps ===
+
+Values will be stored in big-endian order.
+Float and Double literals will be stored in IEEE754 form.
+
+
+FOURCC("GDEF")
+* Global Declarations
+* Consists of TLV markers for all top-level definitions.
+** GVAR, GFCN
+
+FOURCC("GIDX")
+* Global Index
+* Consists of a table of 32-bit offsets into GDEF.
+
+FOURCC("LDEF")
+* Literal Table
+
+FOURCC("LIDX")
+* Literal Index
+* Consists of a table of 32-bit offsets into LDEF.
+
+FOURCC("GIX2"), FOURCC("LIX2")
+* Global/Literal Index
+* Consists of a table of 16-bit offsets into GDEF or LDEF.
+* May be used instead of GIDX/LIDX when the lumps are under 64kB.
+
+FOURCC("GIX3"), FOURCC("LIX3")
+* Global/Literal Index
+* Consists of a table of 24-bit offsets into GDEF or LDEF.
+* May be used instead of GIDX/LIDX when the lumps are under 16MB.
+
+FOURCC("LVT4")
+* Literal Value Table (32-bit)
+* Holds literal Int and Float values.
+
+FOURCC("LVT8")
+* Literal Value Table (64-bit)
+* Holds literal Long and Double values.
+
+FOURCC("STRS")
+* Strings Table
+* Strings are NUL-terminated and be assumed to be (by default) UTF-8.
+** Non-UTF-8 or binary strings may exist.
+** These will map directly to the C "char *" strings.
+* Index 0 will be a null string.
+* Index 1 will be an empty string.
+* String indices will be the byte-offset of the string within the table.
+
+FOURCC("WSTR")
+* Wide Strings Table
+* Strings are NUL-terminated and stored using M-UTF-8.
+* Index 0 will be a null string.
+* Index 1 will be an empty string.
+* String indices will be the byte-offset of the string within the table.
+
+
+=== Global Declarations ===
+
+Located in GDEF.
+
+FOURCC("FUNC") / TWOCC("FN"):
+*	Defines a function definition.
+*	Consists of a number of markers defining the function's contents.
+
+FOURCC("DVAR") / TWOCC("DV"):
+*	Declares a global variable
+*	Likewise consists of markers.
+
+FCC("NULL"):
+*	Declares a global NULL marker.
+*	Contents are empty or are undefined and tool-specific.
+
+
+==== Markers (Function/Variable) ====
+
+Class=4:
+*	1='name:'		(0x81)
+*	2='sig:'		(0x82)
+**		Name and Signature Strings
+**		Raw VLIE String Indices.
+*	3='flags:'		(0x83)
+**		Flags String (Raw Index)
+*	4='nlocals:'	(0x84)
+*	5='nregs:'		(0x85)
+*	6='nargs:'		(0x86)
+*	7='ncargs:'		(0x87)
+**		Register Counts (Declared Functions, Required)
+**		Followed by a raw VLIE.
+*	8='value:'		(0x88)
+**		Initialization Value (Variables, Optional)
+**		Followed by a raw VLIE giving literal index.
+**		I/L/F/D: Index is into the LVT4 and LVT8 tables.
+**		P: Tagged Literal Index
+**		Methods: Global Index for method body.
+*	9='libname:'	(0x89)
+**		Source library name for imports.
+*	10='nlxregs:'		(0x8A)
+**		Size of lexical environment frame.
+*	11='extends':		(0x8B)
+**		Class: VLIE of Superclass (Literal Index)
+*	12='implements':	(0x8C)
+**		Class: VLIE of interface (Literal Index)
+**		Multiple may be present, one per-interface.
+**		Field/Method: Indicates ownership.
+
+TWOCC("BC"):
+*	Bytecode
+**	Only valid within functions.
+
+Context-Dependent-Data-Marker:
+*	Interpreted in functions as a 'BC' marker.
+
+FOURCC("DYX2") / TWOCC("DX"):
+*	Dynamic Bindings
+*	Contains a list of dynamic variables which are bound in this frame.
+*	Each is encoded as a 16-bit global index.
+*	An empty 'DX' marker indicates that the dynamic environment is used.
+**		A 'DX' marker will be required for access to the dynamic environment.
+
+
+Name and Sig are optional for non-exported functions, but are required for imports and exports.
+
+Bytecode is required for normal functions and for exports, but is not used with imports.
+
+
+Tagged Literal Index:
+*	Low bits give tag (As a unary prefix and extra bits);
+**		    00(0): Literal Table (Generic)
+**		    10(1): Strings Table (Narrow String)
+**		   001(2): Wide Strings Table (Wide String)
+**		   101(3): Global Table Object Pointer
+**		 00011(4): Global Table Slot Pointer
+* 0/1 0x
+* 2/3 10x
+* 4-7 110xx
+* 8-15 1110xxx
+
+
+=== Literal Table ===
+
+FOURCC("DSTR") / TWOCC("SR"):
+* Declare Struct
+* Contains TWOCC("DF") Markers.
+
+FOURCC("DSTU") / TWOCC("SU"):
+* Declare Union
+* Contains TWOCC("DF") Markers.
+
+TWOCC("DF"):
+* Located in a 'DSTR' or 'DSTU' marker.
+* Declare Field
+* Uses same markers as 'DVAR'
+
+FOURCC("DTYD"):
+* Declare Typedef
+* Contains a marker identifying the signature string.
+* May contain conditional TWOCC('DF') markers for variable typedefs.
+
+FOURCC("ARR1"):
+* Array of 8-bit items (SByte/UByte)
+
+FOURCC("ARR2"):
+* Array of 16-bit items (Short/UShort)
+
+FOURCC("ARR4"):
+* Array of 32-bit items (Int/Float)
+
+FOURCC("ARR8"):
+* Array of 64-bit items (Long/Double)
+
+FOURCC("ARRP"):
+* Array of pointers (32 Bit, Tagged Index)
+
+FOURCC("ASTD"):
+* Array of Structs/Unions.
+* First DWORD is a LiteralID for the structure declaration.
+* Contents are stored as fixed-form data.
+* Struct Count will be (DataSize-4)/FixedFormSize
+
+TWOCC("SX"):
+* Dynamically Typed Value
+* S-Expression
+** Contains a "value:" marker, and a string-table index.
+** The S-Expression is parsed and replaced with its variant value.
+* May also contain raw integer or float markers and similar.
+** Likewise, they will be converted to variants.
+
+FOURCC("DSTC") / TWOCC("SC"):
+* Declare Class
+* Contains TWOCC("DF") Markers.
+* Contains TWOCC("FN") Markers for methods.
+** These may link to functions declared in the Globals table.
+** Virtual and interface methods may lack bodies.
+* Classes will declare all fields not directly inherited from the superclass.
+** Interface fields and methods will be declared in the class.
+* Classes may be used as either value-type or reference-type.
+
+
+=== Fixed Form Literal Data ===
+
+Many literal definitions will use fixed-form data.
+
+Fixed-form data need not match in-program data in terms of either size or layout.
+
+Literal data will be represented in fixed-form mode as:
+* Int -> 32 bit DWORD
+* Long -> 64 bit QWORD
+* Float -> 32 bit DWORD (as IEEE754 Float bits)
+* Double -> 64 bit QWORD (as IEEE754 Double bits)
+* Pointers -> 32 bit DWORD (Tagged Literal Index)
+* Bytes -> 8 bit BYTE
+* Shorts -> 16 bit WORD
+
+Struct members will be stored packed (may be unaligned).
+
+Unions will be stored with the data filled in for the first-longest member.
+
+
+=== Signature Strings ===
+
+Signatures will be ASCII strings encoding data types.
+Various characters will encode various types.
+
+Basic Types
+* a: Signed Byte (8 bits)
+* b: Bool (8 bits)
+* c: Char (8 bits, implicitly signed)
+* d: Double (64 bits)
+* e: Long Double (ABI specific, treated in FRBC as double)
+* f: Float (32 bits)
+* g: Float128 (Reserved)
+* h: Unsigned Byte (8 bits)
+* i: Int (32 bits)
+* j: Unsigned Int (32 bits)
+* k: Float16 (reserved)
+* l: Native Long (32/64 bits)
+* m: Unsigned Native Long (32/64 bits)
+* n: Int128 (Reserved)
+* o: Unsigned Int128 (Reserved)
+* p (Reserved)
+* q (Reserved)
+* r: Variant (Pointer sized)
+* s: Short (16 bits)
+* t: Unsigned Short (16 bits)
+* "u<name>;': Custom Type
+* v: Void
+* w: Wchar (16 bits)
+* x: Long Long (64 bits)
+* y: Unsigned Long Long (64 bits)
+* z: Variable Argument List
+* C*/D*/G*: Reserved, Extended Types
+** Cf: Complex Float
+** Cd: Complex Double
+** Cr: Variant2 (64-bit tagged reference).
+
+Basic Notation:
+* "A<sz>[,<sz>]*;<type>": Fixed array of type
+* "A<sz><type>": Fixed array of type (Semicolon Omitted)
+* "P<type>": Pointer to type
+* "U<name>;": Named Extended Type
+** "U<lidx>;": Typedef (Literal Index)
+** "U<lidx>": Typedef (Literal Index, Semicolon Omitted)
+* "X<name>;": Struct/Union
+** "X<lidx>;": Struct/Union (Literal Index)
+** "X<lidx>": Struct/Union (Literal Index, Semicolon Omitted)
+* "(<arglist>)<rettype>": Function Signature
+
+Literal Index forms will encode the structure as an index into the literal table. This index will be encoded as an ASCII decimal number, for example, "PX935" would encode a Pointer to a Struct or Union represented in entry 935 in the literal table. The use of a terminating semicolon is optional with numeric IDs, but is required for named structure references.
+
+Likewise, array sizes will also be encoded in decimal.
+
+
+Flags:
+* a: abstract
+* b: big-endian
+* c: __cdecl
+* d: delegate
+* e: event
+* f: __fastcall
+* g: getter
+* h: setter
+* i: inline
+* j: final / const2
+* k: const
+* l: little-endian
+* n: native
+* o: override
+* p: public
+* q: private
+* r: protected
+* s: static
+* t: __thiscall
+* v: virtual / __virtual
+* w: __stdcall
+* x: __dynamic
+* y: __transient
+* Ca: __async
+* Cd: typedef
+* Ce: extern
+* Cg: __setgid
+* Ch: __setuid
+* Ci: interface / __interface
+* Cj: struct
+* Ck: union
+* Cs: synchronized
+* Cv: volatile
+
+* De: __declspec(dllexport)
+* Di: __declspec(dllimport)
+* Dt: __thread
+
+* "u<name>;": named flag
+* "Du<name>;": named attribute
+
+* "DD<name>;": __ifdef(name) { ... }
+* "DN<name>;": __ifndef(name) { ... }
+
+Using dynamic with a global implies that it should be treated as a dynamic variable.

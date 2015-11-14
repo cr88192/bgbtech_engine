@@ -1,0 +1,144 @@
+this is for anyone that cares or has any useful commentary (I guess).
+
+
+for a while (on and off) I have been working on kind of a physics engine thinggy.
+it is not that great really (a lot could be desired, in particular better collision handling and maybe more features).
+
+presently no source is available online.
+plans are to release it under lgpl.
+it is written to be fairly standalone (it uses malloc and the math functions, but not that much else). it is written in plain c.
+
+
+presently supported (and working acceptably) geometry types:
+aabbs, obbs, spheres, convex hulls, bsp trees.
+
+oriented cylinders (of the capped and uncapped varieties) are supported, but at present don't really work so well.
+
+a few constraint types, eg, ball, hinge, and ujoints are supported (ujoints are presently the least stable). weld, and a few other joint types, are considered but not implemented.
+
+ragdoll comes up as a possible feature idea...
+
+
+obbs and convex hulls presently have kind of lame collision behavior. I had found a fairly simple and general algo for collision handling, but the behavior is not that good (objects will not stack, and will more tend to roll off each other if put in a situation where stacking would be expected). though kind of lame, at present this is a fairly "well behaved" handler.
+
+current approach: (after collision checking) the vector between the object origins is used as a normal, and the midpoint of the overlap along this axis is used as the collision origin.
+
+a few thoughts came up recently about choice of a "best" normal, which could possibly be used as the basis for a better collider.
+assert best normal: a face which intersects with the other object and has the largest absolute dot product with the velocity. this, of course, requires that the colliders take velocity into account.
+assert best point: probably still the point of deepest penetration along this axis, or maybe an average of colliding points, or such.
+
+only experimentation can show really...
+
+spheres presently have an issue of sometimes sticking together for some unknown reason (this became more noticable recently after changing the iterator design).
+
+
+bsp trees, work fairly well and fairly realistically against most of the other types. a minor issue though is that obbs and convex hulls tend not to fall off of ledges (they will tend to behave more as if they were on a kind of unstable floor, and will fall if contact with the ledge is broken).
+
+minor issue: with the change in the iterator, objects don't have to move all that fast to just travel right through the wall (presently about 100m/s is sufficient to completely clear the walls, 50m/s may clear the wall or may become lodged or similar).
+I am considering detecting fast moving objects (with either high linear or angular velocity), and treating them as if they were aabbs or similar. collision behavior will not be that accurate, but, hell, it shouldn't be as obvious with fast-moving objects anyways.
+
+bsp's are non-orientatable. I was vaguely considering adding oriented bsp's, but they are likely to be seperate from normal bsps (regularly transforming the normals and such could become expensive, and presently bsps are being used mostly for map geometry and such, and are otherwise assumed not to move...).
+
+likewise, they are likely to present a lot of hairy issues (like most other orientable solids). it would probably make more sense to add trimeshes or polymeshes, and try to work out the collision handling issues...
+
+
+recently, I change to using an iterator that steps the whole world in a single step (rather than subdividing time and trying to deal with the world in a piecewise manner). this is a lot faster, however, since I am using the whole frame as a step some things are a little less well behaved than they were before (I had to fudge things a little to fix some problems that popped up).
+
+at present (lib compiled with debug and profile options), I have been able to pull off around 250 aabbs on map before dropping to around 10fps, and somewhere around 100 obbs or so. spheres are somewhat more expensive for some unknown reason so the numbers are a lot lower. (for aabbs, I was able to make a large number of stacks and count these, for obbs and spheres I have to guess based on appearance).
+
+
+api:
+the api was somewhat influenced by opengl.
+many conventions, and the general presentation of data, is fairly similar.
+there are differences though, eg, working with solids more heavily revolves around getting and setting propeties. other design differences are implied by the nature of the library.
+
+minimal "user aiding" or "convinience" functions are provided by the library. more so, it does not even supply its own (externally visible) math functions. it is expected that everything like this will be managed by the frontend (or by a "second stage" wrapper or utility library). more so, I feel that providing such functions directly pollutes the api and hinders potential clone-engines or branch versions.
+
+
+it seems to work ok with a (vaguely) game-like frontend, involving the frontend managing basic state stuff, retaining an entities list, and polling for information from the library. additionally, entities are kept attached to the bsp tree, allowing them to be rendered along with the map geometry (and maintaining fairly correct back to front ordering). presumably this would additionally allow skipping rendering objects for which it is impossible to see.
+
+the physics engine, however, gives no special treatment of the bsp in this regard (it is treated as an object like everything else...).
+
+for example, here are a few snippets showing how to pass a bsp tree (from a local representation) to the library (edited some):
+void pdgl_main_sendface(struct bsp_face_s *face)
+{
+ int i;
+
+ bsdeBegin(BSDE_BSP_FACE);
+ bsdeNormal4fv(face->norm);
+ for(i=0; i<face->nvecs; i++)
+  bsdeVertex3fv(face->vecs+i*3);
+ bsdeEnd();
+}
+
+void pdgl_main_sendnode(struct bsp_node_s *node)
+{
+ struct bsp_face_s *cur;
+
+ if(!node->lnode)
+ {
+  bsdeBegin(BSDE_BSP_LEAF);
+  cur=node->face;
+  while(cur)
+  {
+   pdgl_main_sendface(cur);
+   cur=cur->next;
+  }
+  bsdeEnd();
+  return;
+ }
+
+ bsdeBegin(BSDE_BSP_NODE);
+ bsdeNormal4fv(node->norm);
+ pdgl_main_sendnode(node->lnode);
+ pdgl_main_sendnode(node->rnode);
+ bsdeEnd();
+}
+
+and in the function creating this:
+ main_bsp=pdgl_main_readbsp("tst0_bsp.txt");
+ bsdeBegin(BSDE_SOLID_BSP);
+ pdgl_main_sendnode(main_bsp);
+ i=bsdeEnd();
+ main_addsolid(i);
+ bsdeSetAttrF(i, BSDE_DENSITY, 1000);
+ bsdeSetAttrI(i, BSDE_STATIC, 1);
+
+note: bsdeEnd() will, in some cases, return a handle for the created object.
+note: the main_* and pdgl_main_* calls are part of the frontend...
+
+here is an example showing creating a simple jointed chain (edited):
+ i=bsdeNewSphere(1);
+ main_addsolid(i);
+ bsdeSetAttrFV(i, BSDE_ORIGIN, VEC3(0, 0, 10), 3);
+ bsdeSetAttrF(i, BSDE_DENSITY, 1000);
+ bsdeSetAttrI(i, BSDE_STATIC, 1);
+ bsdeSetAttrI(i, BSDE_NONSOLID, 1);
+ j=i;
+
+ v[0]=1;
+ v[1]=0;
+ v[2]=9;
+
+ for(i=0; i<7; i++)
+ {
+  k=bsdeNewOBB(-1, -1, -1, 1, 1, 1);
+  main_addsolid(k);
+  bsdeSetAttrFV(k, BSDE_ORIGIN, v, 3);
+  bsdeSetAttrF(k, BSDE_DENSITY, 1000);
+  bsdeSetAttrI(k, BSDE_STATIC, 0);
+  bsdeSetAttrI(k, BSDE_NONSOLID, 1);
+
+  l=bsdeNewJoint(BSDE_JOINT_BALL);
+  bsdeBindJointSolids(l, j, k);
+  bsdeSetJointAttrFV(l, BSDE_ORIGIN,
+   VEC3(v[0]-0.5, v[1]-0.5, v[2]+0.5), 3);
+
+  v[0]+=1;
+  v[1]+=1;
+  v[2]-=1;
+
+  j=k;
+ }
+
+and so forth...

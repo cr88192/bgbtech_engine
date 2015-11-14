@@ -1,0 +1,12 @@
+package bsvm.util;
+
+public class NoSuchElementException extends Exception
+{
+// private static final long serialVersionUID = -7034897190745766939L;
+static final long serialVersionUID = 6769829250639411880L;
+
+public NoSuchElementException()
+	{ super(); }
+public NoSuchElementException(String s)
+	{ super(s); }
+}

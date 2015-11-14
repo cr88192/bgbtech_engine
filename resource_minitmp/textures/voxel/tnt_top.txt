@@ -1,0 +1,4 @@
+$flags voxel
+
+$vox_BlockUpdate BTSV_VoxelPower_UpdateVoxel_TNT
+$vox_SmallDamageEvent BTSV_Voxel_SmallDamageEvent

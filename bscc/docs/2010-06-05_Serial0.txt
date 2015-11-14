@@ -1,0 +1,9 @@
+Considered ideas for a binary serialization:
+has a header, an array of declarations, and packed serialized data.
+
+the data is represented primarily structurally, and little is assumed WRT semantics.
+the serialized objects are represented as a hetrogeneous array of objects.
+
+a single object may be identified as the root object.
+
+types will be handled via a signature array, and via indices into this array.

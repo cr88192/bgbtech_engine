@@ -1,0 +1,476 @@
+BTLZA: BGBTech LZ77 + Arithmetic
+
+Goals:
+* Deflate-like encoder but with Arithmetic Coding;
+* Ideally, sort of like LZMA but cheaper/faster;
+* Should ideally compress better than Deflate or Deflate + Arithmetic;
+* Should be mostly drop-in-compatible.
+
+In cases where a Zlib header is expected by the format, a Faux Zlib Header will be used.
+
+== Coded Stream ==
+
+=== Coded Blocks ===
+
+Blocks will be tagged using a 1-bit final-block indicator followed by a 2 bit block-type ID.
+Bits will be read from bytes starting from the LSB.
+
+Block Types will use a 2-bit ID:
+* 0: Stored Data
+* 1: Fixed Table
+* 2: Dynamic Table
+* 3: Escape Case
+** 3-bit secondary type follows.
+** 0=Reserved
+** 1=Arithmetic Mode Header
+** 2=Dynamic Table 2
+** 3=Fixed Table 2
+** 4=Direct AC Block
+
+Block types 0, 1, and 2 will be the same as normal Deflate (as defined in RFC1951).
+
+If in Deflate64 Mode, the blocks will be nearly identical, but with a few slight differences:
+* The dictionary will be extended to 64kB.
+** The last 2 entries in the distance table will be used for these lengths.
+* Symbol 285 will have 16 extra bits.
+** It will encode a value from 3 to 65538.
+
+
+==== Stored Data ====
+
+Stored data is stored in an uncompressed form.
+
+* len:WORD, nLen:WORD, data:byte[len]
+** len: Length of stored data
+** nLen: ~len
+** data: raw byte data.
+
+
+==== Fixed Huffman Table ====
+
+In this mode, the Huffman table will used fixed code-lengths.
+* 0-143: 8 bits
+* 144-255: 9 bits
+* 256-279: 7 bits
+* 280-287: 8 bits
+
+==== Fixed Huffman Table 2 ====
+
+Similar to the normal Fixed Huffman Table, except that a table-ID is given:
+* Hl(3): TableID, Literal
+* Hd(2): TableID, Distance
+
+TableID, Literal:
+* 0, Same literal table as before, expanded distance table
+** 0-143: 8 bits
+** 144-255: 9 bits
+** 256-279: 7 bits
+** 280-287: 8 bits
+*** Match lengths are limited to 1kB
+* 1, Expanded A.
+** 0-127: 8 bits
+** 128-383: 9 bits
+*** 0xxxxxx: 0-127 8 bit
+*** 1xxxxxxx: 128-383
+* 2, Expanded B.
+** 0-255: 9 bits
+** 256-383: 8 bits
+*** 0xxxxxx: 256-383 8 bit
+*** 1xxxxxxx: 0-255
+
+TableID, Distance:
+* 0:
+** 0-63: 6 bits (Window: Full Range)
+* 1:
+** 0-31: 5 bits (Window: 64kB)
+* 2:
+** 0-15: 4 bits (Window: 256 bytes)
+* 3:
+** 0-7: 3 bits (Window: 16 bytes)
+
+==== Dynamic Huffman Table ====
+
+* Hl(5) bits: Number of coded literal symbols (minus 257, 257-288).
+* Hd(5) bits: Number coded distance symbols (minus 1, 1-32).
+* Hc(4) bits: Number of header symbols (minus 4, 4-19).
+** Hcl(Hc*3): Header symbol code lengths
+*** Encoded in the following order:
+**** 16, 17, 18, 0, 8,7, 9,6, 10,5, 11,4, 12,3, 13,2, 14,1, 15
+
+This is followed by the literal and distance tables, which are encoded as such:
+* 0-15: Code Length
+* 16: Rc(2), Repeat prior code length 3-7 times.
+* 17: Zc(3), Code length of 0 for 3 to 10 times.
+* 18: Zc(7), Code length of 0 for 11 to 138 times.
+
+
+==== Dynamic Huffman Table 2 ====
+
+Similar to the normal Dynamic Huffman Table, except for a few sizes and similar:
+* Hr(3): Reserved, must be 0
+* Hl(7): Number of coded literal symbols (minus 257, 257-384).
+* Hd(6): Number coded distance symbols (minus 1, 1-64).
+* Hc(5): Number of header symbols (minus 4, 4-35).
+** Hcl(Hc*3): Header symbol code lengths
+
+
+==== Arithmetic Mode Header ====
+
+Hr(3): Header Mode
+
+* 0: Disable Arithmetic Coding
+** Cancels out of arithmetic coding, returns to using raw bits.
+
+* 1: Enable Arithmetic Coding (Mode A)
+** Hl(4)+12: Size of Context
+** Hw(5): Dictionary Window Size
+*** Enables the use of a arithmetic-coding mode.
+*** In this mode, Huffman coded symbols and extra bits are secondarily fed through a bitwise arithmetic coder.
+*** No distinction is made between the types of bits (All bits will use a single shared context model).
+*** Logically, bits are read/written in LSB-first ordering.
+
+* 2: Enable Arithmetic Coding (Mode B)
+** Hl(5): Size of Literal Symbol Context
+** Hd(5): Size of Distance Symbol Context
+** Hx(5): Size of Extra-Bits Value Context
+** HCx(5): Number of context-encoded Extra-Bits
+*** After this count, fixed-probability bits will be used instead.
+** Hy(5): Size of Raw-Bits Value Context
+** Hw(5): Dictionary Window Size
+*** Enables the use of a arithmetic-coding mode.
+*** In this mode, Huffman coded symbols and extra bits are secondarily fed through a bitwise arithmetic coder.
+*** Different types of bits will use different contexts.
+*** Logically, bits are read/written in LSB-first ordering.
+
+
+== Arithmetic Coder ==
+
+To be filled in more once it stabilizes.
+
+Basically, it uses a bit-at-a-time encoder, with a variable context size.
+
+The context basically consists of the last N preceding bits, which is used as an index into a probabilities table. After encoding each bit, the context is shifted 1 bit and the encoded bit is added to the LSB (or MSB). 
+
+This context is masked by the context-size, namely ((1<<n)-1), when accessing the model weights.
+
+Encoded data bits may be written in LSB-first or MSB-first ordering.
+
+There may be multiple models in use for different types of bits:
+* L, Literal Symbol Bits
+** Used for Literal Huffman Symbols
+* D, Distance Symbol Bits
+** Used for Distance Huffman Symbols
+* X, Extra Bits
+** Used for context-modeled extra-bits.
+* R, Raw Bits
+** Used for any non-categorized bits.
+** This is the sole context for Arithmetic Mode A.
+* F, Fixed
+** Bits are always encoded with an equal probability.
+** Note, will only eat 1 bit from the range.
+
+
+=== Range and Weights ===
+
+Logically, there will be several values in use:
+* min: Lower bound of the coder range
+* max: Upper bound of the coder range
+* range=max-min: Difference between the lower and upper bounds
+* val: Encoded value stream
+
+A 10-bit weight value will be used.
+
+A division bound will be calculated from the weight as:
+* bound=(range>>10)*weight.
+* Values above this point (rval>dval) will correspond to a logical 1 bit
+** min=bound+1;
+** weight=weight-(w>>5);
+* Values less than or equal to this value will be interpreted as 0
+** max=bound;
+** weight=weight+((1024-w)>>5);
+
+
+Normalization happens when the high 8 bits of min and max become equal.
+
+For encoding:
+* Write the high 8 bits to the output;
+* min=(min<<8); max=(max<<8)|255;
+
+For decoding:
+* min=(min<<8); max=(max<<8)|255;
+* val=(val<<8)|ReadByte();
+
+
+== Faux Zlib Header ==
+
+* 0xWMFF
+** W=Log2 Window Size minus 8
+** M=Method
+*** 8=Deflate
+*** 9=Deflate64
+*** A=BTLZA
+* FF=Flags and Check
+** 0bLLDCCCCC
+*** LL=Level, 0=Fastest, 3=Best Compression
+*** D=Preset Dictionary
+*** CC=Check Value
+
+The check value is a special value which is set such that the header (seen as a 16-bit big-endian value) is a multiple of 31.
+
+For methods 8 and 9, the compressed data is solely in Deflate or Deflate64 mode.
+For method A, the data is in BTLZA Mode.
+
+In these modes, the compressed data is to be followed by an Adler32 checksum of the expected output.
+
+If the preset dictionary flag is set, the header is followed by an Adler32 checksum which may be used to identify the dictionary.
+
+
+
+= Prior (Pre Redesign) =
+
+== Faux Zlib Header ==
+
+* 0xWMFF
+** W=Log2 Window Size minus 8
+** M=Method
+*** 8=Deflate
+*** 9=Deflate64
+*** A=Deflate + Arithmetic
+*** B=BTLZA
+* FF=Flags and Check
+** 0bLLDCCCCC
+*** LL=Level, 0=Fastest, 3=Best Compression
+*** D=Preset Dictionary
+*** CC=Check Value
+
+The check value is a special value which is set such that the header (seen as a 16-bit big-endian value) is a multiple of 31.
+
+For methods 8 and 9, the compressed data is solely in Deflate or Deflate64 mode.
+For method A, the data contains data Deflate+Arithmetic mode.
+For method B, the data is in BTLZA Mode.
+
+In these modes, the compressed data is to be followed by an Adler32 checksum of the expected output.
+
+
+== Coded Stream ==
+
+The first byte of the stream will be interpreted as such:
+* If ((byte&0x06)==0x06):
+** Start in BTLZA Mode
+* Else:
+** Start in Deflate Mode.
+** Unless there is reason to assume otherwise, normal Deflate will be assumed.
+
+
+=== BTLZA Mode Blocks ===
+
+The compressed data will be stored as a sequence of "blocks". Blocks may be variable sized.
+
+BTLZA-Mode headers will always be byte-aligned.
+
+Block types are given by magic bytes.
+
+6, 7, E, F
+
+* 0xA0, size:VLI, data:byte[size]
+** Stored Data Block
+* 0xA6, mode:VLI, data:byte[]
+** LZ+A Mode Block
+** mode=Encoding Mode
+*** Bits 0-3: Primary Context Size (12-27 bits)
+*** Bit 4: Bit Endianess:
+**** 0=MSB first
+**** 1=LSB first
+*** Bits 5-8: Window Size, 12-32 bits (64kB to 4GB)
+* 0xA7, ...
+** (Possible) BTLZH Mode
+* 0xA8, ...
+* 0xA9, ...
+** Deflate or Deflate64 Mode
+** This switches the stream into Deflate Mode.
+* 0xAA / 0xAB, mode:VLI, data:byte[]
+** Arithmetic coded Deflate or Deflate64 Block.
+** mode=Encoding Mode
+*** Bits 0-3: Primary Context Size (12-27 bits)
+*** Bit 4: Bit Endianess:
+**** 0=MSB first
+**** 1=LSB first (Default)
+* 0xAE, ...
+** (Possible) BTLZHA Mode Block
+*** BTLZH + Arithmetic
+* ...
+* 0x00
+** End Of Data
+
+
+=== Deflate Mode Blocks ===
+
+In Deflate Mode, blocks will be tagged using a 1-bit final-block indicator followed by a 2 bit block-type ID.
+Bits will be read from bytes starting from the LSB.
+
+Block Types will use a 2-bit ID:
+* 0: Stored Data
+* 1: Fixed Table
+* 2: Dynamic Table
+* 3: Escape into BTLZA mode.
+** This escape has slightly different behavior depending on its bit position:
+*** Bit 1, The current byte is the BTLZA Marker.
+*** Else, the marker will be found in the following byte.
+
+Deflate Mode blocks will be the same as normal Deflate (as defined in RFC1951).
+
+If in Deflate64 Mode, the blocks will be nearly identical, but with a few slight differences:
+* The dictionary will be extended to 64kB.
+** The last 2 entries in the distance table will be used for these lengths.
+* Symbol 285 will have 16 extra bits.
+** It will encode a value from 3 to 65538.
+
+
+==== Deflate Stored Data ====
+
+Stored data is stored in an uncompressed form.
+
+* len:WORD, nLen:WORD, data:byte[len]
+** len: Length of stored data
+** nLen: ~len
+
+
+==== Deflate Fixed Huffman Table ====
+
+In this mode, the Huffman table will used fixed code-lengths.
+* 0-143: 8 bits
+* 144-255: 9 bits
+* 256-279: 7 bits
+* 280-287: 8 bits
+
+
+==== Deflate Dynamic Huffman Table ====
+
+* Hl(5) bits: Number of coded literal symbols (minus 257, 257-288).
+* Hd(5) bits: Number coded distance symbols (minus 1, 1-32).
+* Hc(4) bits: Number of header symbols (minus 4, 4-19).
+** Hcl(Hc*3): Header symbol code lengths
+*** Encoded in the following order:
+**** 16, 17, 18, 0, 8,7, 9,6, 10,5, 11,4, 12,3, 13,2, 14,1, 15
+
+This is followed by the literal and distance tables, which are encoded as such:
+* 0-15: Code Length
+* 16: Rc(2), Repeat prior code length 3-7 times.
+* 17: Zc(3), Code length of 0 for 3 to 10 times.
+* 18: Zc(7), Code length of 0 for 11 to 138 times.
+
+
+=== BTLZH Mode (Possible) ===
+
+Uses 3 Bit Type field:
+* 0=Store
+* 1=Reserved
+* 2=Dynamic Huffman Table
+* 3-5=Reserved
+* 6/7=Escape
+
+
+==== Huffman Table (BTLZH Mode) ====
+
+Nearly identical to the above, except for a few sizes:
+* Hr(3): Reserved, must be 0
+* Hl(7): Number of coded literal symbols (minus 257, 257-384).
+* Hd(6): Number coded distance symbols (minus 1, 1-64).
+* Hc(5): Number of header symbols (minus 4, 4-35).
+** Hcl(Hc*3): Header symbol code lengths
+
+
+== Arithmetic Coder ==
+
+To be filled in once it stabilizes.
+
+Basically, it uses a bit-at-a-time encoder, with a variable context size.
+
+The context basically consists of the last N preceding bits, which is used as an index into a probabilities table. After encoding each bit, the context is shifted left by 1 bit and the encoded bit is added to the LSB.
+
+
+=== Deflate+Arithmetic Mode ===
+
+The Deflate block will be arithmetic coded and stored in place.
+
+Note that in this mode, multiple blocks may be encoded, and the final-block marker indicates an end to the arithmetic-coded block sequence (rather than the end of the BTLZA stream).
+
+==== BTLZHA Mode ====
+
+Nearly identical to Deflate + Arithmetic Mode.
+
+
+== Symbols ==
+
+
+=== Symbols (BTLZA / BTLZH) ===
+
+
+Uses a 9-bit symbol coding for literal bytes and run-lengths.
+* 0-255: Literal Byte
+* 256: End Of Data
+* 257-319: LZ77 Run
+** Symbol encodes a prefix followed by 0 or more extra-bits (VLCB)
+** The first 4 extra-bits will be context-coded, with any remaining extra-bits being fixed-probability.
+** Will use the same basic stepping pattern as Deflate.
+*** Effective match length will be 3 to 65538 characters.
+*** Effectively, it is a VLCB value starting at 257 with 3 added to the value.
+** Distances will also be encoded similarly:
+*** 6-bit prefix (VLCA)
+*** Followed by any extra-bits, with the first 4 bits context-encoded.
+*** The shortest distance will be 0, this case will be special.
+** After a run has been encoded, the final 24 bits of the run will be used to calculate the context.
+
+
+=== Symbols (Deflate Mode) ===
+
+* 0-255: Literal Byte
+* 256: End Of Data
+* 257-385: LZ77 Run
+** Length is encoded as a VLCB value from 3-258.
+** In Deflate Mode
+*** Symbol 285 will represent 258 directly (No extra bits)
+** In Deflate64 Mode
+*** Symbol 285 will represent values in the range of 3-65538 (16 extra bits)
+
+
+=== VLC ===
+
+ VLCA (Prefix, Range, Extra):
+  0- 3,     0-    3, 0
+  4/ 5,     4-    7, 1
+  6/ 7,     8-   15, 2
+  8/ 9,    16-   31, 3
+ 10/11,    32-   63, 4
+ 12/13,    64-  127, 5
+ 14/15,   128-  255, 6
+ 16/17,   256-  511, 7
+ 18/19,   512- 1023, 8
+ 20/21,  1024- 2047, 9
+ 22/23,  2048- 4095, 10
+ 24/25,  4096- 8191, 11
+ 26/27,  8192-16383, 12
+ 28/29, 16384-32767, 13
+ 30/31, 32768-65535, 14
+ -
+ 32/33,  65536-131071, 15
+ 34/35, 131072-262143, 16
+ ...
+ 
+ VLCB (Prefix, Range, Extra):
+  0- 7,   0-  7, 0
+  8-11,   8- 15, 1
+ 12-15,  16- 31, 2
+ 16-19,  32- 63, 3
+ 20-23,  64-127, 4
+ 24-27, 128-255, 5
+ 28-31, 256-511, 6
+ -
+ 32-33,  512-1023, 7
+ 34-35, 1024-2047, 8
+ ...
+
+Some values and arguments may have the sign folded into the LSB:
+* 0, -1, 1, -2, 2, -3, 3, -4, ...
+
+These cases will be called SVLCA and SVLCB.

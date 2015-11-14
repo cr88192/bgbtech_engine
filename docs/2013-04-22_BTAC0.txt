@@ -1,0 +1,68 @@
+BGBTech Audio Codec 0
+
+Idea: Fixed block audio codec vaguely similar to DXTn
+
+Sample Blocks:
+64 Samples, 2 bits/sample (128 bits)
+4x 8 bit min/max: 64 bits
+16-bit left/right min/max (64 bits)
+
+64 samples per block, each 256 bits, 176 kbps.
+
+
+Also possible:
+16 bit sample (average)
+8 bit left-right (ssqrt)
+8 bit max-min (ssqrt)
+
+4x 4-bit min/max (32 bits)
+
+64 Samples, 3 bits/sample (192 bits)
+
+Possibilty 1.2:
+16 bit sample (average)
+8 bit left-right (ssqrt)
+8 bit max-min (ssqrt)
+8x 5-bit min/max (80 bits)
+64 Samples, 2 bits/sample (128 bits)
+
+Possibilty 1.3:
+16 bit mix/max sample (center, 32 bits)
+8 bit left-center min/max (16 bits)
+unused (16 bits)
+64 Samples, 1 bits/sample (64 bits)
+16x 4-bit min/max (128 bits)
+
+
+Possibilty 2 (128 samples in 512 bits):
+16-bit left/right min/max (64 bits)
+4x 8-bit min/max (64 bits)
+128 Samples, 3 bits/sample (384 bits)
+
+Possibilty 2.1 (128 samples in 512 bits):
+16-bit left/right min/max (64 bits)
+8x 8-bit min/max (128 bits)
+128 Samples, 2 bits/sample (256 bits)
+
+Possibilty 2.2 (128 samples in 512 bits):
+16 bit mix/max sample (average, 32 bits)
+8 bit left-right min/max (16 bits)
+8x 5-bit min/max (80 bits)
+128 Samples, 3 bits/sample (384 bits)
+
+Possibilty 2.3 (128 samples in 512 bits):
+16 bit mix/max sample (average, 32 bits)
+8 bit left-right min/max (16 bits)
+8x 8-bit min/max (128 bits)
+128 Samples, 2 bits/sample (256 bits)
+
+
+Possibilty 3 (128 samples in 256 bits):
+16 bit mix/max sample (average, 32 bits)
+8 bit left-right min/max (16 bits)
+8x 5-bit min/max (80 bits)
+	mins (40 bits)
+	maxs (40 bits)
+128 Samples, 1 bit/sample (128 bits)
+
+128 samples per block, each 256 bits, 88 kbps.

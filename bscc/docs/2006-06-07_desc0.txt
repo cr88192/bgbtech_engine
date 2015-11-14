@@ -1,0 +1,63 @@
+well, once again I am beating against something I have tried several times in the recent past, but each time met with failure:
+a (largely) statically typed vm/language.
+
+can't say I will succeed, but this time I may have an ok starting point...
+
+
+the language is planned to be functional-imperative/oo. concurrency is planned via a variation of the actor model (vs a threads and locking model). lexical scoping and closures are planned features as well. likewise, the difference between statements and expressions will be primarily syntactic.
+
+a persistency mechanism has also been planned. actually, a lot of the major stuff for the persistent store was implemented previously in the form of a different project. this was implemented in the form of a compressed read/write archive format, which thus far maintains decent performance when tested with up to about 20k members (albeit, dir indexing wasn't finished so performance isn't so great if all the contents are located in a single directory...).
+
+I am considering using a more or less java-ish front end syntax (some variations will exist, but they will be subtle). the semantics will be a little more different though.
+
+int fib(int n)if(n>2)fib(n-1)+fib(n-2); else 1;
+
+other typical examples would be making funky use of, lists, closures, or tail recursion (all planned as built-in features as well).
+
+
+this time, I am starting clean, and am working in a rather different direction from what I was before.
+
+past langs of mine have started at the syntax level and have worked back from there. first, I write the parser, then the compiler, then the vm. this time, I am starting with the vm, and will write the compiler, followed by the parser (for an intermediate syntax, I will use s-expressions, as I have generally dropped the idea of using of xml parse trees for internal data).
+
+I suspect part of the issue is that static languages have a much more strict notion of what is going on in the vm, and trying to build the vm around what I could conviniently output from the compiler just wasn't working.
+
+along with all this, in the old codebase I was having to work around the presence of a pre-existing, and largely ad-hoc dynamic type system, and several different vm's all partly seperate and partly interconnected.
+
+the vm I was trying to implement was different enough from the others that I was having to do some pretty ugly hacks to try to implement it (the vm, though using static types, had to be able to make all its internal data appear to be dynamically typed).
+
+
+so, this time, I am starting clean. the typesystem, vm, object management, ... are all more or less centralized in this design.
+
+MM/GC (general):
+precise mark/sweep+reference counting;
+tagged references;
+a dynamic typesystem exists (will be used primarily for internal stuff, variants, and the object system).
+
+as far as the mm/gc is concerned, there are only a few major object types:
+cons cells;
+small objects (allocated from cells);
+large objects (handled specially).
+
+cons cells are managed by the mm/gc itself, objects are handled by the type management code (pretty close to being part of the mm, but is much more reluctant to get involved with mm internals).
+
+the object system will be tied to this, but will interact primarily with the types manager. each class will be given its own type id (ammusingly, symbols and keywords also share the same codespace/hash as the types).
+
+outside of this, it will be assumed that one can either use built-in types or represent types as classes. externally, the typesystem will be closed.
+
+
+vm:
+will probably be a stack and register machine (probably a few specialized regs);
+unsure whether I should split up bytecode at the function or module level.
+
+in the past, I have usually done it at the function level, so I may do similar, and I don't feel particularly compelled to implement a linker...
+this does imply that many things will be done symbolically (or at least via index), but this is no big deal.
+
+compiler:
+I am thinking of making it accept a language resembling a types-annotated lisp variant (with some other funkiness related to its intended use as precompiler output). nicety will probably not be an emphasis here (if something useful needs to be known, it will likely be required).
+
+
+precompiler (may or may not be merged with parser):
+will take input syntax, and do a lot of mundane rewriting and types processing type stuff (will probably also handle constant expressions and similar as well...). likely I will also make this manage inter-module stuff and dependency checking and similar.
+
+parser:
+well, will do parsing, but I am not yet sure how seperate/joined it will be with the precompiler.

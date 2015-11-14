@@ -1,0 +1,53 @@
+Dynanic-Types Binary Format
+
+Idea:
+Format for serializing dynamically typed data.
+Should readily handle a range of possible data types.
+
+Will be based on dynamic type names and lumps.
+
+Basic format will be similar to the "BS2 ByteCode Container Format".
+
+The primary difference will be, however, that in most cases BGBDY type-names will be used for things. This serialization format will be in-turn based on the BGBDY type-system, and will likely be implemented via "encodeBinary()" and "decodeBinary()" handlers.
+
+Data will be serialized starting from a root object, which will always be at index 1 (index 0 is always NULL, and is not encoded in the file).
+
+A number of "Encode" calls will be used to drive the serialization process.
+"dyBinaryEncodeValue(ctx, val);"
+Will emit an index to a particular dynamic value.
+
+"dyBinaryEncodeInt(ctx, i);"
+Will emit an integer value (as a SVLI).
+
+With the decode process following in a similar manner.
+Generally, encode/decode handlers returning will indicate that the encoding/decoding process for that lump has finished.
+
+VLF
+
+
+struct Lump
+{
+UVLI type;
+UVLI size;
+byte data[size];
+}
+
+Where type is an index for a type-name.
+
+"_symbol_t"
+Will also be encoded in UTF-8, but will encode a symbol value.
+Will also be used for type-names.
+
+"_string_t"
+Will encode a string literal (UTF8).
+
+"_fixint_t"/"_int_t"/"_long_t"/"_int128_t"
+Will encode an integer value. These will be encoded as SVLI values.
+
+"_list_t"
+Will encode a plain list. The list will be encoded as a series of lump indices.
+In memory, a list will be a chained list of CONS cells.
+
+"_cons_t"
+Will encode a list, but unlike the above, the last index will be the tail for the list.
+

@@ -1,0 +1,18 @@
+BUILD=.
+DLLPF=lib
+
+CC=$(TARG)-gcc
+CC_OUTEXE=$(CC) -o 
+CC_OUTDLL=$(CC) -shared -o 
+CC_OUTOBJ=$(CC) -c -o 
+CC_OUTTOOL=gcc -o 
+
+CFLAGS=-Iinclude -g
+DLL_CFLAGS=$(CFLAGS) -DBGBASM_DLL
+DLL_LDFLAGS=-ldl -fPIC \
+	-Wl,-rpath,"$$ORIGIN"
+LDFLAGS=-g -L. -lbgbasm -fPIC \
+	-Wl,-rpath,"$$ORIGIN"
+
+include Makefile.inc
+

@@ -1,0 +1,119 @@
+US_LDFLAGS=-L. -lgdi32 -lopengl32 -lglaux -lglu32 \
+	-luser32 -lcomdlg32 -lwinmm -lole32 -lrpcrt4 -lkernel32 -lbsde
+
+#	source/solid_obb2.c \
+
+BSDE_SRCS = \
+	source/solid_aabb.cpp \
+	source/solid_obb.cpp \
+	source/solid_obb3.cpp \
+	source/solid_cylinder.cpp \
+	source/solid_brep.cpp \
+	source/solid_sphere.cpp \
+	source/solid_plane.cpp \
+	source/solid_hull.cpp \
+	source/solid_hull2.cpp \
+	source/solid_bsp.cpp \
+	source/solid_bsp2.cpp \
+	\
+	source/bsde_collide.cpp \
+	source/bsde_solid.cpp \
+	source/bsde_joint.cpp \
+	source/bsde_world.cpp \
+	source/bsde_math.cpp \
+	source/bsde_force.cpp \
+	source/bsde_iter.cpp \
+	source/bsde_iter2.cpp \
+	source/bsde_iter3.cpp \
+	\
+	source/bsde_message.cpp \
+	source/bsde_thread.cpp \
+	source/bsde_build.cpp \
+	source/bsde_random.cpp \
+	\
+	source/misc_vecheap.cpp \
+	\
+	source/math_vec3.cpp \
+	source/math_matd.cpp \
+	source/math_quatd.cpp \
+	source/math_planed.cpp \
+	source/math_hull.cpp
+
+BSDE_APISRCS = \
+	source/api_bsde.cpp
+
+BSDE_OBJS = $(BSDE_SRCS:.cpp=.o) $(BSDE_APISRCS:.cpp=.o)
+
+BSDE_STUB_SRCS = \
+	apps/gl_win.c \
+	apps/input.c \
+	apps/mouse_win.c \
+	apps/stub_w32.c \
+	apps/prim3d2.c \
+	apps/gl_draw.c \
+	apps/map.c
+
+BSDE_APP0_SRCS = \
+	apps/bsde_app0.c
+
+BSDE_APP1_SRCS = \
+	apps/bsde_app1.c
+
+BSDE_APP2_SRCS = \
+	apps/bsde_app2.c
+
+BSDE_STUB_OBJS = $(BSDE_STUB_SRCS:.c=.o)
+BSDE_APP0_OBJS = $(BSDE_APP0_SRCS:.c=.o)
+BSDE_APP1_OBJS = $(BSDE_APP1_SRCS:.c=.o)
+BSDE_APP2_OBJS = $(BSDE_APP2_SRCS:.c=.o)
+
+CFLAGS = -Iinclude -g -pg -msse2
+# CFLAGS = -Iinclude -O3 -msse2
+
+all: includes libs apps
+
+includes:
+
+libs: libbsde.a
+
+apps: bsde_app0 bsde_app1 bsde_app2
+
+
+FORCE:
+
+%.o: %.cpp
+	gcc $(CFLAGS) -c -o $@ $<
+
+%.o: %.c
+	gcc $(CFLAGS) -c -o $@ $<
+
+autohead.exe: autohead.c
+	gcc -o autohead.exe autohead.c
+
+include/bsde_auto.h: autohead $(BSDE_SRCS)
+	autohead $(BSDE_SRCS) > include/bsde_auto.h
+
+include/bsde_funcs.h: autohead $(BSDE_APISRCS)
+	autohead $(BSDE_APISRCS) > include/bsde_funcs.h
+
+libbsde.a: include/bsde_auto.h include/bsde_funcs.h $(BSDE_OBJS)
+	ar -cr libbsde.a $(BSDE_OBJS)
+
+bsde_app0: $(BSDE_STUB_OBJS) $(BSDE_APP0_OBJS)
+	gcc -g -pg -o bsde_app0 $(BSDE_STUB_OBJS) $(BSDE_APP0_OBJS) \
+		$(US_LDFLAGS)
+
+bsde_app1: $(BSDE_STUB_OBJS) $(BSDE_APP1_OBJS)
+	gcc -g -pg -o bsde_app1 $(BSDE_STUB_OBJS) $(BSDE_APP1_OBJS) \
+		$(US_LDFLAGS)
+
+bsde_app2: $(BSDE_STUB_OBJS) $(BSDE_APP2_OBJS)
+	gcc -g -pg -o bsde_app2 $(BSDE_STUB_OBJS) $(BSDE_APP2_OBJS) \
+		$(US_LDFLAGS)
+
+clean:
+	rm -rf bsde_auto.h bsde_funcs.h
+	rm -rf $(shell find -name \*.o)
+	rm -rf $(shell find -name \*.a)
+	rm -rf $(shell find -name \*.obj)
+	rm -rf $(shell find -name \*.lib)

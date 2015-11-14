@@ -1,0 +1,47 @@
+US_LDFLAGS=/link gdi32.lib opengl32.lib glu32.lib \
+	user32.lib comdlg32.lib ole32.lib kernel32.lib libtrem.lib
+
+TREM_SRCS = \
+	mdct.c dsp.c info.c misc.c \
+	floor1.c floor0.c vorbisfile.c \
+	res012.c mapping0.c codebook.c \
+	framing.c bitwise.c \
+	floor_lookup.c \
+
+TREM_HDRS = \
+	codebook.h misc.h mdct_lookup.h\
+	os.h mdct.h ivorbisfile.h lsp_lookup.h\
+	window_lookup.h \
+	codec_internal.h ogg.h \
+	asm_arm.h ivorbiscodec.h
+
+TREM_APISRCS =
+
+TREM_OBJS = $(TREM_SRCS:.cpp=.obj) $(TREM_APISRCS:.cpp=.obj)
+
+CFLAGS = /Iinclude /O2
+
+CFLAGS2 = /Iinclude /Z7 /DTREM_DLL
+# CFLAGS2 = /Iinclude /O2 /DTREM_DLL
+
+all: includes libs apps
+
+FORCE:
+
+
+autohead.exe: autohead.c
+	cl autohead.c
+
+libtrem.dll: $(TREM_SRCS)
+	cl /LD /Felibtrem.dll $(TREM_SRCS) $(TREM_APISRCS) $(CFLAGS2)
+
+ivorbisfile_example.exe: libs ivorbisfile_example.c $(TREM_SRCS)
+	cl /Feivorbisfile_example.exe ivorbisfile_example.c \
+		libtrem.lib /Z7
+#		$(TREM_SRCS) $(CFLAGS2)
+
+includes:
+libs: libtrem.dll
+apps: ivorbisfile_example.exe
+
+clean:

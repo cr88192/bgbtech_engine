@@ -1,0 +1,3358 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.0  (Win32)">
+	<META NAME="CREATED" CONTENT="20100106;13165600">
+	<META NAME="CHANGED" CONTENT="20100107;14462600">
+	<META NAME="Info 1" CONTENT="">
+	<META NAME="Info 2" CONTENT="">
+	<META NAME="Info 3" CONTENT="">
+	<META NAME="Info 4" CONTENT="">
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<H1>BGB SXIL: BGB IL Compiler</H1>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">This is the compiler for my IL, which I
+generally call RPNIL. The name SXIL is actually more of a historical
+issue, as I had started trying to redesign the IL compiler to use an
+S-Expression based IL, but instead ended up just cleaning and
+redesigning a few things, but ended up just staying with RPNIL
+instead.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2>API</H2>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void sxil_puts(char *str);</P>
+<P STYLE="margin-bottom: 0in">Send a string to the IL buffer.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void sxil_print(char *str, ...);</P>
+<P STYLE="margin-bottom: 0in">Print a string to the IL buffer.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void SXIL_BeginBuf();</P>
+<P STYLE="margin-bottom: 0in">Reset the IL buffer, the idea being
+that this function will be used for &ldquo;feedback&rdquo; IL (use
+BeginModule/EndModule if the code needs to be actually compiled).</P>
+<P STYLE="margin-bottom: 0in">Note that these calls are not nestable.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *SXIL_EndBuf();</P>
+<P STYLE="margin-bottom: 0in">End the IL buffer, returning a pointer
+to this buffer.</P>
+<P STYLE="margin-bottom: 0in">This buffer will contain any IL written
+since BeginBuf had been used.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void SXIL_BeginModule(char *name);</P>
+<P STYLE="margin-bottom: 0in">Begin sending a new module. After this
+call, IL code may be written into the IL buffer for subsequent
+compilation.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void SXIL_EndModuleFile(char *outfn);</P>
+<P STYLE="margin-bottom: 0in">End the current module, compile and
+assemble the module, and write the resulting object file to the
+output file (the file name having been given in outfn).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void SXIL_EndModule();</P>
+<P STYLE="margin-bottom: 0in">End the current module. This will
+compile and assemble the module, as well as have it linked into the
+running image.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">char *SXIL_EndModuleBuffer();</P>
+<P STYLE="margin-bottom: 0in">Compile the current module, returning a
+pointer to a buffer containing the produced assembler code.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void SXIL_AbortModule();</P>
+<P STYLE="margin-bottom: 0in">Abort the present module, essentially
+causing the IL compiler to forget it was compiling anything.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">void SXIL_Init();</P>
+<P STYLE="margin-bottom: 0in">Initialize the IL compiler.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">int SXIL_GetSSE();</P>
+<P STYLE="margin-bottom: 0in">Get the present SSE level supported by
+the CPU as understood by the IL compiler (At present, this may be 0,
+1, or 2).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2>RPNIL Language</H2>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>RPN-Based Intermediate Language</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Goals:</P>
+<P STYLE="margin-bottom: 0in">an RPN based language existing for the
+purpose of developing the VM.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The goal of the language will be to
+compile to assembler and make use of the C calling convention. This
+will not be a language intended for users to use directly, rather
+more likely as the output of a compiler frontend.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">This language may include multiple
+stacks, some of which may or may not exist at runtime.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Some of these stacks may or may not be
+interlaced, and so, code is to properly maintain a correct LIFO
+ordering (as if they were a single stack). It is not alowed to assume
+such decoupling (for example, by using an operation presumably
+targeted for a different stack).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">An example of this is ints and floats,
+where at any given time, a value may be stored on the cpu stack, on a
+specialized stack (for example, the x87 fpu stack), in a reg (for
+example, a GPR or SSE reg), ...</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Change: The above should no longer be
+as much of an issue given the way registers and stacks are now
+managed, where the linear value-stack should itself exhibit
+relatively consistent behavior.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Conversion operators will be required
+in some cases. In many cases, RPNIL will implicitly convert between
+types as needed.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Oragnization</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">This language, rather than consisting
+of a single instruction stream, will be organized into a sequence of
+blocks. Each block will correspond to a function, method, or anything
+else needing a block.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">A block will define any args or locals,
+and will then contain a sequence of instructions.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The file will be parsed as a linear
+token stream. In this language, each token will be regarded as a
+sequence of non-whitespace characters, and seperated by whitespace.
+Quoted strings, however, will be treated as a single token, and
+comments will be simply ignored.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Comments will follow the C conventions:</P>
+<P STYLE="margin-bottom: 0in">// ... &lt;newline&gt;</P>
+<P STYLE="margin-bottom: 0in">/* stuff... */</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Args and Variables</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Each arg or var will be given as a
+single token, with a suffix giving the type ('name:type'). In the
+case where there is no name, the symbol '_' will be reserved as a
+place holder (eg, '_:Pi').</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">For local variables, a '~' suffix on a
+name will indicate that it is static. For example, 'init~:i' would
+indicate that 'init' is a static int.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note that the syntax used here for
+signatures is generally about the same as that used in the Metadata
+spec.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Qualifiers:</P>
+<P STYLE="margin-bottom: 0in">	P*, pointer to type</P>
+<P STYLE="margin-bottom: 0in">	R*, reference to type</P>
+<P STYLE="margin-bottom: 0in">	C*, complex type (f,d,e,g,k)</P>
+<P STYLE="margin-bottom: 0in">	G*, imaginary type (f,d,e,g,k)</P>
+<P STYLE="margin-bottom: 0in">	U*, extended type qualifier</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">	X*, compound type (struct or union),
+followed by '&lt;name&gt;;'.</P>
+<P STYLE="margin-bottom: 0in">	T*, will specify a tagged type.</P>
+<P STYLE="margin-bottom: 0in">	W*, Wide pointer type</P>
+<P STYLE="margin-bottom: 0in">	L*, class reference, followed by
+'&lt;name&gt;;'.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">	A*, B*, used for basic extension types</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Basic Types:</P>
+<P STYLE="margin-bottom: 0in">	a, signed char</P>
+<P STYLE="margin-bottom: 0in">	b, bool</P>
+<P STYLE="margin-bottom: 0in">	c, char</P>
+<P STYLE="margin-bottom: 0in">	d, double</P>
+<P STYLE="margin-bottom: 0in">	e, long double</P>
+<P STYLE="margin-bottom: 0in">	f, float</P>
+<P STYLE="margin-bottom: 0in">	g, 128-bit float</P>
+<P STYLE="margin-bottom: 0in">	h, unsigned char/byte</P>
+<P STYLE="margin-bottom: 0in">	i, int</P>
+<P STYLE="margin-bottom: 0in">	j, unsigned int</P>
+<P STYLE="margin-bottom: 0in">	k, hfloat (16-bit float)</P>
+<P STYLE="margin-bottom: 0in">	l, long</P>
+<P STYLE="margin-bottom: 0in">	m, unsigned long</P>
+<P STYLE="margin-bottom: 0in">	n, 128-bit int</P>
+<P STYLE="margin-bottom: 0in">	o, unsigned 128-bit int</P>
+<P STYLE="margin-bottom: 0in">	p, (reserved)</P>
+<P STYLE="margin-bottom: 0in">	q, (reserved)</P>
+<P STYLE="margin-bottom: 0in">	r, variant (dynamicly typed reference)</P>
+<P STYLE="margin-bottom: 0in">	s, short</P>
+<P STYLE="margin-bottom: 0in">	t, unsigned short</P>
+<P STYLE="margin-bottom: 0in">	u, custom type</P>
+<P STYLE="margin-bottom: 0in">	v, void</P>
+<P STYLE="margin-bottom: 0in">	w, wchar/short</P>
+<P STYLE="margin-bottom: 0in">	x, long long</P>
+<P STYLE="margin-bottom: 0in">	y, unsigned long long</P>
+<P STYLE="margin-bottom: 0in">	z, ... (varargs, ...)</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Prototype Form:</P>
+<P STYLE="margin-bottom: 0in">	'(' &lt;type*&gt; ')' &lt;type&gt;
+[';']</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Prototype Form encodes function
+prototypes in an inline form.</P>
+<P STYLE="margin-bottom: 0in">The final ';' will be optionally
+present and used to resolve ambiguities (array of functions vs
+function returning array).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Example: P(ii)d	//double(*)(int,int)</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">If the type is followed by a number
+(vars only), it indicates that this is an array, with a comma
+allowing multidimensional arrays.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Example:</P>
+<P STYLE="margin-bottom: 0in">bar:PXfoo;4,4</P>
+<P STYLE="margin-bottom: 0in">struct foo *bar[4][4];</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Extended Types:</P>
+<P STYLE="margin-bottom: 0in">	m64,	64-bit raw SSE vector</P>
+<P STYLE="margin-bottom: 0in">	m128, 128-bit raw SSE vector</P>
+<P STYLE="margin-bottom: 0in">	quat, quaternion</P>
+<P STYLE="margin-bottom: 0in">	hquat, hyperbolic quaternion</P>
+<P STYLE="margin-bottom: 0in">	vec2, 2-elem geometric vector</P>
+<P STYLE="margin-bottom: 0in">	vec3, 3-elem geometric vector</P>
+<P STYLE="margin-bottom: 0in">	vec4, 4-elem geometric vector</P>
+<P STYLE="margin-bottom: 0in">	mat2, 2x2 matrix</P>
+<P STYLE="margin-bottom: 0in">	mat3, 3x3 matrix</P>
+<P STYLE="margin-bottom: 0in">	mat4, 4x4 matrix</P>
+<P STYLE="margin-bottom: 0in">	v2f, 2-elem raw vector</P>
+<P STYLE="margin-bottom: 0in">	v3f, 3-elem raw vector</P>
+<P STYLE="margin-bottom: 0in">	v4f, 4-elem raw vector</P>
+<P STYLE="margin-bottom: 0in">	v2d, 2-elem raw vector (double)</P>
+<P STYLE="margin-bottom: 0in">	va, va_list</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Example:</P>
+<P STYLE="margin-bottom: 0in">Uvec4;16</P>
+<P STYLE="margin-bottom: 0in">Array of 16 4-vectors.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Tagged Types</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">2008-06-08: deprecated</P>
+<P STYLE="margin-bottom: 0in">The compiler will now use only static
+types and built-in variants.</P>
+<P STYLE="margin-bottom: 0in">Variants may infact represent
+dynamically typed values, however, the compiler will be allowed to
+compile these to static types if it can be proven that this is safe.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2>Definitions</H2>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">BLOCK &lt;name&gt; &lt;args&gt; VARS
+&lt;vars&gt; BODY &lt;ops&gt; END</P>
+<P STYLE="margin-bottom: 0in">FUNC &lt;name&gt; &lt;args&gt; VARS
+&lt;vars&gt; BODY &lt;ops&gt; END</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">These will be used for declaring
+functions and blocks.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Function Modifiers</P>
+<P STYLE="margin-bottom: 0in">These will be placed at the end of the
+args list, and will alter the behavior or implementation of the
+function.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">'...': immediately follows the last
+arg, indicates that a function accepts a variable number of
+arguments.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">$stdcall: x86, indicates the use of the
+WIN32 stdcall convention</P>
+<P STYLE="margin-bottom: 0in">$cdecl: x86, indicates the use of the
+cdecl convention (default)</P>
+<P STYLE="margin-bottom: 0in">$alignpad: x86-64, use alignment
+padding (? forgot what I meant by this)</P>
+<P STYLE="margin-bottom: 0in">$static: function is static (aka:
+hidden from other modules)</P>
+<P STYLE="margin-bottom: 0in">$inline: function is inlinable</P>
+<P STYLE="margin-bottom: 0in">$proxy: function has a proxy (can be
+modified absent relinking)</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">PROTO &lt;name&gt; &lt;args&gt; END</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">A function prototype (maybe used for
+type conversion and returns).</P>
+<P STYLE="margin-bottom: 0in">If not specified, on a call each arg
+will be assumed to be whatever type is passed to it, and the return
+value will be assumed to be an integer of the default size.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">S_PROTO &lt;name&gt; &lt;args&gt; END</P>
+<P STYLE="margin-bottom: 0in">Very similar to a prototype, but
+instead of declaring a callable function, it declares a function
+type. These may be used in much the same way as structs or unions,
+except that variables which are pointers to this type can be called
+as functions.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">STRUCT &lt;name&gt; &lt;body&gt; END</P>
+<P STYLE="margin-bottom: 0in">UNION &lt;name&gt; &lt;body&gt; END</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Declares a structure or union type,
+where each body element is a variable.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Example: STRUCT foo x:i y:i END</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note that definitions may not be nested
+and anonymous structs are not allowed, requiring any anonymous
+structs to be formally given a type.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Members with '_' as a name will be
+either placeholders, or will implicitly inline the contents of
+another type (in the case of struct or union members).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">CLASS &lt;name&gt; &lt;super&gt;
+&lt;iface&gt;* BODY &lt;body&gt; END</P>
+<P STYLE="margin-bottom: 0in">IFACE &lt;name&gt; &lt;super&gt; BODY
+&lt;body&gt; END</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Declare a class or interface type.</P>
+<P STYLE="margin-bottom: 0in">These will be similar to structs, but
+will inherit a from a super class/interface.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Methods will be declared as slots with
+function-types.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">VAR &lt;attr*&gt; &lt;name&gt;[ '='
+&lt;value&gt;]</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Declare a top-level variable.</P>
+<P STYLE="margin-bottom: 0in">If present, value will indicate how to
+initialize the variable.</P>
+<P STYLE="margin-bottom: 0in">This may be a numerical literal or a
+string.</P>
+<P STYLE="margin-bottom: 0in">If a variable name, it will indicate a
+pointer to that variable.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Syntax Changes:</P>
+<P STYLE="margin-bottom: 0in">Value may infact be a collection of
+values, as needed for initializing some types. For array types, 'END'
+markers will be used to end arrays or sub-arrays.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Vectors will be represented as small
+arrays.</P>
+<P STYLE="margin-bottom: 0in">Matrices will be treated as a 1D array
+of values.</P>
+<P STYLE="margin-bottom: 0in">'END' markers will not be used on
+vector or matrix types.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Example: VAR foo:Umat3; = 1 0 0 0 1 0 0
+0 1</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Struct/Union initialization will
+linearly specify members, where '_' will be used for uninialized
+members, and 'END' will terminate the definition.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">ARR &lt;attr*&gt; &lt;name&gt; &lt;body&gt;
+END</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Declare an initialized array.</P>
+<P STYLE="margin-bottom: 0in">Functionality has been absorbed into
+var.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">EXTERN &lt;attr*&gt; &lt;name&gt;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Declare an external variable.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">CLASSEXTERN &lt;classname&gt;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Declare an external class. The class
+will be assumed to be declared in the external object system, and
+will be imported and made visible. Note that classname is to be given
+in quotes.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Example: CLASSEXTERN &quot;myapp/myclass&quot;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">A class would be referenced using the
+'L&lt;name&gt;;' type form.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Example: VAR obj:Lmyapp/myclass;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">This form will be used for both classes
+and interfaces.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Variable Attributes</P>
+<P STYLE="margin-bottom: 0in">$static: variable is static</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">BINARYOP &lt;name&gt; &lt;lt&gt; &lt;rt&gt;
+&lt;op&gt;</P>
+<P STYLE="margin-bottom: 0in">UNARYOP &lt;name&gt; &lt;ty&gt; &lt;op&gt;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Declare an overloaded operator.</P>
+<P STYLE="margin-bottom: 0in">This will give the name of a function
+(the operator handler), the arg types, and the operator to overload.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">PROC &lt;name&gt; &lt;body&gt; END</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Declares a &quot;procedure&quot; block
+which will be executed/inlined dierectly.</P>
+<P STYLE="margin-bottom: 0in">The name of this block can be inserted
+into another block (including itself) and the contents of the block
+will be inlined at that location.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The block may safely use the stack just
+as if it were a part of the caller, and may leave items on the stack
+when returning.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">FILE &lt;filename&gt;</P>
+<P STYLE="margin-bottom: 0in">LINE &lt;linenum&gt;</P>
+<P STYLE="margin-bottom: 0in">FLINE &lt;filename&gt; &lt;linenum&gt;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Indicates the current file name and
+line number for the input source.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Function Body Syntax</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note that these notations will be
+special, and hence it will not be allowed to have whitespace between
+the characters or tokens in these forms (except where whitespace is
+present, in which case it is mandatory). Whitespace between tokens
+will lead to essentially different parsing.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Many of these special forms may parse
+to special bytecode instructions, some of which may be in themselves
+problematic to encode manually.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<TABLE WIDTH=100% BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=85*>
+	<COL WIDTH=171*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>$&lt;name&gt;</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Name Literal / Symbol, pushed onto the stack.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>$&lt;string&gt;</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>String Literal, pushed onto the stack.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>&lt;name&gt;</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Generally an opcode name.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>&lt;string&gt;</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>String Value, pushed as 'char *' value.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>&lt;int&gt;</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Integer, pushed onto stack.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>&lt;int&gt;L</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Long integer, pushed onto stack.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>&lt;int&gt;IL</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Int128, pushed onto stack.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>&lt;float&gt;F</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Float value.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>&lt;float&gt;D</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Double.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>&lt;name&gt;:</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Label.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>%&lt;name&gt;</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Shorthand for '$&lt;name&gt; load'</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>=&lt;name&gt;</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Shorthand for '$&lt;name&gt; store'</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>&amp;&lt;name&gt;</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Shorthand for '$&lt;name&gt; loada'</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>.&lt;name&gt;</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Shorthand for '$&lt;name&gt; loadslot'</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>=.&lt;name&gt;</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Shorthand for '$&lt;name&gt; storeslot'</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>:&lt;type&gt;</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Shorthand for '$&lt;type&gt; cast'</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>?&lt;name&gt;</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Jump if true</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>!&lt;name&gt;</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Jump if false</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>*&lt;name&gt;</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Jump</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>'&lt;&gt;'&lt;lt&gt;,&lt;gt&gt;</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Conditional Trinary Jump (jumps if less or greater, does not
+			jump if equal).</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>&lt;cmp&gt;&lt;name&gt;</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Conditional jump to name</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>{ &lt;body&gt; }</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Inlinable block</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>&lt;name&gt;(</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Begin Function Call ('$&lt;name&gt; mark_s')</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>)</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Function call (name) ('call_s')</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>(</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Mark</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>*)</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Function call (expr) ('call')</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=33%>
+			<P>,</P>
+		</TD>
+		<TD WIDTH=67%>
+			<P>Indicates an argument ('arg')</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">foo( %x , )</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Some operators will have builtin
+shorthands:</P>
+<P STYLE="margin-bottom: 0in">	+ - * / % &amp; | ^ (add sub mul div
+mod and or xor)</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Compare operators</P>
+<P STYLE="margin-bottom: 0in">	== != &lt; &gt; &lt;= &gt;=</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Unary Operators</P>
+<P STYLE="margin-bottom: 0in">	++ -- +++ ---</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Function Calls</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Arguments to called functions will
+require the use of the comma following the argument, and the comma is
+required to be surrounded by whitespace. The comma is not a
+separator, rather, it is an operation which serves to delimit
+function arguments.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Arguments are passed in a right-to-left
+ordering. Note that this is an effect of the origins of the RPNIL
+language, where originally it targetted 32-bit x86 and cdecl and
+could not reorganize arguments.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">printf( %j , %i , &quot;i=%d, j=%d\n&quot;
+, )</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">As an example, the above could also be
+used via an explicit function pointer.</P>
+<P STYLE="margin-bottom: 0in">( %j , %i , &quot;i=%d, j=%d\n&quot; ,
+&amp;printf *)</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Possible future direction: Allow
+reversing the function arguments, as well as possible ommision arg.</P>
+<P STYLE="margin-bottom: 0in">( &quot;i=%d, j=%d\n&quot; %i %j
+)printf</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">It could also be possible to allow mark
+to be ommited for fixed-argument functions.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Value and Control Flow Semantics</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Within the language, it will be viewed
+that value flow and control flow will occure at different times (for
+example, value flow will occure at compile time, wheras control flow
+will occure at runtime).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">In this sense, a jump will more
+indicate that control flow will be changed at runtime, and it will be
+viewed as invalid to use jumps in a way which would risk comprimising
+proper value flow (determined by a linear forwards scan).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">For example, &quot;$x load $y load $L1
+jmp exch L1:&quot; would be considered invalid, since a linear
+forwards scan would give the impression that the exch is executed,
+when in-fact, it is unreachable.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">A similar example, &quot;$x load $y
+load $L0 jmp_le $x load $L1 jmp L0: $y load L1:&quot;, which is
+invalid on the grounds that which item is on the stack at L1 would
+depend solely on the branch taken. A simple forwards scan, however,
+would be given the false impression that there will be 2 values on
+the stack, which is not correct in this case.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">There will be multiple ways to deal
+with this issue:</P>
+<P STYLE="margin-bottom: 0in">The use of variables, which will be
+assumed to be self-synchronizing;</P>
+<P STYLE="margin-bottom: 0in">The use of the union stack.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note:</P>
+<P STYLE="margin-bottom: 0in">Items on the stack are not based on
+physical machine-stack items, and it is possible that they are hardly
+even related. Instead, items on the stack will be abstract &quot;values&quot;
+of an indeterminate size. Hence, it is possible to use the same stack
+operations (such as dup or exch), regardless of the actual sizes or
+types of the items involved.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">However, some types are special, such
+as symbols, and at the present time may not be manipulated via stack
+operations.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Possible future direction:</P>
+<P STYLE="margin-bottom: 0in">Allow that values may be passed on the
+stack during a jump if the source and destination have the same stack
+position and types.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">This would then allow:</P>
+<P STYLE="margin-bottom: 0in">&quot;$x load $y load $L0 jmp_le $x
+load $L1 jmp pop L0: $y load L1:&quot;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H4>Union Stack</H4>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">beginu: pushes a new union to the union
+stack;</P>
+<P STYLE="margin-bottom: 0in">endu: pops the union value and pushes
+it onto the value stack;</P>
+<P STYLE="margin-bottom: 0in">setu: moves the value from the top of
+the value stack into the top value of the union stack.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The union stack is called as such
+because it will serve to &quot;merge&quot; multiple values into a
+single location, and as such allow multiple branches to direct their
+output into a single value in the flow graph. It is required that all
+values assigned into a union have the same type.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">In effect, these operations will not
+exist at runtime, but will instead serve to allow the value flow to
+be kept in sync.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">An example: &quot;beginu $x load $y
+load $L0 jmp_le $x load setu $L1 jmp L0: $y load setu L1: endu&quot;.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H4>Labels</H4>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Labels will be viewed as
+&quot;syncronization points&quot;, in that as a general rule, any
+intermediate values stored in registers will be forced into variables
+or onto the stack prior to the label and prior to executing a jump.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">At present, the exact state of a
+variable's flow graph will be undefined immediately following a label
+or jump (unless the compiler can safely conclude otherwise, such as
+the variable never having been modified in any code that can
+potentially loop back to this point).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Basic Opcodes</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">NOP --				Do nothing.</P>
+<P STYLE="margin-bottom: 0in">&lt;litstring&gt; FN --			Source
+Filename.</P>
+<P STYLE="margin-bottom: 0in">&lt;litint&gt; LN --				Source Line
+Number.</P>
+<P STYLE="margin-bottom: 0in">MARK -- &lt;mark&gt;			Push a mark.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;symbol&gt; MARK_S -- &lt;s_mark&gt;</P>
+<P STYLE="margin-bottom: 0in">Push a mark, but is given a function
+name hint.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;mark&gt; * &lt;fptr&gt; CALL --
+&lt;value&gt;</P>
+<P STYLE="margin-bottom: 0in">&lt;mark&gt; * &lt;name&gt; CALL_S --
+&lt;value&gt;</P>
+<P STYLE="margin-bottom: 0in">Call a function.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">CALL_S may be used to call static
+methods, in which case the name will be given as
+'&lt;classname&gt;.&lt;name&gt;[&lt;sig&gt;]'.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Note:</P>
+<P STYLE="margin-bottom: 0in">&lt;name&gt; MARK_S * CALL_S</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Will be a special case in which name is
+not supplied again, but may be instead gained from the mark.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;mark&gt; * &lt;obj&gt;
+&lt;value&gt;		METHODCALL -- &lt;value&gt;</P>
+<P STYLE="margin-bottom: 0in">&lt;mark&gt; * &lt;obj&gt;
+&lt;name&gt;		METDOMCALL_S -- &lt;value&gt;</P>
+<P STYLE="margin-bottom: 0in">Call a virtual method.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The former will expect the name as a
+runtime string.</P>
+<P STYLE="margin-bottom: 0in">The latter will expect the name as a
+constant.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The name will take the form
+'&lt;name&gt;[&lt;sig&gt;]' where sig is in prototype form.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;value&gt; RET --			Return value
+from function.</P>
+<P STYLE="margin-bottom: 0in">RET_V --				Return void.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;value&gt; ARG	-- &lt;value&gt;		The
+last item is an argument.</P>
+<P STYLE="margin-bottom: 0in">&lt;name&gt; LARG -- &lt;value&gt;		Load
+a variable as an argument.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;value&gt; &lt;name&gt; CAST --
+&lt;value&gt;</P>
+<P STYLE="margin-bottom: 0in">Cast an value to a given type.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;mark&gt; &lt;args*&gt; &lt;name&gt;
+BUILTIN	-- &lt;value&gt;</P>
+<P STYLE="margin-bottom: 0in">Call a compiler builtin.</P>
+<P STYLE="margin-bottom: 0in">Note that, in contrast to ordinary
+functions, builtin args are passed in left-to-right order, and do not
+use 'arg'.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;typename&gt; &lt;slot&gt; OFFSETOF
+-- &lt;int&gt;</P>
+<P STYLE="margin-bottom: 0in">&lt;value&gt; SIZEOF -- &lt;int&gt;</P>
+<P STYLE="margin-bottom: 0in">&lt;typename&gt; SIZEOF_T -- &lt;int&gt;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Get the offset of a slot, or the size
+of a value or type.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">PUSH_NULL -- &lt;null&gt;		//push NULL
+(void *)</P>
+<P STYLE="margin-bottom: 0in">&lt;name&gt; INC_S --			//increment
+variable</P>
+<P STYLE="margin-bottom: 0in">&lt;name&gt; DEC_S --			//decrement
+variable</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;value&gt; DUP	-- &lt;value&gt;
+&lt;value&gt;</P>
+<P STYLE="margin-bottom: 0in">Duplicate item on stack.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;valuea&gt; &lt;valueb&gt; EXCH --
+&lt;valueb&gt; &lt;valuea&gt;</P>
+<P STYLE="margin-bottom: 0in">Swap items on stack.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;value&gt; POP --			Pop item from
+stack.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">BEGINU --				Begin union</P>
+<P STYLE="margin-bottom: 0in">ENDU -- &lt;value&gt;			End union</P>
+<P STYLE="margin-bottom: 0in">&lt;value&gt; SETU --			Pop value into
+union</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;name&gt; LOAD -- &lt;value&gt;		Load
+value from variable</P>
+<P STYLE="margin-bottom: 0in">&lt;value&gt; &lt;name&gt; STORE
+--		Store value to variable</P>
+<P STYLE="margin-bottom: 0in">&lt;name&gt; LOADA -- &lt;ptr&gt;		Load
+a pointer to a variable</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;ptr&gt; DEFER &lt;value&gt;		Deference
+a pointer</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;obj&gt; &lt;slot&gt; LOADSLOT --
+&lt;value&gt;	Load generic value from a struct.</P>
+<P STYLE="margin-bottom: 0in">&lt;value&gt; &lt;obj&gt; &lt;slot&gt;
+STORESLOT --	Store generic value into a struct.</P>
+<P STYLE="margin-bottom: 0in">&lt;obj&gt; &lt;idx&gt; LOADINDEX --
+&lt;value&gt;	Load generic value from an array.</P>
+<P STYLE="margin-bottom: 0in">&lt;value&gt; &lt;obj&gt; &lt;idx&gt;
+STOREINDEX --	Store generic value into an array.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;obj&gt; &lt;slot&gt; LOADSLOTA --
+&lt;ptr&gt;	Load slot address.</P>
+<P STYLE="margin-bottom: 0in">&lt;obj&gt; &lt;idx&gt; LOADINDEXA --
+&lt;ptr&gt;	Load index address.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;obj&gt; &lt;idx&gt; LOADINDEX_BC --
+&lt;value&gt;</P>
+<P STYLE="margin-bottom: 0in">	Load generic value from an array
+(bounds check).</P>
+<P STYLE="margin-bottom: 0in">&lt;value&gt; &lt;obj&gt; &lt;idx&gt;
+STOREINDEX_BC --</P>
+<P STYLE="margin-bottom: 0in">	Store generic value into an array
+(bounds check).</P>
+<P STYLE="margin-bottom: 0in">&lt;obj&gt; &lt;idx&gt; &lt;value&gt;
+STOREINDEX_RBC --</P>
+<P STYLE="margin-bottom: 0in">	Store generic value into an array
+(bounds check, value at end).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;left&gt; &lt;right&gt; &lt;OP&gt;
+-- &lt;value&gt;</P>
+<P STYLE="margin-bottom: 0in">ADD, SUB, MUL, DIV, MOD,</P>
+<P STYLE="margin-bottom: 0in">AND, OR, XOR, SHL, SHR</P>
+<P STYLE="margin-bottom: 0in">ADD1, SUB1, MUL1, DIV1, MOD1, 
+</P>
+<P STYLE="margin-bottom: 0in">AND1, OR1, XOR1, EXP</P>
+<P STYLE="margin-bottom: 0in">ADD2, SUB2, MUL2, DIV2, MOD2, 
+</P>
+<P STYLE="margin-bottom: 0in">AND2, OR2, XOR2, NAND</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">SSHR, USHR	//specifies type (SHR will
+depend on type)</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Arithmetic operators.</P>
+<P STYLE="margin-bottom: 0in">The '&lt;op&gt;1' and '&lt;op&gt;2'
+forms represent alternative versions.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;value&gt; &lt;OP&gt; -- &lt;value&gt;</P>
+<P STYLE="margin-bottom: 0in">INC, INC2, DEC, DEC2</P>
+<P STYLE="margin-bottom: 0in">NOT, NEG, LNOT</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Unary operators, INC2/DEC2 actually add
+or subtract 2 from value.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;left&gt; &lt;right&gt; &lt;OP&gt;
+-- &lt;bool&gt;</P>
+<P STYLE="margin-bottom: 0in">CMP_EQ, CMP_NE, CMP_L, CMP_G, CMP_LE,
+CMP_GE</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Perform a logical comparrison of
+arguments.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;value&gt; BOOLIFY -- &lt;bool&gt;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Convert a value into a boolean.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;name&gt; JMP --</P>
+<P STYLE="margin-bottom: 0in">&lt;bool&gt; &lt;name&gt; JMP_TRUE --</P>
+<P STYLE="margin-bottom: 0in">&lt;bool&gt; &lt;name&gt; JMP_FALSE --</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Jump to name, always, if true, and if
+false.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;left&gt; &lt;right&gt; &lt;name&gt;
+&lt;OP&gt; --</P>
+<P STYLE="margin-bottom: 0in">JMP_EQ, JMP_NE, JMP_L, JMP_G, JMP_LE,
+JMP_GE</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Compare values and jump if true.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;left&gt; &lt;right&gt; &lt;less&gt;
+&lt;greater&gt; JMP_LG --</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Compare a value and perform a trinary
+jump.</P>
+<P STYLE="margin-bottom: 0in">Jump to less if left&lt;right, and jump
+to greater if left&gt;right, otherwise not jumping.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;value&gt; &lt;value&gt; FVEC2 --
+&lt;vec2&gt;</P>
+<P STYLE="margin-bottom: 0in">&lt;value&gt; &lt;value&gt; &lt;value&gt;
+FVEC3 -- &lt;vec3&gt;</P>
+<P STYLE="margin-bottom: 0in">&lt;value&gt; &lt;value&gt; &lt;value&gt;
+&lt;value&gt; FVEC4 -- &lt;vec4&gt;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Create a vector of the given size.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;real&gt; &lt;imag&gt; COMPLEX --
+&lt;value&gt;</P>
+<P STYLE="margin-bottom: 0in">&lt;real&gt; &lt;i&gt; &lt;j&gt; &lt;k&gt;
+QUAT -- &lt;value&gt;</P>
+<P STYLE="margin-bottom: 0in">&lt;litstring&gt; INT128 -- &lt;value&gt;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Create values of indicated types.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;cond&gt; &lt;block&gt; IF --</P>
+<P STYLE="margin-bottom: 0in">&lt;cond&gt; &lt;then&gt; &lt;else&gt;
+IFELSE --</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Cond needs to be a literal value which
+is either true (nonzero) or false (zero).</P>
+<P STYLE="margin-bottom: 0in">In the case of IF, if 'cond' is true,
+then 'block' is executed, otherwise it is popped and ignored.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">IFELSE evaluates one block or another
+depending on cond.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;left&gt; &lt;right&gt; CMPL --
+&lt;int&gt;</P>
+<P STYLE="margin-bottom: 0in">&lt;left&gt; &lt;right&gt; CMPG --
+&lt;int&gt;</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Tri-State compare.</P>
+<P STYLE="margin-bottom: 0in">-1 if left&lt;right</P>
+<P STYLE="margin-bottom: 0in">1 if left&gt;right</P>
+<P STYLE="margin-bottom: 0in">0 if left==right</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">L and G differ in what is the result if
+the compare fails:</P>
+<P STYLE="margin-bottom: 0in">L gives -1, G gives 1</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">// &lt;bool&gt; &lt;name&gt; JMP_POS --</P>
+<P STYLE="margin-bottom: 0in">// &lt;bool&gt; &lt;name&gt; JMP_NEG --</P>
+<P STYLE="margin-bottom: 0in">// &lt;bool&gt; &lt;name&gt; JMP_ZERO
+--</P>
+<P STYLE="margin-bottom: 0in">Jump if positive, negative, or zero
+(JMP_ZERO will be more or less equivalent to JMP_FALSE).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;name&gt; JSR --</P>
+<P STYLE="margin-bottom: 0in">Jump (while pushing return addr to
+stack).</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;ptr&gt; JMP_PTR --</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Jump to the address given in a pointer.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">&lt;lst&gt; &lt;arg&gt; VA_START</P>
+<P STYLE="margin-bottom: 0in">&lt;lst&gt; VA_END</P>
+<P STYLE="margin-bottom: 0in">&lt;lst&gt; &lt;type&gt; VA_ARG</P>
+<P STYLE="margin-bottom: 0in">&lt;dlst&gt; &lt;slst&gt; VA_COPY</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">These will be special ops implementing
+varargs.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H3>Opcodes List</H3>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">RPNIL opcodes will generally not have
+directly encoded arguments.</P>
+<P STYLE="margin-bottom: 0in">Nearly all opcodes will be coded
+individually and any arguments</P>
+<P STYLE="margin-bottom: 0in">will be pulled from the stack.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Opcode Args</P>
+<P STYLE="margin-bottom: 0in">	I, integer (SVLI)</P>
+<P STYLE="margin-bottom: 0in">	F, float (UVLI, float index)</P>
+<P STYLE="margin-bottom: 0in">	S, symbol (symbol index)</P>
+<P STYLE="margin-bottom: 0in">	T, string (string index)</P>
+<P STYLE="margin-bottom: 0in">	B, block (block index)</P>
+<P STYLE="margin-bottom: 0in">	Z, in-place ASCIIz string.</P>
+<P STYLE="margin-bottom: 0in">	K, type</P>
+<P STYLE="margin-bottom: 0in">	O, OP</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Flow</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Flow may be identified for an opcode,
+where flow will serve as a hint what values will be used and what
+will be pushed to the stack.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">flow:	in*=out*</P>
+<P STYLE="margin-bottom: 0in">	vv=v	Consumes 2 values and outputs a
+value</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">flow specific values:</P>
+<P STYLE="margin-bottom: 0in">	a/b/c, bool;</P>
+<P STYLE="margin-bottom: 0in">	d/e;</P>
+<P STYLE="margin-bottom: 0in">	f/g/h, float;</P>
+<P STYLE="margin-bottom: 0in">	i/j/k, int;</P>
+<P STYLE="margin-bottom: 0in">	l/m/n, long;</P>
+<P STYLE="margin-bottom: 0in">	o;</P>
+<P STYLE="margin-bottom: 0in">	p/q/r, pointer;</P>
+<P STYLE="margin-bottom: 0in">	s/t/u, double;</P>
+<P STYLE="margin-bottom: 0in">	v/w;</P>
+<P STYLE="margin-bottom: 0in">	x/y/z, double.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">A generic type is assumed if the value
+appears alone, but specific if another of the same type appears.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">'M' will refer to the mark, and '*'
+will refer to an undetermined number of stack items.</P>
+<P STYLE="margin-bottom: 0in">M<SUP>S</SUP> will be a special-case
+mark, where the mark corresponds to a known function name.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">0-15 base ops</P>
+<TABLE WIDTH=460 BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=76>
+	<COL WIDTH=18>
+	<COL WIDTH=29>
+	<COL WIDTH=289>
+	<TR VALIGN=TOP>
+		<TD WIDTH=76>
+			<P>Name</P>
+		</TD>
+		<TD WIDTH=18>
+			<P>Idx</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>Flow</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>Text</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=76>
+			<P>NOP</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="0" SDNUM="1033;">
+			<P>0</P>
+		</TD>
+		<TD WIDTH=29>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>do nothing</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=76>
+			<P>BLOCK</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="1" SDNUM="1033;">
+			<P>1</P>
+		</TD>
+		<TD WIDTH=29>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>blocks if limit!=0</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=76>
+			<P>DBGMARK</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="2" SDNUM="1033;">
+			<P>2</P>
+		</TD>
+		<TD WIDTH=29>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>sets the filename and line number</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=76>
+			<P>CGENAST</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="3" SDNUM="1033;">
+			<P>3</P>
+		</TD>
+		<TD WIDTH=29>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>syntax to be passed to code generator</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=76>
+			<P>FN</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="4" SDNUM="1033;">
+			<P>4</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>S=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>filename</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=76>
+			<P>LN</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="5" SDNUM="1033;">
+			<P>5</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>I=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>line number</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">32-48 generic block ops</P>
+<TABLE WIDTH=486 BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=86>
+	<COL WIDTH=18>
+	<COL WIDTH=45>
+	<COL WIDTH=289>
+	<TR VALIGN=TOP>
+		<TD WIDTH=86>
+			<P>Name</P>
+		</TD>
+		<TD WIDTH=18>
+			<P>Idx</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>Flow</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>Text</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=86>
+			<P>MARK</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="32" SDNUM="1033;">
+			<P>32</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>*=*M</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>mark the current stack location</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=86>
+			<P>CALL</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="33" SDNUM="1033;">
+			<P>33</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>M*p=v</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>call a given function</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=86>
+			<P>CALL_S</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="34" SDNUM="1033;">
+			<P>34</P>
+		</TD>
+		<TD WIDTH=45>
+			<P STYLE="margin-bottom: 0in">M*S=v</P>
+			<P>M<SUP>S</SUP>*=v</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>call a given function</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=86>
+			<P>RET</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="35" SDNUM="1033;">
+			<P>35</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>v=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>return from current function</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=86>
+			<P>RET_V</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="36" SDNUM="1033;">
+			<P>36</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>return from current function</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=86>
+			<P>MARK_S</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="37" SDNUM="1033;">
+			<P>37</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>S=M<SUP>S</SUP></P>
+		</TD>
+		<TD WIDTH=289>
+			<P>mark, but is given a function name hint</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=86>
+			<P>ARG</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="38" SDNUM="1033;">
+			<P>38</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>last item is an arg</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=86>
+			<P>CAST</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="39" SDNUM="1033;">
+			<P>39</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>vS=w</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>cast an value to a given type</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=86>
+			<P>LARG</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="40" SDNUM="1033;">
+			<P>40</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>S=v</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>load an arg</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=86>
+			<P>BUILTIN</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="41" SDNUM="1033;">
+			<P>41</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>M*S=v</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>invoke builtin</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=86>
+			<P>OFFSETOF</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="42" SDNUM="1033;">
+			<P>42</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>SS=i</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>offsetof (type, slot)</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=86>
+			<P>SIZEOF</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="43" SDNUM="1033;">
+			<P>43</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>v=i</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>sizeof (exptression)</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=86>
+			<P>SIZEOF_T</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="44" SDNUM="1033;">
+			<P>44</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>S=i</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>sizeof (type)</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=86>
+			<P>PUSH_NULL</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="45" SDNUM="1033;">
+			<P>45</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>=p</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>push a null ((void *)0)</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=86>
+			<P>INC_S</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="46" SDNUM="1033;">
+			<P>46</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>S=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>increment variable</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=86>
+			<P>DEC_S</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="47" SDNUM="1033;">
+			<P>47</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>S=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>decrement variable</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">48-63 stack ops</P>
+<TABLE WIDTH=485 BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=99>
+	<COL WIDTH=18>
+	<COL WIDTH=31>
+	<COL WIDTH=289>
+	<TR VALIGN=TOP>
+		<TD WIDTH=99>
+			<P>Name</P>
+		</TD>
+		<TD WIDTH=18>
+			<P>Idx</P>
+		</TD>
+		<TD WIDTH=31>
+			<P>Flow</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>Text</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=99>
+			<P>DUP</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="48" SDNUM="1033;">
+			<P>48</P>
+		</TD>
+		<TD WIDTH=31>
+			<P>j=jj</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>dup items on stack</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=99>
+			<P>EXCH</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="49" SDNUM="1033;">
+			<P>49</P>
+		</TD>
+		<TD WIDTH=31>
+			<P>ij=ji</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>swap items on stack</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=99>
+			<P>POP</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="50" SDNUM="1033;">
+			<P>50</P>
+		</TD>
+		<TD WIDTH=31>
+			<P>v=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>pop value from stack</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=99>
+			<P>BEGINU</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="51" SDNUM="1033;">
+			<P>51</P>
+		</TD>
+		<TD WIDTH=31>
+			<P>=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>begin union</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=99>
+			<P>ENDU</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="52" SDNUM="1033;">
+			<P>52</P>
+		</TD>
+		<TD WIDTH=31>
+			<P>=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>end union</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=99>
+			<P>SETU</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="53" SDNUM="1033;">
+			<P>53</P>
+		</TD>
+		<TD WIDTH=31>
+			<P>v=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>pop value into union</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=99>
+			<P>LOAD</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="54" SDNUM="1033;">
+			<P>54</P>
+		</TD>
+		<TD WIDTH=31>
+			<P>S=v</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>load generic value</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=99>
+			<P>STORE</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="55" SDNUM="1033;">
+			<P>55</P>
+		</TD>
+		<TD WIDTH=31>
+			<P>vS=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>store generic value</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=99>
+			<P>LOADSLOT</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="56" SDNUM="1033;">
+			<P>56</P>
+		</TD>
+		<TD WIDTH=31>
+			<P>pS=v</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>load generic value from a struct</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=99>
+			<P>STORESLOT</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="57" SDNUM="1033;">
+			<P>57</P>
+		</TD>
+		<TD WIDTH=31>
+			<P>vpS=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>store generic value into a struct</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=99>
+			<P>LOADINDEX</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="58" SDNUM="1033;">
+			<P>58</P>
+		</TD>
+		<TD WIDTH=31>
+			<P>pi=v</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>load generic value from an array</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=99>
+			<P>STOREINDEX</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="59" SDNUM="1033;">
+			<P>59</P>
+		</TD>
+		<TD WIDTH=31>
+			<P>vpi=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>store generic value into an array</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=99>
+			<P>LOADSLOTA</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="60" SDNUM="1033;">
+			<P>60</P>
+		</TD>
+		<TD WIDTH=31>
+			<P>pS=v</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>load address of struct slot</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=99>
+			<P>LOADINDEXA</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="61" SDNUM="1033;">
+			<P>61</P>
+		</TD>
+		<TD WIDTH=31>
+			<P>pi=v</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>load address of array index</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=99>
+			<P>DEFER</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="62" SDNUM="1033;">
+			<P>62</P>
+		</TD>
+		<TD WIDTH=31>
+			<P>v=w</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=99>
+			<P>LOADA</P>
+		</TD>
+		<TD WIDTH=18 SDVAL="63" SDNUM="1033;">
+			<P>63</P>
+		</TD>
+		<TD WIDTH=31>
+			<P>S=p</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>push pointer to a variable</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">64-111 arithmetic ops</P>
+<TABLE WIDTH=453 BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=65>
+	<COL WIDTH=22>
+	<COL WIDTH=29>
+	<COL WIDTH=289>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>Name</P>
+		</TD>
+		<TD WIDTH=22>
+			<P>Idx</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>Flow</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>Text</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>ADD</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="64" SDNUM="1033;">
+			<P>64</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>SUB</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="65" SDNUM="1033;">
+			<P>65</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>MUL</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="66" SDNUM="1033;">
+			<P>66</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>DIV</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="67" SDNUM="1033;">
+			<P>67</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>MOD</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="68" SDNUM="1033;">
+			<P>68</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>AND</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="69" SDNUM="1033;">
+			<P>69</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>OR</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="70" SDNUM="1033;">
+			<P>70</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>XOR</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="71" SDNUM="1033;">
+			<P>71</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>SHL</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="72" SDNUM="1033;">
+			<P>72</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>SHR</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="73" SDNUM="1033;">
+			<P>73</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>ADD1</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="74" SDNUM="1033;">
+			<P>74</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>SUB1</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="75" SDNUM="1033;">
+			<P>75</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>MUL1</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="76" SDNUM="1033;">
+			<P>76</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>DIV1</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="77" SDNUM="1033;">
+			<P>77</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>MOD1</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="78" SDNUM="1033;">
+			<P>78</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>AND1</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="79" SDNUM="1033;">
+			<P>79</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>OR1</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="80" SDNUM="1033;">
+			<P>80</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>XOR1</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="81" SDNUM="1033;">
+			<P>81</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>EXP</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="82" SDNUM="1033;">
+			<P>82</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>ADD2</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="83" SDNUM="1033;">
+			<P>83</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>SUB2</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="84" SDNUM="1033;">
+			<P>84</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>MUL2</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="85" SDNUM="1033;">
+			<P>85</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>DIV2</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="86" SDNUM="1033;">
+			<P>86</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>MOD2</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="87" SDNUM="1033;">
+			<P>87</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>AND2</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="88" SDNUM="1033;">
+			<P>88</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>OR2</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="89" SDNUM="1033;">
+			<P>89</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>XOR2</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="90" SDNUM="1033;">
+			<P>90</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>NAND</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="91" SDNUM="1033;">
+			<P>91</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=k</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>INC</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="92" SDNUM="1033;">
+			<P>92</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>i=j</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>INC2</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="93" SDNUM="1033;">
+			<P>93</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>i=j</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>DEC</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="94" SDNUM="1033;">
+			<P>94</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>i=j</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>DEC2</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="95" SDNUM="1033;">
+			<P>95</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>i=j</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>NOT</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="96" SDNUM="1033;">
+			<P>96</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>i=j</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>NEG</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="97" SDNUM="1033;">
+			<P>97</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>i=j</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>LNOT</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="98" SDNUM="1033;">
+			<P>98</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>i=j</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>CMP_EQ</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="99" SDNUM="1033;">
+			<P>99</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=b</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>CMP_NE</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="100" SDNUM="1033;">
+			<P>100</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=b</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>CMP_L</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="101" SDNUM="1033;">
+			<P>101</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=b</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>CMP_G</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="102" SDNUM="1033;">
+			<P>102</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=b</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>CMP_LE</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="103" SDNUM="1033;">
+			<P>103</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=b</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>CMP_GE</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="104" SDNUM="1033;">
+			<P>104</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>ij=b</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>BOOLIFY</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="105" SDNUM="1033;">
+			<P>105</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>v=b</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">112-127 control flow ops</P>
+<TABLE WIDTH=478 BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=80>
+	<COL WIDTH=22>
+	<COL WIDTH=39>
+	<COL WIDTH=289>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P>Name</P>
+		</TD>
+		<TD WIDTH=22>
+			<P>Idx</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>Flow</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>Text</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P>JMP</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="112" SDNUM="1033;">
+			<P>112</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>S=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>jump to rel offset</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P>JMP_TRUE</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="113" SDNUM="1033;">
+			<P>113</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>bS=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>jump to rel offset if true</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P>JMP_FALSE</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="114" SDNUM="1033;">
+			<P>114</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>bS=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>jump to rel offset if false</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P>JMP_EQ</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="115" SDNUM="1033;">
+			<P>115</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>ijS=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P>JMP_NE</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="116" SDNUM="1033;">
+			<P>116</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>ijS=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P>JMP_L</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="117" SDNUM="1033;">
+			<P>117</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>ijS=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P>JMP_G</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="118" SDNUM="1033;">
+			<P>118</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>ijS=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P>JMP_LE</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="119" SDNUM="1033;">
+			<P>119</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>ijS=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P>JMP_GE</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="120" SDNUM="1033;">
+			<P>120</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>ijS=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P>JMP_LG</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="121" SDNUM="1033;">
+			<P>121</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>ijSS=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>trinary jump</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=22>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=39>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P>IF</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="122" SDNUM="1033;">
+			<P>122</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>IB=?</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>compile-conditional</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=80>
+			<P>IFELSE</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="123" SDNUM="1033;">
+			<P>123</P>
+		</TD>
+		<TD WIDTH=39>
+			<P>IBB=?</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>compile-conditional if(cond)then/else</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">128-191: special opcodes</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<TABLE WIDTH=424 BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=65>
+	<COL WIDTH=22>
+	<COL WIDTH=21>
+	<COL WIDTH=29>
+	<COL WIDTH=228>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>Name</P>
+		</TD>
+		<TD WIDTH=22>
+			<P>Idx</P>
+		</TD>
+		<TD WIDTH=21>
+			<P>Arg</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>Flow</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>Text</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>PUSH_LI</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="128" SDNUM="1033;">
+			<P>128</P>
+		</TD>
+		<TD WIDTH=21>
+			<P>I</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>=I</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>literal integer</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>PUSH_LS</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="129" SDNUM="1033;">
+			<P>129</P>
+		</TD>
+		<TD WIDTH=21>
+			<P>Z</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>=S</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>literal symbol (asciiz string)</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>PUSH_RS</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="130" SDNUM="1033;">
+			<P>130</P>
+		</TD>
+		<TD WIDTH=21>
+			<P>S</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>=S</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>reference literal symbol</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>PUSH_I</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="131" SDNUM="1033;">
+			<P>131</P>
+		</TD>
+		<TD WIDTH=21>
+			<P>I</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>=i</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>push integer</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>PUSH_L</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="132" SDNUM="1033;">
+			<P>132</P>
+		</TD>
+		<TD WIDTH=21>
+			<P>I</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>=l</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>push long</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>PUSH_JI</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="133" SDNUM="1033;">
+			<P>133</P>
+		</TD>
+		<TD WIDTH=21>
+			<P>I</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>=I</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>jump index</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>PUSH_DI</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="134" SDNUM="1033;">
+			<P>134</P>
+		</TD>
+		<TD WIDTH=21>
+			<P>I</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>=I</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>dictionary index (macros, ...)</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>PUSH_RT</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="135" SDNUM="1033;">
+			<P>135</P>
+		</TD>
+		<TD WIDTH=21>
+			<P>T</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>=T</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>reference literal string</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>PUSH_F</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="136" SDNUM="1033;">
+			<P>136</P>
+		</TD>
+		<TD WIDTH=21>
+			<P>F</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>=f</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>push float</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>PUSH_D</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="137" SDNUM="1033;">
+			<P>137</P>
+		</TD>
+		<TD WIDTH=21>
+			<P>F</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>=x</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>push double</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=65>
+			<P>PUSH_RB</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="138" SDNUM="1033;">
+			<P>138</P>
+		</TD>
+		<TD WIDTH=21>
+			<P>B</P>
+		</TD>
+		<TD WIDTH=29>
+			<P>=i</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>push inline block</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">176..191: vectors and misc</P>
+<TABLE WIDTH=432 BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=72>
+	<COL WIDTH=22>
+	<COL WIDTH=21>
+	<COL WIDTH=30>
+	<COL WIDTH=228>
+	<TR VALIGN=TOP>
+		<TD WIDTH=72>
+			<P>Name</P>
+		</TD>
+		<TD WIDTH=22>
+			<P>Idx</P>
+		</TD>
+		<TD WIDTH=21>
+			<P>Arg</P>
+		</TD>
+		<TD WIDTH=30>
+			<P>Flow</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>Text</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=72>
+			<P>FVEC2</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="176" SDNUM="1033;">
+			<P>176</P>
+		</TD>
+		<TD WIDTH=21>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=30>
+			<P>ff=v</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>make VEC2</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=72>
+			<P>FVEC3</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="177" SDNUM="1033;">
+			<P>177</P>
+		</TD>
+		<TD WIDTH=21>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=30>
+			<P>fff=v</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>make VEC3</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=72>
+			<P>FVEC4</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="178" SDNUM="1033;">
+			<P>178</P>
+		</TD>
+		<TD WIDTH=21>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=30>
+			<P>ffff=v</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>make VEC4</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=72>
+			<P>COMPLEX</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="179" SDNUM="1033;">
+			<P>179</P>
+		</TD>
+		<TD WIDTH=21>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=30>
+			<P>ff=v</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>make Complex</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=72>
+			<P>QUAT</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="180" SDNUM="1033;">
+			<P>180</P>
+		</TD>
+		<TD WIDTH=21>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=30>
+			<P>ffff=v</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>make Quaternion</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=72>
+			<P>INT128</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="181" SDNUM="1033;">
+			<P>181</P>
+		</TD>
+		<TD WIDTH=21>
+			<P> S</P>
+		</TD>
+		<TD WIDTH=30>
+			<P>=v</P>
+		</TD>
+		<TD WIDTH=228>
+			<P>make int128</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">256-512: Generic Extended Opcodes</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<TABLE WIDTH=524 BORDER=1 CELLPADDING=4 CELLSPACING=3 STYLE="page-break-inside: avoid">
+	<COL WIDTH=120>
+	<COL WIDTH=22>
+	<COL WIDTH=45>
+	<COL WIDTH=289>
+	<TR VALIGN=TOP>
+		<TD WIDTH=120>
+			<P>Name</P>
+		</TD>
+		<TD WIDTH=22>
+			<P>Idx</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>Flow</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>Text</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=120>
+			<P>METHODCALL</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="256" SDNUM="1033;">
+			<P>256</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>M*p=v</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>call a given method</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=120>
+			<P>METHODCALL_S</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="257" SDNUM="1033;">
+			<P>257</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>M*S=v</P>
+		</TD>
+		<TD WIDTH=289>
+			<P>call a given method</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=120>
+			<P>VA_START</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="258" SDNUM="1033;">
+			<P>258</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>SS=v</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=120>
+			<P>VA_END</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="259" SDNUM="1033;">
+			<P>259</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>S=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=120>
+			<P>VA_ARG</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="260" SDNUM="1033;">
+			<P>260</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>S=v</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=120>
+			<P>VA_COPY</P>
+		</TD>
+		<TD WIDTH=22 SDVAL="261" SDNUM="1033;">
+			<P>261</P>
+		</TD>
+		<TD WIDTH=45>
+			<P>SS=</P>
+		</TD>
+		<TD WIDTH=289>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+</BODY>
+</HTML>

@@ -1,0 +1,339 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;
+      charset=ISO-8859-1">
+  </head>
+  <body>
+    <h2>ExWAD: Executable WAD</h2>
+    <br>
+    ExWAD will be a format vaguely similar to the WAD2/WAD3 format used
+    in Quake and Half-Life, but will differ in a few ways, and will be
+    intended for the storage of executable code (rather than textures
+    and image lumps).<br>
+    <br>
+    ExWAD images may optionally follow after a PE/COFF image, ELF image,
+    or after a shebang/hash-bang.<br>
+    <br>
+    The ExWAD header and the start of the directory will need to be
+    aligned on 16-byte boundaries. Presently this also applies to stored
+    data lumps.<br>
+    <br>
+    RVA's will be addresses relative to the start of the file/image,
+    rather than of the location of the ExWAD header. ExWAD will assume a
+    1:1 mapping between file offsets and loaded RVA.<br>
+    <br>
+    All characters will be assumed to be ASCII or UTF-8, and multi-byte
+    integer values will be in little-endian byte ordering.<br>
+    <br>
+    <br>
+    struct ExWAD_Header_s<br>
+    {<br>
+    byte magic[8];&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;//"ExWAD100" or
+    "ExWAD101"<br>
+    u32 num_dirents;&nbsp;&nbsp; &nbsp;//number of directory entries<br>
+    u32 rva_dirents;&nbsp;&nbsp; &nbsp;//RVA of directory entries<br>
+    byte magic2[8];&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+    //"DAWxE\r\n\xFF"<br>
+    u32 head_rva;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //self RVA (start
+    of header)<br>
+    u16 head_size;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //size of header<br>
+    u16 head_hash;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //header hash<br>
+    };<br>
+    <br>
+    The header-hash will use this function:<br>
+    int ExWAD_Hash16(void *buf, int szbuf)<br>
+    {<br>
+    &nbsp;&nbsp;&nbsp; byte *cs, *ce;<br>
+    &nbsp;&nbsp;&nbsp; int i, h;<br>
+    &nbsp;&nbsp;&nbsp; h=0; cs=(byte *)buf; ce=(byte *)buf+szbuf;<br>
+    &nbsp;&nbsp;&nbsp; while(cs&lt;ce)h=(h*65521+1)+(*cs++);<br>
+    &nbsp;&nbsp;&nbsp; i=((h*65521+1)&gt;&gt;16)&amp;65535;<br>
+    &nbsp;&nbsp;&nbsp; return(i);<br>
+    }<br>
+    <br>
+    struct ExWAD_DirEnt100_s<br>
+    {<br>
+    u32 rva_data;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;//RVA of
+    (compressed) data<br>
+    u32 dsize_data;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;//uncompressed
+    size of data<br>
+    u32 csize_data;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;//compressed
+    size of data<br>
+    byte type;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+    &nbsp;//file/entry type (0=default, 1..255, special members)<br>
+    byte method;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;//compression
+    method (0=store, 8=Deflate, 9=Deflate64)<br>
+    u16 flags;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+    &nbsp;//special flags<br>
+    byte name[16];&nbsp;&nbsp; &nbsp;//name, inline, or with the first 4
+    bytes as the RVA<br>
+    };<br>
+    <br>
+    struct ExWAD_DirEnt101_s<br>
+    {<br>
+    u32 rva_data;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;//RVA of
+    (compressed) data<br>
+    u32 dsize_data;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;//uncompressed
+    size of data<br>
+    u32 csize_data;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;//compressed
+    size of data<br>
+    byte type;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+    &nbsp;//file/entry type (0=default, 1..255, special members)<br>
+    byte method;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;//compression
+    method (0=store, 8=Deflate, 9=Deflate64)<br>
+    u16 flags;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+    &nbsp;//special flags<br>
+    u32 dir;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //parent directory<br>
+    byte pad[12];&nbsp;&nbsp;&nbsp; //padding<br>
+    byte name[32];&nbsp;&nbsp; &nbsp;//name, inline, or with the first 4
+    bytes as the RVA<br>
+    };<br>
+    <br>
+    Names:<br>
+    Names will follow a Unix-style naming convention, and will be
+    assumed to be<br>
+    relative to a certain base path. There will not be any leading '/'.<br>
+    Normally, files will have a file extension.<br>
+    <br>
+    Example: "foo/bar/baz.txt".<br>
+    <br>
+    Allowed Name Characters:<br>
+    &nbsp;&nbsp; &nbsp;A..Z&nbsp;&nbsp; &nbsp;a..z&nbsp;&nbsp;
+    &nbsp;0..9<br>
+    &nbsp;&nbsp; &nbsp;. _ -<br>
+    <br>
+    Disallowed Characters<br>
+    &nbsp;&nbsp; &nbsp;0x00..0x1F<br>
+    &nbsp;&nbsp; &nbsp;|\?*&lt;":&gt;+[]/<br>
+    <br>
+    Type:<br>
+    &nbsp;&nbsp; &nbsp;0: Ordinary File (type determined based on file
+    extension).<br>
+    &nbsp;&nbsp; &nbsp;1: Extension Dirent (structural extension of
+    prior dirent, reserved).<br>
+    &nbsp;&nbsp;&nbsp; 2: Directory<br>
+    &nbsp;&nbsp;&nbsp; 3..63: Reserved<br>
+    &nbsp;&nbsp;&nbsp; 64..127: Common Lump Type (stripped extension for
+    inline names, N/A for indirect names)<br>
+    &nbsp;&nbsp;&nbsp; 128..255: Reserved<br>
+    <br>
+    Method:<br>
+    &nbsp;&nbsp; &nbsp;0: Store (no compression, dsize==csize)<br>
+    &nbsp;&nbsp; &nbsp;1..7: Reserved<br>
+    &nbsp;&nbsp; &nbsp;8: Deflate<br>
+    &nbsp;&nbsp; &nbsp;9: Deflate64 (Deflate with 64kB window).<br>
+    <br>
+    With Deflate and Deflate64, a CRC32 value will be placed immediately
+    following the compressed data.<br>
+    <br>
+    Flags:<br>
+    &nbsp;&nbsp; &nbsp;1: Indirect/RVA Name (otherwise, inline name)<br>
+    &nbsp;&nbsp;&nbsp; 2: Directory Prefix:<br>
+    &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; For inline names, the last 2
+    bytes of the name field give the entry index of the parent
+    directory.<br>
+    &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; This will place a 14-char
+    limit on inline names.<br>
+    &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; For RVA-names, this index will
+    be 4 bytes.<br>
+    <br>
+    <br>
+    <h3>Storage</h3>
+    <br>
+    <h4>Folowing a Shebang</h4>
+    <br>
+    "#!/usr/bin/whatever\n\0"<br>
+    Then padded with 0's until a multiple of 16 bytes.<br>
+    The idea is that an OS will invoke the requested loader, and ignore
+    the rest<br>
+    of the file.<br>
+    <br>
+    Optionally, there may be text following the shebang but before the
+    0-byte<br>
+    terminator. At least a single 0-byte will be needed preceding the
+    ExWAD<br>
+    header.<br>
+    <br>
+    <br>
+    <h4>Following a PE/COFF Stub or Image</h4>
+    <br>
+    This is basically the same as tacking the archive after the PE/COFF
+    image,<br>
+    except that the dword at byte address 0x38 may contain a header
+    offset hint.<br>
+    <br>
+    Note that bytes 0x00/0x01 contain "MZ", and 0x3C-0x3F contain the
+    offset of<br>
+    the PE header. The value at 0x38 is theoretically reserved by MS,
+    but it<br>
+    should work (and they don't appear to be doing much with the MZ
+    header<br>
+    anyways).<br>
+    <br>
+    <br>
+    <h4>Following a ELF Stub or Image</h4>
+    <br>
+    This is roughly the same as the PE/COFF case, except 0x0C contains
+    the<br>
+    offset hint.<br>
+    <br>
+    <br>
+    <h3>Binary Format for Metadata Databases.</h3>
+    (Unused / Deprecated: Textual databases under the name "meta.txt"
+    are used instead).<br>
+    <br>
+    This is intended to be used along with ExWAD.<br>
+    <br>
+    This format will not try to represent an exact in-place usable image
+    format, but will instead try to be reasonably compact.<br>
+    <br>
+    File Names:<br>
+    "metabin.dat"<br>
+    <br>
+    <br>
+    Numbers:<br>
+    UVLI is a variable length integer format, which follows the
+    following pattern.<br>
+    <br>
+    <table style="text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Low<br>
+          </td>
+          <td style="vertical-align: top;">High<br>
+          </td>
+          <td style="vertical-align: top;">Pattern<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">0<br>
+          </td>
+          <td style="vertical-align: top;">127<br>
+          </td>
+          <td style="vertical-align: top;">0xxxxxxx<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">128<br>
+          </td>
+          <td style="vertical-align: top;">16383<br>
+          </td>
+          <td style="vertical-align: top;">10xxxxxx xxxxxxxx<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">16384<br>
+          </td>
+          <td style="vertical-align: top;">2097151<br>
+          </td>
+          <td style="vertical-align: top;">110xxxxx xxxxxxxx xxxxxxxx</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">2097152<br>
+          </td>
+          <td style="vertical-align: top;">268435455<br>
+          </td>
+          <td style="vertical-align: top;">1110xxxx xxxxxxxx xxxxxxxx
+            xxxxxxxx</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">268435456<br>
+          </td>
+          <td style="vertical-align: top;">34359738367<br>
+          </td>
+          <td style="vertical-align: top;">11110xxx xxxxxxxx xxxxxxxx
+            xxxxxxxx xxxxxxxx</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">34359738368<br>
+          </td>
+          <td style="vertical-align: top;">...<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">...<br>
+          </td>
+          <td style="vertical-align: top;">...<br>
+          </td>
+          <td style="vertical-align: top;"><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    SVLI uses the same basic encoding as above, but encodes a sign into
+    the LSB.<br>
+    Thus, SVLI follows the pattern: 0, -1, 1, -2, 2, -3, 3, ...<br>
+    <br>
+    <br>
+    Strings (StringRef) will be encoded as an SVLI value.<br>
+    <br>
+    String Value<br>
+    <table style=" text-align: left; width: 100%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;">Value<br>
+          </td>
+          <td style="vertical-align: top;">Description<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">&gt;=0<br>
+          </td>
+          <td style="vertical-align: top;">Index into String MRU.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">-1<br>
+          </td>
+          <td style="vertical-align: top;">Escaped String in ASCIIZ
+            format.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">-2<br>
+          </td>
+          <td style="vertical-align: top;">Encoded integer value (SVLI,
+            64-bit range).<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    Escaped strings will be added to the front of the MRU list, and any
+    referenced string will be moved to the front of the list.<br>
+    <br>
+    At some later point, the StringRef tag may be used to escape other
+    types of node (that or maybe magic characters will be used in the
+    strings).<br>
+    <br>
+    <br>
+    The directory will be a tree of nodes.<br>
+    <br>
+    BinMeta_Node<br>
+    {<br>
+    StringRef name;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //node name
+    (string index, excludes path)<br>
+    VLI n_keys;&nbsp;&nbsp;&nbsp; //number of keys<br>
+    BinMeta_Key key[n_keys];<br>
+    VLI n_ents;&nbsp;&nbsp;&nbsp; //node sub-entries<br>
+    BinMeta_Node ent[n_ents];<br>
+    }<br>
+    <br>
+    BinMeta_Key<br>
+    {<br>
+    StringRef name;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //key name
+    (string index)<br>
+    StringRef value;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; //key value
+    (string/data index)<br>
+    }<br>
+    <br>
+  </body>
+</html>

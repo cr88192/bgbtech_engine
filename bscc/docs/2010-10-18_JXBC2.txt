@@ -1,0 +1,259 @@
+Ideas for container:
+Relative Pointers;
+Image Based;
+Heap-like.
+
+Objects allocated with 4-byte alignment.
+Pointers will point to the start of the object data.
+Multibyte values will be little-endian.
+Objects will be raw spans of memory (no book-keeping data or headers will be present in-image).
+
+WORD: 16-bit integer
+DWORD: 32-bit integer
+QWORD: 64-bit integer
+FLOAT32: 32-bit IEEE float
+FLOAT64: 64-bit IEEE float
+
+FOURCC: Four Character Code
+RPTR: Relative Pointer (DWORD)
+RPSTR: Relative Pointer to String
+RPRPARR: Relative Pointer to Array of relative pointers
+RPLTARR: Relative Pointer to Array of literal indices.
+RPLTARRZ: NULL-Terminated Literal Array (RPLTARR).
+
+LTIDX: Literal Table Index (DWORD)
+
+LTxxx: Literal Table Index to a given type 'xxx'.
+
+Header
+{
+FOURCC magic;	//'JXCF'
+RPTR img_base;	//image base (start of Header if self-contained)
+RPTR img_end;	//image end
+RPRPARR littab;	//literals table
+DWORD nlittab;	//number of entries in table
+FOURCC magic2;	//'FCXJ', flip magic
+DWORD magic_hash;	//hash-code (to verify header)
+}
+
+Image Embedding:
+Images may be self-contained, in which case the Header structure is the first thing in the file.
+
+In the case of PE/COFF embedding, the header will be located somewhere within the PE/COFF image, and the img_base field will point to the start of the MZ-EXE header. All accessible portions of the image are also to be located within valid PE/COFF sections.
+
+Offset 0x38 in the MZ-EXE header may contain a hint RVA for the Header base (issue: not sure of another good way to indicate the Header base, although a special COFF section such as '.jxcf' is also possible).
+
+
+
+Literal Table
+
+Literal Table index 0 is unused and is to be understood as being a special NULL entry.
+
+LiteralInfo
+{
+LTLITERALTYPEINFO type;
+//data...
+}
+
+
+Literal Types:
+
+"LiteralTypeInfo"
+{
+RPSTR typename;
+}
+
+"String"
+{
+RPSTR str;	//string data, UTF-8
+}
+
+"Int32"
+{
+DWORD value;
+}
+
+"Int64"
+{
+QWORD value;
+}
+
+"Float32"
+{
+FLOAT32 value;
+}
+
+"Float64"
+{
+FLOAT64 value;
+}
+
+"ClassRef"
+{
+RPSTR name;				//classname (QName)
+LTCLASSINFO class_info;		//link to known ClassInfo
+}
+
+"Namespace"
+{
+LTIDX scope;			//containing namespace
+RPSTR name;				//namespace name (QName)
+RPLTARRZ contents;		//contained fields/classes/...
+RPLTARRZ attributes;
+}
+
+Note: contents only contains items directly contained within the namespace, but does not include contents contained within other items.
+
+
+"NameType"
+{
+RPSTR name;				//item name
+RPSTR sig;				//signature string
+}
+
+"TagAttr"				//tag attributes
+{
+RPSTR name;				//tag name
+RTIDX value;			//tag value
+}
+
+"FieldRef"
+{
+LTCLASSREF class_idx;
+LTNAMETYPE name_type;
+}
+
+"MethodRef"
+{
+LTCLASSREF class_idx;
+LTNAMETYPE name_type;
+}
+
+"FieldInfo"
+{
+LTIDX scope;		//containing class or namespace
+DWORD flags;		//modifier flags
+LTNAMETYPE name_type;
+RPLTARRZ attributes;
+}
+
+"MethodInfo"
+{
+LTIDX scope;		//containing class or namespace
+DWORD flags;		//modifier flags
+LTNAMETYPE name_type;
+RPLTARRZ attributes;
+LTCODINFO code;		//executable code
+}
+
+"ValueAttr"
+{
+LTIDX value;		//literal value
+}
+
+"StaticVarAttr"
+{
+RPTR data;			//data for static variable (initialized)
+}
+
+"OffsVarAttr"
+{
+DWORD offs;			//offset of variable (struct/union)
+}
+
+ValueAttr and StaticVarAttr are mutually exclusive.
+
+
+"ClassInfo"			//MethodInfo attribute
+{
+LTIDX scope;
+DWORD flags;
+LTCLASSREF this_class;
+LTCLASSREF super_class;
+RPLTARRZ interfaces;		//ClassRef
+RPLTARRZ fields;			//FieldInfo
+RPLTARRZ methods;			//MethodInfo
+RPLTARRZ attributes;		//*
+}
+
+"CodeInfo"
+{
+LTMETHODINFO method;		//containing method
+FOURCC bcver;			//bytecode type/version
+RPSTR localsig;			//local vars signature
+RPTR code;				//pointer to code
+}
+
+bcver:
+	'JXBC', JXBC bytecode
+	'x86 ', x86 machine code
+	'x64 ', x86-64 machine code
+
+
+Modifier Flags
+
+TYFL_PUBLIC			0x0001
+TYFL_PRIVATE		0x0002
+TYFL_PROTECTED		0x0004
+TYFL_STATIC			0x0008
+TYFL_FINAL			0x0010
+TYFL_SUPER			0x0020
+TYFL_SYNCHRONIZED		TYFL_SUPER
+TYFL_VOLATILE		0x0040
+TYFL_TRANSIENT		0x0080
+TYFL_NATIVE			0x0100
+TYFL_INTERFACE		0x0200
+TYFL_ABSTRACT		0x0400
+TYFL_STRICT			0x0800
+
+TYFL_SIGNED			0x00010000
+TYFL_UNSIGNED		0x00020000
+TYFL_EXTERN			0x00040000
+TYFL_CONST			0x00080000
+TYFL_INLINE			0x00100000
+
+TYFL_EVENT			0x00200000
+
+TYFL_WIDE			0x00400000
+TYFL_XCALL			0x01000000
+
+TYFL_STDCALL		0x02000000	//'__stdcall'
+TYFL_CDECL			0x04000000	//'__cdecl'
+TYFL_PROXY			0x08000000	//'__proxy'
+
+TYFL_WIN64			TYFL_STDCALL
+TYFL_AMD64			TYFL_CDECL
+
+TYFL_SEALED			TYFL_FINAL
+TYFL_READONLY		TYFL_STRICT
+TYFL_INTERNAL		TYFL_SIGNED
+TYFL_NEW			TYFL_CONST
+TYFL_OVERRIDE		TYFL_STRICT
+
+TYFL_CONST2			TYFL_FINAL
+TYFL_PACKED			TYFL_SIGNED
+
+TYFL_GC			TYFL_XCALL
+TYFL_NOGC			TYFL_NATIVE
+
+TYFL_UNSAFE			TYFL_NATIVE
+TYFL_VIRTUAL		TYFL_VOLATILE
+
+
+QName:
+Fully qualified names with items separated by '/'.
+
+Signatures:
+Specified in the metadata spec.
+
+
+ByteCode
+
+JXBC will use modified Java ByteCode (JBC).
+
+Changes:
+0xE0..0xEF will map an extended opcode range 0x00100..0x01000.
+0xE0 will map to the range, and hence opcodes 0x00..0xFF could be encoded this way. This will be used to escape any future opcodes in this range, but for now any other opcodes in this range are reserved.
+
+The "wide" prefix may be applied to additional opcodes(ldc, getstatic, putstatic, getfield, putfield, invokevirtual, ...), and will extend the index to 32 bits.
+

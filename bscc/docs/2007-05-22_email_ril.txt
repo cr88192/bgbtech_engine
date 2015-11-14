@@ -1,0 +1,67 @@
+well, today (after a good number of days of being too screwed over to do much of anything). I have worked on the RIL compiler more.
+
+so, changes to the RIL syntax:
+%<name> loads a variable;
+=<name> stores a variable;
+&<name> gets a variable's address.
+
+these should help, since these operations are likely to be common (and since human reading/writing is likely to occure to some extent, I can at least add a little to help readability).
+
+
+so: z=x*x+y;
+
+becomes:
+%x %x mul %y add =z
+or:
+%x dup mul %y add =z (should be equivalent though...)
+
+as opposed to:
+$x load $x load mul $y load add $z store
+(as it was before).
+
+so, I say, readability is improved.
+
+
+partial support has been added for extensible dictionaries (may have some uses, for example building macros or a few other abstractions in the low-level code generator).
+
+
+I have also ended up largely reworking the way I manage types, registers, and the stack.
+
+as it had developed thus far, in effect, each register was a special case, and there was a large amount of duplicated but only minorly different code (several kloc worth).
+
+ended up reworking this so that nearly all the code is done by more "generic" functions (essentially, they do the basic operation and are passed the register as an argument). special cases are handled, but the general case is in-fact general.
+
+this was also needed because some of the newer features (such as treating constants like 'synthetic' stack items, as opposed to either storing them in a conceptually seperate stack or taking up a real item, ...) would somewhat increase the already existing bloat (this may be more important in the future as things like blocks or macros are added).
+
+as such, the type handling is more complicated (for example, now pointers and integers are internally distinguished more often, ...). ended up writing a lot of more involved stack/var typechecking support (note that, increasingly, as opposed to type values I am relying on type predicates).
+
+also, partly implemented struct/union support as well.
+
+sadly, at present most operations will ignore/fubar the type info.
+
+
+also made a few improvements which should allow more efficient code to be generated (changing how the top few stack items are mapped to registers so that it should less often need to resort to memory, ...).
+
+some registers were not merged in to all this though:
+ESP and EBP, which are always special;
+EDAX and EDSI (EDX:EAX and EDI:ESI), since they are not true registers anyways.
+
+the functions for EDAX and EDSI were not merged with each other either, since they are treated differently. at present, EDSI can never be a stack item (meaning there can at any given time be a single 64-bit reg-mapped stack item).
+
+I am also vaguely considering a system for allowing allocation of 'temporary' registers. mostly this would be used as a more general means to managing temp values in regs (and more likely efficient than the current "flush everything in that register and give me that register" system). instead this would be a softer "I need a register but don't really care which one" system.
+
+of course, at present this would be more work to implement.
+
+
+another possibility is that (vs "just" this), such a system would instead work as a variable-caching system (saving on total memory accesses). as such, temporarily allocated registers are closer to volatile variables (flushing a volatile will simply discard the value, wheras for a non-volatile, it will be stored back to memory).
+
+as such, ESI, EDI, EBX, and ECX are likely to be used for this (ECX most preferred for temp vars and volatiles given it is not preserved during calls).
+
+EDSI may potentially be used as a cache for 64-bit variables, or I may simply not cache 64-bit vars (note, in the old flush-driven way it may still be used for holding values).
+
+
+or such...
+
+
+so, I still have a ways to go, but maybe I am getting somewhere (gradually...).
+

@@ -1,0 +1,33 @@
+package bsvm.io;
+
+public class ByteArrayOutputStream extends OutputStream
+{
+protected byte[] buf;
+protected int count;
+
+public ByteArrayOutputStream()
+	{}
+public ByteArrayOutputStream(int size)
+	{}
+
+public synchronized void close()
+	{}
+public synchronized void reset()
+	{}
+
+public int size()
+	{ return 0; }
+public synchronized byte[] toByteArray()
+	{ return null; }
+public String toString()
+	{ return null; }
+public String toString(int hibyte)
+	{ return null; }
+public void write(byte[] b, int off, int len)
+	{}
+public void write(int b)
+	{}
+public void writeTo(OutputStream out)
+	{}
+
+}

@@ -1,0 +1,173 @@
+Mini-RPN ByteCode
+
+Will be a mini RPN based language.
+It will be ASCII-based, but it will not use tokens, and as a result will be a character-driven notation.
+
+\ and " will not be used, as this would add hassle to embedding fragments in C strings. Character escapes in internal strings will instead use ~.
+
+Whilespace may be allowed between operations, where whitespace characters will generally be regarded as no-op.
+
+
+Types:
+IFP: Int, Float, Pointer;
+Stack uses single item size (uniform size stack);
+Operations are untyped.
+
+
+Scope:
+Globals, accessed as an array.
+
+Intlit := <digit+>
+Number := <digit*> ['.' <digit*>]
+Strlit := '(' ... ')'
+
+
+
+a
+b			Counttomark
+c			Cleartomark (pops mark)
+d			Dup
+e
+f			
+g
+h
+i			Index from top
+j			Index from mark
+k
+l
+m			-
+n
+o
+p			Pop
+q
+r			Roll
+s
+t			True (int 1)
+u
+v
+w			If/else (bool then else --)
+x			Exch/Swap
+y			If
+z			Zero (int 0)
+
+0..9			Reserved
+
++, -, *, /
+
+A,B
+
+C<intlit>		Call function (global index)
+C<strlit>		Call named function
+
+D
+
+E
+
+F...			Float stuff
+F<number>		Float Literal
+
+H
+
+I...			Integer stuff
+I<intlit>		Integer Literal
+
+J,K
+
+L<intlit>		Load global
+L<strlit>		Load named global
+
+M,N,O
+P
+Q,R
+
+S<intlit>		Store global
+S<strlit>		Store named global
+
+T,U,V,W,X,Y
+
+Z
+// Z<intlit>		Numeric literal
+
+F+, F-, F*, F/	Float Arithmetic
+F^			Exponent
+F%			FMod
+F_			Negate
+
+F<			Float less-than
+F>			Float greater-than
+F=			Float equal
+F!<			Float not-less / greater-equal
+F!>			Float not-greater / less-equal
+F!=			Float not-equal
+
+Fa			Abs
+Fb			2^x
+Fc			Ciel
+Fd			10^x
+Fe			e^x
+Ff			Floor
+Fg			-
+Fh			-
+Fi			Float->Int
+Fj			-
+Fk			-
+Fl			log
+Fm			log2
+Fn			ln
+Fo			sin
+Fp			cos
+Fq			tan
+Fr			round
+Fs			sqrt
+Ft			truncate
+Fu			atan
+Fv			atan2
+Fw
+Fx			BoxedFloat->Int
+Fy			Float->BoxedFloat
+Fz			Float==0
+
+I+, I-, I*, I/	Integer Arithmetic
+I&, I|, I^		Integer bitwise ops
+I%			Mod
+I~			Integer bitwise not (unary)
+I_			Negate
+
+I<			Int less-than
+I>			Int greater-than
+I=			Int equal
+I!<			Int not-less / greater-equal
+I!>			Int not-greater / less-equal
+I!=			Int not-equal
+
+Ia			Abs
+If			Int->Float
+Ix			BoxedInt->Int
+Iy			Int->BoxedInt
+Iz			Int==0
+
+_			Mark
+
+{...}			Block
+
+(...)			String
+	~~
+	~(
+	~)
+	~n
+	~r
+	~t
+	~xHH
+	...
+
+<...>			Binary data, Hex
+<|...|>		Binary data, Base64
+<~...~>		Binary data, Base85
+
+Base-85 uses a glob of characters from '!' to 'u'.
+
+0x21..0x75 / 33..117
+
+Groups of 4 bytes are interpreted as a big-endian number, and encoded into a group of 5 characters, again in big-endian order.
+
+

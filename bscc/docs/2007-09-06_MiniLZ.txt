@@ -1,0 +1,309 @@
+MiniLZ
+
+Aims for simplicity and specialized encoders/decoders.
+
+0x00..0x7F: raw
+0x80..0xBF: previously escaped chars (rotator)
+0xC0: escape
+	0x00: end of stream
+	0x01..0x7F: reserved
+	0x80..0xFF: escaped char
+0xC1: reserved
+0xC2: reserved
+0xC3..0xFF: run 3..63
+	16 bit offset
+
+0xC0 0x00: special terminal
+
+
+MiniLZ-1
+0x00..0x7F: raw
+0x80..0xBF: 4 bit len, 10 bit dist
+0xC0: escape
+0xC1 (maybe): 8 bit len, 16 bit dist
+0xC2: reserved
+0xC3..0xFF: run 3..63
+	16 bit offset
+
+
+May well include example encoders and decoders as part of the spec...
+
+int MiniLZ_Decode(byte *ibuf, byte *obuf)
+{
+	byte rtb[64];
+	byte *cs, *ct, *cs1;
+	int rtp;
+	int i, j;
+
+	for(i=0; i<64; i++)rtb[i]=0xFF-i;
+	rtp=0;
+
+	cs=ibuf; ct=obuf;
+	while(1)
+	{
+		i=*cs++;
+		if(i<0x80) { *ct++=i; continue; }
+		if(i>=0xC3)
+		{
+			i-=0xC0; j=(cs[0]<<8)+cs[1]; cs+=2;
+			cs1=ct-j; while(i--)*ct++=*cs1++;
+			continue;
+		}
+
+		if(i<0xC0) { *ct++=rtb[(rtp+(i-0x80))&63]; continue; }
+		if(i==0xC0)
+		{
+			i=*cs++; if(i<0x80)break;
+			rtp--; rtb[rtp&63]=i;
+			*ct++=i;
+			continue;
+		}
+
+		//parse error
+		break;
+	}
+	return(ct-obuf);
+}
+
+int MiniLZ_Encode(byte *ibuf, byte *obuf, int sz)
+{
+	static byte *chain[65536], *hash[4096];
+	byte rtb[64];
+	byte *cs, *ct, *cse, *s0, *s1;
+	int rtp, chi;
+	int i, j, k, bj, bk;
+
+	for(i=0; i<65536; i++)chain[i]=NULL;
+	for(i=0; i<4096; i++)hash[i]=NULL;
+	for(i=0; i<64; i++)rtb[i]=0xFF-i;
+	rtp=0;
+
+	cs=ibuf; cse=ibuf+sz ct=obuf;
+	while(cs<cse)
+	{
+		i=((cs[0]*251+cs[1])*251+cs[2])&0xFFF;
+		s0=hash[i]; k=cs-s0; bj=0; bk=0; chi=cs-ibuf;
+		while(s0 && (k<65536))
+		{
+			s1=cs; s1e=cs+63; if(cse<s1e)s1e=cse;
+			while((s1<s1e) && (*s0==*s1)) { *s0++; *s1++; }
+
+			j=s1-cs;
+			if((j>bj) || (!bj)) { bj=j; bk=k; }
+			s0=chain[(chi-k)&65535];
+		}
+
+		if(bj>=3)
+		{
+			*ct++=0xC0+bj; *ct++=(bk>>8)&0xFF; *ct++=bk&0xFF;
+
+			j=bj;
+			while(j--)
+			{
+				i=((cs[0]*251+cs[1])*251+cs[2])&0xFFF;
+				chain[(chi++)&65535]=hash[i];
+				hash[i]=cs++;
+			}
+			continue;
+		}
+
+		chain[chi&65535]=hash[i];
+		hash[i]=cs;
+
+		i=*cs++;
+		if(i<0x80) { *ct++=i; continue; }
+		for(j=0; j<63; j++)if(rtb[(rtp+j)&63]==i)
+			{ *ct++=0x80+j; continue; }
+		*ct++=0xC0; *ct++=i;
+		rtp--; rtb[rtp&63]=i;
+	}
+
+	*ct++=0xC0; *ct++=0x00;
+	return(ct-obuf);
+}
+
+
+int MiniLZ1_Decode(byte *ibuf, byte *obuf)
+{
+	byte rtb[128];
+	byte *cs, *ct, *cs1;
+	int rtp;
+	int i, j;
+
+	rtp=0; for(i=0; i<64; i++)rtb[i]=i;
+
+	cs=ibuf; ct=obuf;
+	while(1)
+	{
+		i=*cs++;
+		if(i<0x80) { *ct++=rtb[(rtp+i)&127]; continue; }
+
+		if(i<0xC0)
+		{
+			j=((i&0x30)<<4)+cs[1]; i=(i&15)+3; cs++;
+			cs1=ct-j; while(i--)*ct++=*cs1++;
+			continue;
+		}
+
+		if(i>=0xC3)
+		{
+			i-=0xC0; j=(cs[0]<<8)+cs[1]; cs+=2;
+			cs1=ct-j; while(i--)*ct++=*cs1++;
+			continue;
+		}
+
+		if(i==0xC0)
+		{
+			i=*cs++; if(i<0x80)break;
+			rtp--; rtb[rtp&127]=i;
+			*ct++=i;
+			continue;
+		}
+
+		//parse error
+		break;
+	}
+	return(ct-obuf);
+}
+
+
+MiniLZ-2
+
+uses LZSS-style bit-stuffing.
+0: literal byte
+1: LZ run
+
+1 byte, with 2 high bits giving a type:
+	0: short run (2 bytes)
+		mid 2 bits are 2 high bits of distance.
+		low 4 bits are length (3..18).
+		next byte is the low 8 bits of distance (0..1023).
+	1: medium run (3 bytes)
+		low 6 bits are length(+2 of next), are a length, 3..258.
+		next 2 bytes form a distance (high-low, 0..16383)
+	2: shallow run (2 bytes)
+		short run with length and distance reversed, RLE
+		length=0..1023, dist=0..15
+	3 (possible): 2 more tag bits
+		0: 24 bit word follows (4 bytes)
+			10 bit length, 18 bits distance.
+		1: full 32 bit word follows (5 bytes)
+			uses low 4 bits and byte for a 12 bit length.
+			24 bit distance.
+
+a shallow run with both a length and distance of 0 will indicate a stream end.
+
+
+int MiniLZ2_Decode(byte *ibuf, byte *obuf)
+{
+	byte *cs, *ct, *cs1;
+	int mrk;
+	int i, j, k;
+
+	cs=ibuf; ct=obuf;
+	mrk=0;
+	while(1)
+	{
+		if(!(mrk&256))mrk=(*cs++)|0xFF00;
+
+		if(mrk&1)
+		{
+			i=*cs++;
+			if((i&0xC0)==0x00)
+				{ j=(*cs++)|((i<<4)&0x300); i=(i&15)+3; }
+			else if((i&0xC0)==0x40) {
+				j=(cs[0]<<8)+cs[1]; cs+=2;
+				i=(((i<<2)|(j>>14))&255)+3;
+				j&=16383;
+			}else if((i&0xC0)==0x80)
+				{ k=i; i=(*cs++)|((k<<4)&0x300); j=i&15; }
+			else if((i&0xF0)==0xC0) {
+				k=(i<<24)|(cs[0]<<16)|(cs[1]<<8)|cs[2]; cs+=3;
+				i=(k>>18)&1023; j=k&262143; }
+			else if((i&0xF0)==0xD0) {
+				i=((i&15)<<8)|(*cs++);
+				j=(cs[0]<<16)+(cs[1]<<8)+cs[2]; cs+=3;
+			}
+			if(!i)break;
+
+			cs1=ct-j; while(i--)*ct++=*cs1++;
+			mrk>>=1;
+			continue;
+		}
+
+		*ct++=*cs++;
+		mrk>>=1;
+	}
+}
+
+int MiniLZ2_Encode(byte *ibuf, byte *obuf, int sz)
+{
+	static byte *chain[65536], *hash[4096];
+	byte *cs, *ct, *cse, *s0, *s1, *mps;
+	int chi, mp;
+	int i, j, k, bj, bk;
+
+	for(i=0; i<65536; i++)chain[i]=NULL;
+	for(i=0; i<4096; i++)hash[i]=NULL;
+
+	cs=ibuf; cse=ibuf+sz ct=obuf;
+	mps=ct++; *mps=0; mp=0;
+
+	while(cs<cse)
+	{
+		i=((cs[0]*251+cs[1])*251+cs[2])&0xFFF;
+		s0=hash[i]; k=cs-s0; bj=0; bk=0; chi=cs-ibuf;
+		while(s0 && (k<65536))
+		{
+			s1=cs; s1e=cs+1023; if(cse<s1e)s1e=cse;
+			while((s1<s1e) && (*s0==*s1)) { *s0++; *s1++; }
+
+			j=s1-cs;
+			if((j>bj) || (!bj)) { bj=j; bk=k; }
+			s0=chain[(chi-k)&65535];
+		}
+
+		if((bj>=3) && ((bk<16384) || (bj>=8)))
+		{
+			if((bj<=18) && (bk<1024))
+				{ *ct++=(bj-3)|((bk>>4)&0x30); *ct++=bk&0xFF; }
+			else if(bk<16)
+			{ *ct++=0x80|bk|((bj>>4)&0x30); *ct++=bj&0xFF; }
+			else if((bj<=258) && (bk<16384))
+			{
+				j=bj-3;
+				*ct++=0x40 | ((j>>2)&63);
+				*ct++=((bk>>8)&0x3F)|(j<<6)&0xC0;
+				*ct++=bk&0xFF;
+			}else
+			{
+				*ct++=0xC0 | ((bj>>6)&15);
+				*ct++=((bk>>16)&0x3)|(bj<<2)&0xFC;
+				*ct++=(bk>>8)&0xFF;
+				*ct++=bk&0xFF;
+			}
+
+			j=bj;
+			while(j--)
+			{
+				i=((cs[0]*251+cs[1])*251+cs[2])&0xFFF;
+				chain[(chi++)&65535]=hash[i];
+				hash[i]=cs++;
+			}
+
+			*mps|=1<<(mp++);
+			if(mp>=8) { mps=ct++; *mps=0; mp=0; }
+			continue;
+		}
+
+		chain[chi&65535]=hash[i]; hash[i]=cs;
+
+		*ct++=*cs++;
+		mp++; if(mp>=8) { mps=ct++; *mps=0; mp=0; }
+	}
+
+	*ct++=0x80; *ct++=0x00;
+	*mps|=1<<(mp++);
+	return(ct-obuf);
+}
+

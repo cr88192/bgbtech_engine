@@ -1,0 +1,65 @@
+Generic Interface Interface:
+The basic idea is for providing a fairly simplistic interface for getting interfaces to other components without having to worry so much about the specific DLL or naming conventions used.
+
+Should be addressed:
+Automatic resolution of DLLs and interfaces (by name);
+Means of addressing the existence of multiple versions of an interface.
+
+
+Considered mechanism:
+There will be an "exact" and an "inexact" definition for interfaces.
+Exact interfaces would be identified via a GUID.
+Inexact interfaces will be identified by name, and possibly further specified via a version or other info.
+
+There may only be a single version of a given interface with a single GUID in use, and the same conceptual interface name may use any number of GUIDs (providing alternative implementations, ...).
+
+The main use of the GUID will be then to identify the specific interface structure (vtable).
+
+The rest of the info for GIFI will be embedded in specially-named exports.
+
+
+Naming:
+<libbase>"_gifi_"<partname>["_"<suffix>]
+<libbase>"_gifix_"<suffix>"_"<xname>
+
+//fallback form (mostly for hand-written ifaces):
+<libbase>"_"<partname>["_"<suffix>]
+
+
+Where libbase refers to a library-specific prefix (generally assumed to be the same as the base-name of the DLL/SO, and all lower-case), thus allowing for multiple libs to export the same interface without conflict (libbase is also assumed to be known as this will be needed to be able to locate and load the library, and can be trivially-enough guessed if a listing of loaded libraries is available).
+
+The partname space is used to identify a conceptual part name (such as an interface name or GUID). By itself, it is assumed to be a single valid C identifier (absent underscores).
+
+The suffix spot identifies the particular type of item in question.
+
+In the form where xname is used, xname will be a string list using xcall-style mangling.
+
+
+GUIDs:
+GUIDs will be represented here (in exports) as 24 digits in a base-48 encoding.
+
+ABCDEFGHIJKLMNOPQRSTUVWX	(0..23)
+abcdefghijklmnopqrstuvwx	(24..47)
+
+GUIDs will be encoded 32-bits at a time in 6-char chunks (high-low ordering).
+
+
+Suffix List
+'gf': Getter Func, used with partname==interface name to fetch an env struct.
+	void * ... (char *name);
+'rf': Resolver func, used to map a general interface name to a GUID or another interface name.
+	char * ... (char *name);
+'sgf': Sig-Getter-Func (Like Getter-Func, but returns the sig list)
+	char ** ... (char *name);
+
+'if': Interface VTable
+'is': Interface Sig List
+
+the getter-func, if present, may parse an interface request and attempt to resolve the proper interface for a name, otherwise it will look for the interface structure ('if') instead (and create a dummy-env).
+
+this will return an 'env' structure, which is basically a pointer to the interface-structure followed by any amount of interface-specific data.
+
+the interface-structure is simply a flat list of function pointers, but with the first 2 spots reserved (must be unused and set to NULL). these function pointers are to recieve as their first argument a pointer to the env structure.
+
+the interface-sig-list is basically an array of strings giving the function names and signatures (in XCall format) for all of the functions in the exported interface, and is mapped 1:1 with the interface structure. These names will be relative to the interface (non-qualified-names).
+

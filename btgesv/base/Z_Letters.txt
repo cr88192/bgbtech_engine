@@ -1,0 +1,7 @@
+b: (forgot)
+d: construction entities
+e: entity-related stuff (general).
+g: gameplay mechanics (general).
+m: monster and NPC types.
+s: server stuff (stuff related to the client/server interface).
+w: world related (stuff that applies to the game world).

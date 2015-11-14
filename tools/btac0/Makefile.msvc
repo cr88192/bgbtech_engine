@@ -1,0 +1,44 @@
+CFLAGS = /I. /DLIBBTAC_C
+
+BMID_SRCS = \
+	btac_util.c \
+	btac_wave.c \
+	btac_filter.c \
+	btac_filter2.c \
+	btac_filter3.c \
+	btac_sample.c \
+
+BMID_OBJS = $(BMID_SRCS:.c=.obj)
+
+all: includes libs apps
+
+%.obj: %.c
+	cl $(CFLAGS) /c /Fo$@ $<
+
+autohead.exe: autohead.c
+	cl /Feautohead.exe autohead.c
+
+bgbtac_auto.h: autohead.exe $(BMID_SRCS)
+	autohead.exe -api BTAC_API $(BMID_SRCS) > bgbtac_auto.h
+
+# libbgbmid.lib: $(BMID_OBJS)
+#	lib /out:libbgbmid.lib $(BMID_OBJS)
+
+libbgbtac.dll: bgbtac_auto.h $(BMID_SRCS)
+	cl /LD /Felibbgbtac.dll $(BMID_SRCS) /I. /DLIBBTAC_C /DBGBTAC_DLL /Z7
+
+btac0.exe: btac0.c libbgbtac.dll
+	cl /I. /Febtac0.exe btac0.c libbgbtac.lib /Z7
+
+gentst0.exe: gentst0.c libbgbtac.dll
+	cl /I. /Fegentst0.exe gentst0.c libbgbtac.lib /Z7
+
+gentst1.exe: gentst1.c libbgbtac.dll
+	cl /I. /Fegentst1.exe gentst1.c libbgbtac.lib /Z7
+
+clean:
+
+includes:
+libs: libbgbtac.dll
+apps: btac0.exe gentst0.exe gentst1.exe
+

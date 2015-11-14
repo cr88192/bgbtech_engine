@@ -1,0 +1,34 @@
+CLIL: C-Like Intermediate Language
+
+Another codegen idea, but this time with the idea being that the IL is an unstructured vaguely C-like language.
+
+Labels and goto are the primary control-flow mechanisms, with if-goto as the secondary control-flow mechanism.
+
+Frames will exist and serve a similar role to functions, except that a frame is not necessarily the entry point of a function, nor is a return necessarily the exit point.
+
+public labels will be identified as "frame.label".
+
+Types:
+s8, s16, s32, s64: signed integers
+u8, u16, u32, u64: unsigned integers
+int: integer, pointer-sized.
+
+
+syntax:
+label:
+goto label;
+goto label(args);
+goto *var;
+goto *var(args);
+
+call label;
+call label(args);
+call *var;
+call *var(args);
+
+
+rettype name(args)
+{
+	decls...
+	labels and statements...
+}

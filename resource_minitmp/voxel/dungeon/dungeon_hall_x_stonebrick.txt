@@ -1,0 +1,23 @@
+$dung_vox air				  0   0   0
+$dung_vox stone_brick		128   0   0
+$dung_vox torch				255 255   0
+
+$dung_max_z		48
+
+$dung_allow_nx	break_nx_stonebrick
+$dung_allow_nx	hall_x_stonebrick
+$dung_allow_nx	hall_xy_stonebrick
+$dung_allow_nx	hall_xy_mixbrick
+$dung_allow_nx	room_xy_mixbrick
+$dung_allow_nx	spawnroom_xy_mixbrick
+$dung_allow_nx	ladderfloor_xy_mixbrick
+$dung_allow_nx	ladderceil_xy_mixbrick
+
+$dung_allow_px	break_px_stonebrick
+$dung_allow_px	hall_x_stonebrick
+$dung_allow_px	hall_xy_stonebrick
+$dung_allow_px	hall_xy_mixbrick
+$dung_allow_px	room_xy_mixbrick
+$dung_allow_px	spawnroom_xy_mixbrick
+$dung_allow_px	ladderfloor_xy_mixbrick
+$dung_allow_px	ladderceil_xy_mixbrick

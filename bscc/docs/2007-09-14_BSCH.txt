@@ -1,0 +1,44 @@
+BSCC Compiled Headers
+
+This will serve as a precompiled header mechanism. However, unlike in traditional precompiled headers, these will have uses beyond simply optimization, and may thus both relax some rules (and also implied semantic safety) of other precompiled header systems.
+
+Atomic Modularity:
+Each precompiled header will be regarded as an atomic module.
+Thus, the inclusion of precompiled headers will serve as a kind of modular import system. The last imported module will thus generally be searched before former modules.
+
+However, this will be only a single-level. Creating one precompiled header will necessarily textually include all other headers, subject to guards and other features. Since each header is compiled seperately, the preprocessor state of one header is isolated from another. As a result, a common header (protected via a guard) may appear in multiple included precompiled headers.
+
+It will be assumed in this case that the definitions in one version match another, and thus that there is no problem with duplicate definitions.
+
+The header will consist of several pieces of info:
+General info about the file;
+The original source code (target header only);
+The preprocessor output;
+the parse trees;
+potentially other info (depends on situation), such as RIL code, assembly, or machine code.
+
+In general, these chunks will be compressed (the MiniLZ idea, or deflate, being possible options).
+
+
+Parse Trees:
+Parse trees will be stored as a large mass of unformatted S-Expressions. There will be no comments, newlines, unexpected tokens, or unnecessary whitespace (though optional extra whilespace may be allowed in certain places, such as following a closing paren, ...).
+
+All this will be in order to allow small size and a fast parser.
+
+
+Format
+The format will consist of some number of chunks.
+
+ChunkHead
+{
+byte name[32];	//chunk name
+byte resv[16];	//reserved
+u32 csize;		//compressed size
+u32 dsize;		//decompressed size
+u32 checksum;	//Adler-32 checksum
+u32 magic;		//magic value, 'BSCH'
+}
+
+Each chunk will be followed by compressed data.
+The data will be padded up to a 64 byte boundary.
+

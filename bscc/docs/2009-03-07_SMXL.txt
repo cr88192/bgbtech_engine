@@ -1,0 +1,146 @@
+SMXL: Structured Meta eXpression Language
+
+SMXL will be an attempt to hybridize S-Expressions and XML
+The goal will involve a mild simplification of XML syntax, and hybridization with S-Expressions.
+
+Internally, SMXL will try to remain more in common with S-Expressions than with XML, and will presumably have more in common WRT data representation as well.
+
+Like S-Expressions, the primary syntax will be expression-oriented, not text oriented.
+
+
+For now I will give an informal definition of the syntax.
+
+Comments:
+Comments will use the C-style '/* stuff... */' and '//stuff...' forms, but with the alteration that '/*' and '*/' are nestable.
+
+Names:
+Names will follow C-family character conventions, namely that '_' or an alphabetic character may start a name, and a name may contain some combination of '_', letters, and numbers. Names will be assumed case sensitive. '\xXX', '\uXXXX', and '\UXXXXXXXX' may be used to escape unicode and other characters in names.
+
+Integer Literals:
+Will consist of some number of decimal digits, or '0x' followed by hex digits.
+
+Float Literals:
+Will consist of decimal digits, followed by '.', and then by more decimal digits (neither exponents nor ommiting the initial or final digits will be allowed). So: '0.13' or '13.0' are good, but '.13' or '13.' are not allowed, nor is '16e+5' or similar.
+
+String Literals:
+Simple example: "text..."
+Escapes will be the fammiliar C-style escapes: \r \n \t ...
+'\xXX' will escape a char (0x00..0xFF) but will be fixed at 2 digits (unlike in C). '\uXXXX' and '\UXXXXXXXX' will allow escaping unicode literals. '\x80'..'\xFF' will be considered as equivalent to '\u0080'..'\u00FF', and strings are to also allow embedded NULL characters ('\x00' or '\u0000').
+
+Strings may not contain embedded newlines or unescaped control characters or similar. Likewise, adjacent strings will not merge. An upper limit may also be imposed on the length of string literals (For now, 250 chars or less, although a shorter limit may be imposed due to formatting restrictions).
+
+
+Special Literals:
+
+'#t' and '#f' will be booleans (true and false).
+'()' will be an empty list or NULL.
+'</>' will be an XNode terminator.
+'#"Name"' will allow an alternative syntax for names with alternative characters.
+
+'Name:' will be a keyword, which may be semantically different than a name.
+
+'NSName:Name' will be a qualified name or QName, which will be like a name but have an explicit namespace given. A QName may also be an ordinary name, and will then be considered relative to an implicit or default namespace.
+
+
+Compound Expressions:
+
+( Expr* )
+Generic list of expressions.
+
+( Expr* . Literal)
+An list terminated by a literal.
+
+( Expr* . (Expr*))
+Will be equivalent to (Expr* Expr*)
+
+So: '(2 . (3 . (a . ())))' will be the same as '(2 3 a)'.
+
+
+Although this implies the use of CONS cells, CONS cells will not be mandated as such (but may be a good idea...).
+
+
+(QName Expr*)
+Will be considered an SNode or SForm.
+
+
+<QName Attr*/>
+<QName Attr*> Expr* </>
+Attr: QName=Literal
+
+Will create an XNode, which may contain expressions.
+
+</QName>
+
+May also be used as a terminator if this is relevant to readability, but the QName will have no semantic relevance other than it being required to match with the opening node.
+
+
+For example:
+<foo bar="hello">2 3 (mul a b)</>
+
+
+Between SNodes and XNodes, they may be considered representationally unique, but may be semantically equivalent in most cases (An SNode should be accepted wherever an XNode would, and an XNode wherever an SNode would, however, an SNode will remain an SNode and an XNode an XNode). An SNode will be considered representationally equivalent to a list starting with a name, but not necessarily with an XNode lacking attributes.
+
+
+[[text...]]
+
+Will be a text block, which unlike a string may contain embedded newlines and other things, and may be arbitrary length. Other '[[' and ']]' pairs may be embedded so long as they are evenly nested.
+
+'#\' will be used as a general escape prefix, where '#\\' will escape itself ('#\' is part of the text). '#\[[' and '#\]]' will allow escaping braces. Otherwise, '#\' will behave similarly to the normal '\' escape in string literals.
+
+[[This text contains the #\]] brace...]]
+
+If a text literal begins on its own line, subsequent lines will eat the same amount of whitespace, allowing indented multi-line literals:
+
+(foo
+	[[This literal is indented.
+	As if this text began right at the start of the line.
+	Because the whitespace is eaten.]])
+
+(foo [[However,
+	Here the indentation is left in.]])
+
+
+In general, a text block will be considered equivalent to a string literal with the same contents, and so a text block may be used to represent string literals which are overly long.
+
+
+
+Unlike in Scheme or Lisp, other special syntax or "reader macros" are not handled.
+
+
+Namespaces:
+Will be specific to XNodes.
+
+Namespaces will be introduced similarly to XML, where the special namespace 'ns' will create namespaces.
+
+<app:foo/ ns:app="URL or GUID or somesuch unique string">
+	<app:bar/> </>
+
+'ns:ns' will be a special namespace, which will refer to the current implicit namespace.
+
+<foo ns:ns="GUID...">
+	<bar/> </>
+
+Will be semantically equivalent to the prior example.
+
+
+
+Conventions:
+
+For SNodes, it may be reasonable to allow either fixed-position or name-qualified subnodes. For XNodes, Name qualification should be the default and positional dependence should not be used, unless the ordering is little more than a plain array.
+
+<array>2 3 4 5</>
+It makes no sense to use qualification.
+
+<if> <test>x</> <then>stuff...</> <else>stuff</> </if>
+
+Qualification is reasonable and is preferable in this case.
+
+The reason for this is that it will make it easier to dynamically extend structures without breaking them.
+
+Additionally, processing code should ignore any subnodes (either XNode or SNode) which are qualified in a namespace which this code does not handle.
+
+Likewise, the same processor should allow the above to also be written:
+(if (test x) (then stuff...) (else stuff))
+
+But need not allow ommision of qualifiers.
+

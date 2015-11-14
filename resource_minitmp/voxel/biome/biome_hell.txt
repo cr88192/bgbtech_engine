@@ -1,0 +1,16 @@
+$biome_id 8
+$biome_val_arcane 1
+$biome_val_temperature 1
+$biome_val_humidity -1
+
+$biome_clr_grass 255 192 128
+$biome_clr_water 255 192 128
+$biome_clr_sun 255 192 128
+$biome_clr_space 255 128 64
+
+$terr_vox_stone netherrack
+$terr_vox_dirt netherrack
+$terr_vox_grass netherrack
+$terr_vox_grass2 netherrack
+$terr_vox_sand gravel
+$terr_vox_water lava

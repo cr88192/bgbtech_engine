@@ -1,0 +1,14 @@
+package bsvm.io;
+
+public final class FileDescriptor extends Object
+{
+public static FileDescriptor err;
+public static FileDescriptor in;
+public static FileDescriptor out;
+
+public FileDescriptor() 
+	{}
+public boolean valid() 
+	{ return false; }
+
+}

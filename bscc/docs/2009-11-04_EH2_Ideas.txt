@@ -1,0 +1,19 @@
+Idea:
+more C-friendly exception handling mechanism, which "should" play nicer with other possibilities, and with possible implementations.
+
+Consider allowing 'goto' here.
+
+dyehBegin();
+pfoo=dyehCatch("Foo");
+if(pfoo)goto CatchFoo;
+goto Try;
+EndTry:
+dyehEnd();
+Try:
+	...
+	goto EndTry;
+CatchFoo:
+	...
+
+it is not ideal, but should be workable in plain C.
+

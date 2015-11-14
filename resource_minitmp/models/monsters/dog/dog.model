@@ -1,0 +1,9 @@
+//Parasite
+
+bones parasite2.bone
+
+vmesh parasite2.ac
+
+
+origin 0 0 18
+scale 1 1 1

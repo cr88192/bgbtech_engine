@@ -1,0 +1,556 @@
+BGBTech JPEG Non-Backwards-Compatible-Extensions
+
+These will be extensions which are specific to 'BGBTech JPEG', and are not compatible with the existing JPEG format.
+
+
+== Escape Markers ==
+
+BTJ_ESC0	0x00	FF Escape Marker (Level 0)
+BTJ_ESC1	0x01	FF Escape Marker (Level 1)
+...
+BTJ_ESC15	0x0F	FF Escape Marker (Level 15)
+BTJ_ESCCHN	0x10	FF Escape Chained
+
+Reserved: 0x11 - 0xBF
+
+BTJ_LEG0	0xC0	JPEG Legacy Markers (Reserved/Unused).
+...
+BTJ_LEG31	0xDF
+
+BTJ_APP0	0xE0	Application Extension Marker
+BTJ_APP1	0xE1
+BTJ_APP2	0xE2
+BTJ_APP3	0xE3
+BTJ_APP4	0xE4
+BTJ_APP5	0xE5
+BTJ_APP6	0xE6
+BTJ_APP7	0xE7
+BTJ_APP8	0xE8
+BTJ_APP9	0xE9
+BTJ_APP10	0xEA
+BTJ_APP11	0xEB	Marker-String (Optional)
+BTJ_APP12	0xEC	Marker-Tag (Optional)
+BTJ_APP13	0xED	Start Of Group (Optional)
+BTJ_APP14	0xEE	End Of Group
+BTJ_APP15	0xEF
+
+BTJ_JPG0	0xF0	JPEG Extension Markers
+BTJ_JPG1	0xF1
+BTJ_JPG2	0xF2
+BTJ_JPG3	0xF3
+BTJ_JPG4	0xF4
+BTJ_JPG5	0xF5
+BTJ_JPG6	0xF6
+BTJ_JPG7	0xF7
+BTJ_JPG8	0xF8	
+BTJ_JPG9	0xF9
+BTJ_JPG10	0xFA
+BTJ_JPG11	0xFB	Marker-String (Must-Understand)
+BTJ_JPG12	0xFC	Marker-Tag (Must-Understand)
+BTJ_JPG13	0xFD	Start Of Group (Must-Understand)
+BTJ_COM		0xFE	Comment
+BTJ_ESC		0xFF	Escape Code
+
+
+== Escape Markers ==
+
+The byte value 0xFF may not appear directly in coded data lumps except as part of an escape marker.
+
+Escaped 0xFF bytes will encode an "Escape Level", which will indicate the nesting level at which the escaped 0xFF byte appears.
+
+If the escape level may not be encoded within the number of available escape levels, an ESCCHN byte will be emitted, and the level counter will reset.
+
+ESC ESCCHN[level/16] ESCn(level%16)
+
+
+Note that the 0xFF byte followed by 0xFF is not valid, and may not appear anywhere within a valid stream.
+
+
+== Start/End Of Group ==
+
+A SOG marker marks the start of a group, which is to be ended with an EOG.
+
+OSOG = FF, ED, <len:word>, <tag:ASCII>
+OSOG = FF, ED, <len:word>, <tag:ASCIIZ>, <args[]:ASCIIZ>
+RSOG = FF, FD, <len:word>, <tag:ASCIIZ>, <args[]:ASCIIZ>
+EOG = FF, EE, <len:word=2>
+
+SOG(tag) ... EOG
+
+Markers are required to be evenly matched.
+
+A SOG/EOG pair will be used to mark the start of an NBCES image:
+RSOG("NBCE") ... EOG
+
+FF FD 00 06 'N' 'B' 'C' 'E' ... FF EE 00 02
+
+
+== Marker String ==
+
+These will contain a string identifying the marker.
+The data which follows will generally be as 0 or more ASCIIZ strings, terminated by an empty string.
+
+== Marker Tags ==
+
+These will be encoded via APP12 and JPG12 markers.
+
+FF,APP12 <len:word16> <tag:FOURCC>
+FF,APP12 <0:word16> <len:word32> <tag:FOURCC>
+FF,APP12 <1:word16> <len:word64> <tag:FOURCC>
+
+FF,JPG12 <len:word16> <tag:FOURCC>
+FF,JPG12 <0:word16> <len:word32> <tag:FOURCC>
+FF,JPG12 <1:word16> <len:word64> <tag:FOURCC>
+
+Markers encoded via APP12 will be optional, whereas markers encoded via JPG12 are Must-Understand.
+
+The first letter will serve as a public/private marker:
+	BCST: Public marker.
+	comm: Private marker.
+	
+The meanings of the other letters will currently be reserved, however, for now all public markers will be all-caps, and private markers all-lower.
+
+Special Markers:
+APP12: '    ': Will define a region of padding. The contents of this marker will be ignored.
+
+
+== Define Minilump Tables ==
+
+JPG12: 'DMLT':
+Define Mini-Lump Tables.
+
+This lump will consist of a bitstream, which will use 0xFF-escapes and be encoded high-bit first.
+
+These tables will consist of an 8-bit table-tag, followed by any table data. Tables defined here are to be those related to correct decoding of the image.
+
+Table Tag:
+ 	0x00=End Of Tables
+ 	0x01=SOS
+ 	0x02=DVFH
+ 	0x03=SOMV
+ 	0x04=SOF0
+ 	0x05=SOF1
+ 	0x06=SOF2
+ 	0x07=SOF3
+ 	0x08-0x0F=Reserved
+ 	0x10-0x1F=Huffman Table 0-15
+ 	0x20-0x2F=Quantization Tables 0-15
+ 	0x30-0xFF=Reserved.
+
+=== SOFn (Start Of Frame) ===
+
+ SOFn
+ 	P(8) = Sample Bits (8 bits)
+ 	Ys(16) = Image Y Size (16-bits)
+ 	Xs(16) = Image X Size (16-bits)
+ 	Nf(8) = Number of Components
+ 	<Components>
+
+For Each Component:
+ 	Ci(8) = Component ID
+ 	Hi(4) = Horizontal Sample Factor
+ 	Vi(4) = Vertical Sample Factor
+ 	Tqi(8) = Quantization Table Selector
+
+
+Sample Bits gives the number of bits encoded for each target sample.
+Currently defined values are 8, 12, 16, 24, and 32.
+
+Sample Factors will specify the relative number of blocks per macroblock.
+For example, a 4:2:0 image might be encoded as:
+	H0=2, V0=2
+	H1=1, V1=1
+	H2=1, V2=1
+
+
+=== SOS (Start Of Scan) ===
+
+Ns(8) = Number of components in Scan
+Csi(8) = Scan Component Selector
+Tdi(4) = DC Huffman Table
+Tai(4) = AC Huffman Table
+
+Ss(8) = Start of Spectral Selection (0)
+Se(8) = End Of Spectral Selection (63, 127 for Megablock)
+Ah(4) = Successive approximation bit position high (0)
+Al(4) = Successive approximation bit position low (0)
+
+The actual scan data will be stored in the JPG12:"SDAT" tag.
+
+
+=== DVFH (Define Video Frame Header) ===
+
+ DVFH:
+ 	Ft(4) = Frame-Type (0=Static Image, 1=I-Frame, 2=P-Frame)
+ 	Dt(4) = Delta-Type (0=None, 1=Subtract Prior Frame YUV)
+ 	Cs(4) = Color-Space (0=YCbCr, 1=RCT, 2=RGB, 3-15=Reserved)
+ 	Ct(4) = Component-Type (0=Normal Integer, 1=Float)
+ 	Lid(16) = Layer ID
+ 	Lfl(32) = Layer Flags (1=RDCT, 2=Hidden)
+
+
+=== SOMV (Start Of Motion Vectors) ===
+
+Hm(4) = Huffman table for motion vectors.
+Mt(4) = Motion Vector Type, 0=Default (16x16 blocks)
+
+The motion-vector data will be stored in the "MDAT" tag.
+Motion-Vectors will use Step8 value coding.
+They will also be stored as all of the X vectors followed by all of the Y vectors, as the delta from the prior vector, and using the same RLE scheme used for the block coding.
+
+
+=== Quantization Tables ===
+
+The Quantization Tables will be Rice-coded.
+
+The layout of a Quantization Table will be:
+ 	4 bits: Table Type (0=Normal, 1=Megablock)
+ 	4 bits: Table Index, or K-Factor (Rice Codes)
+ 	<QTab Values>
+
+A normal table will consist of 64 values representing the coefficient scale factors. A megablock table will instead have 128 scale factors.
+
+Using a megablock table will indicate that the scan is using megablock coding.
+
+These tables will use sign-folded rice codes, where:
+* >0 = Encoded scale-factor.
+* 0 = End-Of-Table.
+* <0 = RLE Run of repeating prior value.
+
+
+=== Huffman Table ===
+
+The Huffman Tables will use Rice Codes and Runs to encode an array of symbol lengths. A given Huffman table will remain in effect until a new table is defined. As a result, tables may be shared between subsequent messages.
+
+Symbols with a length of 0 are not present in the encodable character set, as are any symbols past the end of the Huffman table (they will implicitly have values of 0).
+
+The layout of a Huffman Table will be:
+	4 bits: Table Type (0=Fixed, 1=Dynamic)
+	4 bits: Table Index, or K-Factor (Rice Codes)
+	if(type==Dynamic)
+		<n bits>: coded length runs.
+
+Huffman codes will be assigned starting with 0, starting with shortest lengths first, and starting with the smallest symbol within that code-length. This way, the symbol lengths are sufficient to unambiguously define the layout of the Huffman table.
+
+For example, if one has the symbols A-H, with the lengths (3,3,3,3,3,2,4,4), then the assigned Huffman codes will be:
+F=00, A=010, B=011, C=100, D=101, E=110, G=1110, H=1111
+
+
+==== Fixed Tables ====
+
+	0, The table will have 256 symbols all with a length of 8.
+	1, The length ranges will be:
+		0-143, 8
+		144-255, 9
+		256-279, 7
+		280-287, 8
+	2, Length Ranges will be:
+		0-15, 5
+		16-31, 6
+		32-63, 8
+		64-127, 9
+		128-255, 11
+
+		0xxxx		(00-0F)
+		10xxxx		(10-1F)
+		110xxxxx	(20-3F)
+		1110xxxxx	(40-7F)
+		11110xxxxxx	(80-BF)
+		11111xxxxxx	(C0-FF)
+
+Note: Fixed Table Layout 2 seems to be broken (over-subscribed?).
+
+
+==== Dynamic Tables ====
+
+Coded Length Table
+
+The length table is encoded as an array of values:
+	0-16: Code Length
+	17: RLE Run of 3-10 (3 bit length + 3)
+	18: RLE Run of 11-138 (7 bit length + 11)
+		RLE Runs will repeat the prior value a certain number of times.
+	19: End Of Table
+
+Each value is encoded as a rice-code using the permutation:
+	16, 17, 18, 0, 8,7, 9,6, 10,5, 11,4, 12,3, 13,2, 14,1, 15, 19
+
+With the inverted (decoder) mapping being:
+	3, 17, 15, 13, 11,9, 7,5, 4,6, 8,10, 12,14, 16,18, 0,1, 2, 19
+
+The reordering is mostly intended to make more common values appear closer to 0, so that Rice coding can deal with them more effectively.
+
+When an End Of Table value is seen, any code lengths until the end of the table will be filled with 0s.
+
+
+== Bitstream Conventions ==
+
+Multibyte values within this format will be in Big-Endian ordering.
+Likewise, the bit-ordering within bytes will start at the the most-significant bit and work towards the least significant bit.
+
+Bit numbering will identify the MSB as bit 7, and the LSB as 0.
+
+So, a structure like "P(2) Q(3) R(7)" would be laid out as:
+
+ 76543210 76543210
+ PPQQQRRR RRRR----
+
+
+== Coded Values ==
+
+
+=== Rice Codes ===
+
+Will consist of a prefix consisting of 0 or more 1 bits terminated by a 0 bit (giving the value 'n'), and a fixed value of k bits (v). The value will be 'value=(n<<k)|v'.
+
+For example, 42 coded with k=3 will be encoded as 111110 010.
+
+A Signed Rice code will be a Rice code with the folding scheme:
+0, -1, 1, -2, 2, ...
+
+
+=== Coded Integers ===
+
+A coded integer will consist of a Huffman coded prefix, followed by
+any extra bits, which will encode the remainder of the value.
+
+Step 4:
+
+ Prefix	Value										Extra Bits
+ 00-03	0-3											0
+ 04-05	4-7											1
+ 06-07	8-15										2
+ 08-09	16-31										3
+ 0A-0B	32-63										4
+ 0C-0D	64-127										5
+ 0E-0F	128-255										6
+ 10-11	256-511										7
+ 12-13	512-1023									8
+ 14-15	1024-2047									9
+ 16-17	2048-4095									10
+ 18-19	4096-8191									11
+ 1A-1B	8192-16383									12
+ 1C-1D	16384-32767									13
+ 1E-1F	32768-65535									14
+ 20-21	65536-131071								15
+ 22-23	131072-252143								16
+ 24-25	262144-524287								17
+ 26-27	524288-1048575								18
+ 28-29	1048576-2097151								19
+ 2A-2B	2097152-4194303								20
+ 2C-2D	4194304-8388607								21
+ 2E-2F	8388608-16777215							22
+ 30-31	16777216-33554431							23
+ 32-33	33554432-67108863							24
+ 34-35	67108864-134217727							25
+ 36-37	134217728-268435455							26
+ 38-39	268435456-536870911							27
+ 3A-3B	536870912-1073741823						28
+ 3C-3D	1073741824-2147483647						29
+ 3E-3F	2147483648-4294967295						30
+ 40-71	4294967296-8589934591						31
+ 42-83	8589934592-17179869183						32
+ 44-85	17179869184-34359738367						33
+ 46-87	34359738368-68719476735						34
+ 48-89	68719476736-137438953471					35
+ 4A-9B	137438953472-274877906943					36
+ 4C-9D	274877906944-549755813887					37
+ 4E-9F	549755813888-1099511627775					38
+ 50-51	1099511627776-2199023255551					39
+ 52-53	2199023255552-4398046511103					40
+ 54-55	4398046511104-8796093022207					41
+ 56-57	8796093022208-17592186044415				42
+ 58-59	17592186044416-35184372088831				43
+ 5A-5B	35184372088832-70368744177663				44
+ 5C-5D	70368744177664-140737488355327				45
+ 5E-5F	140737488355328-281474976710655				46
+ 60-61	281474976710656-562949953421311				47
+ 62-63	562949953421312-1125899906842623			48
+ 64-65	1125899906842624-2251799813685247			49
+ 66-67	2251799813685248-4503599627370495			50
+ 68-69	4503599627370496-9007199254740991			51
+ 6A-6B	9007199254740992-18014398509481983			52
+ 6C-6D	18014398509481984-36028797018963967			53
+ 6E-6F	36028797018963968-72057594037927935			54
+ 70-71	72057594037927936-144115188075855871		55
+ 72-73	144115188075855872-288230376151711743		56
+ 74-75	288230376151711744-576460752303423487		57
+ 76-77	576460752303423488-1152921504606846975		58
+ 78-79	1152921504606846976-2305843009213693951		59
+ 7A-7B	2305843009213693952-4611686018427387903		60
+ 7C-7D	4611686018427387904-9223372036854775807		61
+ 7E-7F	9223372036854775808-18446744073709551615	62
+
+
+Step 8:
+
+ Prefix	Value Range									Suffix Bits
+ 00-07	0-7											0
+ 08-0B	8-15										1
+ 0C-0F	16-31										2
+ 10-13	32-63										3
+ 14-17	64-127										4
+ 18-1B	128-255										5
+ 1C-1F	256-511										6
+ 20-23	512-1023									7
+ 24-27	1024-2047									8
+ 28-2B	2048-4095									9
+ 2C-2F	4096-8191									10
+ 30-33	8192-16383									11
+ 34-37	16384-32767									12
+ 38-3B	32768-65535									13
+ 3C-3F	65536-131071								14
+ 40-43	131072-252143								15
+ 44-47	262144-524287								16
+ 48-4B	524288-1048575								17
+ 4C-4F	1048576-2097151								18
+ 50-53	2097152-4194303								19
+ 54-57	4194304-8388607								20
+ 58-5B	8388608-16777215							21
+ 5C-5F	16777216-33554431							22
+ 60-63	33554432-67108863							23
+ 64-67	67108864-134217727							24
+ 68-6B	134217728-268435455							25
+ 6C-6F	268435456-536870911							26
+ 70-73	536870912-1073741823						27
+ 74-77	1073741824-2147483647						28
+ 78-7B	2147483648-4294967295						29
+ 7C-7F	4294967296-8589934591						30
+ 80-83	8589934592-17179869183						31
+ 84-87	17179869184-34359738367						32
+ 88-8B	34359738368-68719476735						33
+ 8C-8F	68719476736-137438953471					34
+ 90-93	137438953472-274877906943					35
+ 94-97	274877906944-549755813887					36
+ 98-9B	549755813888-1099511627775					37
+ 9C-9F	1099511627776-2199023255551					38
+ A0-A3	2199023255552-4398046511103					39
+ A4-A7	4398046511104-8796093022207					40
+ A8-AB	8796093022208-17592186044415				41
+ AC-AF	17592186044416-35184372088831				42
+ B0-B3	35184372088832-70368744177663				43
+ B4-B7	70368744177664-140737488355327				44
+ B8-BB	140737488355328-281474976710655				45
+ BC-BF	281474976710656-562949953421311				46
+ C0-C3	562949953421312-1125899906842623			47
+ C4-C7	1125899906842624-2251799813685247			48
+ C8-CB	2251799813685248-4503599627370495			49
+ CC-CF	4503599627370496-9007199254740991			50
+ D0-D3	9007199254740992-18014398509481983			51
+ D4-D7	18014398509481984-36028797018963967			52
+ D8-DB	36028797018963968-72057594037927935			53
+ DC-DF	72057594037927936-144115188075855871		54
+ E0-E3	144115188075855872-288230376151711743		55
+ E4-E7	288230376151711744-576460752303423487		56
+ E8-EB	576460752303423488-1152921504606846975		57
+ EC-EF	1152921504606846976-2305843009213693951		58
+ F0-F3	2305843009213693952-4611686018427387903		59
+ F4-F7	4611686018427387904-9223372036854775807		60
+ F8-FB	9223372036854775808-18446744073709551615	61
+
+// FC-FF	18446744073709551616
+// 18446744073709551616
+
+For signed values, the sign will be folded into the LSB, following the pattern 0, -1, 1, -2, 2, ...
+
+
+=== Coded Real ===
+
+Reals will be encoded as a pair of Signed Coded Integers.
+First will be the mantissa, followed by the exponent.
+The exponent will specify how many bits to shift the mantissa left or right, with positive values indicating a left-shift, and negative values indicating a right shift.
+
+For example, 480.0 may be coded as the integer pair: 15,5.
+
+
+==== Coded Real Escape ====
+
+Encodes certain special cases with real values.
+
+It is a signed integer currently with several defined values:
+	0=NaN, 1=Inf, -1=-Inf.
+
+
+== Modified Block Coding ==
+
+Modified block coding will change the way in which blocks are encoded in the bitstream. This feature will be required for megablock coding.
+
+Values will be coded as:
+0-127: Value Prefix (Coded Integer, Step8 if SOF.P<=32, Step4 if SOF.P>32)
+128-191: RLE Run of zeroes (Step8).
+192-255: RLE Run of prior value (Step8).
+
+Value 128 will be special and encode an EOB marker.
+
+Value 192 will encode an intra-block escape (IBE) marker.
+An IBE will be followed by a coded-value which will be used as a marker tag.
+The current meaning of these IBE tags is reserved.
+
+=== Normal Blocks ===
+
+These will be encoded as an AC coefficient using the AC Table.
+The remaining 63 DC values will be encoded using the DC Table.
+
+=== Megablock ===
+
+Megablock will involve a two level DCT transform.
+This will thus work on blocks of 64x64 pixels (leading to a 128x128 macroblock for 4:2:0 subsampling).
+
+The blocks will be coded in "double-zigzag" ordering.
+Coefficients will be coded in zigzag order for all blocks, also in zigzag order.
+
+Thus, a block will be laid out as:
+AC, LC[1..63], DC[0..63, 1], DC[0..63, 5], DC[0..63, 6], ..., DC[0..63, 63]
+
+Where LC will be the low-pass coefficients (the AC coefficients for each block after the secondary DCT transform).
+
+Note that both the AC and LC coefficients will use the AC Huffman table, whereas all of the DC coefficients will use the DC Huffman table.
+
+
+=== ZigZag Ordering ===
+
+Forward ZigZag Ordering:
+  0,  1,  5,  6, 14, 15, 27, 28,
+  2,  4,  7, 13, 16, 26, 29, 42,
+  3,  8, 12, 17, 25, 30, 41, 43,
+  9, 11, 18, 24, 31, 40, 44, 53,
+ 10, 19, 23, 32, 39, 45, 52, 54,
+ 20, 22, 33, 38, 46, 51, 55, 60,
+ 21, 34, 37, 47, 50, 56, 59, 61,
+ 35, 36, 48, 49, 57, 58, 62, 63
+ 
+Invese ZigZag Ordering:
+  0,  1,  8, 16,  9,  2,  3, 10,
+ 17, 24, 32, 25, 18, 11,  4,  5,
+ 12, 19, 26, 33, 40, 48, 41, 34,
+ 27, 20, 13,  6,  7, 14, 21, 28,
+ 35, 42, 49, 56, 57, 50, 43, 36,
+ 29, 22, 15, 23, 30, 37, 44, 51,
+ 58, 59, 52, 45, 38, 31, 39, 46,
+ 53, 60, 61, 54, 47, 55, 62, 63
+
+
+== Image Coding ==
+
+The number of image components will be defined as followed:
+1=Y (Monochrome Image)
+2=YA (Monochrome with Alpha)
+3=YUV (YUV Image)
+4=YUVA (YUV Image with Alpha)
+
+The color transform used will be as indicated in the DVFH header.
+
+The block transform will be either an 8x8 DCT-II or SERMS RDCT (with a fraction of 13 bits).
+
+The color transforms will be YCbCr and RCT.
+
+RCT will be defined as:
+	Y=(R+2G+B)/4
+	U=B-G
+	V=R-G
+
+
+Macroblocks will be encoded as the blocks for each component.
+
+For an image in YUV ordering with 4:2:0, the layout will be
+Y0 Y1 Y2 Y3 U V
