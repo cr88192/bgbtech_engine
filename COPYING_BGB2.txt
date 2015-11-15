@@ -1,6 +1,0 @@
-Except as where noted otherwise, the engine has been moved over to the Creative Commons CC BY-NC (Dropped ND)
-
-Old: http://creativecommons.org/licenses/by-nc-nd/4.0/legalcode
-New: http://creativecommons.org/licenses/by-nc/4.0/legalcode
-
-This will not apply to areas otherwise marked as MIT, which will remain MIT.

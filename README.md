@@ -1,22 +1,13 @@
 # bgbtech_engine
 My previous 3D engine.
 
-License: BGB3
-* Excptions for BSCC and other subsystems marked as MIT, which are MIT licensed.
-* All this isn't really "set in stone" as of yet.
+License: MIT
 
+Decided to move the engine over to MIT.
 
-Things granted:
-* People are free to modify and compile the code for personal use.
-* People are free to redistribute the code, or mods for the code, in source or binary form.
-* It can be used freely for non-commercial purposes.
-* Non-commercial in this context means it is not being used to generate revenue.
-* If you are making money off it, I ask 1% (of net profit) if this value would exceed $25.
-* This 1% only covers sales or services related to the software.
-* Can be used under MIT-like terms if you pay me the 1%.
+Now, all the engine code is MIT, at least as far as the code I have written is concerned.
 
-
-Everything in "bscc/" is licensed under MIT, as well as any sub-libraries which carry the MIT license. These may be used freely without issue.
+Donations will be appriciated though.
 
 
 'engine0.exe' is the main 3D engine/game frontend.
@@ -93,12 +84,16 @@ Misc
 ----
 
 3rd Party Libraries:
-Several Xiph.org libraries, and an older version of the OculusODK are lurking in the codebase.
+Several Xiph.org libraries, mpglib, and an older version of the OculusODK are lurking in the codebase. These have their own licenses.
+
+These are for non-critical functions, and could be omitted.
+
 
 Assets:
-Some of the art assets are derived from materials from OpenQuartz, CrystalSpace, and GIMP. These may require different handling.
+Some of the art assets are derived from materials from OpenQuartz, CrystalSpace, FreeDoom, and GIMP. These may require different handling.
 
 Some other assets are less certain, use at your own risk.
+
 
 BSCC
 ====

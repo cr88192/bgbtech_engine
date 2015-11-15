@@ -1,7 +1,10 @@
-BGBTech License 3
+Except where otherwise noted, code within this project may be distributed
+under the terms of the MIT license (below).
+
+Exceptions may exist, but will be noted as such.
 
 <--
-Copyright (C) 2015 by Brendan G Bohannon
+Copyright (C) 2011 by Brendan G Bohannon
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -10,13 +13,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-1. The above copyright notice and this permission notice shall be included in
+The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
-2. For commercial use, the copyright holder is paid 1% of net profits if this
-value exceeds $25 USD. This includes sale of the Software and/or the sale of
-services which make use of the Software.
-
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
