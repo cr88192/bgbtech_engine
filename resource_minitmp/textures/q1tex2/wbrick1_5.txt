@@ -1,6 +1,0 @@
-// $video video/demo.roq
-// $video video/d3/video_ipn_news.roq
-// $video video/d3/video_bfg.roq
-// $video record_58905299.avi
-// $chromakey 255 0 0 16
-// $texgen texgen_maze
