@@ -3466,7 +3466,7 @@ int pdgl_main_draw2D()
 
 	LBXGL_BrushDraw2D_DrawWorld2D(world);
 	
-	pdgl_main_drawRecSpectral();
+//	pdgl_main_drawRecSpectral();
 	
 //	if(((state->doshot&15)==2) && (cam->flags&PDGLUI_CAMFL_RECORDHIDEUI))
 	if(UI_Camera_GetHideUI())

@@ -1,5 +1,8 @@
-#define BTIC2C_DCTSZ	8
-#define BTIC2C_DCTSZ2	64
+#define BTIC2C_DCTSZ	8		//DCT Size
+#define BTIC2C_DCTSZ2	64		//DCT Size Squared
+
+#define BTIC2C_DCTSZ1_2	4		//1/2 DCT Size
+#define BTIC2C_DCTSZ1_4	2		//1/4 DCT Size
 
 #define BTIC2C_CLRS_YCBCR	0
 #define BTIC2C_CLRS_RCT		1
@@ -33,6 +36,26 @@ uint huff_win;			//bitstream window
 int huff_pos;			//bitstream offset
 int huff_isend;			//bitstream has broken (decoder)
 
+int (*Huff_NextByte)(BTIC2C_Context *ctx);
+void (*Huff_EmitByte)(BTIC2C_Context *ctx, int i);
+
+//Arithmetic Coder
+
+byte *ari_cs;			//current pos in bitstream (input)
+byte *ari_ct;			//current pos in bitstream (output)
+byte *ari_cse;			//current end pos in bitstream (input)
+byte *ari_cte;			//current end pos in bitstream (output)
+
+u32 ari_rmin;			//window lower range
+u32 ari_rmax;			//window upper range
+u32 ari_rval;			//window decode value
+
+int ari_wctx;			//window context
+byte *ari_model;		//probability model
+
+int ari_ctxbits;		//context bits
+int ari_ctxmask;		//context mask
+
 //Common
 
 u16 img_qt[4][64];		//quantization tables
@@ -63,6 +86,8 @@ int img_scn[4];
 s32 *img_scbuf[4];		//image blocks buffers
 s32 *img_sibuf[4];		//image plane (16/24 bits)
 s16 *img_sjbuf[4];		//image plane (8/12 bits)
+s32 *img_lsibuf[4];		//image plane (16/24 bits)
+s16 *img_lsjbuf[4];		//image plane (8/12 bits)
 
 int img_schs[4];		//scan horizontal size
 int img_scvs[4];		//scan vertical size
@@ -97,7 +122,7 @@ byte bcst_bpp;
 int skip_cnt;			//skip macroblocks count
 byte *skip_map;			//bitmap of skipped blocks
 byte blk_mode[8];		//current block mode
-s16 blk_move[2];		//current block movement
+s16 blk_move[16];		//current block movement
 
 // u16 img_app14_dctversion;
 // u16 img_app14_flags0;
@@ -113,7 +138,7 @@ bool flip;
 s32 *yb, *ub, *vb, *ab;			//YUVA plane buffers
 s32 *lyb, *lub, *lvb, *lab;		//last YUVA plane buffers
 s32 *ydb, *udb, *vdb, *adb;		//YUVA block buffers
-byte *ybm, *ubm, *vbm, *abm;	//YUVA block modes
+byte *ybm, *ubm, *vbm, *abm;	//YUVA block modes (Mode, ?, X, Y)
 int lxs;
 int lys;
 
@@ -137,4 +162,14 @@ int cnt_hln[16];	//per-table len counts
 int cnt_hlb[16];	//per-table len extra-bit counts
 int cnt_hvn[16];	//per-table vector counts
 int cnt_hvb[16];	//per-table vector extra-bit counts
+
+//aggregate P-frame counts
+int apcnt_hsn[16];	//per-table symbol counts
+int apcnt_hsb[16];	//per-table bit counts
+int apcnt_hdn[16];	//per-table coeff counts
+int apcnt_hdb[16];	//per-table coeff extra-bit counts
+int apcnt_hln[16];	//per-table len counts
+int apcnt_hlb[16];	//per-table len extra-bit counts
+int apcnt_hvn[16];	//per-table vector counts
+int apcnt_hvb[16];	//per-table vector extra-bit counts
 };

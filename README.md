@@ -1,28 +1,17 @@
 # bgbtech_engine
 My previous 3D engine.
 
-License: Previously CC BY-NC-ND
-* Was intended so people would pay me if they wanted to use it for something.
-* Now, dunno, may change it if it matters...
-
-Changed: CC BY-NC
+License: CC BY-NC or BGB3
 * Excptions for BSCC and other subsystems marked as MIT, which are MIT licensed.
-
-Or, Alternatively: BGB3
 * All this isn't really "set in stone" as of yet.
 
 
 Things granted:
 * People are free to modify and compile the code for personal use.
 * People are free to redistribute the code, or mods for the code, in source or binary form.
-* It can be used for non-commercial purposes.
+* It can be used freely for non-commercial purposes.
 * If you are making money off it, I ask 1% (of net profit) if this value would exceed $25.
-* Can be used under MIT terms if you pay me the 1%.
-
-Drop of ND:
-* Originally the ND was intended as a restriction on distributing otherwise fully complete games.
-* However, this makes mods unclear.
-* I want to allow mods, as well as general redistribution of source and binary programs.
+* Can be used under MIT-like terms if you pay me the 1%.
 
 
 Everything in "bscc/" is licensed under MIT, as well as any sub-libraries which carry the MIT license.

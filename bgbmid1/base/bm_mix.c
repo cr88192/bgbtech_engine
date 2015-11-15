@@ -475,6 +475,9 @@ BMID_API int BGBMID_BlendMixChannel(
 	int i, j, k, b, ss, se, sm;
 	int i0, i1;
 
+	if(!chan->samp || !chan->samp->patch)
+		return(-1);
+
 	//Hack: Eliminate dummy samples if another sample exists.
 //	if((chan->samp->len==144) && (chan->samp->rate==16000))
 	if(1)

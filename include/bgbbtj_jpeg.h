@@ -67,6 +67,9 @@
 #define	BGBBTJ_JPG_RGBX_F16		62	//RGBx(32)
 #define	BGBBTJ_JPG_BGRX_F16		63	//BGRx(32)
 
+#define	BGBBTJ_JPG_UYVY_VF		64	//UYVY Ordering (4:2:2)
+#define	BGBBTJ_JPG_YUYV_VF		65	//YUYV Ordering (4:2:2)
+
 #define	BGBBTJ_JPG_DXT1			BGBBTJ_JPG_BC1
 #define	BGBBTJ_JPG_DXT3			BGBBTJ_JPG_BC2
 #define	BGBBTJ_JPG_DXT5			BGBBTJ_JPG_BC3
@@ -117,7 +120,7 @@
 #define	BGBBTJ_QFL_BATCHENCODE		(1<<25)		//doing offline encoding
 #define	BGBBTJ_QFL_BLOCKINDEX		(1<<26)		//enable block indexing
 #define	BGBBTJ_QFL_MIPMAP			(1<<27)		//use mipmaps
-#define	BGBBTJ_QFL_BLOCKMOTION		(1<<28)		//use mipmaps
+#define	BGBBTJ_QFL_BLOCKMOTION		(1<<28)		//use motion compensation
 
 #define	BGBBTJ_JPG_QFL_LOSSLESS		(BGBBTJ_JPG_QFL_RDCT|BGBBTJ_JPG_QFL_444| \
 									BGBBTJ_JPG_QFL_ORCT)
@@ -432,6 +435,7 @@ u32 rval;		//window decode value
 
 int wctx;
 byte *model;	//pairs of counts
+u16 *model16;	//packed model bits
 int ctxbits;	//context bits
 int ctxmask;	//context mask
 };
