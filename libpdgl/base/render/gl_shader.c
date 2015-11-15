@@ -375,7 +375,7 @@ PDGL_API void PDGL_ErrorStatusUniform(char *name)
 	i=glGetError();
 	while(i!=GL_NO_ERROR)
 	{
-		printf("PDGL_ErrorStatusUniform: Var=%s Error 0x%04X\n", name, i);
+//		printf("PDGL_ErrorStatusUniform: Var=%s Error 0x%04X\n", name, i);
 //		*(int *)-1=-1;
 		i=glGetError();
 	}

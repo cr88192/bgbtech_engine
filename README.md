@@ -98,6 +98,7 @@ Several Xiph.org libraries, and an older version of the OculusODK are lurking in
 Assets:
 Some of the art assets are derived from materials from OpenQuartz, CrystalSpace, and GIMP. These may require different handling.
 
+Some other assets are less certain, use at your own risk.
 
 BSCC
 ====

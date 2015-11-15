@@ -1,0 +1,11 @@
+cs: Stuff from CrystalSpace
+gimp: Stuff from GIMP
+
+'aard': Stuff from OpenQuartz
+
+
+'q1tex2':
+Improvised Quake1 replacement textures.
+IIRC, derived from some Quake texture-replacement packs and some stuff from FreeDoom, I forget now, treat as legally dubious...
+
+Mostly exists as placeholder so Quake1 maps will work.

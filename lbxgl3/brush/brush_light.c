@@ -1473,7 +1473,7 @@ float LBXGL_BrushWorld_DrawSetupLightScale(
 	i=glGetError();
 	while(i!=GL_NO_ERROR)
 	{
-		printf("LBXGL_BrushWorld_DrawSetupLightScale(A): Error 0x%08X\n", i);
+//		printf("LBXGL_BrushWorld_DrawSetupLightScale(A): Error 0x%08X\n", i);
 		i=glGetError();
 	}
 
