@@ -17,6 +17,11 @@ Things granted:
 Everything in "bscc/" is licensed under MIT, as well as any sub-libraries which carry the MIT license.
 
 
+'engine0.exe' is the main 3D engine/game frontend.
+
+Other EXEs represent various tools or internal tests or other things.
+
+
 Contents:
 * apps: engine front ends
 * bgbbtjpg: mostly video compression, image processing, and texture compression stuff.
