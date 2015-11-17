@@ -193,6 +193,14 @@ BT2D_API int Tile2D_HandleInput()
 		return(0);
 	}
 
+	if(isnan(v2x(tile2d_player->vel)) ||
+		isinf(v2x(tile2d_player->vel)) ||
+		isnan(v2y(tile2d_player->vel)) ||
+		isinf(v2y(tile2d_player->vel)))
+	{
+		tile2d_player->vel=vec2(0, 0);
+	}
+
 	imfl=0;
 	kcur=bt2d_state->keys;
 	while(*kcur)
@@ -295,6 +303,7 @@ void Tile2D_SpawnPlayer(vec2 org)
 	tile2d_player->maxs=vec2(1.5, 2);
 //	tile2d_player->org=vec2(0, 5);
 	tile2d_player->org=org;
+	tile2d_player->vel=vec2(0, 0);
 
 	tile2d_player->spr_size=vec2(2, 2);
 //	tile2d_player->spr_center=vec2(1, 0);

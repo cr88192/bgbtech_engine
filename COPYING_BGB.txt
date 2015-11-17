@@ -4,7 +4,7 @@ under the terms of the MIT license (below).
 Exceptions may exist, but will be noted as such.
 
 <--
-Copyright (C) 2011 by Brendan G Bohannon
+Copyright (C) 2011-2015 by Brendan G Bohannon
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
