@@ -22,6 +22,7 @@ Contents:
 * apps: engine front ends
 * bgbbtjpg: mostly video compression, image processing, and texture compression stuff. Can also build a VfW driver and VLC plug-in.
 * bgbmid1: MIDI synthesis engine + 3D engine's main mixer
+* bgbrasw: Software Rasterizer
 * bscc: BGBScript VM, also a lot of engine infrastructure (MM, VFS, ...).
 * btanim2d: partial old 2D animation tool
 * btgecl: game-engine client end
