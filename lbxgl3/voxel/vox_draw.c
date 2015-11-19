@@ -1429,7 +1429,7 @@ void LBXGL_Voxel_DrawChunkAlphaFluid(LBXGL_VoxelChunk *chk)
 		LBXGL_Shader_BindTexture(tn);
 //		LBXGL_Shader_BindTexture(chk->mesh->face_tex[i]);
 
-		glDisable(GL_CULL_FACE);
+		pdglDisable(GL_CULL_FACE);
 
 //		tn=LBXGL_Texture_LoadImage("textures/shader/watery_base");
 //		LBXGL_Shader_BindTexture(tn);
@@ -1543,7 +1543,7 @@ void LBXGL_Voxel_DrawChunkAlphaFluid2(LBXGL_VoxelChunk *chk)
 		LBXGL_Shader_BindTexture(tn);
 		LBXGL_Shader_Color4f(1, 1, 1, 1);
 
-		glDisable(GL_CULL_FACE);
+		pdglDisable(GL_CULL_FACE);
 
 		LBXGL_Shader_Begin(PDGL_TRIANGLES);
 		for(j=i; j<chk->mesh->n_aface; j++)
@@ -2127,8 +2127,8 @@ void LBXGL_Voxel_BeginTranslateForWorld(LBXGL_BrushWorld *world)
 {
 	float tv[3];
 
-//	glMatrixMode(GL_MODELVIEW);
-//	glPushMatrix();
+//	pdglMatrixMode(GL_MODELVIEW);
+//	pdglPushMatrix();
 	LBXGL_Shader_PushMatrix();
 
 	lbxgl_voxel_reforg[0]=world->cam_reforg[0];
@@ -2139,7 +2139,7 @@ void LBXGL_Voxel_BeginTranslateForWorld(LBXGL_BrushWorld *world)
 	tv[0]=-world->cam_reforg[0];
 	tv[1]=-world->cam_reforg[1];
 	tv[2]=-world->cam_reforg[2];
-//	glTranslatef(tv[0], tv[1], tv[2]);
+//	pdglTranslatef(tv[0], tv[1], tv[2]);
 	LBXGL_Shader_Translatef(tv[0], tv[1], tv[2]);
 #endif
 }
@@ -2147,8 +2147,8 @@ void LBXGL_Voxel_BeginTranslateForWorld(LBXGL_BrushWorld *world)
 void LBXGL_Voxel_EndTranslateForWorld(LBXGL_BrushWorld *world)
 {
 	LBXGL_Shader_PopMatrix();
-//	glMatrixMode(GL_MODELVIEW);
-//	glPopMatrix();
+//	pdglMatrixMode(GL_MODELVIEW);
+//	pdglPopMatrix();
 }
 
 void LBXGL_Voxel_DrawWorldDark(LBXGL_BrushWorld *world)
@@ -2317,14 +2317,14 @@ void LBXGL_Voxel_DrawWorldStaticLight(LBXGL_BrushWorld *world)
 	LBXGL_Voxel_BeginTranslateForWorld(world);
 
 	pdglColor4f(1, 1, 1, 1);
-//	LBXGL_Voxel_DrawRegionListStaticLight(world->vox_region);
+	LBXGL_Voxel_DrawRegionListStaticLight(world->vox_region);
 
 	mdls=LBXGL_Voxel_QueryModelsVisibleWorld(world);
 	LBXGL_BrushWorld_DrawModelList(world, mdls);
 
 	LBXGL_Voxel_EndTranslateForWorld(world);
 
-	LBXGL_BARF_DrawContextStaticLight(world->barf_voxel);
+//	LBXGL_BARF_DrawContextStaticLight(world->barf_voxel);
 }
 
 void LBXGL_Voxel_DrawWorldFlat(LBXGL_BrushWorld *world)
@@ -2432,24 +2432,24 @@ LBXGL_API void LBXGL_Voxel_DrawFluidFogVolume(
 	if(!(world->flags&BTGE_WFL_VOXFLUID))
 		return;
 
-	glDepthMask(1);
-	glColorMask(0, 0, 0, 0);
+	pdglDepthMask(1);
+	pdglColorMask(0, 0, 0, 0);
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
-//	glCullFace(GL_BACK);
+	pdglEnable(GL_CULL_FACE);
+	pdglCullFace(GL_FRONT);
+//	pdglCullFace(GL_BACK);
 
 	LBXGL_Voxel_DrawWorldFluidFlat(world);
 
-	glCullFace(GL_BACK);
+	pdglCullFace(GL_BACK);
 
-	glDepthMask(0);
-	glColorMask(1, 1, 1, 1);
+	pdglDepthMask(0);
+	pdglColorMask(1, 1, 1, 1);
 	
 	s=0.0625/rgba[3];
 	LBXGL_Brush_DrawLayerFog(rgba, 2, s, 128);
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 }
 
 LBXGL_API void LBXGL_Voxel_DrawFluidSurfaceFogVolume(
@@ -2463,28 +2463,28 @@ LBXGL_API void LBXGL_Voxel_DrawFluidSurfaceFogVolume(
 	if(!(world->flags&BTGE_WFL_VOXFLUID))
 		return;
 
-	glDisable(GL_TEXTURE_2D);
-	glClear(GL_STENCIL_BUFFER_BIT);
-	glEnable(GL_STENCIL_TEST);
+	pdglDisable(GL_TEXTURE_2D);
+	pdglClear(GL_STENCIL_BUFFER_BIT);
+	pdglEnable(GL_STENCIL_TEST);
 
-	glStencilFunc(GL_ALWAYS, 0, 255);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
+	pdglStencilFunc(GL_ALWAYS, 0, 255);
+	pdglStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
 
-	glDepthMask(0);
-	glColorMask(0, 0, 0, 0);
+	pdglDepthMask(0);
+	pdglColorMask(0, 0, 0, 0);
 
-	glEnable(GL_CULL_FACE);
-//	glCullFace(GL_FRONT);
-	glCullFace(GL_BACK);
+	pdglEnable(GL_CULL_FACE);
+//	pdglCullFace(GL_FRONT);
+	pdglCullFace(GL_BACK);
 
 	LBXGL_Voxel_DrawWorldFluidFlat(world);
 
-	glCullFace(GL_BACK);
+	pdglCullFace(GL_BACK);
 
-	glDepthMask(0);
-	glColorMask(1, 1, 1, 1);
+	pdglDepthMask(0);
+	pdglColorMask(1, 1, 1, 1);
 
-	glStencilFunc(GL_NOTEQUAL, 0, 255);
+	pdglStencilFunc(GL_NOTEQUAL, 0, 255);
 
 	pt[0]=0.04; pt[1]=0.18; pt[2]=0.20;
 //	pt[3]=1.0/384;
@@ -2494,8 +2494,8 @@ LBXGL_API void LBXGL_Voxel_DrawFluidSurfaceFogVolume(
 	s=0.0625/pt[3];
 	LBXGL_Brush_DrawLayerFog(pt, 2, s, 32);
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 
-	glDepthFunc(GL_LEQUAL);
-	glDisable(GL_STENCIL_TEST);
+	pdglDepthFunc(GL_LEQUAL);
+	pdglDisable(GL_STENCIL_TEST);
 }

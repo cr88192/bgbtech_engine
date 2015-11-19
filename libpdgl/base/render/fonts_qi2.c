@@ -64,6 +64,10 @@ PDGL_API void PDGL_TextVBO_Upload(PDGL_TextVBO *ctx)
 	if(ctx->vbo<=0)
 	{
 		pdglGenBuffers(1, &id);
+
+		if(id<=0)
+			return;
+
 		pdglBindBuffer(GL_ARRAY_BUFFER, id);
 		pdglBufferData(GL_ARRAY_BUFFER,
 			ctx->sz_vbo, ctx->vbo_buf, GL_STATIC_DRAW);
@@ -82,14 +86,28 @@ PDGL_API void PDGL_TextVBO_Draw(PDGL_TextVBO *ctx)
 {
 	int i, j, k;
 
-	glDisable (GL_CULL_FACE);
-//		glEnable(GL_TEXTURE_2D);
+	pdglDisable (GL_CULL_FACE);
+//		pdglEnable(GL_TEXTURE_2D);
 	pdglEnableTexture2D();
+
+	if(ctx->vbo<=0)
+	{
+		for(i=0; i<ctx->n_prim; i++)
+		{
+			pdglBindTexture(GL_TEXTURE_2D, ctx->prim[i*4+3]);
+			PDGL_DrawPrim_DrawArraysTexRGB(
+				ctx->prim[i*4+2], ctx->prim[i*4+0], ctx->prim[i*4+1],
+				3, GL_FLOAT, 0, (byte *)ctx->xyz,
+				2, GL_FLOAT, 0, (byte *)ctx->st,
+				4, GL_UNSIGNED_BYTE, 0, (byte *)ctx->rgba);
+		}
+		return;
+	}
 
 	pdglBindBuffer(GL_ARRAY_BUFFER, ctx->vbo);
 	for(i=0; i<ctx->n_prim; i++)
 	{
-		glBindTexture(GL_TEXTURE_2D, ctx->prim[i*4+3]);
+		pdglBindTexture(GL_TEXTURE_2D, ctx->prim[i*4+3]);
 		PDGL_DrawPrim_DrawArraysTexRGB(
 			ctx->prim[i*4+2], ctx->prim[i*4+0], ctx->prim[i*4+1],
 			3, GL_FLOAT, 0, (byte *)ctx->ofs_xyz,
@@ -267,14 +285,14 @@ PDGL_API int PDGL_TextVBO_DrawCharModeQI2(PDGL_TextVBO *ctx,
 
 	if(!qb)
 	{
-//		glDisable (GL_CULL_FACE);
-//		glEnable(GL_TEXTURE_2D);
+//		pdglDisable (GL_CULL_FACE);
+//		pdglEnable(GL_TEXTURE_2D);
 //		pdglEnableTexture2D();
-//		glBindTexture(GL_TEXTURE_2D, texn);
+//		pdglBindTexture(GL_TEXTURE_2D, texn);
 		PDGL_TextVBO_BindTexture(ctx, texn);
 
 //#ifndef GLES
-//		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+//		pdglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 //#endif
 
 //		PDGL_TextVBO_Begin(ctx, PDGL_QUADS);
@@ -282,14 +300,14 @@ PDGL_API int PDGL_TextVBO_DrawCharModeQI2(PDGL_TextVBO *ctx,
 		qb=1;
 	}
 
-//	glDisable (GL_CULL_FACE);
-//	glEnable (GL_TEXTURE_2D);
-//	glBindTexture(GL_TEXTURE_2D, frag->texnum);
+//	pdglDisable (GL_CULL_FACE);
+//	pdglEnable (GL_TEXTURE_2D);
+//	pdglBindTexture(GL_TEXTURE_2D, frag->texnum);
 
-//	glEnable (GL_BLEND);
-//	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//	glShadeModel (GL_SMOOTH);
-//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+//	pdglEnable (GL_BLEND);
+//	pdglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//	pdglShadeModel (GL_SMOOTH);
+//	pdglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 //	n=c&63;
 

@@ -24,10 +24,10 @@ CFLAGS=/Iinclude /I../include /Zi
 DLL_CFLAGS=$(CFLAGS) /DBTGECL_DLL
 LDFLAGS=btgecl.lib ../liblbxgl2.lib ../libpdgl.lib  ../libpdglui.lib \
 	../btgecm.lib ../libvecmath.lib ../bgbsvm.lib \
-	../bgbgc.lib ../bgbdy.lib ../bgbasm.lib opengl32.lib
+	../bgbgc.lib ../bgbdy.lib ../bgbasm.lib
 DLL_LDFLAGS=../liblbxgl2.lib ../libpdgl.lib  ../libpdglui.lib \
 	../btgecm.lib ../libvecmath.lib ../bgbsvm.lib \
-	../bgbgc.lib ../bgbdy.lib ../bgbasm.lib ../libbsde.lib opengl32.lib
+	../bgbgc.lib ../bgbdy.lib ../bgbasm.lib ../libbsde.lib
 
 include Makefile.inc
 

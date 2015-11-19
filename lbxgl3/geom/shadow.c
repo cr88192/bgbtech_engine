@@ -89,28 +89,17 @@ LBXGL_API void LBXGL_Shadow_DrawShadowsLight(dyt fst, LBXGL_Light *light)
 	}
 
 
-	glDepthFunc(GL_LESS);
+	pdglDepthFunc(GL_LESS);
 
-	glDepthMask(0);
-	glColorMask(0, 0, 0, 0);
+	pdglDepthMask(0);
+	pdglColorMask(0, 0, 0, 0);
 
-	glEnable(GL_CULL_FACE);
-	glStencilFunc(GL_ALWAYS, 0, 255);
-
-
-	glCullFace(GL_FRONT);
-	glStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
-
-	cur=lst;
-	while(dyconsp(cur))
-	{
-		LBXGL_GenericRenderShadow(dycar(cur), light->org);
-		cur=dycdr(cur);
-	}
+	pdglEnable(GL_CULL_FACE);
+	pdglStencilFunc(GL_ALWAYS, 0, 255);
 
 
-	glCullFace(GL_BACK);
-	glStencilOp(GL_KEEP, GL_DECR, GL_KEEP);
+	pdglCullFace(GL_FRONT);
+	pdglStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
 
 	cur=lst;
 	while(dyconsp(cur))
@@ -119,10 +108,21 @@ LBXGL_API void LBXGL_Shadow_DrawShadowsLight(dyt fst, LBXGL_Light *light)
 		cur=dycdr(cur);
 	}
 
-	glDisable(GL_CULL_FACE);
 
-	glDepthMask(1);
-	glColorMask(1, 1, 1, 1);
+	pdglCullFace(GL_BACK);
+	pdglStencilOp(GL_KEEP, GL_DECR, GL_KEEP);
+
+	cur=lst;
+	while(dyconsp(cur))
+	{
+		LBXGL_GenericRenderShadow(dycar(cur), light->org);
+		cur=dycdr(cur);
+	}
+
+	pdglDisable(GL_CULL_FACE);
+
+	pdglDepthMask(1);
+	pdglColorMask(1, 1, 1, 1);
 
 	dyFreeList(lst);
 }
@@ -137,41 +137,41 @@ LBXGL_API float LBXGL_Shadow_SetupLight(LBXGL_Light *light)
 
 #if 1
 #ifndef GLES
-//	glDisable(GL_COLOR_MATERIAL);
-	glDisable(GL_COLOR_MATERIAL);
+//	pdglDisable(GL_COLOR_MATERIAL);
+	pdglDisable(GL_COLOR_MATERIAL);
 #endif
 
 	pt[0]=0; pt[1]=0; pt[2]=0; pt[3]=1;
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, pt);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, pt);
+	pdglMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, pt);
+	pdglMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, pt);
 
 	pt[0]=1; pt[1]=1; pt[2]=1; pt[3]=1;
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pt);
+	pdglMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pt);
 
 	pt[0]=0.2; pt[1]=0.2; pt[2]=0.2; pt[3]=0.2;
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pt);
+	pdglMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pt);
 
 	pt[0]=1;
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, pt);
+	pdglMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, pt);
 
 
-	glEnable(GL_LIGHTING);
-	glEnable(GL_NORMALIZE);
+	pdglEnable(GL_LIGHTING);
+	pdglEnable(GL_NORMALIZE);
 
-	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-	glShadeModel(GL_SMOOTH);
+	pdglLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	pdglShadeModel(GL_SMOOTH);
 
 	V3F_ZERO(pt); pt[3]=1;
-	glLightfv(GL_LIGHT0, GL_AMBIENT, pt);
+	pdglLightfv(GL_LIGHT0, GL_AMBIENT, pt);
 
 	V3F_COPY(light->clr, pt); pt[3]=1;
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, pt);
+	pdglLightfv(GL_LIGHT0, GL_DIFFUSE, pt);
 
 	pt[0]=1; pt[1]=1; pt[2]=1; pt[3]=1;
-	glLightfv(GL_LIGHT0, GL_SPECULAR, pt);
+	pdglLightfv(GL_LIGHT0, GL_SPECULAR, pt);
 
 	V3F_COPY(light->org, pt); pt[3]=1;
-	glLightfv(GL_LIGHT0, GL_POSITION, pt);
+	pdglLightfv(GL_LIGHT0, GL_POSITION, pt);
 
 
 	gam=light->val[0]; f=lbxgl_state->time_f;
@@ -199,19 +199,19 @@ LBXGL_API float LBXGL_Shadow_SetupLight(LBXGL_Light *light)
 //		g=36*6.0/255.0;
 		g=36*12.0/255.0;
 		f=g*gam;
-		glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 1.0/f);
-		glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.0);
-		glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.0);
+		pdglLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 1.0/f);
+		pdglLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.0);
+		pdglLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.0);
 	}else
 	{
 //		g=(36*36)*6.0/255.0;
 		g=(36*36)*18.0/255.0;
 		f=g*gam;
-		glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 1.0/f);
-		glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.0);
-		glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.0);
+		pdglLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 1.0/f);
+		pdglLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.0);
+		pdglLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.0);
 	}
-	glEnable(GL_LIGHT0);
+	pdglEnable(GL_LIGHT0);
 #endif
 
 	return(light->val[0]);
@@ -227,12 +227,12 @@ LBXGL_API void LBXGL_Shadow_DrawObjectsLight(dyt fst, LBXGL_Light *light)
 
 	LBXGL_Shadow_SetupLight(light);
 
-	glDisable(GL_TEXTURE_2D);
-	glColor4f(1, 1, 1, 1);
+	pdglDisable(GL_TEXTURE_2D);
+	pdglColor4f(1, 1, 1, 1);
 
-	glDepthFunc(GL_LEQUAL);
-	glStencilFunc(GL_EQUAL, 0, 255);
-	glBlendFunc(GL_SRC_COLOR, GL_ONE);
+	pdglDepthFunc(GL_LEQUAL);
+	pdglStencilFunc(GL_EQUAL, 0, 255);
+	pdglBlendFunc(GL_SRC_COLOR, GL_ONE);
 
 	cur=fst;
 	while(dyconsp(cur))
@@ -245,7 +245,7 @@ LBXGL_API void LBXGL_Shadow_DrawObjectsLight(dyt fst, LBXGL_Light *light)
 		cur=dycdr(cur);
 	}
 
-	glDisable(GL_LIGHTING);
+	pdglDisable(GL_LIGHTING);
 }
 
 LBXGL_API void LBXGL_Shadow_DrawObjects(dyt fst, LBXGL_Light *lights)
@@ -255,7 +255,7 @@ LBXGL_API void LBXGL_Shadow_DrawObjects(dyt fst, LBXGL_Light *lights)
 	LBXGL_Light *lcur;
 	int i;
 
-	glDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_LEQUAL);
 
 	cur=fst;
 	while(dyconsp(cur))
@@ -268,25 +268,25 @@ LBXGL_API void LBXGL_Shadow_DrawObjects(dyt fst, LBXGL_Light *lights)
 	lcur=lights;
 	while(lcur)
 	{
-		glClear(GL_STENCIL_BUFFER_BIT);
+		pdglClear(GL_STENCIL_BUFFER_BIT);
 
-		glEnable(GL_STENCIL_TEST);
+		pdglEnable(GL_STENCIL_TEST);
 		LBXGL_Shadow_DrawShadowsLight(fst, lcur);
 		LBXGL_Shadow_DrawObjectsLight(fst, lcur);
-		glDisable(GL_STENCIL_TEST);
+		pdglDisable(GL_STENCIL_TEST);
 
 		lcur=lcur->next;
 	}
 
-	glDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_LEQUAL);
 
-	glStencilFunc(GL_EQUAL, 0, 255);
+	pdglStencilFunc(GL_EQUAL, 0, 255);
 
 	cur=fst;
 	while(dyconsp(cur))
 	{
 		t=dycar(cur);
-		glBlendFunc(GL_DST_COLOR, GL_ZERO);
+		pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 		LBXGL_GenericRenderFinal(t);
 		cur=dycdr(cur);
 	}

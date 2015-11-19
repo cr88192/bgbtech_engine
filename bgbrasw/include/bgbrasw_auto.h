@@ -1,8 +1,4 @@
 //AHSRC:base/rasw_api.c
-//AHSRC:base/rasw_bitmap.c
-void BGBRASW_UnpackYYPixelComponents(bgbrasw_yypixel pix, int *rr0, int *rg0, int *rb0, int *ra0, int *rr1, int *rg1, int *rb1, int *ra1, int *rr2, int *rg2, int *rb2, int *ra2, int *rr3, int *rg3, int *rb3, int *ra3);
-bgbrasw_yypixel BGBRASW_PackYYPixelComponents(int cr0, int cg0, int cb0, int ca0, int cr1, int cg1, int cb1, int ca1, int cr2, int cg2, int cb2, int ca2, int cr3, int cg3, int cb3, int ca3);
-void BGBRASW_ConvUnpackYUVAToRGBA(bgbrasw_pixel *dst, bgbrasw_yypixel *src, int xs, int ys, int ysdst, int yssrc);
 //AHSRC:base/rasw_context.c
 BGBRASW_API void *bgbrasw_malloc(size_t sz);
 BGBRASW_API void *bgbrasw_tmalloc(char *ty, size_t sz);
@@ -40,6 +36,8 @@ void BGBRASW_DrawPrimitive_Box(BGBRASW_Context *ctx, BGBRASW_Primitive *prim);
 //AHSRC:base/rasw_drawprim.c
 void BGBRASW_DrawPrimitive(BGBRASW_Context *ctx, BGBRASW_Primitive *prim);
 BGBRASW_API void BGBRASW_DrawPrimitiveList(BGBRASW_Context *ctx, BGBRASW_Primitive *list);
+//AHSRC:base/rasw_drawline.c
+void BGBRASW_DrawPrimitive_Line(BGBRASW_Context *ctx, BGBRASW_Primitive *prim);
 //AHSRC:base/rasw_drawspan.c
 void BGBRASW_DrawSpanFlatBasic(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, int npix, bgbrasw_pixel clr);
 void BGBRASW_DrawSpanFlatInterp(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, int npix, bgbrasw_pixel clr0, bgbrasw_pixel clr1);
@@ -98,6 +96,22 @@ int BGBRASW_TestAndBlend_DepthTest_Greater(BGBRASW_TestBlendData *data, bgbrasw_
 int BGBRASW_TestAndBlend_DepthTest_GreaterEqual(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
 int BGBRASW_TestAndBlend_DepthTest_Equal(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
 int BGBRASW_TestAndBlend_DepthTest_NotEqual(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
+int BGBRASW_TestAndBlend_StencilTest_Never(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
+int BGBRASW_TestAndBlend_StencilTest_Always(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
+int BGBRASW_TestAndBlend_StencilTest_Less(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
+int BGBRASW_TestAndBlend_StencilTest_LessEqual(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
+int BGBRASW_TestAndBlend_StencilTest_Greater(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
+int BGBRASW_TestAndBlend_StencilTest_GreaterEqual(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
+int BGBRASW_TestAndBlend_StencilTest_Equal(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
+int BGBRASW_TestAndBlend_StencilTest_NotEqual(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
+void BGBRASW_TestAndBlend_StencilOp_Keep(BGBRASW_TestBlendData *tabs, bgbrasw_zbuf *srcz, bgbrasw_zbuf *dstz);
+void BGBRASW_TestAndBlend_StencilOp_Zero(BGBRASW_TestBlendData *tabs, bgbrasw_zbuf *srcz, bgbrasw_zbuf *dstz);
+void BGBRASW_TestAndBlend_StencilOp_Replace(BGBRASW_TestBlendData *tabs, bgbrasw_zbuf *srcz, bgbrasw_zbuf *dstz);
+void BGBRASW_TestAndBlend_StencilOp_Incr(BGBRASW_TestBlendData *tabs, bgbrasw_zbuf *srcz, bgbrasw_zbuf *dstz);
+void BGBRASW_TestAndBlend_StencilOp_Decr(BGBRASW_TestBlendData *tabs, bgbrasw_zbuf *srcz, bgbrasw_zbuf *dstz);
+void BGBRASW_TestAndBlend_StencilOp_IncrWrap(BGBRASW_TestBlendData *tabs, bgbrasw_zbuf *srcz, bgbrasw_zbuf *dstz);
+void BGBRASW_TestAndBlend_StencilOp_DecrWrap(BGBRASW_TestBlendData *tabs, bgbrasw_zbuf *srcz, bgbrasw_zbuf *dstz);
+void BGBRASW_TestAndBlend_StencilOp_Invert(BGBRASW_TestBlendData *tabs, bgbrasw_zbuf *srcz, bgbrasw_zbuf *dstz);
 void BGBRASW_BlendFunc_Zero(BGBRASW_TestBlendData *data, int sr, int sg, int sb, int sa, int dr, int dg, int db, int da, int *rfr, int *rfg, int *rfb, int *rfa);
 void BGBRASW_BlendFunc_One(BGBRASW_TestBlendData *data, int sr, int sg, int sb, int sa, int dr, int dg, int db, int da, int *rfr, int *rfg, int *rfb, int *rfa);
 void BGBRASW_BlendFunc_SrcColor(BGBRASW_TestBlendData *data, int sr, int sg, int sb, int sa, int dr, int dg, int db, int da, int *rfr, int *rfg, int *rfb, int *rfa);
@@ -128,10 +142,13 @@ int BGBRASW_TestAndBlend_DepthBlend_LessEqualNoMask(BGBRASW_TestBlendData *tabs,
 int BGBRASW_TestAndBlend_DepthBlend_LessEqual_NoClrMask_NoDepthWrite(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
 int BGBRASW_TestAndBlend_AlphaDepth(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
 int BGBRASW_TestAndBlend_Depth(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
+int BGBRASW_TestAndBlend_DepthStencil(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
+int BGBRASW_TestAndBlend_Stencil(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
 int BGBRASW_TestAndBlend_AlphaBlend(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
 int BGBRASW_TestAndBlend_Blend(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
 int BGBRASW_TestAndBlend_Alpha(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
 int BGBRASW_TestAndBlend_None(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
+BGBRASW_StencilOpFunc_ft BGBRASW_TestAndBlend_GetStencilOpFunc(BGBRASW_Context *ctx, BGBRASW_TestBlendData *tabs, int op);
 int BGBRASW_SetupTestBlend(BGBRASW_Context *ctx,BGBRASW_TestBlendData *tabs);
 void BGBRASW_CopyTestBlend(BGBRASW_Context *ctx,BGBRASW_TestBlendData *srctabs, BGBRASW_TestBlendData *dsttabs);
 //AHSRC:base/rasw_texture.c
@@ -148,39 +165,6 @@ BGBRASW_API void BGBRASW_LockContext(BGBRASW_Context *ctx);
 BGBRASW_API void BGBRASW_UnlockContext(BGBRASW_Context *ctx);
 BGBRASW_API void BGBRASW_Finish(BGBRASW_Context *ctx);
 BGBRASW_API void BGBRASW_Flush(BGBRASW_Context *ctx);
-//AHSRC:base/rasw_yytestblend.c
-int BGBRASW_YYTestAndBlend_AlphaTest_Never(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYTestAndBlend_AlphaTest_Always(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYTestAndBlend_AlphaTest_Equal(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYTestAndBlend_AlphaTest_NotEqual(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYTestAndBlend_AlphaTest_Less(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYTestAndBlend_AlphaTest_Greater(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYTestAndBlend_AlphaTest_LessEqual(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYTestAndBlend_AlphaTest_GreaterEqual(BGBRASW_TestBlendData *data, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-bgbrasw_pixel BGBRASW_YYDoBlend_None(BGBRASW_TestBlendData *data, bgbrasw_pixel src, bgbrasw_pixel dst);
-bgbrasw_pixel BGBRASW_YYDoBlend_Generic(BGBRASW_TestBlendData *data, bgbrasw_pixel src, bgbrasw_pixel dst);
-bgbrasw_pixel BGBRASW_YYDoBlend_Zero_SrcColor(BGBRASW_TestBlendData *data, bgbrasw_pixel src, bgbrasw_pixel dst);
-bgbrasw_pixel BGBRASW_YYDoBlend_Zero_OneMinusSrcColor(BGBRASW_TestBlendData *data, bgbrasw_pixel src, bgbrasw_pixel dst);
-bgbrasw_pixel BGBRASW_YYDoBlend_One_One(BGBRASW_TestBlendData *data, bgbrasw_pixel src, bgbrasw_pixel dst);
-bgbrasw_pixel BGBRASW_YYDoBlend_DstColor_Zero(BGBRASW_TestBlendData *data, bgbrasw_pixel src, bgbrasw_pixel dst);
-bgbrasw_pixel BGBRASW_YYDoBlend_DstColor_One(BGBRASW_TestBlendData *data, bgbrasw_pixel src, bgbrasw_pixel dst);
-bgbrasw_pixel BGBRASW_YYDoBlend_DstColor_SrcColor(BGBRASW_TestBlendData *data, bgbrasw_pixel src, bgbrasw_pixel dst);
-bgbrasw_pixel BGBRASW_YYDoBlend_DstColor_SrcAlpha(BGBRASW_TestBlendData *data, bgbrasw_pixel src, bgbrasw_pixel dst);
-bgbrasw_pixel BGBRASW_YYDoBlend_DstColor_OneMinusSrcAlpha(BGBRASW_TestBlendData *data, bgbrasw_pixel src, bgbrasw_pixel dst);
-bgbrasw_pixel BGBRASW_YYDoBlend_DstColor_OneMinusDstAlpha(BGBRASW_TestBlendData *data, bgbrasw_pixel src, bgbrasw_pixel dst);
-bgbrasw_pixel BGBRASW_YYDoBlend_SrcAlpha_OneMinusSrcAlpha(BGBRASW_TestBlendData *data, bgbrasw_pixel src, bgbrasw_pixel dst);
-int BGBRASW_YYTestAndBlend_Generic(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYTestAndBlend_DepthBlend(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYTestAndBlend_DepthBlend_LessEqual(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYTestAndBlend_DepthBlend_LessEqualNoMask(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYTestAndBlend_DepthBlend_LessEqual_NoClrMask_NoDepthWrite(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYTestAndBlend_AlphaDepth(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYTestAndBlend_Depth(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYTestAndBlend_AlphaBlend(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYTestAndBlend_Blend(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYTestAndBlend_Alpha(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYTestAndBlend_None(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz, bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
-int BGBRASW_YYSetupTestBlend(BGBRASW_Context *ctx,BGBRASW_TestBlendData *tabs);
 //AHSRC:raswgl/ragl_begin.c
 BGBRASW_API RASWGL_Context *RASWGL_CreateContext(int xs, int ys, int flags);
 void RASWGL_Finish(RASWGL_Context *ctx);
@@ -217,6 +201,9 @@ int RASWGL_GetCurrentTextureFlags(RASWGL_Context *ctx);
 int RASWGL_GetTextureFlags(RASWGL_Context *ctx, int num);
 void RASWGL_BlendFunc(RASWGL_Context *ctx, int src, int dst);
 void RASWGL_AlphaFunc(RASWGL_Context *ctx, int func, float ref);
+void RASWGL_StencilFunc(RASWGL_Context *ctx, int func, int ref, int mask);
+void RASWGL_StencilMask(RASWGL_Context *ctx, int mask);
+void RASWGL_StencilOp(RASWGL_Context *ctx,int sfail, int dpfail, int dppass);
 void RASWGL_ClipPlane(RASWGL_Context *ctx, int pnum, double *plane);
 void RASWGL_Clear(RASWGL_Context *ctx, int mask);
 void RASWGL_Enable(RASWGL_Context *ctx, int cap);
@@ -320,6 +307,8 @@ void RASWGL_CopyTexImage1D(RASWGL_Context *ctx, int target, int level, int inter
 void RASWGL_CopyTexImage2D(RASWGL_Context *ctx, int target, int level, int internalformat, int x, int y, int width, int height, int border);
 void RASWGL_CopyTexSubImage1D(RASWGL_Context *ctx, int target, int level, int xoffset, int x, int y, int width);
 void RASWGL_CopyTexSubImage2D(RASWGL_Context *ctx, int target, int level, int xoffset, int yoffset, int x, int y, int width, int height);
+void RASWGL_CompressedTexImage2D(RASWGL_Context *ctx, int target, int level, int internalFormat, int width, int height, int border, int imgSize, const void *pixels);
+void RASWGL_ReadPixels(RASWGL_Context *ctx,  int x, int y, int width, int height, int format, int type, byte *pixels);
 //AHSRC:raswgl/ragl_transform.c
 void RASWGL_CheckExpandTransform0Vertices(RASWGL_Context *ctx, int nxyz);
 void RASWGL_CheckExpandTransform1Vertices(RASWGL_Context *ctx, int nxyz);
@@ -381,10 +370,10 @@ void *VecNF_Ralloc(int sz);
 //AHSRC:vecmath/mathlib_d.c
 //AHSRC:vecmath/mathlib_f.c
 //AHSRC:base/rasw_api.c
-//AHSRC:base/rasw_bitmap.c
 //AHSRC:base/rasw_context.c
 //AHSRC:base/rasw_drawbox.c
 //AHSRC:base/rasw_drawprim.c
+//AHSRC:base/rasw_drawline.c
 //AHSRC:base/rasw_drawspan.c
 //AHSRC:base/rasw_drawtris.c
 //AHSRC:base/rasw_drawtris_flat.c
@@ -393,7 +382,6 @@ void *VecNF_Ralloc(int sz);
 //AHSRC:base/rasw_testblend.c
 //AHSRC:base/rasw_texture.c
 //AHSRC:base/rasw_thread.c
-//AHSRC:base/rasw_yytestblend.c
 //AHSRC:raswgl/ragl_begin.c
 //AHSRC:raswgl/ragl_clip.c
 //AHSRC:raswgl/ragl_gldrv.c

@@ -1032,8 +1032,8 @@ PDGLUI_API void UI_Camera_SetupViewAtPersp3D(
 
 	if(pdglui_cam->flags&PDGLUI_CAMFL_HFLIP)
 	{
-		glScalef(-1, 1, 1);
-		glFrontFace(GL_CW);
+		pdglScalef(-1, 1, 1);
+		pdglFrontFace(GL_CW);
 	}
 
 	V3F_SCALE(pdglui_cam->fw, -1, pdglui_cam->clip_bk);
@@ -1153,9 +1153,9 @@ PDGLUI_API void UI_Camera_SetupView3D(int xo, int yo, int xs, int ys)
 
 //		Mat3to4F_Copy(pdglui_cam->rot, rot);
 		Mat3to4F_Transpose(pdglui_cam->rot, rot);
-//		glMatrixMode(GL_PROJECTION);
+//		pdglMatrixMode(GL_PROJECTION);
 		pdglProjectionMatrix();
-//		glMatrixMode(GL_MODELVIEW);
+//		pdglMatrixMode(GL_MODELVIEW);
 
 		pdglMultMatrixf(rot);
 		pdglTranslatef(
@@ -1165,7 +1165,7 @@ PDGLUI_API void UI_Camera_SetupView3D(int xo, int yo, int xs, int ys)
 
 //		Draw_SetSolid2_2D(
 //			tv[0]/tv[1], tv[0], org, ang, xo, yo, xs, ys);
-//		glTranslatef(
+//		pdglTranslatef(
 //			-pdglui_cam->org[0],
 //			-pdglui_cam->org[1],
 //			-pdglui_cam->org[2]);
@@ -1209,17 +1209,17 @@ PDGLUI_API void UI_Camera_SetupView3D(int xo, int yo, int xs, int ys)
 
 		if(pdglui_cam->flags&PDGLUI_CAMFL_HFLIP)
 		{
-			glMatrixMode(GL_PROJECTION);
-			glScalef(-1, 1, 1);
-			glFrontFace(GL_CW);
-			glMatrixMode(GL_MODELVIEW);
+			pdglMatrixMode(GL_PROJECTION);
+			pdglScalef(-1, 1, 1);
+			pdglFrontFace(GL_CW);
+			pdglMatrixMode(GL_MODELVIEW);
 		}
 		if(pdglui_cam->flags&PDGLUI_CAMFL_VFLIP)
 		{
-			glMatrixMode(GL_PROJECTION);
-			glScalef(1, 1, -1);
-			glFrontFace(GL_CW);
-			glMatrixMode(GL_MODELVIEW);
+			pdglMatrixMode(GL_PROJECTION);
+			pdglScalef(1, 1, -1);
+			pdglFrontFace(GL_CW);
+			pdglMatrixMode(GL_MODELVIEW);
 		}
 
 		V3F_SCALE(pdglui_cam->fw, -1, pdglui_cam->clip_bk);
@@ -1268,7 +1268,7 @@ PDGLUI_API void UI_Camera_SetupView3D(int xo, int yo, int xs, int ys)
 	{
 //		Draw_SetSolid3_2D(1000, 750, org, xo, yo, xs, ys);
 
-//		glMatrixMode(GL_PROJECTION);
+//		pdglMatrixMode(GL_PROJECTION);
 
 		Mat4F_Copy(pdglui_cam->qrot, pdglui_cam->qproj);
 		UI_Camera_XFormMatNormal4D(
@@ -1284,9 +1284,9 @@ PDGLUI_API void UI_Camera_SetupView3D(int xo, int yo, int xs, int ys)
 
 //	Mat3to4F_Copy(pdglui_cam->rot, rot);
 	Mat3to4F_Transpose(pdglui_cam->rot, rot);
-//	glMatrixMode(GL_PROJECTION);
+//	pdglMatrixMode(GL_PROJECTION);
 	pdglProjectionMatrix();
-//	glMatrixMode(GL_MODELVIEW);
+//	pdglMatrixMode(GL_MODELVIEW);
 
 	pdglMultMatrixf(rot);
 

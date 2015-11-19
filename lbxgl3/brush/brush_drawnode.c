@@ -279,8 +279,24 @@ void LBXGL_BrushWorld_DrawBrushesFluidSurface(LBXGL_BrushWorld *world,
 	LBXGL_Brush *cur, *brsh;
 	int i, ty;
 
+	if(world->lighting==3)
+	{
+		pdglDepthMask(GL_FALSE);
+
+		cur=lst;
+		while(cur)
+		{
+			LBXGL_Brush_DrawFluid(cur);
+			cur=cur->chain;
+		}
+		LBXGL_Voxel_DrawWorldFluid(world);
+
+		pdglDepthMask(GL_TRUE);
+		return;
+	}
+
 #if 1
-	glColorMask(0, 0, 0, 0);
+	pdglColorMask(0, 0, 0, 0);
 	cur=lst;
 	while(cur)
 	{
@@ -288,12 +304,12 @@ void LBXGL_BrushWorld_DrawBrushesFluidSurface(LBXGL_BrushWorld *world,
 		cur=cur->chain;
 	}
 //	LBXGL_Voxel_DrawWorldFluidFlat(world);
-	glColorMask(1, 1, 1, 1);
+	pdglColorMask(1, 1, 1, 1);
 
 	LBXGL_Voxel_DrawFluidSurfaceFogVolume(world);
 #endif
 
-	glDepthMask(GL_FALSE);
+	pdglDepthMask(GL_FALSE);
 
 	cur=lst;
 	while(cur)
@@ -303,7 +319,7 @@ void LBXGL_BrushWorld_DrawBrushesFluidSurface(LBXGL_BrushWorld *world,
 	}
 	LBXGL_Voxel_DrawWorldFluid(world);
 
-	glDepthMask(GL_TRUE);
+	pdglDepthMask(GL_TRUE);
 
 	if(shader_nophong || (world->shadows<=0) ||
 		(world->lighting==3) ||
@@ -961,19 +977,19 @@ LBXGL_API void LBXGL_BrushWorld_DrawWorldFast(LBXGL_BrushWorld *world)
 
 	LBXGL_BrushWorld_PushWorld(world);
 
-//	glCullFace(GL_BACK);
-//	glEnable(GL_CULL_FACE);
+//	pdglCullFace(GL_BACK);
+//	pdglEnable(GL_CULL_FACE);
 
-	glDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_LEQUAL);
 	pdglColor4f(1, 1, 1, 1);
 
 	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	LBXGL_Shader_Color4f(1, 1, 1, 1);
 
-//	glDisable(GL_CULL_FACE);
+//	pdglDisable(GL_CULL_FACE);
 	LBXGL_Sky_DrawSkyBasic();
 	LBXGL_BrushDraw2D_DrawWorldSky2D(world);
-//	glEnable(GL_CULL_FACE);
+//	pdglEnable(GL_CULL_FACE);
 
 	LBXGL_BrushWorld_DrawNodeBrushesFast(world, world->bsp);
 //	LBXGL_BrushWorld_DrawNodeBrushes(world, world->bsp);
@@ -982,7 +998,7 @@ LBXGL_API void LBXGL_BrushWorld_DrawWorldFast(LBXGL_BrushWorld *world)
 	LBXGL_BrushWorld_DrawModels(world);
 //	LBXGL_BrushWorld_DrawModelsFlat(world);
 
-//	glEnable(GL_CULL_FACE);
+//	pdglEnable(GL_CULL_FACE);
 
 //	LBXGL_Sky_DrawSkyBasic();
 
@@ -1005,10 +1021,10 @@ LBXGL_API void LBXGL_BrushWorld_DrawWorldLightViewFast(
 
 	LBXGL_BrushWorld_PushWorld(world);
 
-//	glCullFace(GL_BACK);
-//	glEnable(GL_CULL_FACE);
+//	pdglCullFace(GL_BACK);
+//	pdglEnable(GL_CULL_FACE);
 
-	glDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_LEQUAL);
 	pdglColor4f(1, 1, 1, 1);
 
 //	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1016,10 +1032,10 @@ LBXGL_API void LBXGL_BrushWorld_DrawWorldLightViewFast(
 
 	if(light->flags&LBXGL_LFL_SUN)
 	{
-//		glDisable(GL_CULL_FACE);
+//		pdglDisable(GL_CULL_FACE);
 		LBXGL_Sky_DrawSkyBasic();
 		LBXGL_BrushDraw2D_DrawWorldSky2D(world);
-//		glEnable(GL_CULL_FACE);
+//		pdglEnable(GL_CULL_FACE);
 	}
 
 	LBXGL_BrushWorld_DrawNodeBrushesFastShadow(world, world->bsp, light);
@@ -1030,7 +1046,7 @@ LBXGL_API void LBXGL_BrushWorld_DrawWorldLightViewFast(
 //	LBXGL_BrushWorld_DrawModels(world);
 //	LBXGL_BrushWorld_DrawModelsFlat(world);
 
-//	glEnable(GL_CULL_FACE);
+//	pdglEnable(GL_CULL_FACE);
 
 //	LBXGL_Sky_DrawSkyBasic();
 
@@ -1146,7 +1162,7 @@ LBXGL_API int LBXGL_BrushWorld_DrawSetupFBO(LBXGL_BrushWorld *world)
 #endif
 
 #if 1
-			glBindTexture(GL_TEXTURE_2D, tex_screen_depth_fbo);
+			pdglBindTexture(GL_TEXTURE_2D, tex_screen_depth_fbo);
 #if 1
 			pdglFramebufferTexture2D(GL_FRAMEBUFFER_EXT, 
 				GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D,
@@ -1161,13 +1177,13 @@ LBXGL_API int LBXGL_BrushWorld_DrawSetupFBO(LBXGL_BrushWorld *world)
 #endif
 
 #if 0
-			glBindTexture(GL_TEXTURE_2D, tex_screen_depth_fbo);
+			pdglBindTexture(GL_TEXTURE_2D, tex_screen_depth_fbo);
 			pdglFramebufferTexture2D(GL_FRAMEBUFFER_EXT, 
 				GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D,
 				tex_screen_depth_fbo, 0);
 #endif
 
-			glBindTexture(GL_TEXTURE_2D, tex_screen_fbo);
+			pdglBindTexture(GL_TEXTURE_2D, tex_screen_fbo);
 			i=pdglFramebufferTexture2D(GL_FRAMEBUFFER_EXT, 
 				GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D,
 				tex_screen_fbo, 0);
@@ -1199,22 +1215,22 @@ LBXGL_API void LBXGL_BrushWorld_DrawBeginFBO(LBXGL_BrushWorld *world)
 {
 #ifndef GLES
 	pdglBindFramebuffer(GL_FRAMEBUFFER_EXT, screen_fbo);
-//	glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
+//	pdglDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
 
-//	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|
+//	pdglClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	pdglClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|
 		GL_STENCIL_BUFFER_BIT);
 //	camatt=1.0;
 
 #if 0
 #if 1
-	glBindTexture(GL_TEXTURE_2D, tex_screen_depth_fbo);
+	pdglBindTexture(GL_TEXTURE_2D, tex_screen_depth_fbo);
 	pdglFramebufferTexture2D(GL_FRAMEBUFFER_EXT, 
 		GL_DEPTH_ATTACHMENT_EXT, GL_TEXTURE_2D,
 		tex_screen_depth_fbo, 0);
 #endif
 
-	glBindTexture(GL_TEXTURE_2D, tex_screen_fbo);
+	pdglBindTexture(GL_TEXTURE_2D, tex_screen_fbo);
 	pdglFramebufferTexture2D(GL_FRAMEBUFFER_EXT, 
 		GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D,
 		tex_screen_fbo, 0);
@@ -1228,10 +1244,10 @@ LBXGL_API void LBXGL_BrushWorld_DrawEndFBO(LBXGL_BrushWorld *world)
 	int i;
 
 #ifndef GLES
-	glFinish();
+	pdglFinish();
 	//done drawing to the FBO, clean up and draw image to screen
 	pdglBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
-//	glDrawBuffer(GL_BACK);
+//	pdglDrawBuffer(GL_BACK);
 
 	i=ConCmds_CvarGetNum("r_usebloom");
 	if(i>0)LBXGL_BrushWorld_DrawUpdateBloom(world);
@@ -1318,15 +1334,15 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 #if 1
 	if(!world->lighting)
 	{
-		glCullFace(GL_BACK);
+		pdglCullFace(GL_BACK);
 		LBXGL_Shader_ForceDraw(1);		//force drawing nodraw faces
 
 #if 1
-		glCullFace(GL_BACK); glEnable(GL_CULL_FACE);
+		pdglCullFace(GL_BACK);	pdglEnable(GL_CULL_FACE);
 
 		LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		LBXGL_Shader_Color4f(1, 1, 1, 1);
-//		glColor4f(1, 1, 1, 1);
+//		pdglColor4f(1, 1, 1, 1);
 
 		LBXGL_BrushWorld_DrawNodeBrushes(world, world->bsp);
 //		LBXGL_BrushWorld_DrawNodeBrushesFinal(world, world->bsp);
@@ -1338,7 +1354,7 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 		LBXGL_Shader_FlushState();
 
 		LBXGL_Shader_Color4f(1, 1, 1, 1);
-//		glColor4f(1, 1, 1, 1);
+//		pdglColor4f(1, 1, 1, 1);
 
 		LBXGL_BrushWorld_DrawNodeBrushesAlpha(world, world->bsp);
 
@@ -1365,15 +1381,17 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 #if 1
 	if(world->lighting==3)
 	{
-		glCullFace(GL_BACK);
+		pdglCullFace(GL_BACK);
 //		LBXGL_Shader_ForceDraw(1);		//force drawing nodraw faces
 
 #if 1
-		glCullFace(GL_BACK); glEnable(GL_CULL_FACE);
+		pdglCullFace(GL_BACK);	pdglEnable(GL_CULL_FACE);
+		pdglDisable(GL_STENCIL_TEST);
+		pdglDisable(GL_ALPHA_TEST);
 
 		LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		LBXGL_Shader_Color4f(1, 1, 1, 1);
-//		glColor4f(1, 1, 1, 1);
+//		pdglColor4f(1, 1, 1, 1);
 
 //		LBXGL_BrushWorld_DrawNodeBrushes(world, world->bsp);
 //		LBXGL_BrushWorld_DrawNodeBrushesFinal(world, world->bsp);
@@ -1396,8 +1414,11 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 #if 1
 //		LBXGL_Shader_SetFinal(1);
 
-//		glBlendFunc(GL_DST_COLOR, GL_ZERO);
+//		pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 //		LBXGL_Shader_BlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+
+		pdglDisable(GL_STENCIL_TEST);
+		pdglDisable(GL_ALPHA_TEST);
 
 //		LBXGL_Voxel_DrawWorldFinal(world);
 //		LBXGL_Voxel_DrawWorld(world);
@@ -1417,7 +1438,7 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 
 		LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		LBXGL_Shader_Color4f(1, 1, 1, 1);
-//		glEnable(GL_CULL_FACE);
+//		pdglEnable(GL_CULL_FACE);
 
 		LBXGL_Voxel_DrawWorldAlpha(world);
 #endif
@@ -1425,7 +1446,9 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 		LBXGL_Shader_FlushState();
 
 		LBXGL_Shader_Color4f(1, 1, 1, 1);
-//		glColor4f(1, 1, 1, 1);
+		pdglDisable(GL_STENCIL_TEST);
+		pdglDisable(GL_ALPHA_TEST);
+//		pdglColor4f(1, 1, 1, 1);
 
 		LBXGL_BrushWorld_DrawNodeBrushesAlpha(world, world->bsp);
 
@@ -1455,12 +1478,12 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 
 		LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		LBXGL_Shader_Color4f(1, 1, 1, 1);
-		glDisable(GL_CULL_FACE);
+		pdglDisable(GL_CULL_FACE);
 
 #if 1
 		LBXGL_Shader_BindTexture(-1);
 		LBXGL_Shader_FlushState();
-		glDepthMask(GL_TRUE);
+		pdglDepthMask(GL_TRUE);
 
 		LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		LBXGL_Shader_Color4f(1, 1, 1, 1);
@@ -1551,13 +1574,13 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 
 		LBXGL_Voxel_ClearWorldPointLight(world);
 
-		glDepthFunc(GL_LEQUAL);
+		pdglDepthFunc(GL_LEQUAL);
 
-		glCullFace(GL_BACK);
-		glEnable(GL_CULL_FACE);
+		pdglCullFace(GL_BACK);
+		pdglEnable(GL_CULL_FACE);
 
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER, 0.1);
+		pdglEnable(GL_ALPHA_TEST);
+		pdglAlphaFunc(GL_GREATER, 0.1);
 
 		t0=PDGL_TimeMS();
 
@@ -1734,7 +1757,7 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 
 		LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		LBXGL_Shader_Color4f(1, 1, 1, 1);
-//		glColor4f(1, 1, 1, 1);
+//		pdglColor4f(1, 1, 1, 1);
 		LBXGL_BrushWorld_DrawNodeBrushesPointLight(world, world->bsp);
 		LBXGL_Voxel_DrawWorldPointLight(world);
 		LBXGL_Shader_BlendFunc(GL_SRC_COLOR, GL_ONE);
@@ -1767,7 +1790,7 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 
 	if(world->lighting==2)
 	{
-		glCullFace(GL_BACK); glEnable(GL_CULL_FACE);
+		pdglCullFace(GL_BACK);	pdglEnable(GL_CULL_FACE);
 		LBXGL_BrushWorld_DrawNodeBrushesDark(world, world->bsp);
 		LBXGL_BrushWorld_DrawModelsDark(world);
 		LBXGL_Terrain_DrawDark(world);
@@ -1798,9 +1821,9 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 		}
 #endif
 
-		glDepthFunc(GL_LEQUAL);
+		pdglDepthFunc(GL_LEQUAL);
 
-		glCullFace(GL_BACK); glEnable(GL_CULL_FACE);
+		pdglCullFace(GL_BACK);	pdglEnable(GL_CULL_FACE);
 		LBXGL_Shader_Color4f(1, 1, 1, 1);
 		pdglDisableTexture2D();
 //		LBXGL_BrushWorld_DrawNodeBrushesFlat(world, world->bsp);
@@ -1821,22 +1844,22 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 
 	LBXGL_BrushWorld_DrawFlashlight(world);
 
-	glDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_LEQUAL);
 
-	glCullFace(GL_BACK);
-	glEnable(GL_CULL_FACE);
+	pdglCullFace(GL_BACK);
+	pdglEnable(GL_CULL_FACE);
 
-	glStencilFunc(GL_EQUAL, 0, 255);
-	glDisable(GL_STENCIL_TEST);
+	pdglStencilFunc(GL_EQUAL, 0, 255);
+	pdglDisable(GL_STENCIL_TEST);
 
-	glDepthMask(GL_FALSE);	//disable drawing to Z buffer
+	pdglDepthMask(GL_FALSE);	//disable drawing to Z buffer
 
 	i=ConCmds_CvarGetNum("r_skipfinal");
 	if(i<=0)
 	{
 		LBXGL_Shader_SetFinal(1);
 
-//		glBlendFunc(GL_DST_COLOR, GL_ZERO);
+//		pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 		LBXGL_Shader_BlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
 
 //		LBXGL_BrushWorld_DrawNodeBrushesFinal(world, world->bsp);
@@ -1874,7 +1897,7 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 #if 1
 	t0=PDGL_TimeMS();
 
-	glEnable(GL_CULL_FACE);
+	pdglEnable(GL_CULL_FACE);
 //	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 //	LBXGL_Shader_BlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 	LBXGL_Shader_Color4f(1, 1, 1, 1);
@@ -1886,7 +1909,7 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 
 	t0=PDGL_TimeMS();
 
-	glDepthMask(GL_TRUE);	//enable drawing to Z buffer
+	pdglDepthMask(GL_TRUE);	//enable drawing to Z buffer
 
 	i=ConCmds_CvarGetNum("r_skipalpha");
 	if(i<=0)
@@ -1894,11 +1917,11 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 		LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		LBXGL_Shader_Color4f(1, 1, 1, 1);
 
-		glDisable(GL_CULL_FACE);
+		pdglDisable(GL_CULL_FACE);
 		LBXGL_Sky_DrawSky();
 		LBXGL_BrushDraw2D_DrawWorldSky2D(world);
 
-		glEnable(GL_CULL_FACE);
+		pdglEnable(GL_CULL_FACE);
 
 		LBXGL_BrushWorld_DrawModelsAlpha(world);
 
@@ -1910,7 +1933,7 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 
 		LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		LBXGL_Shader_Color4f(1, 1, 1, 1);
-		glEnable(GL_CULL_FACE);
+		pdglEnable(GL_CULL_FACE);
 
 		LBXGL_Voxel_DrawWorldAlpha(world);
 
@@ -1923,12 +1946,12 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 			lcur=lcur->chain;
 		}
 
-		glDisable(GL_CULL_FACE);
+		pdglDisable(GL_CULL_FACE);
 	}
 
 	LBXGL_Shader_BindTexture(-1);
 	LBXGL_Shader_FlushState();
-	glDepthMask(GL_TRUE);
+	pdglDepthMask(GL_TRUE);
 
 	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	LBXGL_Shader_Color4f(1, 1, 1, 1);
@@ -1949,19 +1972,19 @@ LBXGL_API void LBXGL_BrushWorld_DrawBrushes(
 	for(i=0; i<16; i++)
 	{
 		pdglActiveTexture(i);
-		glDisable(GL_TEXTURE_2D);
-		glDisable(GL_TEXTURE_CUBE_MAP);
+		pdglDisable(GL_TEXTURE_2D);
+		pdglDisable(GL_TEXTURE_CUBE_MAP);
 	}
 	pdglActiveTexture(0);
 
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
+	pdglDisableClientState(GL_VERTEX_ARRAY);
+	pdglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	pdglDisableClientState(GL_NORMAL_ARRAY);
+	pdglDisableClientState(GL_COLOR_ARRAY);
 
 	LBXGL_Shader_BindTexture(-1);
 	LBXGL_Shader_FlushState();
-	glDepthMask(GL_TRUE);
+	pdglDepthMask(GL_TRUE);
 
 	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	LBXGL_Shader_Color4f(1, 1, 1, 1);
@@ -2090,11 +2113,11 @@ LBXGL_API void LBXGL_BrushWorld_DrawPreRenderSky(LBXGL_BrushWorld *world)
 		tex_screen_cubemap=Tex_AllocTexnum();
 
 #if 0
-		glBindTexture(GL_TEXTURE_CUBE_MAP, tex_screen_cubemap);
+		pdglBindTexture(GL_TEXTURE_CUBE_MAP, tex_screen_cubemap);
 		for(i=0; i<6; i++)
 		{
 			j=Tex_AllocTexnum();
-			glBindTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, j);
+			pdglBindTexture(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, j);
 		}
 #endif
 
@@ -2197,17 +2220,17 @@ void LBXGL_BrushWorld_DrawTestSmallLight(LBXGL_BrushWorld *world)
 		xs=lbxgl_draw_light_cxs; ys=lbxgl_draw_light_cys;
 
 		UI_Camera_SetupView3D(0, 0, xs, ys);
-		glCullFace(GL_BACK); glEnable(GL_CULL_FACE);
+		pdglCullFace(GL_BACK);	pdglEnable(GL_CULL_FACE);
 
-		glClearColor(0.25, 0.25, 0.25, 1);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		pdglClearColor(0.25, 0.25, 0.25, 1);
+		pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glBindTexture(GL_TEXTURE_2D, tex_lighting);
-		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0,
+		pdglBindTexture(GL_TEXTURE_2D, tex_lighting);
+		pdglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0,
 			lbxgl_draw_light_xs, lbxgl_draw_light_ys, 0);
 
-		glClearColor(0, 0, 0, 1);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		pdglClearColor(0, 0, 0, 1);
+		pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		return;
 	}
 #endif
@@ -2239,9 +2262,9 @@ void LBXGL_BrushWorld_DrawTestSmallLight(LBXGL_BrushWorld *world)
 	LBXGL_BrushWorld_DrawBuildFast(world);
 
 	UI_Camera_SetupView3D(0, 0, xs, ys);
-	glCullFace(GL_BACK); glEnable(GL_CULL_FACE);
-//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | 
+	pdglCullFace(GL_BACK);	pdglEnable(GL_CULL_FACE);
+//	pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | 
 		GL_STENCIL_BUFFER_BIT);
 
 
@@ -2259,10 +2282,10 @@ void LBXGL_BrushWorld_DrawTestSmallLight(LBXGL_BrushWorld *world)
 	}
 #endif
 
-	glDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_LEQUAL);
 
-	glCullFace(GL_BACK);
-	glEnable(GL_CULL_FACE);
+	pdglCullFace(GL_BACK);
+	pdglEnable(GL_CULL_FACE);
 
 	fst=world->brush;
 
@@ -2278,14 +2301,14 @@ void LBXGL_BrushWorld_DrawTestSmallLight(LBXGL_BrushWorld *world)
 		if(lcur->flags&LBXGL_LFL_NOSHADOW)
 			break;
 
-		glClear(GL_STENCIL_BUFFER_BIT);
-		glEnable(GL_STENCIL_TEST);
+		pdglClear(GL_STENCIL_BUFFER_BIT);
+		pdglEnable(GL_STENCIL_TEST);
 		lst=LBXGL_BrushWorld_QueryBrushesLight(world, fst, lcur);
 		LBXGL_BrushWorld_DrawShadowsLight(world, lst, lcur, 0);
 		lst=LBXGL_BrushWorld_QueryBrushesLight2(world, fst, lcur);
 		LBXGL_BrushWorld_DrawBrushesLight(world, lst, lcur);
 //		LBXGL_BrushWorld_DrawBrushesLightVol(world, lcur);
-		glDisable(GL_STENCIL_TEST);
+		pdglDisable(GL_STENCIL_TEST);
 		i--; lcur=lcur->chain;
 	}
 
@@ -2296,13 +2319,13 @@ void LBXGL_BrushWorld_DrawTestSmallLight(LBXGL_BrushWorld *world)
 		lcur=lcur->chain;
 	}
 
-	glBindTexture(GL_TEXTURE_2D, tex_lighting);
-//	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0,
+	pdglBindTexture(GL_TEXTURE_2D, tex_lighting);
+//	pdglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0,
 //		lbxgl_draw_light_xs, lbxgl_draw_light_ys, 0);
-	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0,
+	pdglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 0, 0,
 		lbxgl_draw_light_xs, lbxgl_draw_light_ys, 0);
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void LBXGL_BrushWorld_DrawTestSmallScreen(LBXGL_BrushWorld *world,
@@ -2315,10 +2338,10 @@ void LBXGL_BrushWorld_DrawTestSmallScreen(LBXGL_BrushWorld *world,
 #ifndef GLES
 	if(!stbuf)stbuf=malloc((xs+1)*(ys+1)*4);
 
-	glMatrixMode(GL_PROJECTION_MATRIX);
-	glPushMatrix();
+	pdglMatrixMode(GL_PROJECTION_MATRIX);
+	pdglPushMatrix();
 	
-	glPushAttrib(GL_VIEWPORT_BIT);
+	pdglPushAttrib(GL_VIEWPORT_BIT);
 
 	UI_Camera_SetupView3D(0, 0, xs, ys);
 	LBXGL_BrushWorld_DrawScreenTexture(world, stex, gam);
@@ -2326,8 +2349,8 @@ void LBXGL_BrushWorld_DrawTestSmallScreen(LBXGL_BrushWorld *world,
 //	i=ConCmds_CvarGetNum("r_usehdr");
 //	i=(i==1)?GL_RGBA16F_ARB:GL_RGBA;
 
-	glFinish();
-	glReadPixels(0, 0, xs, ys, GL_RGBA, GL_UNSIGNED_BYTE, stbuf);
+	pdglFinish();
+	pdglReadPixels(0, 0, xs, ys, GL_RGBA, GL_UNSIGNED_BYTE, stbuf);
 
 	for(m=0; m<4; m++)
 	{
@@ -2350,17 +2373,17 @@ void LBXGL_BrushWorld_DrawTestSmallScreen(LBXGL_BrushWorld *world,
 		}
 	}
 
-//	glBindTexture(GL_TEXTURE_2D, dtex);
-//	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, xs, ys, 0);
-//	glCopyTexImage2D(GL_TEXTURE_2D, 0, i, 0, 0, xs, ys, 0);
+//	pdglBindTexture(GL_TEXTURE_2D, dtex);
+//	pdglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, xs, ys, 0);
+//	pdglCopyTexImage2D(GL_TEXTURE_2D, 0, i, 0, 0, xs, ys, 0);
 
-	glBindTexture(GL_TEXTURE_2D, dtex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, xs, ys, 0,
+	pdglBindTexture(GL_TEXTURE_2D, dtex);
+	pdglTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, xs, ys, 0,
 		GL_RGBA, GL_UNSIGNED_BYTE, stbuf);
 
-	glPopAttrib();
-	glPopMatrix();
+	pdglPopAttrib();
+	pdglPopMatrix();
 
-	glMatrixMode(GL_MODELVIEW_MATRIX);
+	pdglMatrixMode(GL_MODELVIEW_MATRIX);
 #endif
 }

@@ -806,11 +806,11 @@ void lbxgl_part_sprite_draw_deform(LBXGL_Particle *self)
 //		self->org[0], self->org[1], self->org[2],
 //		self->rad, self->tex);
 
-	glDisable(GL_DEPTH_TEST);
-//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_DEPTH_TEST);
+//	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//	pdglDisable(GL_TEXTURE_2D);
 
-	glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
+	pdglBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
 
 	i=PDGL_LoadShader("bgb_deform2");
 	PDGL_BindShader(i);
@@ -823,12 +823,12 @@ void lbxgl_part_sprite_draw_deform(LBXGL_Particle *self)
 	PDGL_Uniform1i("texDeform", 1);
 
 	pdglActiveTexture(0);
-	glBindTexture(GL_TEXTURE_2D, self->tex);
-	glEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, self->tex);
+	pdglEnable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(1);
-	glBindTexture(GL_TEXTURE_2D, lbxgl_part_turb);
-	glEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, lbxgl_part_turb);
+	pdglEnable(GL_TEXTURE_2D);
 
 	f=1.0-(self->time/self->lim);
 
@@ -860,18 +860,18 @@ void lbxgl_part_sprite_draw_deform(LBXGL_Particle *self)
 	pdglEnd();
 
 	pdglActiveTexture(0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, 0);
+	pdglDisable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(1);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, 0);
+	pdglDisable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(0);
 	PDGL_UnbindShader();
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_DEPTH_TEST);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglEnable(GL_DEPTH_TEST);
 }
 
 LBXGL_Particle *lbxgl_part_sprite_drawMulti(LBXGL_Particle *self)
@@ -883,13 +883,13 @@ LBXGL_Particle *lbxgl_part_sprite_drawMulti(LBXGL_Particle *self)
 //		self->org[0], self->org[1], self->org[2],
 //		self->rad, self->tex);
 
-	glDepthMask(0);
-//	glDisable(GL_DEPTH_TEST);
+	pdglDepthMask(0);
+//	pdglDisable(GL_DEPTH_TEST);
 	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//	glDisable(GL_TEXTURE_2D);
+//	pdglDisable(GL_TEXTURE_2D);
 
-//	glEnable(GL_TEXTURE_2D);
-//	glBindTexture(GL_TEXTURE_2D, self->tex);
+//	pdglEnable(GL_TEXTURE_2D);
+//	pdglBindTexture(GL_TEXTURE_2D, self->tex);
 
 	LBXGL_Shader_BindTexture(self->tex);
 
@@ -937,8 +937,8 @@ LBXGL_Particle *lbxgl_part_sprite_drawMulti(LBXGL_Particle *self)
 
 	LBXGL_Shader_End();
 
-	glDepthMask(1);
-//	glEnable(GL_DEPTH_TEST);
+	pdglDepthMask(1);
+//	pdglEnable(GL_DEPTH_TEST);
 
 	return(cur);
 }
@@ -952,13 +952,13 @@ LBXGL_Particle *lbxgl_part_sprite_drawMulti_light(LBXGL_Particle *self)
 //		self->org[0], self->org[1], self->org[2],
 //		self->rad, self->tex);
 
-	glDepthMask(0);
-//	glDisable(GL_DEPTH_TEST);
+	pdglDepthMask(0);
+//	pdglDisable(GL_DEPTH_TEST);
 	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//	glDisable(GL_TEXTURE_2D);
+//	pdglDisable(GL_TEXTURE_2D);
 
-//	glEnable(GL_TEXTURE_2D);
-//	glBindTexture(GL_TEXTURE_2D, self->tex);
+//	pdglEnable(GL_TEXTURE_2D);
+//	pdglBindTexture(GL_TEXTURE_2D, self->tex);
 
 	LBXGL_Shader_BindTexture(self->tex);
 
@@ -1006,8 +1006,8 @@ LBXGL_Particle *lbxgl_part_sprite_drawMulti_light(LBXGL_Particle *self)
 
 	LBXGL_Shader_End();
 
-	glDepthMask(1);
-//	glEnable(GL_DEPTH_TEST);
+	pdglDepthMask(1);
+//	pdglEnable(GL_DEPTH_TEST);
 
 	return(cur);
 }
@@ -1018,13 +1018,13 @@ LBXGL_Particle *lbxgl_part_sprite_drawMulti_lightexpose(LBXGL_Particle *self)
 	LBXGL_Particle *cur;
 	float g, h;
 
-	glDepthMask(0);
-//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglDepthMask(0);
+//	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	LBXGL_Shader_BlendFunc(GL_SRC_COLOR, GL_ONE);
 
-//	glEnable(GL_TEXTURE_2D);
-//	glBindTexture(GL_TEXTURE_2D, self->tex);
+//	pdglEnable(GL_TEXTURE_2D);
+//	pdglBindTexture(GL_TEXTURE_2D, self->tex);
 
 	LBXGL_Shader_BindTexture(self->tex);
 
@@ -1098,7 +1098,7 @@ LBXGL_Particle *lbxgl_part_sprite_drawMulti_lightexpose(LBXGL_Particle *self)
 	LBXGL_Shader_End();
 	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 
 	return(cur);
 }
@@ -1112,13 +1112,13 @@ void lbxgl_part_sprite_draw(LBXGL_Particle *self)
 //		self->org[0], self->org[1], self->org[2],
 //		self->rad, self->tex);
 
-	glDepthMask(0);
-//	glDisable(GL_DEPTH_TEST);
+	pdglDepthMask(0);
+//	pdglDisable(GL_DEPTH_TEST);
 	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//	glDisable(GL_TEXTURE_2D);
+//	pdglDisable(GL_TEXTURE_2D);
 
-//	glEnable(GL_TEXTURE_2D);
-//	glBindTexture(GL_TEXTURE_2D, self->tex);
+//	pdglEnable(GL_TEXTURE_2D);
+//	pdglBindTexture(GL_TEXTURE_2D, self->tex);
 
 	LBXGL_Shader_BindTexture(self->tex);
 
@@ -1153,20 +1153,20 @@ void lbxgl_part_sprite_draw(LBXGL_Particle *self)
 
 	LBXGL_Shader_End();
 
-	glDepthMask(1);
-//	glEnable(GL_DEPTH_TEST);
+	pdglDepthMask(1);
+//	pdglEnable(GL_DEPTH_TEST);
 }
 
 void lbxgl_part_sprite_draw_light(LBXGL_Particle *self)
 {
 	float v[3];
 
-	glDepthMask(0);
+	pdglDepthMask(0);
 
 	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-//	glEnable(GL_TEXTURE_2D);
-//	glBindTexture(GL_TEXTURE_2D, self->tex);
+//	pdglEnable(GL_TEXTURE_2D);
+//	pdglBindTexture(GL_TEXTURE_2D, self->tex);
 
 	LBXGL_Shader_BindTexture(self->tex);
 
@@ -1202,7 +1202,7 @@ void lbxgl_part_sprite_draw_light(LBXGL_Particle *self)
 
 	LBXGL_Shader_End();
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 }
 
 void lbxgl_part_sprite_draw_lightexpose(LBXGL_Particle *self)
@@ -1210,13 +1210,13 @@ void lbxgl_part_sprite_draw_lightexpose(LBXGL_Particle *self)
 	float v[3], pt0[3], pt1[3], pt2[3], pt3[3];
 	float g, h;
 
-	glDepthMask(0);
-//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglDepthMask(0);
+//	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	LBXGL_Shader_BlendFunc(GL_SRC_COLOR, GL_ONE);
 
-//	glEnable(GL_TEXTURE_2D);
-//	glBindTexture(GL_TEXTURE_2D, self->tex);
+//	pdglEnable(GL_TEXTURE_2D);
+//	pdglBindTexture(GL_TEXTURE_2D, self->tex);
 
 	LBXGL_Shader_BindTexture(self->tex);
 
@@ -1294,7 +1294,7 @@ void lbxgl_part_sprite_draw_lightexpose(LBXGL_Particle *self)
 
 	LBXGL_Shader_End();
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 }
 #endif
 
@@ -1307,13 +1307,13 @@ void lbxgl_part_sprite_draw(LBXGL_Particle *self)
 //		self->org[0], self->org[1], self->org[2],
 //		self->rad, self->tex);
 
-	glDepthMask(0);
-//	glDisable(GL_DEPTH_TEST);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//	glDisable(GL_TEXTURE_2D);
+	pdglDepthMask(0);
+//	pdglDisable(GL_DEPTH_TEST);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//	pdglDisable(GL_TEXTURE_2D);
 
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, self->tex);
+	pdglEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, self->tex);
 
 
 //	pdglColor4f(1, 1, 1, 1.0-(self->time/self->lim));
@@ -1347,8 +1347,8 @@ void lbxgl_part_sprite_draw(LBXGL_Particle *self)
 
 	pdglEnd();
 
-	glDepthMask(1);
-//	glEnable(GL_DEPTH_TEST);
+	pdglDepthMask(1);
+//	pdglEnable(GL_DEPTH_TEST);
 }
 #endif
 
@@ -1357,11 +1357,11 @@ void lbxgl_part_sprite_draw_light(LBXGL_Particle *self)
 {
 	float v[3];
 
-	glDepthMask(0);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglDepthMask(0);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, self->tex);
+	pdglEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, self->tex);
 
 
 //	pdglColor4f(1, 1, 1, (1.0-(self->time/self->lim))*0.25);
@@ -1395,7 +1395,7 @@ void lbxgl_part_sprite_draw_light(LBXGL_Particle *self)
 
 	pdglEnd();
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 }
 #endif
 
@@ -1405,13 +1405,13 @@ void lbxgl_part_sprite_draw_lightexpose(LBXGL_Particle *self)
 	float v[3], pt0[3], pt1[3], pt2[3], pt3[3];
 	float g, h;
 
-	glDepthMask(0);
-//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglDepthMask(0);
+//	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glBlendFunc(GL_SRC_COLOR, GL_ONE);
+	pdglBlendFunc(GL_SRC_COLOR, GL_ONE);
 
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, self->tex);
+	pdglEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, self->tex);
 
 
 //	pdglColor4f(1, 1, 1, (1.0-(self->time/self->lim))*0.25);
@@ -1488,7 +1488,7 @@ void lbxgl_part_sprite_draw_lightexpose(LBXGL_Particle *self)
 
 	pdglEnd();
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 }
 #endif
 
@@ -1814,7 +1814,7 @@ int shader_flame_orgvel(int nvec, float *xyz, float *vn, float pwr,
 	V3F_SCALE(vel, f, vel);
 
 #if 1
-//	glGetFloatv(GL_MODELVIEW_MATRIX, tmat);
+//	pdglGetFloatv(GL_MODELVIEW_MATRIX, tmat);
 	pdglGetModelviewMatrix(tmat);
 	tv[0]=V3F_DOT(org, tmat+0)+tmat[12];
 	tv[1]=V3F_DOT(org, tmat+4)+tmat[13];

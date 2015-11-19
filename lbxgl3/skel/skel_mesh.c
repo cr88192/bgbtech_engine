@@ -605,12 +605,12 @@ LBXGL_API void AC3D_MoveMeshGroup(LBXGL_Skel2MeshGroup *grp, float *pos)
 	float tv[3];
 	int i;
 
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_TEXTURE_2D);
 
 	if(mesh->texnum>0)
 	{
-		glEnable(GL_TEXTURE_2D);
-//		glBindTexture(GL_TEXTURE_2D, mesh->texnum);
+		pdglEnable(GL_TEXTURE_2D);
+//		pdglBindTexture(GL_TEXTURE_2D, mesh->texnum);
 		LBXGL_Texture_BindImage(mesh->texnum[0]);
 	}
 
@@ -673,12 +673,12 @@ LBXGL_API void AC3D_DrawMesh(LBXGL_Skel2Mesh *mesh, float *pos)
 	}
 
 #if 0
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_TEXTURE_2D);
 
 	if(mesh->texnum[0]>0)
 	{
-		glEnable(GL_TEXTURE_2D);
-//		glBindTexture(GL_TEXTURE_2D, mesh->texnum[0]);
+		pdglEnable(GL_TEXTURE_2D);
+//		pdglBindTexture(GL_TEXTURE_2D, mesh->texnum[0]);
 		LBXGL_Texture_BindImage(mesh->texnum[0]);
 	}
 #endif
@@ -688,12 +688,12 @@ LBXGL_API void AC3D_DrawMesh(LBXGL_Skel2Mesh *mesh, float *pos)
 #if 1
 		if(mesh->texnum[0]>0)
 		{
-			glEnable(GL_TEXTURE_2D);
-//			glBindTexture(GL_TEXTURE_2D, mesh->texnum[0]);
+			pdglEnable(GL_TEXTURE_2D);
+//			pdglBindTexture(GL_TEXTURE_2D, mesh->texnum[0]);
 			LBXGL_Texture_BindImage(mesh->texnum[0]);
 		}else
 		{
-			glDisable(GL_TEXTURE_2D);
+			pdglDisable(GL_TEXTURE_2D);
 		}
 #endif
 
@@ -740,7 +740,7 @@ LBXGL_API void AC3D_DrawMesh(LBXGL_Skel2Mesh *mesh, float *pos)
 			V3F_COPY(txyz+(3*cur->vecs[j]), tv);
 
 //			f=V3F_DIST(tv, main_cam_org)/12.0;
-//			glColor4f(1.0/f, 1.0/f, 1.0/f, 1);
+//			pdglColor4f(1.0/f, 1.0/f, 1.0/f, 1);
 
 			Skel_glVertex3fv(tv);
 		}

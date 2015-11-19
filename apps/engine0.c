@@ -282,7 +282,7 @@ void draw_test_box4d()
 	tex=LBXGL_Texture_LoadImageSize(
 		"textures/ground/cs_terrain", &xs, &ys);
 
-	glDisable(GL_CULL_FACE);
+	pdglDisable(GL_CULL_FACE);
 
 	LBXGL_Shader_PushMatrix4D();
 
@@ -332,23 +332,23 @@ void draw_test_defsdr()
 	PDGL_Uniform1i("texBase", 1);
 	PDGL_Uniform1i("texDeform", 2);
 
-//	glDisable(GL_TEXTURE_2D);
+//	pdglDisable(GL_TEXTURE_2D);
 
-//	glBindTexture(GL_TEXTURE_2D, tex_screen);
-//	glEnable(GL_TEXTURE_2D);
+//	pdglBindTexture(GL_TEXTURE_2D, tex_screen);
+//	pdglEnable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(0);
-	glBindTexture(GL_TEXTURE_2D, tex_screen);
-//	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, tex_screen);
+//	pdglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	pdglEnable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(1);
-	glBindTexture(GL_TEXTURE_2D, tex);
-	glEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, tex);
+	pdglEnable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(2);
-	glBindTexture(GL_TEXTURE_2D, def);
-	glEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, def);
+	pdglEnable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(0);
 
@@ -377,16 +377,16 @@ void draw_test_defsdr()
 
 
 	pdglActiveTexture(0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, 0);
+	pdglDisable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(1);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, 0);
+	pdglDisable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(2);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, 0);
+	pdglDisable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(0);
 
@@ -433,17 +433,17 @@ void draw_test_terrain()
 
 	if(tex>0)
 	{
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, tex);
+		pdglEnable(GL_TEXTURE_2D);
+		pdglBindTexture(GL_TEXTURE_2D, tex);
 		xsc=1.0/xs;
 		ysc=1.0/ys;
 	}else
 	{
-		glDisable(GL_TEXTURE_2D);
+		pdglDisable(GL_TEXTURE_2D);
 		xsc=1.0; ysc=1.0;
 	}
 
-	glCullFace(GL_BACK);
+	pdglCullFace(GL_BACK);
 
 	pdglColor4f(0.5, 0.5, 0.5, 1);
 
@@ -487,7 +487,7 @@ void draw_test_terrain()
 		pdglEnd();
 	}
 
-	glEnable(GL_TEXTURE_2D);
+	pdglEnable(GL_TEXTURE_2D);
 }
 
 #if 1
@@ -925,10 +925,10 @@ void draw_ent(LBXGL_SEntity *ent)
 
 	if(tn>=0)
 	{
-//		glEnable(GL_ALPHA_TEST);
+//		pdglEnable(GL_ALPHA_TEST);
 
-//		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, tn);
+//		pdglEnable(GL_TEXTURE_2D);
+		pdglBindTexture(GL_TEXTURE_2D, tn);
 
 		pdglBegin(PDGL_POLYGON);
 
@@ -954,7 +954,7 @@ void draw_ent(LBXGL_SEntity *ent)
 
 		pdglEnd();
 
-//		glDisable(GL_ALPHA_TEST);
+//		pdglDisable(GL_ALPHA_TEST);
 	}
 
 	s=LBXGL_SEnt_GetStr(ent, "_flare");
@@ -972,7 +972,7 @@ void draw_ent(LBXGL_SEntity *ent)
 			if(ent->bmdl) { V3F_COPY(ent->bmdl->com_org, tv1); }
 			if(ent2->bmdl) { V3F_COPY(ent2->bmdl->com_org, tv2); }
 
-			glDisable(GL_TEXTURE_2D);
+			pdglDisable(GL_TEXTURE_2D);
 			
 			pdglBegin(PDGL_LINES);
 			pdglColor4f(1,0,0,1);
@@ -981,7 +981,7 @@ void draw_ent(LBXGL_SEntity *ent)
 			pdglVertex3fv(tv2);
 			pdglEnd();
 			
-			glEnable(GL_TEXTURE_2D);
+			pdglEnable(GL_TEXTURE_2D);
 		}
 	}
 
@@ -3251,8 +3251,8 @@ int pdgl_main_draw3d()
 	if(!cam->ortho)
 		LBXGL_Sky_DrawSky();
 
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_CULL_FACE);
+	pdglDisable(GL_TEXTURE_2D);
 
 #if 0
 	pdglBegin(PDGL_LINES);
@@ -3272,20 +3272,20 @@ int pdgl_main_draw3d()
 	pdglEnd();
 #endif
 
-//	glEnable(GL_CULL_FACE);
+//	pdglEnable(GL_CULL_FACE);
 
 //	if(!cam->ortho || (cam->mode==PDGLUI_CAM_SOLID2D))
-//		glEnable(GL_TEXTURE_2D);
-	glDepthFunc(GL_LEQUAL);
+//		pdglEnable(GL_TEXTURE_2D);
+	pdglDepthFunc(GL_LEQUAL);
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 //	setup_light_ents(world->entity);
 
 	if(cam->ortho && (cam->mode!=PDGLUI_CAM_SOLID2D))
 	{
-		glCullFace(GL_BACK); glEnable(GL_CULL_FACE);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		pdglCullFace(GL_BACK);	pdglEnable(GL_CULL_FACE);
+		pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		LBXGL_Shader_Color4f(1, 1, 1, 1);
 //		pdglColor4f(1, 1, 1, 1);
 
@@ -3296,7 +3296,7 @@ int pdgl_main_draw3d()
 		LBXGL_BrushWorld_DrawModelsFlat(world);
 	}else
 	{
-		glEnable(GL_TEXTURE_2D);
+		pdglEnable(GL_TEXTURE_2D);
 		LBXGL_BrushWorld_DrawBrushes(world, world->brush);
 	}
 
@@ -3308,7 +3308,7 @@ int pdgl_main_draw3d()
 			//temporary hack...
 
 			pdglColor4f(1, 1, 1, 1);
-			glDisable(GL_CULL_FACE);
+			pdglDisable(GL_CULL_FACE);
 
 			LBXGL_BrushMesh_DrawGroupEdit(lbxgl_brushmesh_mdl);
 		}
@@ -3326,7 +3326,7 @@ int pdgl_main_draw3d()
 		}
 #endif
 
-//		glDisable(GL_ALPHA_TEST);
+//		pdglDisable(GL_ALPHA_TEST);
 
 		draw_ents(world->entity);
 	}
@@ -3366,7 +3366,7 @@ int pdgl_main_drawLoading()
 	j=LBXGL_Texture_LoadImage(buf);
 
 	LBXGL_Shader_Color4f(1, 1, 1, 1);
-//	glEnable(GL_TEXTURE_2D);
+//	pdglEnable(GL_TEXTURE_2D);
 	LBXGL_Shader_BindTexture(j);
 
 	LBXGL_Shader_Begin(PDGL_POLYGON);
@@ -3483,7 +3483,8 @@ int pdgl_main_draw2D()
 		PDGLUI_Frame();
 		main_handle_events();
 
-		glDisable(GL_TEXTURE_2D);
+#if 0
+		pdglDisable(GL_TEXTURE_2D);
 		pdglColor4f(1, 0, 0, 1);
 
 		pdglBegin(PDGL_LINES);
@@ -3492,6 +3493,11 @@ int pdgl_main_draw2D()
 		pdglVertex2f(state->mx, -state->my-10);
 		pdglVertex2f(state->mx, -state->my+10);
 		pdglEnd();
+#endif
+
+		GfxFont_SetFont("fixed", 0);
+		GfxFont_DrawString("X", state->mx-8, -state->my-8,
+			16, 16,  255, 0, 0, 255);
 
 		return(0);
 	}
@@ -3642,7 +3648,7 @@ int pdgl_main_draw2D()
 			j=LBXGL_Texture_LoadImage(buf);
 
 			LBXGL_Shader_Color4f(1, 1, 1, 1);
-//			glEnable(GL_TEXTURE_2D);
+//			pdglEnable(GL_TEXTURE_2D);
 			LBXGL_Shader_BindTexture(j);
 
 			LBXGL_Shader_Begin(PDGL_POLYGON);
@@ -3772,7 +3778,15 @@ int pdgl_main_draw2D()
 	PDGLUI_Frame();
 	main_handle_events();
 
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_STENCIL_TEST);
+	pdglDisable(GL_SCISSOR_TEST);
+
+	GfxFont_SetFont("fixed", 0);
+	GfxFont_DrawString("X", state->mx-8, -state->my-8,
+		16, 16,  255, 0, 0, 255);
+
+#if 0
+	pdglDisable(GL_TEXTURE_2D);
 	pdglColor4f(1, 0, 0, 1);
 
 	pdglBegin(PDGL_LINES);
@@ -3781,7 +3795,7 @@ int pdgl_main_draw2D()
 	pdglVertex2f(state->mx, -state->my-10);
 	pdglVertex2f(state->mx, -state->my+10);
 	pdglEnd();
-
+#endif
 }
 
 int pdgl_main_body()

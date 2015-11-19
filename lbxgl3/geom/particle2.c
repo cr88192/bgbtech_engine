@@ -119,13 +119,13 @@ void lbxgl_part_glob_draw(LBXGL_Particle *self)
 	float r, g, b;
 	int i, j;
 
-	glDepthMask(0);
-//	glDisable(GL_DEPTH_TEST);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//	glDisable(GL_TEXTURE_2D);
+	pdglDepthMask(0);
+//	pdglDisable(GL_DEPTH_TEST);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//	pdglDisable(GL_TEXTURE_2D);
 
-	glEnable(GL_TEXTURE_2D);
-//	glBindTexture(GL_TEXTURE_2D, self->tex);
+	pdglEnable(GL_TEXTURE_2D);
+//	pdglBindTexture(GL_TEXTURE_2D, self->tex);
 
 	LBXGL_Shader_Color4f(
 		(self->clr&0xFF)*(1.0/255.0),
@@ -186,33 +186,33 @@ void lbxgl_part_glob_draw(LBXGL_Particle *self)
 #endif
 
 #if 0
-	glBegin(GL_QUADS);
+	pdglBegin(GL_QUADS);
 
 	V3F_ADDSCALE(self->org, lbxgl_cam->rt, -self->rad, v);
 	V3F_ADDSCALE(v, lbxgl_cam->up, self->rad, v);
-	glTexCoord2f(0, 1);
-	glVertex3fv(v);
+	pdglTexCoord2f(0, 1);
+	pdglVertex3fv(v);
 
 	V3F_ADDSCALE(self->org, lbxgl_cam->rt, -self->rad, v);
 	V3F_ADDSCALE(v, lbxgl_cam->up, -self->rad, v);
-	glTexCoord2f(0, 0);
-	glVertex3fv(v);
+	pdglTexCoord2f(0, 0);
+	pdglVertex3fv(v);
 
 	V3F_ADDSCALE(self->org, lbxgl_cam->rt, self->rad, v);
 	V3F_ADDSCALE(v, lbxgl_cam->up, -self->rad, v);
-	glTexCoord2f(1, 0);
-	glVertex3fv(v);
+	pdglTexCoord2f(1, 0);
+	pdglVertex3fv(v);
 
 	V3F_ADDSCALE(self->org, lbxgl_cam->rt, self->rad, v);
 	V3F_ADDSCALE(v, lbxgl_cam->up, self->rad, v);
-	glTexCoord2f(1, 1);
-	glVertex3fv(v);
+	pdglTexCoord2f(1, 1);
+	pdglVertex3fv(v);
 
-	glEnd();
+	pdglEnd();
 #endif
 
-	glDepthMask(1);
-//	glEnable(GL_DEPTH_TEST);
+	pdglDepthMask(1);
+//	pdglEnable(GL_DEPTH_TEST);
 }
 
 void lbxgl_part_glob_spawn(LBXGL_Particle *self, float *org, float *vel)

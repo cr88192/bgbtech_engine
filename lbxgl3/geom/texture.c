@@ -1013,7 +1013,7 @@ int LBXGL_Texture_LoadImageAltImg(LBXGL_TexImage *tmp)
 	}
 #endif
 
-	glFinish();
+	pdglFinish();
 
 	return(tmp->num);
 }
@@ -1453,8 +1453,8 @@ LBXGL_API void LBXGL_Texture_BindImage(int num)
 {
 	LBXGL_Shader_BindTexture(num);
 
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->num);
+	pdglEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->num);
 }
 
 void LBXGL_Texture_SetImageMaterial(int tex)
@@ -1472,22 +1472,22 @@ void LBXGL_Texture_SetImageMaterialImg(LBXGL_TexImage *img)
 	if(!img)
 	{
 		pt[0]=1; pt[1]=1; pt[2]=1; pt[3]=1;
-		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, pt);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pt);
+		pdglMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, pt);
+		pdglMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pt);
 		pt[0]=0.2; pt[1]=0.2; pt[2]=0.2; pt[3]=1;
-		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pt);
+		pdglMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pt);
 		pt[0]=0; pt[1]=0; pt[2]=0; pt[3]=1;
-		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, pt);
+		pdglMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, pt);
 		pt[0]=1;
-		glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, pt);
+		pdglMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, pt);
 		return;
 	}
 
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, img->mat_ambient);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, img->mat_diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, img->mat_specular);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, img->mat_emission);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, img->mat_shininess);
+	pdglMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, img->mat_ambient);
+	pdglMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, img->mat_diffuse);
+	pdglMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, img->mat_specular);
+	pdglMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, img->mat_emission);
+	pdglMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, img->mat_shininess);
 #endif
 }
 

@@ -319,21 +319,21 @@ int Map2D_DrawWallMid(
 	t0=sec->height_floor/((float)ys);
 	t1=sec->height_ceil/((float)ys);
 
-	glColor4f(1, 1, 1, 1);
+	pdglColor4f(1, 1, 1, 1);
 
-	glBindTexture(GL_TEXTURE_2D, side->tex_mid);
-	glEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, side->tex_mid);
+	pdglEnable(GL_TEXTURE_2D);
 
-	glBegin(GL_POLYGON);
-	glTexCoord2f(s0, t1);
-	glVertex3f(vtx0->x, vtx0->y, sec->height_ceil);
-	glTexCoord2f(s0, t0);
-	glVertex3f(vtx0->x, vtx0->y, sec->height_floor);
-	glTexCoord2f(s1, t0);
-	glVertex3f(vtx1->x, vtx1->y, sec->height_floor);
-	glTexCoord2f(s1, t1);
-	glVertex3f(vtx1->x, vtx1->y, sec->height_ceil);
-	glEnd();
+	pdglBegin(GL_POLYGON);
+	pdglTexCoord2f(s0, t1);
+	pdglVertex3f(vtx0->x, vtx0->y, sec->height_ceil);
+	pdglTexCoord2f(s0, t0);
+	pdglVertex3f(vtx0->x, vtx0->y, sec->height_floor);
+	pdglTexCoord2f(s1, t0);
+	pdglVertex3f(vtx1->x, vtx1->y, sec->height_floor);
+	pdglTexCoord2f(s1, t1);
+	pdglVertex3f(vtx1->x, vtx1->y, sec->height_ceil);
+	pdglEnd();
 }
 
 int Map2D_DrawWallLow(
@@ -355,21 +355,21 @@ int Map2D_DrawWallLow(
 	t0=sec->height_floor/((float)ys);
 	t1=sec1->height_floor/((float)ys);
 
-	glColor4f(1, 1, 1, 1);
+	pdglColor4f(1, 1, 1, 1);
 
-	glBindTexture(GL_TEXTURE_2D, side->tex_low);
-	glEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, side->tex_low);
+	pdglEnable(GL_TEXTURE_2D);
 
-	glBegin(GL_POLYGON);
-	glTexCoord2f(s0, t1);
-	glVertex3f(vtx0->x, vtx0->y, sec1->height_floor);
-	glTexCoord2f(s0, t0);
-	glVertex3f(vtx0->x, vtx0->y, sec->height_floor);
-	glTexCoord2f(s1, t0);
-	glVertex3f(vtx1->x, vtx1->y, sec->height_floor);
-	glTexCoord2f(s1, t1);
-	glVertex3f(vtx1->x, vtx1->y, sec1->height_floor);
-	glEnd();
+	pdglBegin(GL_POLYGON);
+	pdglTexCoord2f(s0, t1);
+	pdglVertex3f(vtx0->x, vtx0->y, sec1->height_floor);
+	pdglTexCoord2f(s0, t0);
+	pdglVertex3f(vtx0->x, vtx0->y, sec->height_floor);
+	pdglTexCoord2f(s1, t0);
+	pdglVertex3f(vtx1->x, vtx1->y, sec->height_floor);
+	pdglTexCoord2f(s1, t1);
+	pdglVertex3f(vtx1->x, vtx1->y, sec1->height_floor);
+	pdglEnd();
 }
 
 int Map2D_DrawWallHigh(
@@ -391,21 +391,21 @@ int Map2D_DrawWallHigh(
 	t0=sec1->height_ceil/((float)ys);
 	t1=sec->height_ceil/((float)ys);
 
-	glColor4f(1, 1, 1, 1);
+	pdglColor4f(1, 1, 1, 1);
 
-	glBindTexture(GL_TEXTURE_2D, side->tex_high);
-	glEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, side->tex_high);
+	pdglEnable(GL_TEXTURE_2D);
 
-	glBegin(GL_POLYGON);
-	glTexCoord2f(s0, t1);
-	glVertex3f(vtx0->x, vtx0->y, sec->height_ceil);
-	glTexCoord2f(s0, t0);
-	glVertex3f(vtx0->x, vtx0->y, sec1->height_ceil);
-	glTexCoord2f(s1, t0);
-	glVertex3f(vtx1->x, vtx1->y, sec1->height_ceil);
-	glTexCoord2f(s1, t1);
-	glVertex3f(vtx1->x, vtx1->y, sec->height_ceil);
-	glEnd();
+	pdglBegin(GL_POLYGON);
+	pdglTexCoord2f(s0, t1);
+	pdglVertex3f(vtx0->x, vtx0->y, sec->height_ceil);
+	pdglTexCoord2f(s0, t0);
+	pdglVertex3f(vtx0->x, vtx0->y, sec1->height_ceil);
+	pdglTexCoord2f(s1, t0);
+	pdglVertex3f(vtx1->x, vtx1->y, sec1->height_ceil);
+	pdglTexCoord2f(s1, t1);
+	pdglVertex3f(vtx1->x, vtx1->y, sec->height_ceil);
+	pdglEnd();
 }
 
 int Map2D_DrawWall(int wall)
@@ -482,51 +482,51 @@ int Map2D_DrawSector(int sector)
 
 	sec=map2d_sector[sector];
 
-	glColor4f(1, 1, 1, 1);
+	pdglColor4f(1, 1, 1, 1);
 
-	glBindTexture(GL_TEXTURE_2D, sec->tex_floor);
-	glEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, sec->tex_floor);
+	pdglEnable(GL_TEXTURE_2D);
 
-	glBegin(GL_TRIANGLES);
+	pdglBegin(GL_TRIANGLES);
 	for(i=0; i<nwall; i++)
 	{
 		vtx0=map2d_vertex[map2d_wall[wall[i]]->vec0];
 		vtx1=map2d_vertex[map2d_wall[wall[i]]->vec1];
-		glTexCoord2f(vtx0->x/64.0, vtx0->y/64.0);
-		glVertex3f(vtx0->x, vtx0->y, sec->height_floor);
-		glTexCoord2f(vtx1->x/64.0, vtx1->y/64.0);
-		glVertex3f(vtx1->x, vtx1->y, sec->height_floor);
-		glTexCoord2f(org[0]/64.0, org[1]/64.0);
-		glVertex3f(org[0], org[1], sec->height_floor);
+		pdglTexCoord2f(vtx0->x/64.0, vtx0->y/64.0);
+		pdglVertex3f(vtx0->x, vtx0->y, sec->height_floor);
+		pdglTexCoord2f(vtx1->x/64.0, vtx1->y/64.0);
+		pdglVertex3f(vtx1->x, vtx1->y, sec->height_floor);
+		pdglTexCoord2f(org[0]/64.0, org[1]/64.0);
+		pdglVertex3f(org[0], org[1], sec->height_floor);
 	}
-	glEnd();
+	pdglEnd();
 
-	glBindTexture(GL_TEXTURE_2D, sec->tex_ceil);
-	glEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, sec->tex_ceil);
+	pdglEnable(GL_TEXTURE_2D);
 
-	glBegin(GL_TRIANGLES);
+	pdglBegin(GL_TRIANGLES);
 	for(i=0; i<nwall; i++)
 	{
 		vtx0=map2d_vertex[map2d_wall[wall[i]]->vec0];
 		vtx1=map2d_vertex[map2d_wall[wall[i]]->vec1];
 
-		glTexCoord2f(vtx0->x/64.0, vtx0->y/64.0);
-		glVertex3f(vtx0->x, vtx0->y, sec->height_ceil);
-		glTexCoord2f(vtx1->x/64.0, vtx1->y/64.0);
-		glVertex3f(vtx1->x, vtx1->y, sec->height_ceil);
-		glTexCoord2f(org[0]/64.0, org[1]/64.0);
-		glVertex3f(org[0], org[1], sec->height_ceil);
+		pdglTexCoord2f(vtx0->x/64.0, vtx0->y/64.0);
+		pdglVertex3f(vtx0->x, vtx0->y, sec->height_ceil);
+		pdglTexCoord2f(vtx1->x/64.0, vtx1->y/64.0);
+		pdglVertex3f(vtx1->x, vtx1->y, sec->height_ceil);
+		pdglTexCoord2f(org[0]/64.0, org[1]/64.0);
+		pdglVertex3f(org[0], org[1], sec->height_ceil);
 	}
-	glEnd();
+	pdglEnd();
 
-//	glTexCoord2f(0, 1);
-//	glVertex3f(vtx0->x, vtx0->y, sec->height_floor);
-//	glTexCoord2f(0, 0);
-//	glVertex3f(vtx0->x, vtx0->y, sec->height_floor);
-//	glTexCoord2f(1, 0);
-//	glVertex3f(vtx1->x, vtx1->y, sec->height_floor);
-//	glTexCoord2f(1, 1);
-//	glVertex3f(vtx1->x, vtx1->y, sec->height_floor);
+//	pdglTexCoord2f(0, 1);
+//	pdglVertex3f(vtx0->x, vtx0->y, sec->height_floor);
+//	pdglTexCoord2f(0, 0);
+//	pdglVertex3f(vtx0->x, vtx0->y, sec->height_floor);
+//	pdglTexCoord2f(1, 0);
+//	pdglVertex3f(vtx1->x, vtx1->y, sec->height_floor);
+//	pdglTexCoord2f(1, 1);
+//	pdglVertex3f(vtx1->x, vtx1->y, sec->height_floor);
 }
 
 int Map2D_DrawWorld()
@@ -637,8 +637,8 @@ int pdgl_main_body()
 
 	UI_Camera_Setup3D();
 
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_CULL_FACE);
+	pdglDisable(GL_TEXTURE_2D);
 	PD3D_DrawGrid(0, 0, 16, 1);
 
 	Map2D_DrawWorld();
@@ -668,15 +668,15 @@ int pdgl_main_body()
 	Con_Render();
 	PDGLUI_Frame();
 
-	glDisable(GL_TEXTURE_2D);
-	glColor4f(1, 0, 0, 1);
+	pdglDisable(GL_TEXTURE_2D);
+	pdglColor4f(1, 0, 0, 1);
 
-	glBegin(GL_LINES);
-	glVertex2f(state->mx-10, -state->my);
-	glVertex2f(state->mx+10, -state->my);
-	glVertex2f(state->mx, -state->my-10);
-	glVertex2f(state->mx, -state->my+10);
-	glEnd();
+	pdglBegin(GL_LINES);
+	pdglVertex2f(state->mx-10, -state->my);
+	pdglVertex2f(state->mx+10, -state->my);
+	pdglVertex2f(state->mx, -state->my-10);
+	pdglVertex2f(state->mx, -state->my+10);
+	pdglEnd();
 
 	return(0);
 }

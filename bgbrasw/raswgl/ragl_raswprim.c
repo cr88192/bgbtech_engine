@@ -295,6 +295,12 @@ int RASWGL_ClasifyPrimitive_NeedsTabsP(
 			return(1);
 		}
 	}
+
+	if(ctx->caps_enabled&BGBRASW_ENABLE_STENCIL_TEST)
+	{
+		return(1);
+	}
+
 	if(ctx->caps_enabled&BGBRASW_ENABLE_BLEND)
 	{
 		rt=1;
@@ -950,7 +956,47 @@ void RASWGL_BuildInsertPrimitiveArrays(
 	float tv[4], tv_min[4], tv_max[4];
 	int i, j, k, n;
 	
-	if(prim==GL_TRIANGLES)
+	if(prim==GL_LINES)
+	{
+		plst=0; n=nxyz/2;
+		for(i=0; i<n; i++)
+		{
+			tv_min[1]=min(
+						xyz[(base+i*2+0)*xyzsize+1],
+						xyz[(base+i*2+1)*xyzsize+1]);
+			tv_max[1]=max(
+						xyz[(base+i*2+0)*xyzsize+1],
+						xyz[(base+i*2+1)*xyzsize+1]);
+			tv[1]=	(xyz[(base+i*2+0)*xyzsize+1]+
+					 xyz[(base+i*2+1)*xyzsize+1])*(1.0/2);
+	
+			ptmp=RASWGL_AllocPrimitiveForPoint(ctx, tv, tv_min, tv_max);
+//			ptmp=BGBRASW_AllocPrimitive(ctx->ractx);
+			ptmp->type=BGBRASW_PTYPE_LINE;
+			ptmp->tex=ctx->texture;
+
+			RASWGL_VertexToViewportPixels(ctx,
+				xyz+(base+i*3+0)*xyzsize, ptmp->xy[0], ptmp->z+0);
+			RASWGL_VertexToViewportPixels(ctx,
+				xyz+(base+i*2+1)*xyzsize, ptmp->xy[1], ptmp->z+1);
+
+			ptmp->w[0]=(xyz+(base+i*2+0)*xyzsize)[3];
+			ptmp->w[1]=(xyz+(base+i*2+1)*xyzsize)[3];
+
+			RASWGL_CoordsToViewportTexels(ctx, ptmp->tex,
+				st+(base+i*2+0)*stsize, ptmp->st[0]);
+			RASWGL_CoordsToViewportTexels(ctx, ptmp->tex,
+				st+(base+i*2+1)*stsize, ptmp->st[1]);
+
+			RASWGL_ColorsToViewportColors(ctx,
+				rgb+(base+i*2+0)*rgbsize, ptmp->rgba+0);
+			RASWGL_ColorsToViewportColors(ctx,
+				rgb+(base+i*2+1)*rgbsize, ptmp->rgba+1);
+
+			RASWGL_ClasifyPrimitive(ctx, ptmp);
+			RASWGL_SubmitPrimitive(ctx, ptmp);
+		}
+	}else if(prim==GL_TRIANGLES)
 	{
 		plst=0; n=nxyz/3;
 		for(i=0; i<n; i++)

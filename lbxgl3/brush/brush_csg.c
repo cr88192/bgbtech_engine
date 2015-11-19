@@ -694,7 +694,7 @@ void LBXGL_BrushBSP_DrawNodeFacesShadow(LBXGL_BrushNode *node)
 //			pdglVertex3fv(cur->xyz+j*3);
 //		pdglEnd();
 
-		glBlendFunc(GL_DST_COLOR, GL_ZERO);
+		pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 		LBXGL_Shader_BindTexture(cur->tex);
 		LBXGL_Shader_Normal3fv(cur->norm);
 		LBXGL_Shader_Color4f(1, 1, 1, 1);

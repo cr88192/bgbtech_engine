@@ -345,24 +345,24 @@ BTCL_API void BTCL_Draw2D(BTCL_World *wrl)
 
 	if(wrl->viewflags&BT_EF2_ISDEAD)
 	{
-		glDisable(GL_TEXTURE_2D);
-		glColor4f(0.25, 0.0, 0.0, 0.5);
+		pdglDisable(GL_TEXTURE_2D);
+		pdglColor4f(0.25, 0.0, 0.0, 0.5);
 		Draw_Square(-wxs2, -wys2, wxs, wys);
-		glEnable(GL_TEXTURE_2D);
+		pdglEnable(GL_TEXTURE_2D);
 	}
 
 	if(wrl->flash_time>0)
 	{
-		glDisable(GL_TEXTURE_2D);
+		pdglDisable(GL_TEXTURE_2D);
 		f=wrl->flash_time*wrl->flash_scale;
 		cr=(wrl->flash_color&0x0000FF)/((float)0x0000FF);
 		cg=(wrl->flash_color&0x00FF00)/((float)0x00FF00);
 		cb=(wrl->flash_color&0xFF0000)/((float)0xFF0000);
 
-		glColor4f(cr, cg, cb, f);
+		pdglColor4f(cr, cg, cb, f);
 		Draw_Square(-wxs2, -wys2, wxs, wys);
 		wrl->flash_time-=btclFrameTime(wrl);
-		glEnable(GL_TEXTURE_2D);
+		pdglEnable(GL_TEXTURE_2D);
 	}
 
 	if(wrl->cprint_msg)
@@ -439,9 +439,9 @@ BTCL_API void BTCL_Draw2D(BTCL_World *wrl)
 			j=LBXGL_Texture_LoadImage(wrl->cprint_boximg);
 
 			pdglColor4f(1, 1, 1, 1);
-//			glEnable(GL_TEXTURE_2D);
+//			pdglEnable(GL_TEXTURE_2D);
 			pdglEnableTexture2D();
-			glBindTexture(GL_TEXTURE_2D, j);
+			pdglBindTexture(GL_TEXTURE_2D, j);
 
 			pdglBegin(PDGL_POLYGON);
 			pdglTexCoord2f(0, 0);
@@ -461,7 +461,7 @@ BTCL_API void BTCL_Draw2D(BTCL_World *wrl)
 			Draw_FillSquareRGBA(-wxs2, -wys2*0.25,
 				i*16, 16,  0, 0, 0, 192);
 
-			glEnable(GL_TEXTURE_2D);
+			pdglEnable(GL_TEXTURE_2D);
 			GfxFont_DrawString2(wrl->cprint_boxname,
 				-wxs2, -(wys2*0.25),
 				16, 16,  255, 255, 255, 255);
@@ -469,7 +469,7 @@ BTCL_API void BTCL_Draw2D(BTCL_World *wrl)
 
 		Draw_FillSquareRGBA(-wxs2, -wys2,
 			wxs, wys*0.375,  0, 0, 0, 192);
-		glEnable(GL_TEXTURE_2D);
+		pdglEnable(GL_TEXTURE_2D);
 		GfxFont_DrawString2(wrl->cprint_boxmsg,
 			-wxs2, -(wys2*0.25)-16,
 			16, 16,  255, 255, 255, 255);

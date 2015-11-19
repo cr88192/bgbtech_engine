@@ -7,6 +7,9 @@ BGBRASW_API RASWGL_Context *RASWGL_CreateContext(int xs, int ys, int flags)
 	tmp=bgbrasw_malloc(sizeof(RASWGL_Context));
 	tmp->ractx=BGBRASW_AllocContext();
 
+	tmp->depth_near=0.0;
+	tmp->depth_far=1.0;
+
 #if 1
 	tmp->ractx_thread[0]=BGBRASW_CreateChildThreadContext(tmp->ractx);
 	tmp->ractx_thread[1]=BGBRASW_CreateChildThreadContext(tmp->ractx);
@@ -433,6 +436,30 @@ void RASWGL_AlphaFunc(RASWGL_Context *ctx, int func, float ref)
 	i=ref*255;
 	i=(i<0)?0:((i>255)?255:i);
 	ctx->ref_clr=(ctx->ref_clr&0x00FFFFFF)|(i<<24);
+}
+
+void RASWGL_StencilFunc(RASWGL_Context *ctx, int func, int ref, int mask)
+{
+	int i;
+
+	ctx->stencil_func=func;
+	ctx->ref_sten=ref;
+	ctx->mask_sten=mask;
+}
+
+void RASWGL_StencilMask(RASWGL_Context *ctx, int mask)
+{
+	ctx->mask_sten=mask;
+}
+
+void RASWGL_StencilOp(RASWGL_Context *ctx,
+	int sfail, int dpfail, int dppass)
+{
+	int i;
+
+	ctx->stencil_op_sfail=sfail;
+	ctx->stencil_op_dpfail=dpfail;
+	ctx->stencil_op_dppass=dppass;
 }
 
 void RASWGL_ClipPlane(RASWGL_Context *ctx, int pnum, double *plane)

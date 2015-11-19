@@ -408,7 +408,7 @@ int BTCLUI_Widget_Render3DBorder(int ox, int oy, int xs, int ys,
 {
 	int i;
 
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_TEXTURE_2D);
 
 	pdglBegin(PDGL_LINES);
 
@@ -439,7 +439,7 @@ int BTCLUI_Widget_Render3DBorder(int ox, int oy, int xs, int ys,
 int BTCLUI_Widget_Render3DBox(int ox, int oy, int xs, int ys,
 	int wbgcolor, int ind)
 {
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_TEXTURE_2D);
 	BTCLUI_Forms_RenderColor(wbgcolor, 255);
 
 	pdglBegin(PDGL_QUADS);
@@ -458,7 +458,7 @@ int BTCLUI_Widget_RenderLight3DBorder(int ox, int oy, int xs, int ys,
 {
 	int i;
 
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_TEXTURE_2D);
 
 	pdglBegin(PDGL_LINES);
 

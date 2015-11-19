@@ -564,9 +564,9 @@ int LBXGL_QuakeMDL_RenderStateLight(LBXGL_ModelState *ctx)
 
 int LBXGL_QuakeMDL_RenderStateFinal(LBXGL_ModelState *ctx)
 {
-	glBlendFunc(GL_DST_COLOR, GL_ZERO);
+	pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 	LBXGL_QuakeMDL_Render(ctx->mdl, ctx->frame, ctx->skin);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	return(0);
 }
 

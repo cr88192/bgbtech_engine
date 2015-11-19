@@ -55,6 +55,8 @@
 #define BGBRASW_MASK_DEPTH			0xFFFFFF00UL
 #define BGBRASW_MASK_STENCIL		0x000000FFUL
 
+#define BGBRASW_MASK_STENCIL_INV	0xFFFFFF00UL
+
 #define BGBRASW_MASK_YYCLR_ALPHA	0x0F000000UL
 
 #define BGBRASW_CLAMP(val, min, max)	\
@@ -134,6 +136,13 @@
 #define BGBRASW_GL_LINEAR_MIPMAP_NEAREST		0x2701
 #define BGBRASW_GL_LINEAR_MIPMAP_LINEAR			0x2703
 
+#define BGBRASW_GL_KEEP							0x1E00
+#define BGBRASW_GL_REPLACE						0x1E01
+#define BGBRASW_GL_INCR							0x1E02
+#define BGBRASW_GL_DECR							0x1E03
+#define BGBRASW_GL_INCR_WRAP					0x8507
+#define BGBRASW_GL_DECR_WRAP					0x8508
+
 typedef u32 bgbrasw_pixel;
 typedef u32 bgbrasw_zbuf;
 
@@ -152,6 +161,10 @@ typedef int (*BGBRASW_TestBlendFunc_ft)(
 	BGBRASW_TestBlendData *data,
 	bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz,
 	bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz);
+
+typedef void (*BGBRASW_StencilOpFunc_ft)(
+	BGBRASW_TestBlendData *data,
+	bgbrasw_zbuf *srcz, bgbrasw_zbuf *dstz);
 
 typedef void (*BGBRASW_BlendFunc_ft)(
 	BGBRASW_TestBlendData *data,
@@ -290,16 +303,23 @@ struct BGBRASW_TestBlendData_s {
 BGBRASW_TestBlendData *next;
 BGBRASW_Texture *tex;			//bound texture
 
-bgbrasw_pixel ref_clr;
-bgbrasw_zbuf ref_z;
-bgbrasw_pixel mask_clr;
-bgbrasw_zbuf mask_z;
+bgbrasw_pixel ref_clr;			//reference color
+bgbrasw_zbuf ref_z;				//reference Z
+bgbrasw_zbuf ref_sten;			//reference stencil
+bgbrasw_pixel mask_clr;			//mask color
+bgbrasw_zbuf mask_z;			//mask depth
+bgbrasw_zbuf mask_sten;			//mask stencil
 u32 caps_enabled;
 
 int blend_src;
 int blend_dst;
 int depth_func;
 int alpha_func;
+int stencil_func;
+
+int stencil_op_sfail;
+int stencil_op_dpfail;
+int stencil_op_dppass;
 
 BGBRASW_Texture *tmp_tex;	//temporary texture
 int tmp_fracmip;			//temporary fractional mip
@@ -313,9 +333,14 @@ BGBRASW_TestBlendFunc_ft testAndBlend;
 
 BGBRASW_TestBlendFunc_ft testAlpha;
 BGBRASW_TestBlendFunc_ft testDepth;
+BGBRASW_TestBlendFunc_ft testStencil;
 
 BGBRASW_BlendFunc_ft blendSfunc;
 BGBRASW_BlendFunc_ft blendDfunc;
+
+BGBRASW_StencilOpFunc_ft stenOpSfail;
+BGBRASW_StencilOpFunc_ft stenOpDpFail;
+BGBRASW_StencilOpFunc_ft stenOpDpPass;
 
 bgbrasw_pixel (*doBlend)(
 	BGBRASW_TestBlendData *data,

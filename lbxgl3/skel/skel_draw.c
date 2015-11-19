@@ -103,22 +103,22 @@ void Skel_glEnd()
 		4, GL_FLOAT, 0, skel_a_rgba);
 
 #if 0
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
+	pdglEnableClientState(GL_VERTEX_ARRAY);
+	pdglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	pdglEnableClientState(GL_NORMAL_ARRAY);
+	pdglEnableClientState(GL_COLOR_ARRAY);
 
 	i=4*sizeof(float);
-	glVertexPointer(3, GL_FLOAT, i, skel_a_xyz);
-	glTexCoordPointer(2, GL_FLOAT, 0, skel_a_st);
-	glNormalPointer(GL_FLOAT, i, skel_a_norm);
-	glColorPointer(4, GL_FLOAT, 0, skel_a_rgba);
-	glDrawArrays(skel_prim, 0, skel_nxyz);
+	pdglVertexPointer(3, GL_FLOAT, i, skel_a_xyz);
+	pdglTexCoordPointer(2, GL_FLOAT, 0, skel_a_st);
+	pdglNormalPointer(GL_FLOAT, i, skel_a_norm);
+	pdglColorPointer(4, GL_FLOAT, 0, skel_a_rgba);
+	pdglDrawArrays(skel_prim, 0, skel_nxyz);
 
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
+	pdglDisableClientState(GL_VERTEX_ARRAY);
+	pdglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	pdglDisableClientState(GL_NORMAL_ARRAY);
+	pdglDisableClientState(GL_COLOR_ARRAY);
 
 //	QGL2_DrawShaderPrim(skel_prim,
 //		skel_a_xyz, skel_a_st, skel_a_norm, skel_a_rgba, skel_nxyz);
@@ -155,22 +155,22 @@ void Skel_glEnd2()
 		3, GL_FLOAT, i, skel_a_norm);
 
 #if 0
-	glEnableClientState(GL_VERTEX_ARRAY);
-//	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-//	glEnableClientState(GL_COLOR_ARRAY);
+	pdglEnableClientState(GL_VERTEX_ARRAY);
+//	pdglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	pdglEnableClientState(GL_NORMAL_ARRAY);
+//	pdglEnableClientState(GL_COLOR_ARRAY);
 
 	i=4*sizeof(float);
-	glVertexPointer(3, GL_FLOAT, i, skel_a_xyz);
-//	glTexCoordPointer(2, GL_FLOAT, 0, skel_a_st);
-	glNormalPointer(GL_FLOAT, i, skel_a_norm);
-//	glColorPointer(4, GL_FLOAT, 0, skel_a_rgba);
-	glDrawArrays(skel_prim, 0, skel_nxyz);
+	pdglVertexPointer(3, GL_FLOAT, i, skel_a_xyz);
+//	pdglTexCoordPointer(2, GL_FLOAT, 0, skel_a_st);
+	pdglNormalPointer(GL_FLOAT, i, skel_a_norm);
+//	pdglColorPointer(4, GL_FLOAT, 0, skel_a_rgba);
+	pdglDrawArrays(skel_prim, 0, skel_nxyz);
 
-	glDisableClientState(GL_VERTEX_ARRAY);
-//	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-//	glDisableClientState(GL_COLOR_ARRAY);
+	pdglDisableClientState(GL_VERTEX_ARRAY);
+//	pdglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	pdglDisableClientState(GL_NORMAL_ARRAY);
+//	pdglDisableClientState(GL_COLOR_ARRAY);
 
 //	QGL2_DrawShaderPrim(skel_prim,
 //		skel_a_xyz, skel_a_st, skel_a_norm, skel_a_rgba, skel_nxyz);
@@ -441,11 +441,11 @@ LBXGL_API void Skel_DrawMesh(LBXGL_Skel2State *ctx, LBXGL_Skel2Mesh *mesh)
 
 	for(tn=0; tn<mesh->n_tex; tn++)
 	{
-		glDisable(GL_TEXTURE_2D);
+		pdglDisable(GL_TEXTURE_2D);
 		if(mesh->texnum[tn]>=0)
 		{
 			pdglEnableTexture2D();
-//			glBindTexture(GL_TEXTURE_2D, mesh->texnum[tn]);
+//			pdglBindTexture(GL_TEXTURE_2D, mesh->texnum[tn]);
 			LBXGL_Texture_BindImage(mesh->texnum[tn]);
 		}
 
@@ -475,7 +475,7 @@ LBXGL_API void Skel_DrawMesh(LBXGL_Skel2State *ctx, LBXGL_Skel2Mesh *mesh)
 					f=1+0.100*tv[2]+
 						0.025*tv[0]+
 						0.025*tv[1];
-//					glColor4f(
+//					pdglColor4f(
 //					Skel_glColor4f(
 					LBXGL_Shader_Color4f(
 						ac3d_draw_color[0]*f,
@@ -490,7 +490,7 @@ LBXGL_API void Skel_DrawMesh(LBXGL_Skel2State *ctx, LBXGL_Skel2Mesh *mesh)
 				LBXGL_Shader_TexCoord2fv(mesh->stvecs+(2*cur->stvecs[j]));
 				V3F_COPY(txyz+(3*cur->vecs[j]), tv);
 
-//				glVertex3fv(tv);
+//				pdglVertex3fv(tv);
 //				Skel_glVertex3fv(tv);
 				LBXGL_Shader_Vertex3fv(tv);
 			}
@@ -544,10 +544,10 @@ LBXGL_API void Skel_DrawMeshGroupFinal(
 	mcur=grp->prim;
 	while(mcur)
 	{
-		glBlendFunc(GL_DST_COLOR, GL_ZERO);
+		pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 		Skel_DrawMesh(ctx, mcur);
-//		glBlendFunc(GL_SRC_COLOR, GL_ONE);
-		glBlendFunc(GL_DST_COLOR, GL_ZERO);
+//		pdglBlendFunc(GL_SRC_COLOR, GL_ONE);
+		pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 		mcur=mcur->next;
 	}
 }
@@ -776,7 +776,7 @@ LBXGL_API void Skel_DrawMeshShadowVolumeClip(
 
 	Skel_CalcMeshTempPos2(ctx, prim);
 
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_TEXTURE_2D);
 	for(i=0; i<prim->n_faces; i++)
 	{
 		cur=prim->face[i];
@@ -903,10 +903,10 @@ LBXGL_API void Skel_DrawMeshShadow(LBXGL_Skel2State *ctx,
 		}
 	}
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, xyzarr);
-	glDrawElements(GL_QUADS, n, GL_UNSIGNED_INT, viarr);
-//	glDisableClientState(GL_VERTEX_ARRAY);
+	pdglEnableClientState(GL_VERTEX_ARRAY);
+	pdglVertexPointer(3, GL_FLOAT, 0, xyzarr);
+	pdglDrawElements(GL_QUADS, n, GL_UNSIGNED_INT, viarr);
+//	pdglDisableClientState(GL_VERTEX_ARRAY);
 
 	n=0;
 	for(i=0; i<mesh->n_faces; i++)
@@ -928,8 +928,8 @@ LBXGL_API void Skel_DrawMeshShadow(LBXGL_Skel2State *ctx,
 			viarr[n++]=cur->vecs[2]+nxyz;
 		}
 	}
-	glDrawElements(GL_TRIANGLES, n, GL_UNSIGNED_INT, viarr);
-	glDisableClientState(GL_VERTEX_ARRAY);
+	pdglDrawElements(GL_TRIANGLES, n, GL_UNSIGNED_INT, viarr);
+	pdglDisableClientState(GL_VERTEX_ARRAY);
 #endif
 
 #if 1
@@ -988,10 +988,10 @@ LBXGL_API void Skel_DrawMeshShadow(LBXGL_Skel2State *ctx,
 		3, GL_FLOAT, 0, xyzarr);
 
 #if 0
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, xyzarr);
-	glDrawElements(GL_TRIANGLES, n, GL_UNSIGNED_INT, viarr);
-	glDisableClientState(GL_VERTEX_ARRAY);
+	pdglEnableClientState(GL_VERTEX_ARRAY);
+	pdglVertexPointer(3, GL_FLOAT, 0, xyzarr);
+	pdglDrawElements(GL_TRIANGLES, n, GL_UNSIGNED_INT, viarr);
+	pdglDisableClientState(GL_VERTEX_ARRAY);
 #endif
 #endif
 }
@@ -1039,11 +1039,11 @@ LBXGL_API void Skel_DrawMeshState(LBXGL_Skel2State *ctx, LBXGL_Skel2MeshState *m
 
 	for(tn=0; tn<mesh->prim->n_tex; tn++)
 	{
-		glDisable(GL_TEXTURE_2D);
+		pdglDisable(GL_TEXTURE_2D);
 		if(mesh->prim->texnum[tn]>=0)
 		{
 			pdglEnableTexture2D();
-//			glBindTexture(GL_TEXTURE_2D, mesh->prim->texnum[tn]);
+//			pdglBindTexture(GL_TEXTURE_2D, mesh->prim->texnum[tn]);
 			LBXGL_Texture_BindImage(mesh->prim->texnum[tn]);
 		}
 
@@ -1337,7 +1337,7 @@ LBXGL_API void Skel_DrawModelAlpha(LBXGL_Skel2State *ctx, float alpha)
 {
 	if(!ctx)return;
 
-//	glColor4f(1, 1, 1, alpha);
+//	pdglColor4f(1, 1, 1, alpha);
 	Skel_glColor4f(1, 1, 1, alpha);
 
 	Skel_SetupFrame(ctx);
@@ -1352,8 +1352,8 @@ LBXGL_API void Skel_DrawModelDark(LBXGL_Skel2State *ctx)
 //	if(!ctx->mesh)ctx->mesh=Skel_NewGroupInstance(ctx->mdl->mesh);
 	Skel_SetupFrame(ctx);
 
-	glDisable(GL_TEXTURE_2D);
-//	glColor4f(0, 0, 0, 1);
+	pdglDisable(GL_TEXTURE_2D);
+//	pdglColor4f(0, 0, 0, 1);
 	Skel_glColor4f(0, 0, 0, 1);
 
 	if(ctx->mesh)
@@ -1371,8 +1371,8 @@ LBXGL_API void Skel_DrawModelLight(LBXGL_Skel2State *ctx)
 	if(!ctx)return;
 	Skel_SetupFrame(ctx);
 
-	glDisable(GL_TEXTURE_2D);
-//	glColor4f(1, 1, 1, 1);
+	pdglDisable(GL_TEXTURE_2D);
+//	pdglColor4f(1, 1, 1, 1);
 	Skel_glColor4f(1, 1, 1, 1);
 
 	if(ctx->mesh)
@@ -1391,11 +1391,11 @@ LBXGL_API void Skel_DrawModelLightColor(
 	if(!ctx)return;
 	Skel_SetupFrame(ctx);
 
-	glDisable(GL_TEXTURE_2D);
-//	glColor4f(1, 1, 1, 1);
+	pdglDisable(GL_TEXTURE_2D);
+//	pdglColor4f(1, 1, 1, 1);
 //	Skel_glColor4f(1, 1, 1, 1);
 
-//	glColor4f(cr, cg, cb, 1);
+//	pdglColor4f(cr, cg, cb, 1);
 	Skel_glColor4f(cr, cg, cb, 1);
 
 	if(ctx->mesh)Skel_DrawMeshStateGroupFlat2(ctx, ctx->mesh);
@@ -1416,19 +1416,19 @@ LBXGL_API void Skel_DrawModelFinal(LBXGL_Skel2State *ctx)
 	if(!ctx)return;
 	Skel_SetupFrame(ctx);
 
-//	glDisable(GL_CULL_FACE);
-//	glShadeModel (GL_SMOOTH);
+//	pdglDisable(GL_CULL_FACE);
+//	pdglShadeModel (GL_SMOOTH);
 //	GL_TexEnv( GL_MODULATE );
-//	glEnable (GL_BLEND);
+//	pdglEnable (GL_BLEND);
 
 //	GL_TexEnv( GL_REPLACE );
 
 
 	pdglEnableTexture2D();
-//	glColor4f(1, 1, 1, 1);
+//	pdglColor4f(1, 1, 1, 1);
 	Skel_glColor4f(1, 1, 1, 1);
 
-	glBlendFunc(GL_DST_COLOR, GL_ZERO);
+	pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 	if(ctx->mesh)
 	{
 		Skel_DrawMeshStateGroup(ctx, ctx->mesh);
@@ -1437,7 +1437,7 @@ LBXGL_API void Skel_DrawModelFinal(LBXGL_Skel2State *ctx)
 //		Skel_DrawMeshGroupFinal(ctx, Skel_MeshForLod(ctx));
 		SkelVBO_DrawModelFinal(ctx);
 	}
-	glBlendFunc(GL_DST_COLOR, GL_ZERO);
+	pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 }
 
 LBXGL_API void Skel_DrawModelShadow(LBXGL_Skel2State *ctx, float *org, float rad)

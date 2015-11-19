@@ -708,8 +708,8 @@ void LBXGL_BrushWorld_UpdateBrushFace(
 
 			LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			pdglDisableTexture2D();
-			glDisable(GL_DEPTH_TEST);
-			glDisable(GL_STENCIL_TEST);
+			pdglDisable(GL_DEPTH_TEST);
+			pdglDisable(GL_STENCIL_TEST);
 
 			pdglBegin(PDGL_POLYGON);
 
@@ -731,7 +731,7 @@ void LBXGL_BrushWorld_UpdateBrushFace(
 
 			pdglEnd();
 
-			glEnable(GL_DEPTH_TEST);
+			pdglEnable(GL_DEPTH_TEST);
 			pdglEnableTexture2D();
 		}
 #endif
@@ -902,13 +902,13 @@ void LBXGL_BrushWorld_DrawFlashlight(LBXGL_BrushWorld *world)
 		lcur->angle=10;
 		
 
-		glClear(GL_STENCIL_BUFFER_BIT);
-		glEnable(GL_STENCIL_TEST);
+		pdglClear(GL_STENCIL_BUFFER_BIT);
+		pdglEnable(GL_STENCIL_TEST);
 		lst=LBXGL_BrushWorld_QueryBrushesLight(world, fst, lcur);
 		LBXGL_BrushWorld_DrawShadowsLight(world, lst, lcur);
 		lst=LBXGL_BrushWorld_QueryBrushesLight2(world, fst, lcur);
 		LBXGL_BrushWorld_DrawBrushesLight(world, lst, lcur);
-		glDisable(GL_STENCIL_TEST);
+		pdglDisable(GL_STENCIL_TEST);
 	}
 #endif
 
@@ -930,14 +930,14 @@ void LBXGL_BrushWorld_DrawFlashlight(LBXGL_BrushWorld *world)
 	V3F_ADD(pt2, lbxgl_cam->org, pt2);
 	V3F_ADD(pt3, lbxgl_cam->org, pt3);
 
-	glDepthMask(0);
+	pdglDepthMask(0);
 	LBXGL_Shader_BlendFunc(GL_SRC_COLOR, GL_ONE);
 	pdglColor4f(1, 1, 1, 1);
 
-	glDisable(GL_TEXTURE_CUBE_MAP);
+	pdglDisable(GL_TEXTURE_CUBE_MAP);
 
 	tn=Tex_LoadFile("textures/effects/flash0", NULL, NULL);
-	glBindTexture(GL_TEXTURE_2D, tn);
+	pdglBindTexture(GL_TEXTURE_2D, tn);
 	pdglEnableTexture2D();
 
 	pdglBegin(PDGL_POLYGON);
@@ -951,7 +951,7 @@ void LBXGL_BrushWorld_DrawFlashlight(LBXGL_BrushWorld *world)
 	pdglVertex3fv(pt3);
 	pdglEnd();
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 }
 
 void LBXGL_BrushWorld_DrawLightTexture(LBXGL_BrushWorld *world)
@@ -963,19 +963,19 @@ void LBXGL_BrushWorld_DrawLightTexture(LBXGL_BrushWorld *world)
 	float f, g, h;
 
 
-	glDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_LEQUAL);
 
-	glCullFace(GL_BACK);
-//	glEnable(GL_CULL_FACE);
-	glDisable(GL_CULL_FACE);
+	pdglCullFace(GL_BACK);
+//	pdglEnable(GL_CULL_FACE);
+	pdglDisable(GL_CULL_FACE);
 
-	glStencilFunc(GL_EQUAL, 0, 255);
-	glDisable(GL_STENCIL_TEST);
+	pdglStencilFunc(GL_EQUAL, 0, 255);
+	pdglDisable(GL_STENCIL_TEST);
 
 
-//	glMatrixMode(GL_PROJECTION);
-//	glLoadIdentity();
-//	glOrtho(-1, 1, -1/aspect, 1000/aspect, -99999, 99999);
+//	pdglMatrixMode(GL_PROJECTION);
+//	pdglLoadIdentity();
+//	pdglOrtho(-1, 1, -1/aspect, 1000/aspect, -99999, 99999);
 
 	V3F_SCALEADDSCALE(lbxgl_cam->rt, -1, lbxgl_cam->up, -0.75, pt0);
 	V3F_SCALEADDSCALE(lbxgl_cam->rt,  1, lbxgl_cam->up, -0.75, pt1);
@@ -992,14 +992,14 @@ void LBXGL_BrushWorld_DrawLightTexture(LBXGL_BrushWorld *world)
 	V3F_ADD(pt2, lbxgl_cam->v_org, pt2);
 	V3F_ADD(pt3, lbxgl_cam->v_org, pt3);
 
-	glDepthMask(0);
+	pdglDepthMask(0);
 
 #if 1
 	LBXGL_Shader_BlendFunc(GL_SRC_COLOR, GL_ONE);
 //	pdglColor4f(1, 1, 1, 1);
 //	pdglColor4f(0.5, 0.5, 0.5, 1);
 
-	glBindTexture(GL_TEXTURE_2D, tex_lighting);
+	pdglBindTexture(GL_TEXTURE_2D, tex_lighting);
 	pdglEnableTexture2D();
 
 	f=((float)lbxgl_draw_light_cxs)/lbxgl_draw_light_xs;
@@ -1039,7 +1039,7 @@ void LBXGL_BrushWorld_DrawLightTexture(LBXGL_BrushWorld *world)
 #endif
 
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 }
 
 #if 0
@@ -1054,15 +1054,15 @@ void LBXGL_BrushWorld_DrawScreenTexture(
 	float f, g, h;
 
 
-	glDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_LEQUAL);
 
-	glCullFace(GL_BACK);
-//	glEnable(GL_CULL_FACE);
-	glDisable(GL_CULL_FACE);
+	pdglCullFace(GL_BACK);
+//	pdglEnable(GL_CULL_FACE);
+	pdglDisable(GL_CULL_FACE);
 
-	glStencilFunc(GL_EQUAL, 0, 255);
-	glDisable(GL_STENCIL_TEST);
-//	glDisable(GL_DEPTH_TEST);
+	pdglStencilFunc(GL_EQUAL, 0, 255);
+	pdglDisable(GL_STENCIL_TEST);
+//	pdglDisable(GL_DEPTH_TEST);
 
 	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -1086,7 +1086,7 @@ void LBXGL_BrushWorld_DrawScreenTexture(
 	h=gam;
 
 #if 0
-	glDepthMask(0);
+	pdglDepthMask(0);
 
 	LBXGL_Shader_BindTexture(tex);
 	LBXGL_Shader_Color4f(1, 1, 1, 1);
@@ -1102,7 +1102,7 @@ void LBXGL_BrushWorld_DrawScreenTexture(
 	LBXGL_Shader_Vertex3fv(pt3);
 	LBXGL_Shader_EndPoly();
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 #endif
 
 	LBXGL_Shader_BindTexture(0);
@@ -1116,13 +1116,13 @@ void LBXGL_BrushWorld_DrawScreenTexture(
 	LBXGL_Shader_BlendFunc(GL_ONE, GL_ZERO);
 
 	pdglEnableTexture2D();
-	glBindTexture(GL_TEXTURE_2D, tex);
+	pdglBindTexture(GL_TEXTURE_2D, tex);
 
 	f=((float)800)/1024;
 	g=((float)600)/1024;
 	h=gam;
 
-	glDepthMask(0);
+	pdglDepthMask(0);
 
 #if 1
 //	h=lbxgl_draw_gamma;
@@ -1190,13 +1190,13 @@ void LBXGL_BrushWorld_DrawScreenTexture(
 	pdglEnd();
 #endif
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 #endif
 
 	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-//	glEnable(GL_DEPTH_TEST);
-//	glDepthMask(1);
+//	pdglEnable(GL_DEPTH_TEST);
+//	pdglDepthMask(1);
 }
 #endif
 
@@ -1222,15 +1222,15 @@ void LBXGL_BrushWorld_DrawScreenTexture(
 
 
 #ifndef GLES
-	glColorMask(1,1,1,1);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
+	pdglColorMask(1,1,1,1);
+	pdglDisableClientState(GL_VERTEX_ARRAY);
+	pdglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	pdglDisableClientState(GL_NORMAL_ARRAY);
+	pdglDisableClientState(GL_COLOR_ARRAY);
 #endif
 
 
-//	glMatrixMode(GL_PROJECTION);
+//	pdglMatrixMode(GL_PROJECTION);
 	pdglProjectionMatrix();
 	pdglPushMatrix();
 
@@ -1238,19 +1238,19 @@ void LBXGL_BrushWorld_DrawScreenTexture(
 //	pdglOrtho(0, 800, 0, 600, -99999, 99999);
 	pdglOrtho(0, xs, 0, ys, -99999, 99999);
 
-//	glMatrixMode(GL_MODELVIEW);
+//	pdglMatrixMode(GL_MODELVIEW);
 	pdglModelviewMatrix();
 	pdglPushMatrix();
 
-	glDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_LEQUAL);
 
-	glCullFace(GL_BACK);
-//	glEnable(GL_CULL_FACE);
-	glDisable(GL_CULL_FACE);
+	pdglCullFace(GL_BACK);
+//	pdglEnable(GL_CULL_FACE);
+	pdglDisable(GL_CULL_FACE);
 
-	glStencilFunc(GL_EQUAL, 0, 255);
-	glDisable(GL_STENCIL_TEST);
-//	glDisable(GL_DEPTH_TEST);
+	pdglStencilFunc(GL_EQUAL, 0, 255);
+	pdglDisable(GL_STENCIL_TEST);
+//	pdglDisable(GL_DEPTH_TEST);
 
 	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -1306,7 +1306,7 @@ void LBXGL_BrushWorld_DrawScreenTexture(
 	LBXGL_Shader_BlendFunc(GL_ONE, GL_ZERO);
 
 	pdglEnableTexture2D();
-	glBindTexture(GL_TEXTURE_2D, tex);
+	pdglBindTexture(GL_TEXTURE_2D, tex);
 
 //	pdglDisableTexture2D();
 
@@ -1316,7 +1316,7 @@ void LBXGL_BrushWorld_DrawScreenTexture(
 	g=((float)ys)/tys;
 	h=gam;
 
-	glDepthMask(0);
+	pdglDepthMask(0);
 
 #if 1
 //	pdglBegin(PDGL_QUADS);
@@ -1362,25 +1362,25 @@ void LBXGL_BrushWorld_DrawScreenTexture(
 	pdglEnd();
 #endif
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 #endif
 
 	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-//	glMatrixMode(GL_MODELVIEW);
+//	pdglMatrixMode(GL_MODELVIEW);
 	pdglModelviewMatrix();
 	pdglPopMatrix();
 
-//	glMatrixMode(GL_PROJECTION);
+//	pdglMatrixMode(GL_PROJECTION);
 	pdglProjectionMatrix();
 	pdglPopMatrix();
 //	pdglPushMatrix();
 
-//	glMatrixMode(GL_MODELVIEW);
+//	pdglMatrixMode(GL_MODELVIEW);
 	pdglModelviewMatrix();
 
-	glEnable(GL_DEPTH_TEST);
-	glDepthMask(1);
+	pdglEnable(GL_DEPTH_TEST);
+	pdglDepthMask(1);
 }
 #endif
 
@@ -1392,14 +1392,14 @@ void LBXGL_BrushWorld_DrawShaderOverlay(LBXGL_BrushWorld *world, char *name)
 	tn=LBXGL_Texture_LoadImage(name);
 	if(tn<=0)return;
 
-	glDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_LEQUAL);
 
-	glCullFace(GL_BACK);
-//	glEnable(GL_CULL_FACE);
-	glDisable(GL_CULL_FACE);
+	pdglCullFace(GL_BACK);
+//	pdglEnable(GL_CULL_FACE);
+	pdglDisable(GL_CULL_FACE);
 
-	glStencilFunc(GL_EQUAL, 0, 255);
-	glDisable(GL_STENCIL_TEST);
+	pdglStencilFunc(GL_EQUAL, 0, 255);
+	pdglDisable(GL_STENCIL_TEST);
 
 //	V3F_SCALEADDSCALE(lbxgl_cam->rt, -1, lbxgl_cam->up, -0.75, pt0);
 //	V3F_SCALEADDSCALE(lbxgl_cam->rt,  1, lbxgl_cam->up, -0.75, pt1);
@@ -1421,7 +1421,7 @@ void LBXGL_BrushWorld_DrawShaderOverlay(LBXGL_BrushWorld *world, char *name)
 	V3F_ADD(pt2, lbxgl_cam->v_org, pt2);
 	V3F_ADD(pt3, lbxgl_cam->v_org, pt3);
 
-	glDepthMask(0);
+	pdglDepthMask(0);
 
 	LBXGL_Shader_BindTexture(tn);
 	LBXGL_Shader_Color4f(1, 1, 1, 1);
@@ -1437,7 +1437,7 @@ void LBXGL_BrushWorld_DrawShaderOverlay(LBXGL_BrushWorld *world, char *name)
 	LBXGL_Shader_Vertex3fv(pt3);
 	LBXGL_Shader_EndPoly();
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 }
 
 void LBXGL_BrushWorld_DrawScreenShaderOverlay(
@@ -1450,14 +1450,14 @@ void LBXGL_BrushWorld_DrawScreenShaderOverlay(
 	tn=LBXGL_Texture_LoadImage(name);
 	if(tn<=0)return;
 
-	glDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_LEQUAL);
 
-	glCullFace(GL_BACK);
-//	glEnable(GL_CULL_FACE);
-	glDisable(GL_CULL_FACE);
+	pdglCullFace(GL_BACK);
+//	pdglEnable(GL_CULL_FACE);
+	pdglDisable(GL_CULL_FACE);
 
-	glStencilFunc(GL_EQUAL, 0, 255);
-	glDisable(GL_STENCIL_TEST);
+	pdglStencilFunc(GL_EQUAL, 0, 255);
+	pdglDisable(GL_STENCIL_TEST);
 
 //	V3F_SCALEADDSCALE(lbxgl_cam->rt, -1, lbxgl_cam->up, -0.75, pt0);
 //	V3F_SCALEADDSCALE(lbxgl_cam->rt,  1, lbxgl_cam->up, -0.75, pt1);
@@ -1479,7 +1479,7 @@ void LBXGL_BrushWorld_DrawScreenShaderOverlay(
 	V3F_ADD(pt2, lbxgl_cam->v_org, pt2);
 	V3F_ADD(pt3, lbxgl_cam->v_org, pt3);
 
-	glDepthMask(0);
+	pdglDepthMask(0);
 
 	LBXGL_Shader_BindTexture(tn);
 	LBXGL_Shader_SetUseScreen(tex_screen);
@@ -1502,7 +1502,7 @@ void LBXGL_BrushWorld_DrawScreenShaderOverlay(
 	LBXGL_Shader_SetUseScreen(0);
 	LBXGL_Shader_SetUseDepth(0);
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 }
 
 
@@ -1517,11 +1517,11 @@ void LBXGL_BrushWorld_DrawColorOverlay(LBXGL_BrushWorld *world,
 //	tn=LBXGL_Texture_LoadImage(name);
 //	if(tn<=0)return;
 
-	glDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_LEQUAL);
 
-	glCullFace(GL_BACK);
-//	glEnable(GL_CULL_FACE);
-	glDisable(GL_CULL_FACE);
+	pdglCullFace(GL_BACK);
+//	pdglEnable(GL_CULL_FACE);
+	pdglDisable(GL_CULL_FACE);
 
 //	V3F_SCALEADDSCALE(lbxgl_cam->rt, -1, lbxgl_cam->up, -0.75, pt0);
 //	V3F_SCALEADDSCALE(lbxgl_cam->rt,  1, lbxgl_cam->up, -0.75, pt1);
@@ -1543,7 +1543,7 @@ void LBXGL_BrushWorld_DrawColorOverlay(LBXGL_BrushWorld *world,
 	V3F_ADD(pt2, lbxgl_cam->v_org, pt2);
 	V3F_ADD(pt3, lbxgl_cam->v_org, pt3);
 
-	glDepthMask(0);
+	pdglDepthMask(0);
 	pdglDisableTexture2D();
 
 	pdglColor4fv(rgba);
@@ -1559,7 +1559,7 @@ void LBXGL_BrushWorld_DrawColorOverlay(LBXGL_BrushWorld *world,
 	pdglEnd();
 
 	pdglEnableTexture2D();
-	glDepthMask(1);
+	pdglDepthMask(1);
 }
 
 #if 0
@@ -1573,15 +1573,15 @@ void LBXGL_BrushWorld_DrawScreenTexture2(
 	float f, g, h;
 
 
-	glDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_LEQUAL);
 
-	glCullFace(GL_BACK);
-//	glEnable(GL_CULL_FACE);
-	glDisable(GL_CULL_FACE);
+	pdglCullFace(GL_BACK);
+//	pdglEnable(GL_CULL_FACE);
+	pdglDisable(GL_CULL_FACE);
 
-	glStencilFunc(GL_EQUAL, 0, 255);
-	glDisable(GL_STENCIL_TEST);
-//	glDisable(GL_DEPTH_TEST);
+	pdglStencilFunc(GL_EQUAL, 0, 255);
+	pdglDisable(GL_STENCIL_TEST);
+//	pdglDisable(GL_DEPTH_TEST);
 
 //	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	LBXGL_Shader_BlendFunc(GL_SRC_COLOR, GL_ONE);
@@ -1605,9 +1605,9 @@ void LBXGL_BrushWorld_DrawScreenTexture2(
 
 #if 1
 	pdglEnableTexture2D();
-	glBindTexture(GL_TEXTURE_2D, tex);
+	pdglBindTexture(GL_TEXTURE_2D, tex);
 
-	glDepthMask(0);
+	pdglDepthMask(0);
 
 	pdglColor4f(gam, gam, gam, 1);
 
@@ -1622,7 +1622,7 @@ void LBXGL_BrushWorld_DrawScreenTexture2(
 	pdglVertex3fv(pt3);
 	pdglEnd();
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 #endif
 
 	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1640,15 +1640,15 @@ void LBXGL_BrushWorld_DrawScreenTexture2(
 	float f, g, h;
 
 
-	glDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_LEQUAL);
 
-	glCullFace(GL_BACK);
-//	glEnable(GL_CULL_FACE);
-	glDisable(GL_CULL_FACE);
+	pdglCullFace(GL_BACK);
+//	pdglEnable(GL_CULL_FACE);
+	pdglDisable(GL_CULL_FACE);
 
-	glStencilFunc(GL_EQUAL, 0, 255);
-	glDisable(GL_STENCIL_TEST);
-//	glDisable(GL_DEPTH_TEST);
+	pdglStencilFunc(GL_EQUAL, 0, 255);
+	pdglDisable(GL_STENCIL_TEST);
+//	pdglDisable(GL_DEPTH_TEST);
 
 //	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	LBXGL_Shader_BlendFunc(GL_SRC_COLOR, GL_ONE);
@@ -1677,9 +1677,9 @@ void LBXGL_BrushWorld_DrawScreenTexture2(
 
 #if 1
 	pdglEnableTexture2D();
-	glBindTexture(GL_TEXTURE_2D, tex);
+	pdglBindTexture(GL_TEXTURE_2D, tex);
 
-	glDepthMask(0);
+	pdglDepthMask(0);
 
 	pdglColor4f(gam, gam, gam, 1);
 
@@ -1694,7 +1694,7 @@ void LBXGL_BrushWorld_DrawScreenTexture2(
 	pdglVertex3dv(pt3);
 	pdglEnd();
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 #endif
 
 	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

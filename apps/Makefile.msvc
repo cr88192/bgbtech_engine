@@ -7,7 +7,7 @@ LBX_LDFLAGS= \
 	../libbsde.lib		../libvecmath.lib	../bgbcc.lib \
 	../bgbdy.lib		../bgbgc.lib		\
 	../bgbasm.lib		../zpack.lib		\
-	opengl32.lib		glu32.lib			gdi32.lib \
+	glu32.lib			gdi32.lib \
 	ole32.lib			winmm.lib 			user32.lib \
 	wsock32.lib \
 	/link /LARGEADDRESSAWARE

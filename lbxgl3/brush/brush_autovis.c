@@ -173,12 +173,12 @@ void LBXGL_BrushWorld_OccludeNodeBrushes(
 
 	if(!stbuf)stbuf=malloc(xs*ys*4);
 
-	glCullFace(GL_BACK); glEnable(GL_CULL_FACE);
+	pdglCullFace(GL_BACK);	pdglEnable(GL_CULL_FACE);
 
 	UI_Camera_SetupView3D(0, 0, xs, ys);
 
 	LBXGL_Brush_DrawBSPNodeBlack(world->bsp);
-	glDepthMask(0);
+	pdglDepthMask(0);
 
 	lcur=LBXGL_BrushWorld_QueryLightsCam(world); i=world->shadows;
 	while(lcur && i)
@@ -195,14 +195,14 @@ void LBXGL_BrushWorld_OccludeNodeBrushes(
 
 		LBXGL_Shadow_LightGammaEffectRadius(lcur, 0.15);
 
-		glClear(GL_COLOR_BUFFER_BIT);
+		pdglClear(GL_COLOR_BUFFER_BIT);
 
-//		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//		pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		LBXGL_Brush_DrawBSPShadowNodeColors(world->bsp, lcur->org, d);
 
-		glFinish();
-		glReadPixels(0, 0, xs, ys, GL_RGB, GL_UNSIGNED_BYTE, stbuf);
-//		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		pdglFinish();
+		pdglReadPixels(0, 0, xs, ys, GL_RGB, GL_UNSIGNED_BYTE, stbuf);
+//		pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		for(j=0; j<(xs*ys); j++)
 		{
@@ -214,9 +214,9 @@ void LBXGL_BrushWorld_OccludeNodeBrushes(
 		i--; lcur=lcur->next;
 	}
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 #endif
 
@@ -293,17 +293,17 @@ LBXGL_API void LBXGL_BrushWorld_DrawTestAutovis(LBXGL_BrushWorld *world)
 	LBXGL_BrushWorld_DrawBuildFast(world);
 
 	UI_Camera_SetupView3D(0, 0, 160, 120);
-	glCullFace(GL_BACK); glEnable(GL_CULL_FACE);
-	glDepthFunc(GL_LEQUAL);
+	pdglCullFace(GL_BACK);	pdglEnable(GL_CULL_FACE);
+	pdglDepthFunc(GL_LEQUAL);
 
 #if 1
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	LBXGL_Brush_DrawBSPNodeColors(world->bsp);
 
-	glFinish();
-	glReadPixels(0, 0, 160, 120, GL_RGB, GL_UNSIGNED_BYTE, stbuf);
-//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClear(GL_COLOR_BUFFER_BIT);
+	pdglFinish();
+	pdglReadPixels(0, 0, 160, 120, GL_RGB, GL_UNSIGNED_BYTE, stbuf);
+//	pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	pdglClear(GL_COLOR_BUFFER_BIT);
 
 	memset(world->autovis, 0, 4096);
 	memset(world->autovis_shadow, 0, 4096);
@@ -361,7 +361,7 @@ LBXGL_API void LBXGL_BrushWorld_DrawTestAutovis(LBXGL_BrushWorld *world)
 
 //		i=LBXGL_BrushBSP_GetPVSLeafID(world->bsp, mcur->org);
 		j=i&63; k=(i>>6)&63; l=(i>>12)&63;
-		glColor4ub((j<<2)+2, (k<<2)+2, (l<<2)+2, 255);
+		pdglColor4ub((j<<2)+2, (k<<2)+2, (l<<2)+2, 255);
 
 		LBXGL_Mdl_DrawModelFlat(mcur);
 //		LBXGL_Mdl_DrawModelFlatApprox(mcur);
@@ -373,10 +373,10 @@ LBXGL_API void LBXGL_BrushWorld_DrawTestAutovis(LBXGL_BrushWorld *world)
 		mcur=mcur->next; i++;
 	}
 
-	glFinish();
-	glReadPixels(0, 0, 160, 120, GL_RGB, GL_UNSIGNED_BYTE, stbuf);
-//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//	glClear(GL_COLOR_BUFFER_BIT);
+	pdglFinish();
+	pdglReadPixels(0, 0, 160, 120, GL_RGB, GL_UNSIGNED_BYTE, stbuf);
+//	pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//	pdglClear(GL_COLOR_BUFFER_BIT);
 
 	memset(world->mdlvis, 0, 4096);
 	for(i=0; i<(160*120); i++)
@@ -409,7 +409,7 @@ LBXGL_API void LBXGL_BrushWorld_DrawTestAutovis(LBXGL_BrushWorld *world)
 
 //		i=LBXGL_BrushBSP_GetPVSLeafID(world->bsp, mcur->org);
 		j=i&63; k=(i>>6)&63; l=(i>>12)&63;
-		glColor4ub((j<<2)+2, (k<<2)+2, (l<<2)+2, 255);
+		pdglColor4ub((j<<2)+2, (k<<2)+2, (l<<2)+2, 255);
 
 		LBXGL_Mdl_DrawModelFlat(mcur);
 //		LBXGL_Mdl_DrawModelFlatApprox(mcur);
@@ -421,9 +421,9 @@ LBXGL_API void LBXGL_BrushWorld_DrawTestAutovis(LBXGL_BrushWorld *world)
 		mcur=mcur->next; i++;
 	}
 
-	glFinish();
-	glReadPixels(0, 0, 160, 120, GL_RGB, GL_UNSIGNED_BYTE, stbuf);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	pdglFinish();
+	pdglReadPixels(0, 0, 160, 120, GL_RGB, GL_UNSIGNED_BYTE, stbuf);
+	pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 //	memset(world->mdlvis, 0, 4096);
 	for(i=0; i<(160*120); i++)
@@ -718,20 +718,20 @@ LBXGL_API void LBXGL_BrushWorld_DrawTestAutovis(LBXGL_BrushWorld *world)
 //	UI_Camera_SetupView3D(0, 0, 160, 120);
 //	UI_Camera_SetupView3D(0, 0, 320, 240);
 	UI_Camera_SetupView3D(0, 0, 400, 300);
-	glCullFace(GL_BACK); glEnable(GL_CULL_FACE);
-	glDepthFunc(GL_LEQUAL);
-	glDepthMask(GL_TRUE);
+	pdglCullFace(GL_BACK);	pdglEnable(GL_CULL_FACE);
+	pdglDepthFunc(GL_LEQUAL);
+	pdglDepthMask(GL_TRUE);
 
-//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
+//	pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
 		GL_STENCIL_BUFFER_BIT);
-	glColorMask(0,0,0,0);
+	pdglColorMask(0,0,0,0);
 
 #ifndef GLES
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
+	pdglDisableClientState(GL_VERTEX_ARRAY);
+	pdglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	pdglDisableClientState(GL_NORMAL_ARRAY);
+	pdglDisableClientState(GL_COLOR_ARRAY);
 #endif
 
 	memset(world->autovis, 0, 4096);
@@ -741,7 +741,7 @@ LBXGL_API void LBXGL_BrushWorld_DrawTestAutovis(LBXGL_BrushWorld *world)
 
 	LBXGL_Voxel_DrawWorldQuery(world);
 
-//	glFinish();
+//	pdglFinish();
 
 //	LBXGL_BrushWorld_BBoxVisible(world,
 //		world->autovis_mins, world->autovis_maxs);
@@ -801,7 +801,7 @@ LBXGL_API void LBXGL_BrushWorld_DrawTestAutovis(LBXGL_BrushWorld *world)
 
 
 #if 1
-	glDepthMask(GL_FALSE);
+	pdglDepthMask(GL_FALSE);
 	mcur=world->mesh; i=1;
 	while(mcur)
 	{
@@ -838,7 +838,7 @@ LBXGL_API void LBXGL_BrushWorld_DrawTestAutovis(LBXGL_BrushWorld *world)
 
 		mcur=mcur->next; i++;
 	}
-	glDepthMask(GL_TRUE);
+	pdglDepthMask(GL_TRUE);
 #endif
 
 #if 1
@@ -883,8 +883,8 @@ LBXGL_API void LBXGL_BrushWorld_DrawTestAutovis(LBXGL_BrushWorld *world)
 
 //	LBXGL_BrushWorld_DrawNodeBrushesQueryAlpha(world, world->bsp);
 
-	glColorMask(1,1,1,1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	pdglColorMask(1,1,1,1);
+	pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	LBXGL_BrushWorld_DrawTestSmallLight(world);
 //	LBXGL_BrushWorld_DrawPreRender(world);

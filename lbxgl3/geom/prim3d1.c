@@ -50,7 +50,7 @@ LBXGL_API int Prim3D_DrawFlatCube(
 	float *pt1, *pt2, *pt3, *pt4;
 
 	pdglDisableTexture2D();
-	glEnable(GL_BLEND);
+	pdglEnable(GL_BLEND);
 
 	for(i=0; i<8; i++)
 	{
@@ -114,7 +114,7 @@ LBXGL_API int Prim3D_DrawFlatLineCube(
 	float *pt1, *pt2, *pt3, *pt4;
 
 	pdglDisableTexture2D();
-//	glEnable(GL_BLEND);
+//	pdglEnable(GL_BLEND);
 
 	for(i=0; i<8; i++)
 	{
@@ -514,8 +514,8 @@ LBXGL_API float Prim3D_DrawGrid(float x, float y, float w, int ax)
 
 //	printf("for w=%f step=%f bx=%f rx=%f\n", w, step, x-w, rx);
 
-	glDisable (GL_TEXTURE_2D);
-//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	pdglDisable (GL_TEXTURE_2D);
+//	pdglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	pdglColor4f(0.5, 0.5, 0.5, 1);
 
@@ -581,7 +581,7 @@ LBXGL_API float Prim3D_DrawGrid(float x, float y, float w, int ax)
 
 	pdglEnd();
 
-//	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//	pdglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	return(step);
 }

@@ -388,6 +388,76 @@ BGBBTJ_API void BGBBTJ_BCn_EncodeImageDXTn(byte *block,
 	}
 }
 
+BGBBTJ_API int BGBBTJ_BCn_CheckGlSupportS3TC(void)
+{
+	static int ret=-1;
+
+	if(ret>=0)
+		return(ret);
+
+	ret=0;
+	if(BGBBTJ_CheckGlExtension("GL_EXT_texture_compression_s3tc"))
+		ret=1;
+	return(ret);
+}
+
+BGBBTJ_API int BGBBTJ_BCn_CheckGlSupportBPTC(void)
+{
+	static int ret=-1;
+
+	if(ret>=0)
+		return(ret);
+
+	ret=0;
+	if(BGBBTJ_CheckGlExtension("GL_ARB_texture_compression_bptc"))
+		ret=1;
+	return(ret);
+}
+
+BGBBTJ_API int BGBBTJ_BCn_CheckGlSupportAny(void)
+{
+	if(BGBBTJ_BCn_CheckGlSupportS3TC() ||
+		BGBBTJ_BCn_CheckGlSupportBPTC())
+			return(1);
+	return(0);
+}
+
+BGBBTJ_API int BGBBTJ_BCn_CheckGlSupportColorFormat(int fmt)
+{
+	int ret;
+
+	switch(fmt)
+	{
+	case BGBBTJ_JPG_BC1:
+	case BGBBTJ_JPG_BC1F:
+	case BGBBTJ_JPG_BC2:
+	case BGBBTJ_JPG_BC3:
+	case BGBBTJ_JPG_BC3F:
+		ret=0;
+		if(BGBBTJ_BCn_CheckGlSupportS3TC())
+			ret=1;
+		break;
+	case BGBBTJ_JPG_BC3_UVAY:
+		ret=0;
+		if(BGBBTJ_BCn_CheckGlSupportS3TC())
+			ret=1;
+//		cmp=GL_COMPRESSED_RGBA_S3TC_DXT5_EXT; blksz=16;
+		break;
+	case BGBBTJ_JPG_BC6H_SF16:
+	case BGBBTJ_JPG_BC6H_UF16:
+	case BGBBTJ_JPG_BC7:
+	case BGBBTJ_JPG_BC7_SRGB:
+		ret=0;
+		if(BGBBTJ_BCn_CheckGlSupportBPTC())
+			ret=1;
+		break;
+	default:
+		ret=0;
+		break;
+	}
+	return(ret);
+}
+
 BGBBTJ_API void BGBBTJ_BCn_EncodeImageAutoDXTn(byte *block,
 	byte *rgba, int xs, int ys, int stride, int *rfmt)
 {

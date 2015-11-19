@@ -322,12 +322,12 @@ PDGL_API int Con_RenderBackgroundInfo(BTGE_ConsoleInfo *con)
 			x=(j*8)-wxs2;
 			y=(i*8)-wys2;
 #if 0
-//			glBegin(GL_QUADS);
+//			pdglBegin(GL_QUADS);
 			pdglVertex2f(x,	y);
 			pdglVertex2f(x,	y+8);
 			pdglVertex2f(x+8,	y+8);
 			pdglVertex2f(x+8,	y);
-//			glEnd();
+//			pdglEnd();
 #endif
 
 			pdglVertex2f(x,	y);
@@ -366,19 +366,19 @@ PDGL_API int Con_RenderInfo(BTGE_ConsoleInfo *con)
 //	GfxFont_SetFont("fixed", 0);
 	GfxFont_SetFontSize("fixed", 0, 8);
 
-//	glDisable(GL_ALPHA_TEST);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_TEXTURE_2D);
+//	pdglDisable(GL_ALPHA_TEST);
+	pdglDisable(GL_CULL_FACE);
+	pdglDisable(GL_TEXTURE_2D);
 
 	if(con_down)
 	{
-//		glColor4f(0.25, 0.25, 0.25, 0.75);
+//		pdglColor4f(0.25, 0.25, 0.25, 0.75);
 //		Draw_Square(-400, -300, 800, 600);
 		Con_RenderBackground();
 	}
 
-//	glEnable(GL_TEXTURE_2D);
-//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+//	pdglEnable(GL_TEXTURE_2D);
+//	pdglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	GfxFont_DrawCharModeQI(-1, 0,0,0,0, 0,0,0,0, 0);
 //	for(i=0; i<(con_down?75:15); i++)

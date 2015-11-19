@@ -354,18 +354,18 @@ PDGL_API int GfxFont_DrawChar(int c, int x, int y, int w, int h, int r, int g, i
 	frag=GfxFont_FetchFrag(font_cur, c);
 	if(!frag)return(-1);
 
-	glDisable (GL_CULL_FACE);
-//	glEnable (GL_TEXTURE_2D);
+	pdglDisable (GL_CULL_FACE);
+//	pdglEnable (GL_TEXTURE_2D);
 	pdglEnableTexture2D();
-	glBindTexture(GL_TEXTURE_2D, frag->texnum);
+	pdglBindTexture(GL_TEXTURE_2D, frag->texnum);
 
-//	glEnable (GL_BLEND);
-//	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//	pdglEnable (GL_BLEND);
+//	pdglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-//	glShadeModel (GL_SMOOTH);
+//	pdglShadeModel (GL_SMOOTH);
 
 // #ifndef GLES
-//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+//	pdglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 // #endif
 
 //	n=c&63;
@@ -387,7 +387,7 @@ PDGL_API int GfxFont_DrawChar(int c, int x, int y, int w, int h, int r, int g, i
 //	s2=1;
 //	t2=0;
 
-//	glColor4f(1, 0, 0, 1);
+//	pdglColor4f(1, 0, 0, 1);
 	pdglColor4f(r/255.0, g/255.0, b/255.0, a/255.0);
 
 	if(font_mode&PDGL_FONT_ITALIC)
@@ -476,7 +476,7 @@ PDGL_API int GfxFont_DrawChar(int c, int x, int y, int w, int h, int r, int g, i
 		(font_mode&PDGL_FONT_OVERLINE) ||
 		(font_mode&PDGL_FONT_STRIKEOUT))
 	{
-//		glDisable (GL_TEXTURE_2D);
+//		pdglDisable (GL_TEXTURE_2D);
 		pdglDisableTexture2D();
 
 		pdglBegin(GL_LINES);
@@ -567,13 +567,13 @@ PDGL_API int GfxFont_DrawCharModeQI(int c,
 
 	if(!qb)
 	{
-		glDisable (GL_CULL_FACE);
-//		glEnable(GL_TEXTURE_2D);
+		pdglDisable (GL_CULL_FACE);
+//		pdglEnable(GL_TEXTURE_2D);
 		pdglEnableTexture2D();
-		glBindTexture(GL_TEXTURE_2D, texn);
+		pdglBindTexture(GL_TEXTURE_2D, texn);
 
 //#ifndef GLES
-//		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+//		pdglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 //#endif
 
 //		pdglBegin(PDGL_QUADS);
@@ -581,14 +581,14 @@ PDGL_API int GfxFont_DrawCharModeQI(int c,
 		qb=1;
 	}
 
-//	glDisable (GL_CULL_FACE);
-//	glEnable (GL_TEXTURE_2D);
-//	glBindTexture(GL_TEXTURE_2D, frag->texnum);
+//	pdglDisable (GL_CULL_FACE);
+//	pdglEnable (GL_TEXTURE_2D);
+//	pdglBindTexture(GL_TEXTURE_2D, frag->texnum);
 
-//	glEnable (GL_BLEND);
-//	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//	glShadeModel (GL_SMOOTH);
-//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+//	pdglEnable (GL_BLEND);
+//	pdglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//	pdglShadeModel (GL_SMOOTH);
+//	pdglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 //	n=c&63;
 

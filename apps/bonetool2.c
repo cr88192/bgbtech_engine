@@ -1381,7 +1381,7 @@ void main_draw_solids()
 		!main_showsolids)
 		return;
 
-	glDisable(GL_DEPTH_TEST);
+	pdglDisable(GL_DEPTH_TEST);
 
 	for(i=0; i<main_skel->mdl->num_solids; i++)
 	{
@@ -1469,7 +1469,7 @@ void main_draw_solids()
 		pdglPopMatrix();
 	}
 
-	glEnable(GL_DEPTH_TEST);
+	pdglEnable(GL_DEPTH_TEST);
 
 	for(i=0; i<main_skel->mdl->num_solids; i++)
 	{
@@ -1603,15 +1603,15 @@ int pdgl_main_body()
 	Draw_SetPerspective_3D(4.0/3.0, 90, 0,
 		main_cam_org, main_cam_ang, 0, 0, state->xs, state->ys);
 
-	glDisable(GL_CULL_FACE);
+	pdglDisable(GL_CULL_FACE);
 	pdglDisableTexture2D();
-	glEnable(GL_DEPTH_TEST);
+	pdglEnable(GL_DEPTH_TEST);
 
 
 //	PD3D_DrawGrid(0, 0, 16, 1);
 
-//	glDisable(GL_DEPTH_TEST);
-	glDisable (GL_TEXTURE_2D);
+//	pdglDisable(GL_DEPTH_TEST);
+	pdglDisable (GL_TEXTURE_2D);
 
 	pdglColor4f(0.5, 0.5, 0.5, 1);
 	PD3D_DrawGrid2(48, 1);
@@ -1619,7 +1619,7 @@ int pdgl_main_body()
 	pdglColor4f(0.75, 0.75, 0.75, 1);
 	PD3D_DrawGrid2(256, 12);
 
-//	glDisable(GL_DEPTH_TEST);
+//	pdglDisable(GL_DEPTH_TEST);
 
 	pdglColor4f(1, 0, 0, 1);
 
@@ -1638,7 +1638,7 @@ int pdgl_main_body()
 
 	pdglColor4f(0, 1, 1, 1);
 
-	glDisable(GL_DEPTH_TEST);
+	pdglDisable(GL_DEPTH_TEST);
 
 	for(i=0; i<main_skel->mdl->num_bones; i++)
 	{
@@ -1675,24 +1675,24 @@ int pdgl_main_body()
 		}
 	}
 
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
+	pdglDisable(GL_CULL_FACE);
+	pdglEnable(GL_DEPTH_TEST);
 	pdglColor4f(1, 1, 1, 1);
 
 #ifndef GLES
 	pdglEnableLighting();
-	glEnable(GL_NORMALIZE);
+	pdglEnable(GL_NORMALIZE);
 
-	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	pdglLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 	pt[0]=1; pt[1]=1; pt[2]=1; pt[3]=1;
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pt);
+	pdglMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pt);
 	pt[0]=main_cam_org[0];
 	pt[1]=main_cam_org[1];
 	pt[2]=main_cam_org[2];
 	pt[3]=1;
-	glLightfv(GL_LIGHT0, GL_POSITION, pt);
-	glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 1.0/1000.0);
-	glEnable(GL_LIGHT0);
+	pdglLightfv(GL_LIGHT0, GL_POSITION, pt);
+	pdglLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 1.0/1000.0);
+	pdglEnable(GL_LIGHT0);
 
 	main_draw_rootmesh();
 
@@ -1709,7 +1709,7 @@ int pdgl_main_body()
 	pdglDisableTexture2D();
 
 
-	glDisable(GL_DEPTH_TEST);
+	pdglDisable(GL_DEPTH_TEST);
 	pdglBegin(PDGL_LINES);
 	if((main_mode==MODE_BONES) || main_showbones)
 		for(i=0; i<main_skel->mdl->num_bones; i++)
@@ -1750,7 +1750,7 @@ int pdgl_main_body()
 	}
 	pdglEnd();
 
-	glEnable(GL_DEPTH_TEST);
+	pdglEnable(GL_DEPTH_TEST);
 
 	main_draw_solids();
 

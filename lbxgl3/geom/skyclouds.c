@@ -77,7 +77,7 @@ LBXGL_API void LBXGL_SkyCoulds_DrawSun()
 	s3=1;	t3=1;
 	s4=0;	t4=1;
 			
-	glDepthMask(0);
+	pdglDepthMask(0);
 
 	LBXGL_Shader_BlendFunc(GL_SRC_COLOR, GL_ONE);
 
@@ -142,7 +142,7 @@ LBXGL_API void LBXGL_SkyCoulds_DrawSun()
 #endif
 
 	LBXGL_Shader_End();
-	glDepthMask(1);
+	pdglDepthMask(1);
 
 	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
@@ -168,7 +168,7 @@ LBXGL_API void LBXGL_SkyCoulds_DrawClouds()
 	ra=8192;
 
 #if 1
-	glDepthMask(0);
+	pdglDepthMask(0);
 
 //	LBXGL_Shader_Color4f(1, 1, 1, 1);
 	LBXGL_Shader_Color4fv(lbxgl_skyclouds_color);
@@ -262,7 +262,7 @@ LBXGL_API void LBXGL_SkyCoulds_DrawClouds()
 		LBXGL_Shader_End();
 	}
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 #endif
 
 #if 0
@@ -291,7 +291,7 @@ LBXGL_API void LBXGL_SkyCoulds_DrawClouds()
 	Vec3F_Add(pt3, lbxgl_cam->org, pt3);
 	Vec3F_Add(pt4, lbxgl_cam->org, pt4);
 
-	glDepthMask(0);
+	pdglDepthMask(0);
 
 	LBXGL_Shader_Color4f(1, 1, 1, 1);
 	LBXGL_Shader_BindTexture(tex);
@@ -311,7 +311,7 @@ LBXGL_API void LBXGL_SkyCoulds_DrawClouds()
 	LBXGL_Shader_Vertex3fv(pt4);
 	LBXGL_Shader_End();
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 #endif
 
 }

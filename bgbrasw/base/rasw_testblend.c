@@ -113,6 +113,131 @@ int BGBRASW_TestAndBlend_DepthTest_NotEqual(
 		bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz)
 	{ return((*srcz&BGBRASW_MASK_DEPTH)!=(*dstz&BGBRASW_MASK_DEPTH)); }
 
+
+#if 1
+int BGBRASW_TestAndBlend_StencilTest_Never(
+		BGBRASW_TestBlendData *data,
+		bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz,
+		bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz)
+	{ return(0); }
+int BGBRASW_TestAndBlend_StencilTest_Always(
+		BGBRASW_TestBlendData *data,
+		bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz,
+		bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz)
+	{ return(1); }
+
+int BGBRASW_TestAndBlend_StencilTest_Less(
+		BGBRASW_TestBlendData *data,
+		bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz,
+		bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz)
+	{ return(((data->ref_sten)&(data->mask_sten))<
+		(*dstz&(data->mask_sten))); }
+
+int BGBRASW_TestAndBlend_StencilTest_LessEqual(
+		BGBRASW_TestBlendData *data,
+		bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz,
+		bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz)
+	{ return(((data->ref_sten)&(data->mask_sten))<=
+		(*dstz&(data->mask_sten))); }
+
+int BGBRASW_TestAndBlend_StencilTest_Greater(
+		BGBRASW_TestBlendData *data,
+		bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz,
+		bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz)
+	{ return(((data->ref_sten)&(data->mask_sten))>
+		(*dstz&(data->mask_sten))); }
+
+int BGBRASW_TestAndBlend_StencilTest_GreaterEqual(
+		BGBRASW_TestBlendData *data,
+		bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz,
+		bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz)
+	{ return(((data->ref_sten)&(data->mask_sten))>=
+		(*dstz&(data->mask_sten))); }
+
+int BGBRASW_TestAndBlend_StencilTest_Equal(
+		BGBRASW_TestBlendData *data,
+		bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz,
+		bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz)
+	{ return(((data->ref_sten)&(data->mask_sten))==
+		(*dstz&(data->mask_sten))); }
+
+int BGBRASW_TestAndBlend_StencilTest_NotEqual(
+		BGBRASW_TestBlendData *data,
+		bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz,
+		bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz)
+	{ return(((data->ref_sten)&(data->mask_sten))!=
+		(*dstz&(data->mask_sten))); }
+#endif
+
+#if 1
+void BGBRASW_TestAndBlend_StencilOp_Keep(
+		BGBRASW_TestBlendData *tabs,
+		bgbrasw_zbuf *srcz, bgbrasw_zbuf *dstz)
+	{ *dstz=((*srcz)&tabs->mask_z)|((*dstz)&(~tabs->mask_z)); }
+
+void BGBRASW_TestAndBlend_StencilOp_Zero(
+		BGBRASW_TestBlendData *tabs,
+		bgbrasw_zbuf *srcz, bgbrasw_zbuf *dstz)
+	{ *dstz=((*srcz)&tabs->mask_z); }
+
+void BGBRASW_TestAndBlend_StencilOp_Replace(
+		BGBRASW_TestBlendData *tabs,
+		bgbrasw_zbuf *srcz, bgbrasw_zbuf *dstz)
+{
+	*dstz=((*srcz)&tabs->mask_z)|((tabs->ref_sten)&(~tabs->mask_z));
+}
+
+void BGBRASW_TestAndBlend_StencilOp_Incr(
+		BGBRASW_TestBlendData *tabs,
+		bgbrasw_zbuf *srcz, bgbrasw_zbuf *dstz)
+{
+	bgbrasw_zbuf i;
+	i=((*dstz)&BGBRASW_MASK_STENCIL)+1;
+	if(i&BGBRASW_MASK_STENCIL_INV)
+		i=BGBRASW_MASK_STENCIL;
+	*dstz=((*srcz)&tabs->mask_z)|i;
+}
+
+void BGBRASW_TestAndBlend_StencilOp_Decr(
+		BGBRASW_TestBlendData *tabs,
+		bgbrasw_zbuf *srcz, bgbrasw_zbuf *dstz)
+{
+	bgbrasw_zbuf i;
+	i=((*dstz)&BGBRASW_MASK_STENCIL)-1;
+	if(i&BGBRASW_MASK_STENCIL_INV)
+		i=0;
+	*dstz=((*srcz)&tabs->mask_z)|i;
+}
+
+void BGBRASW_TestAndBlend_StencilOp_IncrWrap(
+		BGBRASW_TestBlendData *tabs,
+		bgbrasw_zbuf *srcz, bgbrasw_zbuf *dstz)
+{
+	bgbrasw_zbuf i;
+	i=((*dstz)&BGBRASW_MASK_STENCIL)+1;
+	i=i&BGBRASW_MASK_STENCIL;
+	*dstz=((*srcz)&tabs->mask_z)|(i&BGBRASW_MASK_STENCIL);
+}
+
+void BGBRASW_TestAndBlend_StencilOp_DecrWrap(
+		BGBRASW_TestBlendData *tabs,
+		bgbrasw_zbuf *srcz, bgbrasw_zbuf *dstz)
+{
+	bgbrasw_zbuf i;
+	i=((*dstz)&BGBRASW_MASK_STENCIL)-1;
+	*dstz=((*srcz)&tabs->mask_z)|(i&BGBRASW_MASK_STENCIL);
+}
+
+void BGBRASW_TestAndBlend_StencilOp_Invert(
+		BGBRASW_TestBlendData *tabs,
+		bgbrasw_zbuf *srcz, bgbrasw_zbuf *dstz)
+{
+	bgbrasw_zbuf i;
+	i=(~(*dstz))&BGBRASW_MASK_STENCIL;
+	*dstz=((*srcz)&tabs->mask_z)|i;
+}
+#endif
+
 void BGBRASW_BlendFunc_Zero(
 	BGBRASW_TestBlendData *data,
 	int sr, int sg, int sb, int sa,
@@ -230,8 +355,6 @@ bgbrasw_pixel BGBRASW_DoBlend_Generic(
 		sr, sg, sb, sa, dr, dg, db, da,
 		&cr, &cg, &cb, &ca);
 	clr=BGBRASW_MAKEPIXEL(cr, cg, cb, ca);
-//	clr=(clr&data->mask_clr)|
-//		(dst&(~data->mask_clr));
 	return(clr);
 }
 
@@ -250,16 +373,8 @@ bgbrasw_pixel BGBRASW_DoBlend_Zero_SrcColor(
 	dr=BGBRASW_PIXEL_R(dst);	dg=BGBRASW_PIXEL_G(dst);
 	db=BGBRASW_PIXEL_B(dst);	da=BGBRASW_PIXEL_A(dst);
 
-//	BGBRASW_Blend_Generic(data,
-//		sr, sg, sb, sa, dr, dg, db, da,
-//		&cr, &cg, &cb, &ca);
 	cr=(dr*sr)>>8;	cg=(dg*sg)>>8;
 	cb=(db*sb)>>8;	ca=(da*sa)>>8;
-	
-//	cr=(cr<0)?0:((cr>255)?255:cr);
-//	cg=(cg<0)?0:((cg>255)?255:cg);
-//	cb=(cb<0)?0:((cb>255)?255:cb);
-//	ca=(ca<0)?0:((ca>255)?255:ca);
 	
 	clr=BGBRASW_MAKEPIXEL(cr, cg, cb, ca);
 #endif
@@ -269,9 +384,6 @@ bgbrasw_pixel BGBRASW_DoBlend_Zero_SrcColor(
 #else
 	clr=bgbrasw_colormul(src, dst);
 #endif
-
-//	clr=(clr&data->mask_clr)|
-//		(dst&(~data->mask_clr));
 	return(clr);
 }
 
@@ -289,20 +401,10 @@ bgbrasw_pixel BGBRASW_DoBlend_Zero_OneMinusSrcColor(
 	dr=BGBRASW_PIXEL_R(dst);	dg=BGBRASW_PIXEL_G(dst);
 	db=BGBRASW_PIXEL_B(dst);	da=BGBRASW_PIXEL_A(dst);
 
-//	BGBRASW_Blend_Generic(data,
-//		sr, sg, sb, sa, dr, dg, db, da,
-//		&cr, &cg, &cb, &ca);
 	cr=(dr*(255-sr))>>8;	cg=(dg*(255-sg))>>8;
 	cb=(db*(255-sb))>>8;	ca=(da*(255-sa))>>8;
 	
-//	cr=(cr<0)?0:((cr>255)?255:cr);
-//	cg=(cg<0)?0:((cg>255)?255:cg);
-//	cb=(cb<0)?0:((cb>255)?255:cb);
-//	ca=(ca<0)?0:((ca>255)?255:ca);
-	
 	clr=BGBRASW_MAKEPIXEL(cr, cg, cb, ca);
-//	clr=(clr&data->mask_clr)|
-//		(dst&(~data->mask_clr));
 	return(clr);
 }
 
@@ -320,9 +422,6 @@ bgbrasw_pixel BGBRASW_DoBlend_One_One(
 	dr=BGBRASW_PIXEL_R(dst);	dg=BGBRASW_PIXEL_G(dst);
 	db=BGBRASW_PIXEL_B(dst);	da=BGBRASW_PIXEL_A(dst);
 
-//	BGBRASW_Blend_Generic(data,
-//		sr, sg, sb, sa, dr, dg, db, da,
-//		&cr, &cg, &cb, &ca);
 	cr=(dr+sr);	cg=(dg+sg);
 	cb=(db+sb);	ca=(da+sa);
 	
@@ -330,14 +429,8 @@ bgbrasw_pixel BGBRASW_DoBlend_One_One(
 	cg=(cg>255)?255:cg;
 	cb=(cb>255)?255:cb;
 	ca=(ca>255)?255:ca;
-//	cr=(cr<0)?0:((cr>255)?255:cr);
-//	cg=(cg<0)?0:((cg>255)?255:cg);
-//	cb=(cb<0)?0:((cb>255)?255:cb);
-//	ca=(ca<0)?0:((ca>255)?255:ca);
 	
 	clr=BGBRASW_MAKEPIXEL(cr, cg, cb, ca);
-//	clr=(clr&data->mask_clr)|
-//		(dst&(~data->mask_clr));
 	return(clr);
 }
 
@@ -367,8 +460,6 @@ bgbrasw_pixel BGBRASW_DoBlend_DstColor_Zero(
 	clr=bgbrasw_yycolormul(src, dst);
 #else
 	clr=bgbrasw_colormul(src, dst);
-//	clr=(clr&data->mask_clr)|
-//		(dst&(~data->mask_clr));
 #endif
 
 	return(clr);
@@ -388,8 +479,6 @@ bgbrasw_pixel BGBRASW_DoBlend_DstColor_One(
 	dr=BGBRASW_PIXEL_R(dst);	dg=BGBRASW_PIXEL_G(dst);
 	db=BGBRASW_PIXEL_B(dst);	da=BGBRASW_PIXEL_A(dst);
 
-//	cr=(dr*sr+dr)>>8;	cg=(dg*sg+dg)>>8;
-//	cb=(db*sb+db)>>8;	ca=(da*sa+da)>>8;
 	cr=dr+((dr*sr)>>8);	cg=dg+((dg*sg)>>8);
 	cb=db+((db*sb)>>8);	ca=da+((da*sa)>>8);
 	
@@ -399,8 +488,6 @@ bgbrasw_pixel BGBRASW_DoBlend_DstColor_One(
 	ca=(ca>255)?255:ca;
 
 	clr=BGBRASW_MAKEPIXEL(cr, cg, cb, ca);
-//	clr=(clr&data->mask_clr)|
-//		(dst&(~data->mask_clr));
 	return(clr);
 }
 
@@ -427,8 +514,6 @@ bgbrasw_pixel BGBRASW_DoBlend_DstColor_SrcColor(
 	ca=(ca>255)?255:ca;
 	
 	clr=BGBRASW_MAKEPIXEL(cr, cg, cb, ca);
-//	clr=(clr&data->mask_clr)|
-//		(dst&(~data->mask_clr));
 	return(clr);
 }
 
@@ -455,8 +540,6 @@ bgbrasw_pixel BGBRASW_DoBlend_DstColor_SrcAlpha(
 	ca=(ca>255)?255:ca;
 	
 	clr=BGBRASW_MAKEPIXEL(cr, cg, cb, ca);
-//	clr=(clr&data->mask_clr)|
-//		(dst&(~data->mask_clr));
 	return(clr);
 }
 
@@ -484,8 +567,6 @@ bgbrasw_pixel BGBRASW_DoBlend_DstColor_OneMinusSrcAlpha(
 	ca=(ca>255)?255:ca;
 	
 	clr=BGBRASW_MAKEPIXEL(cr, cg, cb, ca);
-//	clr=(clr&data->mask_clr)|
-//		(dst&(~data->mask_clr));
 	return(clr);
 }
 
@@ -513,8 +594,6 @@ bgbrasw_pixel BGBRASW_DoBlend_DstColor_OneMinusDstAlpha(
 	ca=(ca>255)?255:ca;
 	
 	clr=BGBRASW_MAKEPIXEL(cr, cg, cb, ca);
-//	clr=(clr&data->mask_clr)|
-//		(dst&(~data->mask_clr));
 	return(clr);
 }
 
@@ -532,10 +611,6 @@ bgbrasw_pixel BGBRASW_DoBlend_SrcAlpha_OneMinusSrcAlpha(
 	dr=BGBRASW_PIXEL_R(dst);	dg=BGBRASW_PIXEL_G(dst);
 	db=BGBRASW_PIXEL_B(dst);	da=BGBRASW_PIXEL_A(dst);
 
-//	BGBRASW_Blend_Generic(data,
-//		sr, sg, sb, sa, dr, dg, db, da,
-//		&cr, &cg, &cb, &ca);
-
 	nsa=256-sa;
 	cr=(sr*sa+dr*nsa)>>8;
 	cg=(sg*sa+dg*nsa)>>8;
@@ -543,8 +618,6 @@ bgbrasw_pixel BGBRASW_DoBlend_SrcAlpha_OneMinusSrcAlpha(
 	ca=(sa*sa+da*nsa)>>8;
 
 	clr=BGBRASW_MAKEPIXEL(cr, cg, cb, ca);
-//	clr=(clr&data->mask_clr)|
-//		(dst&(~data->mask_clr));
 	return(clr);
 }
 
@@ -556,15 +629,23 @@ int BGBRASW_TestAndBlend_Generic(
 	bgbrasw_pixel clr;
 	if(!tabs->testAlpha(tabs, srcc, srcz, dstc, dstz))
 		return(0);
-	if(!tabs->testDepth(tabs, srcc, srcz, dstc, dstz))
+	if(!tabs->testStencil(tabs, srcc, srcz, dstc, dstz))
+	{
+		tabs->stenOpSfail(tabs, srcz, dstz);
 		return(0);
+	}
+	if(!tabs->testDepth(tabs, srcc, srcz, dstc, dstz))
+	{
+		tabs->stenOpDpFail(tabs, srcz, dstz);
+		return(0);
+	}
 	
 	clr=tabs->doBlend(tabs, *srcc, *dstc);
 	clr=(clr&tabs->mask_clr)|
 		((*dstc)&(~tabs->mask_clr));
 	*dstc=clr;
-//	*dstz=*srcz;
-	*dstz=((*srcz)&tabs->mask_z)|((*dstz)&(~tabs->mask_z));
+//	*dstz=((*srcz)&tabs->mask_z)|((*dstz)&(~tabs->mask_z));
+	tabs->stenOpDpPass(tabs, srcz, dstz);
 	return(1);
 }
 
@@ -574,10 +655,11 @@ int BGBRASW_TestAndBlend_DepthBlend(
 	bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz)
 {
 	bgbrasw_pixel clr;
-//	if(!tabs->testAlpha(tabs, srcc, srcz, dstc, dstz))
-//		return(0);
 	if(!tabs->testDepth(tabs, srcc, srcz, dstc, dstz))
+	{
+//		tabs->stenOpDpFail(tabs, srcz, dstz);
 		return(0);
+	}
 	
 	clr=tabs->doBlend(tabs, *srcc, *dstc);
 	clr=(clr&tabs->mask_clr)|
@@ -585,6 +667,7 @@ int BGBRASW_TestAndBlend_DepthBlend(
 	*dstc=clr;
 //	*dstz=*srcz;
 	*dstz=((*srcz)&tabs->mask_z)|((*dstz)&(~tabs->mask_z));
+//	tabs->stenOpDpPass(tabs, srcz, dstz);
 	return(1);
 }
 
@@ -698,6 +781,53 @@ int BGBRASW_TestAndBlend_Depth(
 	return(1);
 }
 
+int BGBRASW_TestAndBlend_DepthStencil(
+	BGBRASW_TestBlendData *tabs,
+	bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz,
+	bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz)
+{
+	bgbrasw_pixel clr;
+	if(!tabs->testStencil(tabs, srcc, srcz, dstc, dstz))
+	{
+		tabs->stenOpSfail(tabs, srcz, dstz);
+		return(0);
+	}
+	if(!tabs->testDepth(tabs, srcc, srcz, dstc, dstz))
+	{
+		tabs->stenOpDpFail(tabs, srcz, dstz);
+		return(0);
+	}
+	clr=*srcc;	
+	clr=(clr&tabs->mask_clr)|
+		((*dstc)&(~tabs->mask_clr));
+	*dstc=clr;
+//	*dstc=*srcc;
+//	*dstz=*srcz;
+	*dstz=((*srcz)&tabs->mask_z)|((*dstz)&(~tabs->mask_z));
+	tabs->stenOpDpPass(tabs, srcz, dstz);
+	return(1);
+}
+
+int BGBRASW_TestAndBlend_Stencil(
+	BGBRASW_TestBlendData *tabs,
+	bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz,
+	bgbrasw_pixel *dstc, bgbrasw_zbuf *dstz)
+{
+	bgbrasw_pixel clr;
+	if(!tabs->testStencil(tabs, srcc, srcz, dstc, dstz))
+	{
+		tabs->stenOpSfail(tabs, srcz, dstz);
+		return(0);
+	}
+	clr=*srcc;	
+	clr=(clr&tabs->mask_clr)|
+		((*dstc)&(~tabs->mask_clr));
+	*dstc=clr;
+	*dstz=((*srcz)&tabs->mask_z)|((*dstz)&(~tabs->mask_z));
+	tabs->stenOpDpPass(tabs, srcz, dstz);
+	return(1);
+}
+
 int BGBRASW_TestAndBlend_AlphaBlend(
 	BGBRASW_TestBlendData *tabs,
 	bgbrasw_pixel *srcc, bgbrasw_zbuf *srcz,
@@ -751,6 +881,45 @@ int BGBRASW_TestAndBlend_None(
 	return(1);
 }
 
+BGBRASW_StencilOpFunc_ft BGBRASW_TestAndBlend_GetStencilOpFunc(
+	BGBRASW_Context *ctx,
+	BGBRASW_TestBlendData *tabs,
+	int op)
+{
+	BGBRASW_StencilOpFunc_ft opf;
+	switch(op)
+	{
+	case BGBRASW_GL_KEEP:
+		opf=BGBRASW_TestAndBlend_StencilOp_Keep;
+		break;
+	case BGBRASW_GL_ZERO:
+		opf=BGBRASW_TestAndBlend_StencilOp_Zero;
+		break;
+	case BGBRASW_GL_REPLACE:
+		opf=BGBRASW_TestAndBlend_StencilOp_Replace;
+		break;
+	case BGBRASW_GL_INCR:
+		opf=BGBRASW_TestAndBlend_StencilOp_Incr;
+		break;
+	case BGBRASW_GL_DECR:
+		opf=BGBRASW_TestAndBlend_StencilOp_Decr;
+		break;
+	case BGBRASW_GL_INCR_WRAP:
+		opf=BGBRASW_TestAndBlend_StencilOp_IncrWrap;
+		break;
+	case BGBRASW_GL_DECR_WRAP:
+		opf=BGBRASW_TestAndBlend_StencilOp_DecrWrap;
+		break;
+//	case BGBRASW_GL_INVERT:
+//		opf=BGBRASW_TestAndBlend_StencilOp_Invert;
+//		break;
+	default:
+		opf=BGBRASW_TestAndBlend_StencilOp_Keep;
+		break;
+	}
+	return(opf);
+}
+
 
 int BGBRASW_SetupTestBlend(BGBRASW_Context *ctx,
 	BGBRASW_TestBlendData *tabs)
@@ -778,7 +947,34 @@ int BGBRASW_SetupTestBlend(BGBRASW_Context *ctx,
 	tabs->drawSpanTextureBasicZTest=BGBRASW_DrawSpanTextureBasicZTest;
 	tabs->drawSpanTextureInterpZTest=BGBRASW_DrawSpanTextureInterpZTest;
 
-	if(tabs->caps_enabled&BGBRASW_ENABLE_DEPTH_TEST)
+	tabs->stenOpSfail=BGBRASW_TestAndBlend_StencilOp_Keep;
+	tabs->stenOpDpFail=BGBRASW_TestAndBlend_StencilOp_Keep;
+	tabs->stenOpDpPass=BGBRASW_TestAndBlend_StencilOp_Keep;
+
+	if(tabs->caps_enabled&BGBRASW_ENABLE_STENCIL_TEST)
+	{
+		tabs->stenOpSfail=BGBRASW_TestAndBlend_GetStencilOpFunc(
+			ctx, tabs, tabs->stencil_op_sfail);
+		tabs->stenOpDpFail=BGBRASW_TestAndBlend_GetStencilOpFunc(
+			ctx, tabs, tabs->stencil_op_dpfail);
+		tabs->stenOpDpPass=BGBRASW_TestAndBlend_GetStencilOpFunc(
+			ctx, tabs, tabs->stencil_op_dppass);
+	
+		if((tabs->caps_enabled&BGBRASW_ENABLE_ALPHA_TEST) ||
+			(tabs->caps_enabled&BGBRASW_ENABLE_BLEND))
+		{
+			tabs->testAndBlend=BGBRASW_TestAndBlend_Generic;
+		}else
+		{
+			if(tabs->caps_enabled&BGBRASW_ENABLE_DEPTH_TEST)
+			{
+				tabs->testAndBlend=BGBRASW_TestAndBlend_DepthStencil;
+			}else
+			{
+				tabs->testAndBlend=BGBRASW_TestAndBlend_Stencil;
+			}
+		}
+	}else if(tabs->caps_enabled&BGBRASW_ENABLE_DEPTH_TEST)
 	{
 		if(tabs->caps_enabled&BGBRASW_ENABLE_ALPHA_TEST)
 		{
@@ -951,6 +1147,43 @@ int BGBRASW_SetupTestBlend(BGBRASW_Context *ctx,
 		tabs->testDepth=BGBRASW_TestAndBlend_DepthTest_Always;
 	}
 
+	if(tabs->caps_enabled&BGBRASW_ENABLE_STENCIL_TEST)
+	{
+		switch(tabs->stencil_func)
+		{
+		case BGBRASW_GL_NEVER:
+			tabs->testStencil=BGBRASW_TestAndBlend_StencilTest_Never;
+			break;
+		case BGBRASW_GL_ALWAYS:
+			tabs->testStencil=BGBRASW_TestAndBlend_StencilTest_Always;
+			break;
+		case BGBRASW_GL_EQUAL:
+			tabs->testStencil=BGBRASW_TestAndBlend_StencilTest_Equal;
+			break;
+		case BGBRASW_GL_NOTEQUAL:
+			tabs->testStencil=BGBRASW_TestAndBlend_StencilTest_Less;
+			break;
+		case BGBRASW_GL_LESS:
+			tabs->testStencil=BGBRASW_TestAndBlend_StencilTest_Less;
+			break;
+		case BGBRASW_GL_LEQUAL:
+			tabs->testStencil=BGBRASW_TestAndBlend_StencilTest_LessEqual;
+			break;
+		case BGBRASW_GL_GREATER:
+			tabs->testStencil=BGBRASW_TestAndBlend_StencilTest_Greater;
+			break;
+		case BGBRASW_GL_GEQUAL:
+			tabs->testStencil=BGBRASW_TestAndBlend_StencilTest_GreaterEqual;
+			break;
+		default:
+			tabs->testStencil=BGBRASW_TestAndBlend_StencilTest_LessEqual;
+			break;
+		}
+	}else
+	{
+		tabs->testStencil=BGBRASW_TestAndBlend_StencilTest_Always;
+	}
+
 	if(tabs->caps_enabled&BGBRASW_ENABLE_BLEND)
 	{
 		tabs->doBlend=BGBRASW_DoBlend_Generic;
@@ -1089,8 +1322,10 @@ void BGBRASW_CopyTestBlend(BGBRASW_Context *ctx,
 	dsttabs->tex=srctabs->tex;
 	dsttabs->ref_clr=srctabs->ref_clr;
 	dsttabs->ref_z=srctabs->ref_z;
+	dsttabs->ref_sten=srctabs->ref_sten;
 	dsttabs->mask_clr=srctabs->mask_clr;
 	dsttabs->mask_z=srctabs->mask_z;
+	dsttabs->mask_sten=srctabs->mask_sten;
 	dsttabs->caps_enabled=srctabs->caps_enabled;
 
 	dsttabs->blend_src=srctabs->blend_src;
@@ -1098,14 +1333,25 @@ void BGBRASW_CopyTestBlend(BGBRASW_Context *ctx,
 	dsttabs->depth_func=srctabs->depth_func;
 	dsttabs->alpha_func=srctabs->alpha_func;
 
+	dsttabs->stencil_func=srctabs->stencil_func;
+	dsttabs->stencil_op_sfail=srctabs->stencil_op_sfail;
+	dsttabs->stencil_op_dpfail=srctabs->stencil_op_dpfail;
+	dsttabs->stencil_op_dppass=srctabs->stencil_op_dppass;
+
 	dsttabs->drawSpanFlat=srctabs->drawSpanFlat;
 	dsttabs->drawSpanTex_min=srctabs->drawSpanTex_min;
 	dsttabs->drawSpanTex_mag=srctabs->drawSpanTex_mag;
 	dsttabs->testAndBlend=srctabs->testAndBlend;
 	dsttabs->testAlpha=srctabs->testAlpha;
 	dsttabs->testDepth=srctabs->testDepth;
+	dsttabs->testStencil=srctabs->testStencil;
 	dsttabs->blendSfunc=srctabs->blendSfunc;
 	dsttabs->blendDfunc=srctabs->blendDfunc;
+
+	dsttabs->stenOpSfail=srctabs->stenOpSfail;
+	dsttabs->stenOpDpFail=srctabs->stenOpDpFail;
+	dsttabs->stenOpDpPass=srctabs->stenOpDpPass;
+
 	dsttabs->doBlend=srctabs->doBlend;
 
 	dsttabs->drawSpanFlatBasic=srctabs->drawSpanFlatBasic;

@@ -280,23 +280,23 @@ void draw_test_defsdr()
 	PDGL_Uniform1i("texBase", 1);
 	PDGL_Uniform1i("texDeform", 2);
 
-//	glDisable(GL_TEXTURE_2D);
+//	pdglDisable(GL_TEXTURE_2D);
 
-//	glBindTexture(GL_TEXTURE_2D, tex_screen);
-//	glEnable(GL_TEXTURE_2D);
+//	pdglBindTexture(GL_TEXTURE_2D, tex_screen);
+//	pdglEnable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(0);
-	glBindTexture(GL_TEXTURE_2D, tex_screen);
-//	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, tex_screen);
+//	pdglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	pdglEnable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(1);
-	glBindTexture(GL_TEXTURE_2D, tex);
-	glEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, tex);
+	pdglEnable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(2);
-	glBindTexture(GL_TEXTURE_2D, def);
-	glEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, def);
+	pdglEnable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(0);
 
@@ -325,16 +325,16 @@ void draw_test_defsdr()
 
 
 	pdglActiveTexture(0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, 0);
+	pdglDisable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(1);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, 0);
+	pdglDisable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(2);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, 0);
+	pdglDisable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(0);
 
@@ -763,10 +763,10 @@ void draw_ent(LBXGL_SEntity *ent)
 
 	if(tn>=0)
 	{
-//		glEnable(GL_ALPHA_TEST);
+//		pdglEnable(GL_ALPHA_TEST);
 
 		pdglEnableTexture2D();
-		glBindTexture(GL_TEXTURE_2D, tn);
+		pdglBindTexture(GL_TEXTURE_2D, tn);
 
 		pdglBegin(PDGL_POLYGON);
 
@@ -792,7 +792,7 @@ void draw_ent(LBXGL_SEntity *ent)
 
 		pdglEnd();
 
-//		glDisable(GL_ALPHA_TEST);
+//		pdglDisable(GL_ALPHA_TEST);
 
 	}
 
@@ -2155,11 +2155,11 @@ int pdgl_main_draw3d()
 	if(cam->width<=(4*16))i=2;
 	if(cam->width<=4)i=3;
 
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_CULL_FACE);
+	pdglDisable(GL_TEXTURE_2D);
 
-//	glDepthFunc(GL_LEQUAL);
-	glDepthFunc(GL_ALWAYS);
+//	pdglDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_ALWAYS);
 
 //	switch(cam->mode)
 	switch(cam->ortho)
@@ -2218,8 +2218,8 @@ int pdgl_main_draw3d()
 		break;
 	}
 
-	glDepthFunc(GL_LEQUAL);
-//	glEnable(GL_DEPTH_TEST);
+	pdglDepthFunc(GL_LEQUAL);
+//	pdglEnable(GL_DEPTH_TEST);
 
 	pdglBegin(PDGL_LINES);
 
@@ -2237,17 +2237,17 @@ int pdgl_main_draw3d()
 
 	pdglEnd();
 
-//	glEnable(GL_CULL_FACE);
+//	pdglEnable(GL_CULL_FACE);
 
 	if(!cam->ortho)
-		glEnable(GL_TEXTURE_2D);
+		pdglEnable(GL_TEXTURE_2D);
 
 	setup_light_ents(world->entity);
 
 	if(cam->ortho)
 	{
-		glCullFace(GL_BACK); glEnable(GL_CULL_FACE);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		pdglCullFace(GL_BACK);	pdglEnable(GL_CULL_FACE);
+		pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		LBXGL_Shader_Color4f(1, 1, 1, 1);
 		pdglColor4f(1, 1, 1, 1);
 
@@ -2263,42 +2263,42 @@ int pdgl_main_draw3d()
 		//temporary hack...
 
 		pdglColor4f(1, 1, 1, 1);
-		glDisable(GL_CULL_FACE);
+		pdglDisable(GL_CULL_FACE);
 
 #if 0
-		glEnable(GL_LIGHTING);
-		glEnable(GL_NORMALIZE);
+		pdglEnable(GL_LIGHTING);
+		pdglEnable(GL_NORMALIZE);
 
-		glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+		pdglLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
 		if(lbxgl_brushmesh_mode!=LBXGL_EDMODE_FACE)
 		{
 			pt[0]=1; pt[1]=1; pt[2]=1; pt[3]=1;
-			glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pt);
+			pdglMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pt);
 
-//			glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pt);
+//			pdglMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pt);
 		}else
 		{
 			pt[0]=1; pt[1]=1; pt[2]=1; pt[3]=1;
-			glMaterialfv(GL_FRONT, GL_DIFFUSE, pt);
+			pdglMaterialfv(GL_FRONT, GL_DIFFUSE, pt);
 
-//			glMaterialfv(GL_FRONT, GL_SPECULAR, pt);
+//			pdglMaterialfv(GL_FRONT, GL_SPECULAR, pt);
 
 			pt[0]=0.5; pt[1]=0.5; pt[2]=0.25; pt[3]=1;
-			glMaterialfv(GL_BACK, GL_DIFFUSE, pt);
-//			glMaterialfv(GL_BACK, GL_SPECULAR, pt);
+			pdglMaterialfv(GL_BACK, GL_DIFFUSE, pt);
+//			pdglMaterialfv(GL_BACK, GL_SPECULAR, pt);
 		}
 
 		UI_Camera_GetOrgFV(pt);
 		pt[3]=1;
-		glLightfv(GL_LIGHT0, GL_POSITION, pt);
-		glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 1.0/1000.0);
-		glEnable(GL_LIGHT0);
+		pdglLightfv(GL_LIGHT0, GL_POSITION, pt);
+		pdglLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 1.0/1000.0);
+		pdglEnable(GL_LIGHT0);
 #endif
 
 		LBXGL_BrushMesh_DrawGroupEdit(lbxgl_brushmesh_mdl);
 
-//		glDisable(GL_LIGHTING);
+//		pdglDisable(GL_LIGHTING);
 	}
 #endif
 
@@ -2314,7 +2314,7 @@ int pdgl_main_draw3d()
 	}
 #endif
 
-//	glDisable(GL_ALPHA_TEST);
+//	pdglDisable(GL_ALPHA_TEST);
 
 	draw_ents(world->entity);
 
@@ -2379,8 +2379,8 @@ int pdgl_main_body()
 
 	LBXGL_Sky_DrawSky();
 
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_CULL_FACE);
+	pdglDisable(GL_TEXTURE_2D);
 //	PD3D_DrawGrid(0, 0, 16, 1);
 
 	pdglBegin(PDGL_LINES);
@@ -2399,9 +2399,9 @@ int pdgl_main_body()
 
 	pdglEnd();
 
-//	glEnable(GL_CULL_FACE);
+//	pdglEnable(GL_CULL_FACE);
 
-	glEnable(GL_TEXTURE_2D);
+	pdglEnable(GL_TEXTURE_2D);
 
 	setup_light_ents(world->entity);
 
@@ -2425,8 +2425,8 @@ int pdgl_main_body()
 	if(0)
 	{
 		pdglColor4f(1, 1, 1, 1);
-//		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, tex_screen);
+//		pdglEnable(GL_TEXTURE_2D);
+		pdglBindTexture(GL_TEXTURE_2D, tex_screen);
 
 		pdglBegin(PDGL_POLYGON);
 
@@ -2553,7 +2553,7 @@ int pdgl_main_body()
 
 			pdglColor4f(1, 1, 1, 1);
 			pdglEnableTexture2D();
-			glBindTexture(GL_TEXTURE_2D, j);
+			pdglBindTexture(GL_TEXTURE_2D, j);
 
 			pdglBegin(PDGL_POLYGON);
 

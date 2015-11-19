@@ -145,6 +145,10 @@ libs: FORCE
 #	cp -rf q2core/*.lib		$(BUILD)
 #	cp -rf q2core/*.dll		$(BUILD)
 
+	$(MAKE) -C bgbrasw -f Makefile$(MKSUF) libs
+	cp -rf bgbrasw/*.lib		$(BUILD)
+	cp -rf bgbrasw/*.dll		$(BUILD)
+
 
 apps: FORCE
 	$(MAKE) -C libbsde21 -f Makefile$(MKSUF) apps
@@ -157,6 +161,8 @@ apps: FORCE
 	$(MAKE) -C bgbbtjpg -f Makefile$(MKSUF) apps
 	$(MAKE) -C libpdgl -f Makefile$(MKSUF) apps
 	$(MAKE) -C lbxgl3 -f Makefile$(MKSUF) apps
+
+	$(MAKE) -C bgbrasw -f Makefile$(MKSUF) apps
 
 #	$(MAKE) -C q2core -f Makefile$(MKSUF) apps
 
@@ -174,6 +180,8 @@ apps: FORCE
 	cp -rf libpdgl/*.exe		$(BUILD)
 	cp -rf lbxgl3/*.exe			$(BUILD)
 #	cp -rf q2core/*.exe			$(BUILD)
+
+	cp -rf bgbrasw/*.exe		$(BUILD)
 
 	cp -rf apps/*.exe			$(BUILD)
 

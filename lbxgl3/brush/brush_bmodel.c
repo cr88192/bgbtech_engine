@@ -84,7 +84,7 @@ LBXGL_API void LBXGL_BrushModel_DrawBrushDark(LBXGL_Brush *brush)
 	if(brush->flags&LBXGL_BRFL_HIDDEN)return;
 	if(brush->flags&LBXGL_BRFL_ALPHA)return;
 
-//	glDisable(GL_TEXTURE_2D);
+//	pdglDisable(GL_TEXTURE_2D);
 	pdglColor4f(0, 0, 0, 1);
 
 	k=0;
@@ -131,7 +131,7 @@ LBXGL_API void LBXGL_BrushModel_DrawBrushLight(LBXGL_Brush *brush,
 	{
 		if(brush->pf_flag[i]&LBXGL_TXFL_NODRAW)
 			{ vec+=brush->pf_nvec[i]*4; continue; }
-		glNormal3fv(brush->norm+brush->pf_plane[i]*4);
+		pdglNormal3fv(brush->norm+brush->pf_plane[i]*4);
 		pdglBegin(PDGL_POLYGON);
 		l=brush->pf_nvec[i];
 		for(j=0; j<l; j++)
@@ -165,7 +165,7 @@ LBXGL_API void LBXGL_BrushModel_DrawBrushShadow(LBXGL_Brush *brush)
 		if(k&(LBXGL_TXFL_NODRAW|LBXGL_TXFL_ALPHA))
 			continue;
 
-		glBlendFunc(GL_DST_COLOR, GL_ZERO);
+		pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 		LBXGL_Shader_BindTexture(brush->pf_tex[i]);
 		LBXGL_Shader_Normal3fv(brush->norm+brush->pf_plane[i]*4);
 		LBXGL_Shader_Color4f(1, 1, 1, 1);
@@ -181,7 +181,7 @@ LBXGL_API void LBXGL_BrushModel_DrawBrushShadow(LBXGL_Brush *brush)
 		LBXGL_Shader_EndPoly();
 	}
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 #if 1
@@ -607,7 +607,7 @@ LBXGL_API void LBXGL_BrushModel_DrawBrushModel(LBXGL_BrushModel *bmdl)
 //		"%p Origin=(%f %f %f)\n", bmdl,
 //		bmdl->mdl_org[0], bmdl->mdl_org[1], bmdl->mdl_org[2]);
 
-//	glTranslatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
+//	pdglTranslatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
 	LBXGL_Shader_Translatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
 
 	cur=bmdl->brush;
@@ -635,7 +635,7 @@ LBXGL_API void LBXGL_BrushModel_DrawBrushModelAlpha(LBXGL_BrushModel *bmdl)
 //		"%p Origin=(%f %f %f)\n", bmdl,
 //		bmdl->mdl_org[0], bmdl->mdl_org[1], bmdl->mdl_org[2]);
 
-//	glTranslatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
+//	pdglTranslatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
 	LBXGL_Shader_Translatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
 
 	cur=bmdl->brush;
@@ -650,7 +650,7 @@ LBXGL_API void LBXGL_BrushModel_DrawBrushModelAlpha(LBXGL_BrushModel *bmdl)
 LBXGL_API void LBXGL_BrushModel_DrawBrushModelDark(LBXGL_BrushModel *bmdl)
 {
 //	printf("LBXGL_BrushModel_DrawBrushModelDark\n");
-//	glTranslatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
+//	pdglTranslatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
 	LBXGL_Shader_Translatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
 	LBXGL_BrushModel_DrawNodeBrushesDark(bmdl->bsp);
 }
@@ -668,7 +668,7 @@ LBXGL_API void LBXGL_BrushModel_DrawBrushModelLight(LBXGL_BrushModel *bmdl,
 	V3F_ADD(org, bmdl->mdl_org, lorg1);
 
 //	printf("LBXGL_BrushModel_DrawBrushModelLight\n");
-//	glTranslatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
+//	pdglTranslatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
 	LBXGL_Shader_Translatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
 	LBXGL_BrushModel_DrawNodeBrushesLight(bmdl->bsp, light, lorg1, rad);
 }
@@ -676,14 +676,14 @@ LBXGL_API void LBXGL_BrushModel_DrawBrushModelLight(LBXGL_BrushModel *bmdl,
 LBXGL_API void LBXGL_BrushModel_DrawBrushModelFinal(LBXGL_BrushModel *bmdl)
 {
 //	printf("LBXGL_BrushModel_DrawBrushModelFinal\n");
-//	glTranslatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
+//	pdglTranslatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
 	LBXGL_Shader_Translatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
 	LBXGL_BrushModel_DrawNodeBrushesFinal(bmdl->bsp);
 }
 
 LBXGL_API void LBXGL_BrushModel_DrawBrushModelFlat(LBXGL_BrushModel *bmdl)
 {
-//	glTranslatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
+//	pdglTranslatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
 	LBXGL_Shader_Translatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
 	LBXGL_BrushModel_DrawNodeBrushesFlat(bmdl->bsp);
 }
@@ -708,7 +708,7 @@ LBXGL_API void LBXGL_BrushModel_DrawBrushModelShadow(
 	}
 #endif
 
-//	glTranslatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
+//	pdglTranslatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
 	LBXGL_Shader_Translatef(-bmdl->mdl_org[0], -bmdl->mdl_org[1], -bmdl->mdl_org[2]);
 	V3F_ADD(org, bmdl->mdl_org, org1);
 

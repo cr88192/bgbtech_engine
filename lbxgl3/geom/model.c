@@ -150,7 +150,7 @@ void *LBXGL_Mdl_LoadModelInstance_cb(LBXGL_ModelState *tmp)
 	if(!p)return(NULL);
 	
 	LBXGL_Mdl_SetModel(tmp, p);
-	glFinish();
+	pdglFinish();
 	
 	return(BGBGC_NULLEND);
 }
@@ -530,7 +530,7 @@ LBXGL_API void LBXGL_Mdl_DrawModel(LBXGL_ModelState *ctx)
 //	lod=LBXGL_Mdl_LodForDistance(dist);
 	lod=LBXGL_Mdl_LodForModelDistance(ctx, dist);
 
-	glDisable(GL_CULL_FACE);
+	pdglDisable(GL_CULL_FACE);
 	
 	LBXGL_Mdl_CalcModelTransform(ctx, tmat);
 
@@ -564,12 +564,12 @@ LBXGL_API void LBXGL_Mdl_DrawModel(LBXGL_ModelState *ctx)
 
 	if(dytypep(ctx->mdl, "lbxgl_meshgroup_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		LBXGL_Mesh_DrawGroup(ctx->mdl);
 //		LBXGL_Mesh_DrawGroupFinal(ctx->mdl);
-//		glPopMatrix();
+//		pdglPopMatrix();
 		LBXGL_Shader_PopMatrix();
 		lbxgl_mdl_curmdl=NULL;
 		return;
@@ -588,22 +588,22 @@ LBXGL_API void LBXGL_Mdl_DrawModel(LBXGL_ModelState *ctx)
 	if(dytypep(ctx->mdl, "lbxgl_skel2model_t"))
 	{
 		if(ctx->effects2&BT_EF2_VIEWMODEL)
-			{ glDisable(GL_CULL_FACE); }
+			{ pdglDisable(GL_CULL_FACE); }
 
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		lbxgl_mdl_lock();
 		Skel_DrawSetLOD(ctx->state, lod);
 //		Skel_DrawModel(ctx->state);
 		Skel_DrawModelAlpha(ctx->state, alpha);
-//		glPopMatrix();
+//		pdglPopMatrix();
 		lbxgl_mdl_unlock();
 		LBXGL_Shader_PopMatrix();
 		lbxgl_mdl_curmdl=NULL;
 
 		if(ctx->effects2&BT_EF2_VIEWMODEL)
-			{ glEnable(GL_CULL_FACE); }
+			{ pdglEnable(GL_CULL_FACE); }
 		return;
 	}
 
@@ -618,11 +618,11 @@ LBXGL_API void LBXGL_Mdl_DrawModel(LBXGL_ModelState *ctx)
 
 	if(dytypep(ctx->mdl, "lbxgl_brushmodel_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		LBXGL_BrushModel_DrawBrushModel(ctx->mdl);
-//		glPopMatrix();
+//		pdglPopMatrix();
 		LBXGL_Shader_PopMatrix();
 		lbxgl_mdl_curmdl=NULL;
 		return;
@@ -677,7 +677,7 @@ LBXGL_API void LBXGL_Mdl_DrawModelAlpha(LBXGL_ModelState *ctx)
 	LBXGL_Mdl_CalcModelTransform(ctx, tmat);
 
 #if 0
-//	glDisable(GL_CULL_FACE);
+//	pdglDisable(GL_CULL_FACE);
 	for(i=0; i<16; i++)tmat[i]=0;
 //	for(i=0; i<3; i++)for(j=0; j<3; j++)tmat[j*4+i]=ctx->rot[i*3+j];
 	for(i=0; i<3; i++)for(j=0; j<3; j++)tmat[i*4+j]=ctx->rot[i*3+j];
@@ -700,12 +700,12 @@ LBXGL_API void LBXGL_Mdl_DrawModelAlpha(LBXGL_ModelState *ctx)
 
 	if(dytypep(ctx->mdl, "lbxgl_meshgroup_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 //		LBXGL_Mesh_DrawGroup(ctx->mdl);
 		LBXGL_Mesh_DrawGroupAlpha(ctx->mdl);
-//		glPopMatrix();
+//		pdglPopMatrix();
 		LBXGL_Shader_PopMatrix();
 		lbxgl_mdl_curmdl=NULL;
 		return;
@@ -752,7 +752,7 @@ LBXGL_API void LBXGL_Mdl_DrawModelDark(LBXGL_ModelState *ctx)
 	LBXGL_Mdl_CalcModelTransform(ctx, tmat);
 
 #if 0
-//	glDisable(GL_CULL_FACE);
+//	pdglDisable(GL_CULL_FACE);
 	for(i=0; i<16; i++)tmat[i]=0;
 //	for(i=0; i<3; i++)for(j=0; j<3; j++)tmat[j*4+i]=ctx->rot[i*3+j];
 	for(i=0; i<3; i++)for(j=0; j<3; j++)tmat[i*4+j]=ctx->rot[i*3+j];
@@ -761,11 +761,11 @@ LBXGL_API void LBXGL_Mdl_DrawModelDark(LBXGL_ModelState *ctx)
 
 	if(dytypep(ctx->mdl, "lbxgl_meshgroup_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		LBXGL_Mesh_DrawGroupDark(ctx->mdl);
-//		glPopMatrix();
+//		pdglPopMatrix();
 		LBXGL_Shader_PopMatrix();
 		lbxgl_mdl_curmdl=NULL;
 		return;
@@ -781,31 +781,31 @@ LBXGL_API void LBXGL_Mdl_DrawModelDark(LBXGL_ModelState *ctx)
 	if(dytypep(ctx->mdl, "lbxgl_skel2model_t"))
 	{
 		if(ctx->effects2&BT_EF2_VIEWMODEL)
-			{ glDisable(GL_CULL_FACE); }
+			{ pdglDisable(GL_CULL_FACE); }
 
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		lbxgl_mdl_lock();
 		Skel_DrawSetLOD(ctx->state, lod);
 		Skel_DrawModelDark(ctx->state);
 		lbxgl_mdl_unlock();
-//		glPopMatrix();
+//		pdglPopMatrix();
 		LBXGL_Shader_PopMatrix();
 		lbxgl_mdl_curmdl=NULL;
 
 		if(ctx->effects2&BT_EF2_VIEWMODEL)
-			{ glEnable(GL_CULL_FACE); }
+			{ pdglEnable(GL_CULL_FACE); }
 		return;
 	}
 
 	if(dytypep(ctx->mdl, "lbxgl_brushmodel_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		LBXGL_BrushModel_DrawBrushModelDark(ctx->mdl);
-//		glPopMatrix();
+//		pdglPopMatrix();
 		LBXGL_Shader_PopMatrix();
 		lbxgl_mdl_curmdl=NULL;
 		return;
@@ -813,11 +813,11 @@ LBXGL_API void LBXGL_Mdl_DrawModelDark(LBXGL_ModelState *ctx)
 
 	if(dytypep(ctx->mdl, "lbxgl_quakemdl_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		LBXGL_QuakeMDL_RenderStateDark(ctx);
-//		glPopMatrix();
+//		pdglPopMatrix();
 		LBXGL_Shader_PopMatrix();
 		lbxgl_mdl_curmdl=NULL;
 		return;
@@ -849,7 +849,7 @@ LBXGL_API void LBXGL_Mdl_DrawModelLight(LBXGL_ModelState *ctx,
 	lbxgl_mdl_curmdl=ctx;
 
 #if 0
-//	glDisable(GL_CULL_FACE);
+//	pdglDisable(GL_CULL_FACE);
 	for(i=0; i<16; i++)tmat[i]=0;
 //	for(i=0; i<3; i++)for(j=0; j<3; j++)tmat[j*4+i]=ctx->rot[i*3+j];
 	for(i=0; i<3; i++)for(j=0; j<3; j++)tmat[i*4+j]=ctx->rot[i*3+j];
@@ -872,19 +872,19 @@ LBXGL_API void LBXGL_Mdl_DrawModelLight(LBXGL_ModelState *ctx,
 
 	if(dytypep(ctx->mdl, "lbxgl_meshgroup_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		LBXGL_Mesh_DrawGroupLight(ctx->mdl);
 		LBXGL_Shader_PopMatrix();
-//		glPopMatrix();
+//		pdglPopMatrix();
 		lbxgl_mdl_curmdl=NULL;
 		return;
 	}
 
 	if(dytypep(ctx->mdl, "lbxgl_meshprim_t"))
 	{
-//		glColor4f(1, 1, 1, 1);
+//		pdglColor4f(1, 1, 1, 1);
 		pdglColor4f(gam, gam, gam, 1);
 		LBXGL_Mesh_DrawPrimFlat(ctx->mdl);
 		return;
@@ -893,9 +893,9 @@ LBXGL_API void LBXGL_Mdl_DrawModelLight(LBXGL_ModelState *ctx,
 	if(dytypep(ctx->mdl, "lbxgl_skel2model_t"))
 	{
 		if(ctx->effects2&BT_EF2_VIEWMODEL)
-			{ glDisable(GL_CULL_FACE); }
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+			{ pdglDisable(GL_CULL_FACE); }
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 //		Skel_DrawModelLight(ctx->state);
 		lbxgl_mdl_lock();
@@ -903,33 +903,33 @@ LBXGL_API void LBXGL_Mdl_DrawModelLight(LBXGL_ModelState *ctx,
 		Skel_DrawModelLightColor(ctx->state, gam, gam, gam);
 		lbxgl_mdl_unlock();
 		LBXGL_Shader_PopMatrix();
-//		glPopMatrix();
+//		pdglPopMatrix();
 		lbxgl_mdl_curmdl=NULL;
 		if(ctx->effects2&BT_EF2_VIEWMODEL)
-			{ glEnable(GL_CULL_FACE); }
+			{ pdglEnable(GL_CULL_FACE); }
 		return;
 	}
 
 	if(dytypep(ctx->mdl, "lbxgl_brushmodel_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		LBXGL_BrushModel_DrawBrushModelLight(ctx->mdl, light, lorg, rad);
 		LBXGL_Shader_PopMatrix();
-//		glPopMatrix();
+//		pdglPopMatrix();
 		lbxgl_mdl_curmdl=NULL;
 		return;
 	}
 
 	if(dytypep(ctx->mdl, "lbxgl_quakemdl_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		LBXGL_QuakeMDL_RenderStateLight(ctx);
 		LBXGL_Shader_PopMatrix();
-//		glPopMatrix();
+//		pdglPopMatrix();
 		lbxgl_mdl_curmdl=NULL;
 		return;
 	}
@@ -964,7 +964,7 @@ LBXGL_API void LBXGL_Mdl_DrawModelShadow(LBXGL_ModelState *ctx,
 	lbxgl_mdl_curmdl=NULL;
 
 #if 0
-//	glDisable(GL_CULL_FACE);
+//	pdglDisable(GL_CULL_FACE);
 	for(i=0; i<16; i++)tmat[i]=0;
 //	for(i=0; i<3; i++)for(j=0; j<3; j++)tmat[j*4+i]=ctx->rot[i*3+j];
 	for(i=0; i<3; i++)for(j=0; j<3; j++)tmat[i*4+j]=ctx->rot[i*3+j];
@@ -990,11 +990,11 @@ LBXGL_API void LBXGL_Mdl_DrawModelShadow(LBXGL_ModelState *ctx,
 			ctx->org, f, org, 2*rad, 0);
 //		if(i)return;
 
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		LBXGL_Mesh_DrawGroupShadowVolume(ctx->mdl, lorg, rad, i);
-//		glPopMatrix();
+//		pdglPopMatrix();
 		LBXGL_Shader_PopMatrix();
 		return;
 	}
@@ -1027,25 +1027,25 @@ LBXGL_API void LBXGL_Mdl_DrawModelShadow(LBXGL_ModelState *ctx,
 		i=Skel_DrawGetLOD(ctx->state);
 //		if(i>0)return;
 		if(i>1)return;
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		lbxgl_mdl_lock();
 //		Skel_DrawModelShadow(ctx->state, lorg, rad);
 		Skel_DrawModelShadowFlags(ctx->state, lorg, rad, j);
 		lbxgl_mdl_unlock();
-//		glPopMatrix();
+//		pdglPopMatrix();
 		LBXGL_Shader_PopMatrix();
 		return;
 	}
 
 	if(dytypep(ctx->mdl, "lbxgl_brushmodel_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		LBXGL_BrushModel_DrawBrushModelShadow(ctx->mdl, lorg, rad);
-//		glPopMatrix();
+//		pdglPopMatrix();
 		LBXGL_Shader_PopMatrix();
 		return;
 	}
@@ -1055,11 +1055,11 @@ LBXGL_API void LBXGL_Mdl_DrawModelShadow(LBXGL_ModelState *ctx,
 		i=LBXGL_Brush_CheckViewSphereShadow(ctx->org, 64, org, rad);
 		if(i)return;
 
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		LBXGL_QuakeMDL_RenderStateShadow(ctx, lorg, rad);
-//		glPopMatrix();
+//		pdglPopMatrix();
 		LBXGL_Shader_PopMatrix();
 		return;
 	}
@@ -1084,7 +1084,7 @@ LBXGL_API void LBXGL_Mdl_DrawModelFinal(LBXGL_ModelState *ctx)
 	lbxgl_mdl_curmdl=ctx;
 
 #if 0
-//	glDisable(GL_CULL_FACE);
+//	pdglDisable(GL_CULL_FACE);
 	for(i=0; i<16; i++)tmat[i]=0;
 //	for(i=0; i<3; i++)for(j=0; j<3; j++)tmat[j*4+i]=ctx->rot[i*3+j];
 	for(i=0; i<3; i++)for(j=0; j<3; j++)tmat[i*4+j]=ctx->rot[i*3+j];
@@ -1095,13 +1095,13 @@ LBXGL_API void LBXGL_Mdl_DrawModelFinal(LBXGL_ModelState *ctx)
 
 	if(dytypep(ctx->mdl, "lbxgl_meshgroup_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
-		glEnable(GL_CULL_FACE);
-		glBlendFunc(GL_DST_COLOR, GL_ZERO);
+		pdglEnable(GL_CULL_FACE);
+		pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 		LBXGL_Mesh_DrawGroupFinal(ctx->mdl);
-//		glPopMatrix();
+//		pdglPopMatrix();
 		LBXGL_Shader_PopMatrix();
 		lbxgl_mdl_curmdl=NULL;
 		return;
@@ -1115,30 +1115,30 @@ LBXGL_API void LBXGL_Mdl_DrawModelFinal(LBXGL_ModelState *ctx)
 	if(dytypep(ctx->mdl, "lbxgl_skel2model_t"))
 	{
 		if(ctx->effects2&BT_EF2_VIEWMODEL)
-			{ glDisable(GL_CULL_FACE); }
+			{ pdglDisable(GL_CULL_FACE); }
 
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		lbxgl_mdl_lock();
 		Skel_DrawModelFinal(ctx->state);
 		lbxgl_mdl_unlock();
-//		glPopMatrix();
+//		pdglPopMatrix();
 		LBXGL_Shader_PopMatrix();
 		lbxgl_mdl_curmdl=NULL;
 
 		if(ctx->effects2&BT_EF2_VIEWMODEL)
-			{ glEnable(GL_CULL_FACE); }
+			{ pdglEnable(GL_CULL_FACE); }
 		return;
 	}
 
 	if(dytypep(ctx->mdl, "lbxgl_brushmodel_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		LBXGL_BrushModel_DrawBrushModelFinal(ctx->mdl);
-//		glPopMatrix();
+//		pdglPopMatrix();
 		LBXGL_Shader_PopMatrix();
 		lbxgl_mdl_curmdl=NULL;
 		return;
@@ -1190,7 +1190,7 @@ LBXGL_API void LBXGL_Mdl_DrawModelFlat(LBXGL_ModelState *ctx)
 	lbxgl_mdl_curmdl=NULL;
 
 #if 0
-//	glDisable(GL_CULL_FACE);
+//	pdglDisable(GL_CULL_FACE);
 	for(i=0; i<16; i++)tmat[i]=0;
 //	for(i=0; i<3; i++)for(j=0; j<3; j++)tmat[j*4+i]=ctx->rot[i*3+j];
 	for(i=0; i<3; i++)for(j=0; j<3; j++)tmat[i*4+j]=ctx->rot[i*3+j];
@@ -1205,12 +1205,12 @@ LBXGL_API void LBXGL_Mdl_DrawModelFlat(LBXGL_ModelState *ctx)
 
 	if(dytypep(ctx->mdl, "lbxgl_meshgroup_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		LBXGL_Mesh_DrawGroupFlat(ctx->mdl);
 		LBXGL_Shader_PopMatrix();
-//		glPopMatrix();
+//		pdglPopMatrix();
 		return;
 	}
 	if(dytypep(ctx->mdl, "lbxgl_meshprim_t"))
@@ -1218,15 +1218,15 @@ LBXGL_API void LBXGL_Mdl_DrawModelFlat(LBXGL_ModelState *ctx)
 
 	if(dytypep(ctx->mdl, "lbxgl_skel2model_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		lbxgl_mdl_lock();
 		Skel_DrawSetLOD(ctx->state, lod);
 		Skel_DrawModelFlat(ctx->state);
 		lbxgl_mdl_unlock();
 		LBXGL_Shader_PopMatrix();
-//		glPopMatrix();
+//		pdglPopMatrix();
 		return;
 	}
 
@@ -1235,23 +1235,23 @@ LBXGL_API void LBXGL_Mdl_DrawModelFlat(LBXGL_ModelState *ctx)
 
 	if(dytypep(ctx->mdl, "lbxgl_brushmodel_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		LBXGL_BrushModel_DrawBrushModelFlat(ctx->mdl);
 		LBXGL_Shader_PopMatrix();
-//		glPopMatrix();
+//		pdglPopMatrix();
 		return;
 	}
 
 	if(dytypep(ctx->mdl, "lbxgl_quakemdl_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		LBXGL_QuakeMDL_RenderStateFlat(ctx);
 		LBXGL_Shader_PopMatrix();
-//		glPopMatrix();
+//		pdglPopMatrix();
 		return;
 	}
 }
@@ -1272,7 +1272,7 @@ LBXGL_API void LBXGL_Mdl_DrawModelFlatApprox(LBXGL_ModelState *ctx)
 		{ ctx->mvt->drawmdl_flat(ctx); return; }
 
 #if 0
-//	glDisable(GL_CULL_FACE);
+//	pdglDisable(GL_CULL_FACE);
 	for(i=0; i<16; i++)tmat[i]=0;
 //	for(i=0; i<3; i++)for(j=0; j<3; j++)tmat[j*4+i]=ctx->rot[i*3+j];
 	for(i=0; i<3; i++)for(j=0; j<3; j++)tmat[i*4+j]=ctx->rot[i*3+j];
@@ -1302,13 +1302,13 @@ LBXGL_API void LBXGL_Mdl_DrawModelFlatApprox(LBXGL_ModelState *ctx)
 
 	if(dytypep(ctx->mdl, "lbxgl_skel2model_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 //		Skel_DrawSetLOD(ctx->state, lod);
 		Skel_DrawModelFlatApprox(ctx->state);
 		LBXGL_Shader_PopMatrix();
-//		glPopMatrix();
+//		pdglPopMatrix();
 		return;
 
 //		LBXGL_Mdl_BoxModel(ctx, tv0, tv1);
@@ -1327,12 +1327,12 @@ LBXGL_API void LBXGL_Mdl_DrawModelFlatApprox(LBXGL_ModelState *ctx)
 
 	if(dytypep(ctx->mdl, "lbxgl_brushmodel_t"))
 	{
-//		glMatrixMode(GL_MODELVIEW_MATRIX);
-//		glPushMatrix(); glMultMatrixf(tmat);
+//		pdglMatrixMode(GL_MODELVIEW_MATRIX);
+//		pdglPushMatrix(); pdglMultMatrixf(tmat);
 		LBXGL_Shader_PushMultMatrix(tmat);
 		LBXGL_BrushModel_DrawBrushModelFlat(ctx->mdl);
 		LBXGL_Shader_PopMatrix();
-//		glPopMatrix();
+//		pdglPopMatrix();
 		return;
 	}
 }

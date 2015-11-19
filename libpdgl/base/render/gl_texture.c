@@ -36,8 +36,7 @@ int tex_hash2[4096];		//texture hint hash
 
 int tex_screen=-1;
 
-//elem gl_texfilter_var=MISC_NULL;
-char *gl_texfilter_var=NULL;
+char *pdgl_texfilter_var=NULL;
 
 void *tex_mutex=NULL;
 
@@ -68,7 +67,7 @@ PDGL_API int Tex_GetModeinfo(int *min, int *mag)
 
 //	for(i=0; i<6; i++)
 	for(i=0; texmodes[i].name; i++)
-		if(!strcmp(gl_texfilter_var, texmodes[i].name))
+		if(!strcmp(pdgl_texfilter_var, texmodes[i].name))
 	{
 		*min=texmodes[i].min;
 		*mag=texmodes[i].mag;
@@ -91,7 +90,7 @@ PDGL_API int Tex_Init2()
 	int i;
 
 	printf("PDGL: Textures Init\n");
-//	gl_texfilter_var=Var_SetString("gl_texfilter", "GL_LINEAR_MIPMAP_LINEAR");
+//	pdgl_texfilter_var=Var_SetString("gl_texfilter", "GL_LINEAR_MIPMAP_LINEAR");
 
 	tex_mutex=thFastMutex();
 
@@ -101,21 +100,21 @@ PDGL_API int Tex_Init2()
 		tex_hash2[i]=-1;
 	}
 
-	gl_texfilter_var=BTGE_CvarGet("gl_texfilter");
+	pdgl_texfilter_var=BTGE_CvarGet("gl_texfilter");
 	
-	if(!gl_texfilter_var)
+	if(!pdgl_texfilter_var)
 	{
 #ifdef WIN32
-		gl_texfilter_var="GL_LINEAR_MIPMAP_LINEAR";
+		pdgl_texfilter_var="GL_LINEAR_MIPMAP_LINEAR";
 #else
-		gl_texfilter_var="GL_LINEAR_MIPMAP_LINEAR";
-//		gl_texfilter_var="GL_NEAREST_MIPMAP_NEAREST";
-//		gl_texfilter_var="GL_NEAREST";
+		pdgl_texfilter_var="GL_LINEAR_MIPMAP_LINEAR";
+//		pdgl_texfilter_var="GL_NEAREST_MIPMAP_NEAREST";
+//		pdgl_texfilter_var="GL_NEAREST";
 #endif
 	}
 
-//	gl_texfilter_var="GL_LINEAR_MIPMAP_LINEAR";
-//	gl_texfilter_var="GL_NEAREST";
+//	pdgl_texfilter_var="GL_LINEAR_MIPMAP_LINEAR";
+//	pdgl_texfilter_var="GL_NEAREST";
 
 	memset(texblockfl, 0, TEXBLOCKS*64*64);
 
@@ -130,7 +129,7 @@ PDGL_API int Tex_AllocTexnum()
 
 	i=lasttexture+1;
 
-//	glGenTextures(1, &i);
+//	pdglGenTextures(1, &i);
 //	if((i%PDGL_MAX_TEXTURES)!=i)
 //		return(i);
 
@@ -165,7 +164,7 @@ PDGL_API int Tex_MarkTexnum(int n)
 
 PDGL_API int Tex_DeleteTexture(int n)
 {
-	glDeleteTextures(1, &n);
+	pdglDeleteTextures(1, &n);
 	texturebm[n>>3]&=~(1<<(n&7));
 	return(0);
 }
@@ -1283,7 +1282,7 @@ PDGL_API int Tex_ResampleSpline2(byte *src, int iw, int ih,
 	return(i);
 }
 
-//static byte *resampbuf=NULL;
+// static byte *resampbuf=NULL;
 // static byte resampbuf[2048*2048*4];
 // static byte resampbuf_cmp[2048*2048];
 static int resamp_colorfmt;
@@ -1299,6 +1298,11 @@ PDGL_API int Tex_GetLastColorFormat()
 	return(resamp_colorfmt);
 }
 
+PDGL_API int Tex_CheckSupportColorFormat(int clrfmt)
+{
+	return(BGBBTJ_BCn_CheckGlSupportColorFormat(clrfmt));
+}
+
 #if 1
 PDGL_API int Tex_LoadTexture(int w, int h, byte *buf, int calcmip)
 {
@@ -1310,6 +1314,12 @@ PDGL_API int Tex_LoadTexture(int w, int h, byte *buf, int calcmip)
 	int num;
 
 //	if(!resampbuf)resampbuf=malloc(2048*2048*4);
+
+	if(!BGBBTJ_BCn_CheckGlSupportAny())
+	{
+		num=Tex_LoadTextureNoCmp(w, h, buf, calcmip);
+		return(num);
+	}
 
 //	tex_lock();
 
@@ -1399,9 +1409,9 @@ PDGL_API int Tex_LoadTexture(int w, int h, byte *buf, int calcmip)
 	tex_width[num]=w;
 	tex_height[num]=h;
 
-	glEnable(GL_TEXTURE_2D);
+	pdglEnable(GL_TEXTURE_2D);
 
-	glBindTexture(GL_TEXTURE_2D, num);
+	pdglBindTexture(GL_TEXTURE_2D, num);
 
 	sz=(tw/4)*(th/4)*blksz;
 	pdglCompressedTexImage2D(GL_TEXTURE_2D, 0, 
@@ -1414,8 +1424,8 @@ PDGL_API int Tex_LoadTexture(int w, int h, byte *buf, int calcmip)
 	if(!calcmip)
 	{
 		Tex_GetModeinfo(&min, &mag);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mag);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mag);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
 	}else if((calcmip&15)==2)
 	{
 		tl=0;
@@ -1437,10 +1447,10 @@ PDGL_API int Tex_LoadTexture(int w, int h, byte *buf, int calcmip)
 #endif
 		}
 
-//		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+//		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 			GL_NEAREST_MIPMAP_LINEAR);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}else
 	{
 //		printf("tex: mipmap\n");
@@ -1465,8 +1475,8 @@ PDGL_API int Tex_LoadTexture(int w, int h, byte *buf, int calcmip)
 
 		Tex_GetModeinfo(&min, &mag);
 
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
 	}
 
 	free(resampbuf);
@@ -1477,9 +1487,10 @@ PDGL_API int Tex_LoadTexture(int w, int h, byte *buf, int calcmip)
 }
 #endif
 
-#if 0
-PDGL_API int Tex_LoadTexture(int w, int h, byte *buf, int calcmip)
+#if 1
+PDGL_API int Tex_LoadTextureNoCmp(int w, int h, byte *buf, int calcmip)
 {
+	byte *resampbuf;
 	int tw, th, tl;
 	int min, mag, cmp, sz;
 	int num;
@@ -1504,6 +1515,8 @@ PDGL_API int Tex_LoadTexture(int w, int h, byte *buf, int calcmip)
 	if(tw>2048)tw=2048;
 	if(th>2048)th=2048;
 
+	resampbuf=malloc(tw*th*4);
+
 	if((w!=tw) || (h!=th))
 	{
 //		*(int *)-1=-1;
@@ -1523,9 +1536,9 @@ PDGL_API int Tex_LoadTexture(int w, int h, byte *buf, int calcmip)
 	tex_width[num]=w;
 	tex_height[num]=h;
 
-	glEnable(GL_TEXTURE_2D);
+	pdglEnable(GL_TEXTURE_2D);
 
-	glBindTexture(GL_TEXTURE_2D, num);
+	pdglBindTexture(GL_TEXTURE_2D, num);
 
 #ifdef WIN32
 	cmp=(calcmip&16)?4:GL_COMPRESSED_RGBA;
@@ -1538,25 +1551,25 @@ PDGL_API int Tex_LoadTexture(int w, int h, byte *buf, int calcmip)
 //		GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
 //		tw, th, 0, sz, resampbuf_cmp);
 
-	glTexImage2D (GL_TEXTURE_2D, 0, cmp,
+	pdglTexImage2D (GL_TEXTURE_2D, 0, cmp,
 		tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
 
-//	glTexImage2D (GL_TEXTURE_2D, 0, GL_COMPRESSED_RGBA,
+//	pdglTexImage2D (GL_TEXTURE_2D, 0, GL_COMPRESSED_RGBA,
 //		tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
-//	glTexImage2D (GL_TEXTURE_2D, 0, 4,
+//	pdglTexImage2D (GL_TEXTURE_2D, 0, 4,
 //		tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
 
 	if(!calcmip)
 	{
 //		printf("tex: nonmip\n");
-//		glTexImage2D (GL_TEXTURE_2D, 0, 4, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
+//		pdglTexImage2D (GL_TEXTURE_2D, 0, 4, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
 		Tex_GetModeinfo(&min, &mag);
 
-//		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mag);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mag);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
 	}else if((calcmip&15)==2)
 	{
 		tl=0;
@@ -1566,17 +1579,17 @@ PDGL_API int Tex_LoadTexture(int w, int h, byte *buf, int calcmip)
 			tw>>=1;
 			th>>=1;
 			tl++;
-//			glTexImage2D (GL_TEXTURE_2D, tl, 4, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
-//			glTexImage2D (GL_TEXTURE_2D, tl, GL_COMPRESSED_RGBA,
+//			pdglTexImage2D (GL_TEXTURE_2D, tl, 4, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
+//			pdglTexImage2D (GL_TEXTURE_2D, tl, GL_COMPRESSED_RGBA,
 //				tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
-			glTexImage2D (GL_TEXTURE_2D, tl, cmp,
+			pdglTexImage2D (GL_TEXTURE_2D, tl, cmp,
 				tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
 		}
 
-//		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+//		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 			GL_NEAREST_MIPMAP_LINEAR);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}else
 	{
 //		printf("tex: mipmap\n");
@@ -1587,25 +1600,26 @@ PDGL_API int Tex_LoadTexture(int w, int h, byte *buf, int calcmip)
 			tw>>=1;
 			th>>=1;
 			tl++;
-//			glTexImage2D (GL_TEXTURE_2D, tl, 4, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
-//			glTexImage2D (GL_TEXTURE_2D, tl, GL_COMPRESSED_RGBA,
+//			pdglTexImage2D (GL_TEXTURE_2D, tl, 4, tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
+//			pdglTexImage2D (GL_TEXTURE_2D, tl, GL_COMPRESSED_RGBA,
 //				tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
-			glTexImage2D (GL_TEXTURE_2D, tl, cmp,
+			pdglTexImage2D (GL_TEXTURE_2D, tl, cmp,
 				tw, th, 0, GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
 		}
 
 		Tex_GetModeinfo(&min, &mag);
 
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
 
-//		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-//		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+//		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-//		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-//		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+//		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}
 
+	free(resampbuf);
 	return(num);
 }
 #endif
@@ -1657,22 +1671,22 @@ PDGL_API int Tex_LoadTexture2(int w, int h, byte *buf,
 	tex_width[num]=w;
 	tex_height[num]=h;
 
-	glEnable(GL_TEXTURE_2D);
+	pdglEnable(GL_TEXTURE_2D);
 
-	glBindTexture(GL_TEXTURE_2D, num);
+	pdglBindTexture(GL_TEXTURE_2D, num);
 
 	if(!mip)
 	{
 //		printf("tex: nonmip\n");
-		glTexImage2D (GL_TEXTURE_2D, 0, 4, tw, th, 0,
+		pdglTexImage2D (GL_TEXTURE_2D, 0, 4, tw, th, 0,
 			GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
 		Tex_GetModeinfo(&min, &mag);
 
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mag);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mag);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
 	}else if(mip==2)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, 4, tw, th, 0,
+		pdglTexImage2D(GL_TEXTURE_2D, 0, 4, tw, th, 0,
 			GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
 
 		tl=0;
@@ -1683,7 +1697,7 @@ PDGL_API int Tex_LoadTexture2(int w, int h, byte *buf,
 			tw>>=1;
 			th>>=1;
 			tl++;
-			glTexImage2D(GL_TEXTURE_2D, tl, 4, tw, th, 0,
+			pdglTexImage2D(GL_TEXTURE_2D, tl, 4, tw, th, 0,
 				GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
 		}
 
@@ -1697,11 +1711,11 @@ PDGL_API int Tex_LoadTexture2(int w, int h, byte *buf,
 //		mag=GL_LINEAR;
 		mag=GL_NEAREST;
 
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
 	}else
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, 4, tw, th, 0,
+		pdglTexImage2D(GL_TEXTURE_2D, 0, 4, tw, th, 0,
 			GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
 
 //		printf("tex: mipmap\n");
@@ -1712,14 +1726,14 @@ PDGL_API int Tex_LoadTexture2(int w, int h, byte *buf,
 			tw>>=1;
 			th>>=1;
 			tl++;
-			glTexImage2D(GL_TEXTURE_2D, tl, 4, tw, th, 0,
+			pdglTexImage2D(GL_TEXTURE_2D, tl, 4, tw, th, 0,
 				GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
 		}
 
 		Tex_GetModeinfo(&min, &mag);
 
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
 	}
 
 	free(resampbuf);
@@ -1793,9 +1807,9 @@ PDGL_API int Tex_LoadTexture3B(int *wp, int *hp, byte *buf,
 //	tex_width[num]=w;
 //	tex_height[num]=h;
 
-	glEnable(GL_TEXTURE_2D);
+	pdglEnable(GL_TEXTURE_2D);
 
-	glBindTexture(GL_TEXTURE_2D, num);
+	pdglBindTexture(GL_TEXTURE_2D, num);
 
 	sz=((tw+3)/4)*((th+3)/4)*blksz;
 	pdglCompressedTexImage2D(GL_TEXTURE_2D, 0, 
@@ -1841,24 +1855,24 @@ PDGL_API int Tex_LoadTexture3B(int *wp, int *hp, byte *buf,
 		{
 			Tex_GetModeinfo(&min, &mag);
 
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+			pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
+			pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
 
-//			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
+//			pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
 //				GL_LINEAR_MIPMAP_LINEAR);
-//			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//			pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//			pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		}else
 		{
 			Tex_GetModeinfo(&min, &mag);
 
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mag);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+			pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mag);
+			pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
 
-//			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
+//			pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
 //				GL_LINEAR_MIPMAP_LINEAR);
-//			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//			pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//			pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		}
 	}
 
@@ -1919,21 +1933,21 @@ PDGL_API int Tex_LoadTexture3(int *wp, int *hp, byte *buf, int num)
 
 //	printf("LT3 %d %d %d %d (%d)\n", w, h, tw, th, num);
 
-	glEnable(GL_TEXTURE_2D);
+	pdglEnable(GL_TEXTURE_2D);
 
-	glBindTexture(GL_TEXTURE_2D, num);
+	pdglBindTexture(GL_TEXTURE_2D, num);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, 4, tw, th, 0,
+	pdglTexImage2D(GL_TEXTURE_2D, 0, 4, tw, th, 0,
 		GL_RGBA, GL_UNSIGNED_BYTE, resampbuf);
 
 	if(rl)
 	{
 		Tex_GetModeinfo(&min, &mag);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mag);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mag);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
 
-//		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 
 	free(resampbuf);
@@ -1980,17 +1994,17 @@ PDGL_API int Tex_LoadTextureMono(int w, int h, byte *buf)
 	tex_width[num]=w;
 	tex_height[num]=h;
 
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, num);
-	glTexImage2D(GL_TEXTURE_2D, 0, 1, tw, th, 0, GL_LUMINANCE,
+	pdglEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, num);
+	pdglTexImage2D(GL_TEXTURE_2D, 0, 1, tw, th, 0, GL_LUMINANCE,
 		GL_UNSIGNED_BYTE, resampbuf);
 
 	Tex_GetModeinfo(&min, &mag);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mag);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+	pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mag);
+	pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
 
-//	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//	pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//	pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	free(resampbuf);
 //	tex_unlock();
@@ -2685,6 +2699,9 @@ PDGL_API int Img_SaveTextureCacheBPX(
 	int tw, th, tl, xs, ys;
 	int min, mag, cmp, sz, blksz, fmt;
 	int num;
+	
+	if(!BGBBTJ_BCn_CheckGlSupportAny())
+		return(-1);
 
 	s=name; t=tb1;
 	while(*s)
@@ -2995,7 +3012,7 @@ PDGL_API int Tex_LoadFile(char *name, int *w, int *h)
 	}
 #endif
 
-	if(!gl_texfilter_var)
+	if(!pdgl_texfilter_var)
 		Tex_Init2();
 
 	if(!w)w=&tw;
@@ -3057,6 +3074,11 @@ PDGL_API int Tex_LoadFile(char *name, int *w, int *h)
 	if(!buf)
 	{
 		if(fd)vfclose(fd);
+		return(-1);
+	}
+
+	if(txc && !BGBBTJ_BCn_CheckGlSupportColorFormat(txc))
+	{
 		return(-1);
 	}
 
@@ -3232,7 +3254,7 @@ PDGL_API int Tex_LoadFileExtAlpha(char *name, char *ext, int *w, int *h)
 		return(i);
 	}
 
-	if(!gl_texfilter_var)
+	if(!pdgl_texfilter_var)
 		Tex_Init2();
 
 	buf=Tex_LoadFileExtAlphaRaw(name, ext, &xs, &ys);
@@ -3282,7 +3304,7 @@ PDGL_API int Tex_LoadFileExtBaseSuffix(
 		return(i);
 	}
 
-	if(!gl_texfilter_var)
+	if(!pdgl_texfilter_var)
 		Tex_Init2();
 
 	txc=0;
@@ -3292,6 +3314,11 @@ PDGL_API int Tex_LoadFileExtBaseSuffix(
 		{ buf=Tex_LoadFileExtBaseSuffixRaw(name,
 			ext, base, suff, &xs, &ys); }
 	if(!buf)return(-1);
+
+	if(txc && !BGBBTJ_BCn_CheckGlSupportColorFormat(txc))
+	{
+		return(-1);
+	}
 
 	if(txc)
 	{
@@ -3431,8 +3458,8 @@ PDGL_API int Tex_Screenshot_Clipboard()
 	pixlin=width*height;
 	buf=malloc(pixlin*4);
 
-	glFinish();
-	glReadPixels (0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buf); 
+	pdglFinish();
+	pdglReadPixels (0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buf); 
 
 	dib=Img_FlattenDIB(buf, width, height);
 	free(buf);
@@ -3456,8 +3483,8 @@ PDGL_API int Tex_Screenshot(char *name)
 	pixlin=width*height;
 	if(!buf)buf=malloc(pixlin*4);
 
-	glFinish();
-	glReadPixels (0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buf); 
+	pdglFinish();
+	pdglReadPixels (0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buf); 
 
 //	fd=vffopen(name, "wb");
 //	Img_StoreTGA(fd, buf, width, height);
@@ -3483,8 +3510,8 @@ PDGL_API int Tex_Screenshot2(char *name)
 
 	if(!buf)buf=malloc(width*(height+1)*4);
 
-	glFinish();
-	glReadPixels (0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buf); 
+	pdglFinish();
+	pdglReadPixels (0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buf); 
 
 #if 1
 	for(i=0; i<300; i++)
@@ -3608,7 +3635,7 @@ PDGL_API int Tex_ScreenshotTexture()
 	data=malloc(txs*tys*4);
 	memset(data, 0, txs*tys*4);
 
-	glBindTexture(GL_TEXTURE_2D, num);
+	pdglBindTexture(GL_TEXTURE_2D, num);
 
 #ifdef GLES
 	i=GL_RGBA;
@@ -3617,19 +3644,19 @@ PDGL_API int Tex_ScreenshotTexture()
 	i=(i==1)?GL_RGBA16F_ARB:GL_RGBA;
 #endif
 
-//	glTexImage2D(GL_TEXTURE_2D, 0, 4, 1024, 1024, 0,
+//	pdglTexImage2D(GL_TEXTURE_2D, 0, 4, 1024, 1024, 0,
 //		GL_RGBA, GL_UNSIGNED_BYTE, data);
-//	glTexImage2D(GL_TEXTURE_2D, 0, i, 1024, 1024, 0,
+//	pdglTexImage2D(GL_TEXTURE_2D, 0, i, 1024, 1024, 0,
 //		GL_RGBA, GL_UNSIGNED_BYTE, data);
-	glTexImage2D(GL_TEXTURE_2D, 0, i, txs, tys, 0,
+	pdglTexImage2D(GL_TEXTURE_2D, 0, i, txs, tys, 0,
 		GL_RGBA, GL_UNSIGNED_BYTE, data);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	pdglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	pdglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 #ifndef GLES
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	pdglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	pdglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 #endif
 
 	free(data);
@@ -3652,7 +3679,7 @@ PDGL_API int Tex_ScreenshotDepthTexture()
 //	GfxDrv_GetWindowTexSize(&txs, &tys);
 	GfxDrv_GetWindowMaxTexSize(&txs, &tys);
 
-	while(glGetError());	//clear errors
+	while(pdglGetError());	//clear errors
 
 	num=Tex_AllocTexnum();
 //	tex_width[num]=1024;
@@ -3663,44 +3690,44 @@ PDGL_API int Tex_ScreenshotDepthTexture()
 //	data=malloc(1024*1024*4);
 //	memset(data, 0, 1024*1024*4);
 
-	glBindTexture(GL_TEXTURE_2D, num);
-//	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0,
+	pdglBindTexture(GL_TEXTURE_2D, num);
+//	pdglTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0,
 //		GL_DEPTH_COMPONENT, GL_FLOAT, data);
 
-//	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0,
+//	pdglTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0,
 //		GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
-//	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL_EXT, 1024, 1024, 0,
+//	pdglTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL_EXT, 1024, 1024, 0,
 //		GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT, NULL);
 
-//	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL_EXT, 1024, 1024, 0,
+//	pdglTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL_EXT, 1024, 1024, 0,
 //		GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT, NULL);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL_EXT, txs, tys, 0,
+	pdglTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL_EXT, txs, tys, 0,
 		GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT, NULL);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	pdglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	pdglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//	pdglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//	pdglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	pdglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	pdglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
-//	glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-//	glTexParameteri(GL_TEXTURE_2D,
+//	pdglTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
+//	pdglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+//	pdglTexParameteri(GL_TEXTURE_2D,
 //		GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_ALWAYS);
+//	pdglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_ALWAYS);
 
 //	free(data);
 
-	i=glGetError();
+	i=pdglGetError();
 	while(i)
 	{
 		printf("Tex_ScreenshotDepthTexture: Error %08X\n", i);
-		i=glGetError();
+		i=pdglGetError();
 	}
 
 	return(num);
@@ -3730,7 +3757,7 @@ PDGL_API int Tex_FillTextureScreenshot(int texnum)
 //	pixlin=width*height;
 //	if(!buf)buf=malloc(pixlin*4);
 
-	glFinish();
+	pdglFinish();
 
 #ifdef GLES
 	i=GL_RGBA;
@@ -3739,15 +3766,15 @@ PDGL_API int Tex_FillTextureScreenshot(int texnum)
 	i=(i==1)?GL_RGBA16F_ARB:GL_RGBA;
 #endif
 
-	glBindTexture(GL_TEXTURE_2D, texnum);
-//	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 1024, 1024, 0);
+	pdglBindTexture(GL_TEXTURE_2D, texnum);
+//	pdglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 1024, 1024, 0);
 
-//	glCopyTexImage2D(GL_TEXTURE_2D, 0, i, 0, 0, 1024, 1024, 0);
-	glCopyTexImage2D(GL_TEXTURE_2D, 0, i, 0, 0, txs, tys, 0);
+//	pdglCopyTexImage2D(GL_TEXTURE_2D, 0, i, 0, 0, 1024, 1024, 0);
+	pdglCopyTexImage2D(GL_TEXTURE_2D, 0, i, 0, 0, txs, tys, 0);
 
-//	glCopyTexImage2D(GL_TEXTURE_2D, 0, i, 0, 0, 800, 600, 0);
+//	pdglCopyTexImage2D(GL_TEXTURE_2D, 0, i, 0, 0, 800, 600, 0);
 
-//	glReadPixels (0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buf); 
+//	pdglReadPixels (0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buf); 
 
 	return(0);
 }
@@ -3767,35 +3794,35 @@ PDGL_API int Tex_FillTextureScreenshotDepth(int texnum)
 	GfxDrv_GetWindowSize(&width, &height);
 	GfxDrv_GetWindowTexSize(&txs, &tys);
 
-	while(glGetError());	//clear errors
+	while(pdglGetError());	//clear errors
 
 //	printf("Tex_FillTextureScreenshotDepth\n");
 
 //	pixlin=width*height;
 //	if(!buf)buf=malloc(pixlin*4);
 
-	glFinish();
+	pdglFinish();
 
-	glBindTexture(GL_TEXTURE_2D, texnum);
-//	glCopyTexImage2D(GL_TEXTURE_2D, 0,
+	pdglBindTexture(GL_TEXTURE_2D, texnum);
+//	pdglCopyTexImage2D(GL_TEXTURE_2D, 0,
 //		GL_DEPTH_COMPONENT, 0, 0, 1024, 1024, 0);
 
-	glCopyTexImage2D(GL_TEXTURE_2D, 0,
+	pdglCopyTexImage2D(GL_TEXTURE_2D, 0,
 		GL_DEPTH_STENCIL_EXT, 0, 0, txs, tys, 0);
 
-//	glCopyTexImage2D(GL_TEXTURE_2D, 0,
+//	pdglCopyTexImage2D(GL_TEXTURE_2D, 0,
 //		GL_DEPTH_STENCIL_EXT, 0, 0, 1024, 1024, 0);
-//	glCopyTexImage2D(GL_TEXTURE_2D, 0,
+//	pdglCopyTexImage2D(GL_TEXTURE_2D, 0,
 //		GL_DEPTH_STENCIL_EXT, 0, 0, 800, 600, 0);
 
-	i=glGetError();
+	i=pdglGetError();
 	while(i)
 	{
 		printf("Tex_FillTextureScreenshotDepth: Error %08X\n", i);
-		i=glGetError();
+		i=pdglGetError();
 	}
 
-//	glReadPixels (0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buf); 
+//	pdglReadPixels (0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buf); 
 
 	return(0);
 #endif
@@ -3818,11 +3845,11 @@ PDGL_API int Tex_EmptyTexture(int xs, int ys)
 	data=malloc(xs*ys*4);
 	memset(data, 0, xs*ys*4);
 
-	glBindTexture(GL_TEXTURE_2D, num);
-	glTexImage2D(GL_TEXTURE_2D, 0, 4, xs, ys, 0,
+	pdglBindTexture(GL_TEXTURE_2D, num);
+	pdglTexImage2D(GL_TEXTURE_2D, 0, 4, xs, ys, 0,
 		GL_RGBA, GL_UNSIGNED_BYTE, data);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	pdglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	pdglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	free(data);
 
@@ -3841,11 +3868,11 @@ PDGL_API int Tex_EmptyTextureRGB(int xs, int ys)
 	data=malloc(xs*ys*3);
 	memset(data, 0, xs*ys*3);
 
-	glBindTexture(GL_TEXTURE_2D, num);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, xs, ys, 0,
+	pdglBindTexture(GL_TEXTURE_2D, num);
+	pdglTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, xs, ys, 0,
 		GL_RGB, GL_UNSIGNED_BYTE, data);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	pdglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	pdglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	free(data);
 

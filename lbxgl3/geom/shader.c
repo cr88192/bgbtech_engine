@@ -81,7 +81,7 @@ LBXGL_API void LBXGL_Shader_LoadIdentityMatrix()
 {
 	LBXGL_Shader_Init();
 	Mat4F_Identity(lbxgl_shader_matrix);
-//	glMatrixMode(GL_MODELVIEW_MATRIX);
+//	pdglMatrixMode(GL_MODELVIEW_MATRIX);
 	pdglModelviewMatrix();
 	pdglLoadIdentity();
 }
@@ -130,7 +130,7 @@ LBXGL_API void LBXGL_Shader_PopMatrix(void)
 	for(j=0; j<16; j++)
 		lbxgl_shader_matrix[j]=lbxgl_shader_matrixstack[i][j];
 
-//	glMatrixMode(GL_MODELVIEW_MATRIX);
+//	pdglMatrixMode(GL_MODELVIEW_MATRIX);
 	pdglModelviewMatrix();
 	pdglPopMatrix();
 }
@@ -142,7 +142,7 @@ LBXGL_API void LBXGL_Shader_MultMatrix(float *mat)
 	Mat4F_MatMult(lbxgl_shader_matrix, mat, tmat);
 	Mat4F_Copy(tmat, lbxgl_shader_matrix);
 
-//	glMatrixMode(GL_MODELVIEW_MATRIX);
+//	pdglMatrixMode(GL_MODELVIEW_MATRIX);
 	pdglModelviewMatrix();
 	pdglMultMatrixf(mat);
 }
@@ -243,7 +243,7 @@ LBXGL_API void LBXGL_Shader_Init(void)
 
 	lbxgl_shader_blend_src=GL_SRC_ALPHA;
 	lbxgl_shader_blend_dst=GL_ONE_MINUS_SRC_ALPHA;
-//	glBlendFunc(lbxgl_shader_blend_src, lbxgl_shader_blend_dst);
+//	pdglBlendFunc(lbxgl_shader_blend_src, lbxgl_shader_blend_dst);
 
 //	LBXGL_ASM_Init();
 }
@@ -303,13 +303,13 @@ LBXGL_API void LBXGL_Shader_FlushTexture()
 	{
 #if 0
 		LBXGL_Shader_BlendFunc(GL_SRC_COLOR, GL_ONE);
-		glDisableClientState(GL_COLOR_ARRAY);
+		pdglDisableClientState(GL_COLOR_ARRAY);
 		LBXGL_Shader_Color4f(1, 1, 1, 1);
 
 		for(i=0; i<16; i++)
 		{
 			pdglActiveTexture(i);
-			glDisable(GL_TEXTURE_2D);
+			pdglDisable(GL_TEXTURE_2D);
 		}
 		pdglActiveTexture(0);
 #endif
@@ -328,12 +328,12 @@ LBXGL_API void LBXGL_Shader_FlushTexture()
 
 	if(lbxgl_shader_cur->flags2&BTGE_TXFL2_NODEPTHWRITE)
 	{
-		glDepthMask(GL_TRUE);
+		pdglDepthMask(GL_TRUE);
 	}
 
 	if(lbxgl_shader_cur->blend_src || lbxgl_shader_cur->blend_dst)
 	{
-		glBlendFunc(
+		pdglBlendFunc(
 			lbxgl_shader_lastblend_src,
 			lbxgl_shader_lastblend_dst);
 	}
@@ -347,15 +347,15 @@ LBXGL_API void LBXGL_Shader_FlushTexture()
 	for(i=0; i<16; i++)
 	{
 		pdglActiveTexture(i);
-		glDisable(GL_TEXTURE_2D);
-		glDisable(GL_TEXTURE_CUBE_MAP);
+		pdglDisable(GL_TEXTURE_2D);
+		pdglDisable(GL_TEXTURE_CUBE_MAP);
 	}
 	pdglActiveTexture(0);
 //	PDGL_UnbindShader();
 	PDGL_BindShader(lbxgl_shader_texdefault);
 
-	glBindTexture(GL_TEXTURE_2D, lbxgl_shader_tex_white);
-	glEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, lbxgl_shader_tex_white);
+	pdglEnable(GL_TEXTURE_2D);
 #endif
 
 #if 0
@@ -371,11 +371,11 @@ LBXGL_API void LBXGL_Shader_SetupTextureFinal()
 
 //	*(int *)-1=-1;
 
-	while(glGetError());	//clear errors
+	while(pdglGetError());	//clear errors
 
 	PDGL_BindShader(lbxgl_shader_texfinal);
 
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_TEXTURE_2D);
 
 	if(lbxgl_shader_texfinal_texIsUVAY>=0)
 	{
@@ -389,11 +389,11 @@ LBXGL_API void LBXGL_Shader_SetupTextureFinal()
 //	pdglEnableTexture2D();
 //	if(lbxgl_shader_cur->tex_alt>0)
 //	{
-//		glBindTexture(GL_TEXTURE_2D,
+//		pdglBindTexture(GL_TEXTURE_2D,
 //			lbxgl_shader_cur->tex_alt);
 //	}else
 //	{
-//		glBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->num);
+//		pdglBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->num);
 //	}
 
 	if(lbxgl_shader_texfinal_texBase>=0)
@@ -405,8 +405,8 @@ LBXGL_API void LBXGL_Shader_SetupTextureFinal()
 
 		i=l++;
 		pdglActiveTexture(i);
-		glBindTexture(GL_TEXTURE_2D, j);
-		glEnable(GL_TEXTURE_2D);
+		pdglBindTexture(GL_TEXTURE_2D, j);
+		pdglEnable(GL_TEXTURE_2D);
 		pdglUniform1i(lbxgl_shader_texfinal_texBase, i);
 	}
 
@@ -421,8 +421,8 @@ LBXGL_API void LBXGL_Shader_SetupTextureFinal()
 	
 		i=l++;
 		pdglActiveTexture(i);
-		glBindTexture(GL_TEXTURE_2D, j);
-		glEnable(GL_TEXTURE_2D);
+		pdglBindTexture(GL_TEXTURE_2D, j);
+		pdglEnable(GL_TEXTURE_2D);
 		pdglUniform1i(lbxgl_shader_texfinal_texNorm, i);
 	}
 
@@ -435,8 +435,8 @@ LBXGL_API void LBXGL_Shader_SetupTextureFinal()
 
 		i=l++;
 		pdglActiveTexture(i);
-		glBindTexture(GL_TEXTURE_2D, j);
-		glEnable(GL_TEXTURE_2D);
+		pdglBindTexture(GL_TEXTURE_2D, j);
+		pdglEnable(GL_TEXTURE_2D);
 		pdglUniform1i(lbxgl_shader_texfinal_texGloss, i);
 	}
 
@@ -449,8 +449,8 @@ LBXGL_API void LBXGL_Shader_SetupTextureFinal()
 
 		i=l++;
 		pdglActiveTexture(i);
-		glBindTexture(GL_TEXTURE_2D, j);
-		glEnable(GL_TEXTURE_2D);
+		pdglBindTexture(GL_TEXTURE_2D, j);
+		pdglEnable(GL_TEXTURE_2D);
 		pdglUniform1i(lbxgl_shader_texfinal_texGlow, i);
 	}
 
@@ -462,11 +462,11 @@ LBXGL_API void LBXGL_Shader_SetupTextureFinal()
 	if(txn>0)pdglVertexAttrib3fv(txn, tv);
 	if(tyn>0)pdglVertexAttrib3fv(tyn, tv);
 
-	i=glGetError();
+	i=pdglGetError();
 	while(i)
 	{
 		printf("LBXGL_Shader_SetupTextureFinal: Error %08X\n", i);
-		i=glGetError();
+		i=pdglGetError();
 	}
 }
 
@@ -496,12 +496,12 @@ LBXGL_API void LBXGL_Shader_SetupTexture()
 	lbxgl_shader_lastblend_dst=lbxgl_shader_blend_dst;
 	if(lbxgl_shader_cur->blend_src || lbxgl_shader_cur->blend_dst)
 	{
-		glBlendFunc(
+		pdglBlendFunc(
 			lbxgl_shader_cur->blend_src,
 			lbxgl_shader_cur->blend_dst);
 	}else
 	{
-//		glBlendFunc(
+//		pdglBlendFunc(
 //			lbxgl_shader_blend_src,
 //			lbxgl_shader_blend_dst);
 	}
@@ -527,11 +527,11 @@ LBXGL_API void LBXGL_Shader_SetupTexture()
 			pdglEnableTexture2D();
 			if(lbxgl_shader_cur->tex_alt>0)
 			{
-				glBindTexture(GL_TEXTURE_2D,
+				pdglBindTexture(GL_TEXTURE_2D,
 					lbxgl_shader_cur->tex_alt);
 			}else
 			{
-				glBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->num);
+				pdglBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->num);
 			}
 
 //			if(lbxgl_shader_texflat>0)
@@ -550,11 +550,11 @@ LBXGL_API void LBXGL_Shader_SetupTexture()
 			pdglEnableTexture2D();
 			if(lbxgl_shader_cur->tex_alt>0)
 			{
-				glBindTexture(GL_TEXTURE_2D,
+				pdglBindTexture(GL_TEXTURE_2D,
 					lbxgl_shader_cur->tex_alt);
 			}else
 			{
-				glBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->num);
+				pdglBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->num);
 			}
 
 //			if(lbxgl_shader_texdefault>0)
@@ -581,7 +581,7 @@ LBXGL_API void LBXGL_Shader_SetupTexture()
 		}
 
 //		PDGL_BindShader(lbxgl_shader_texdefault);
-		glBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->num);
+		pdglBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->num);
 //		PDGL_Uniform1i("texBase", 0);
 		pdglUniform1i(lbxgl_shader_texdefault_texBase, 0);
 		pdglUniform1i(lbxgl_shader_texdefault_texIsUVAY,
@@ -591,7 +591,7 @@ LBXGL_API void LBXGL_Shader_SetupTexture()
 
 	if(lbxgl_shader_cur->flags2&BTGE_TXFL2_NODEPTHWRITE)
 	{
-		glDepthMask(GL_FALSE);
+		pdglDepthMask(GL_FALSE);
 	}
 }
 
@@ -774,7 +774,7 @@ LBXGL_API void LBXGL_Shader_BlendFunc(int src, int dst)
 	lbxgl_shader_lastblend_src=src;
 	lbxgl_shader_lastblend_dst=dst;
 
-	glBlendFunc(src, dst);
+	pdglBlendFunc(src, dst);
 }
 
 LBXGL_API void LBXGL_Shader_SetUseScreen(int tex)
@@ -882,22 +882,22 @@ LBXGL_API void LBXGL_Shader_EndPrim_DrawArrays(
 		4, GL_FLOAT, 0, rgba);
 
 #if 0
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
+	pdglEnableClientState(GL_VERTEX_ARRAY);
+	pdglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	pdglEnableClientState(GL_NORMAL_ARRAY);
+	pdglEnableClientState(GL_COLOR_ARRAY);
 
 	i=4*sizeof(float);
-	glVertexPointer(3, GL_FLOAT, i, xyz);
-	glTexCoordPointer(2, GL_FLOAT, 0, st);
-	glNormalPointer(GL_FLOAT, i, norm);
-	glColorPointer(4, GL_FLOAT, 0, rgba);
-	glDrawArrays(prim, 0, nxyz);
+	pdglVertexPointer(3, GL_FLOAT, i, xyz);
+	pdglTexCoordPointer(2, GL_FLOAT, 0, st);
+	pdglNormalPointer(GL_FLOAT, i, norm);
+	pdglColorPointer(4, GL_FLOAT, 0, rgba);
+	pdglDrawArrays(prim, 0, nxyz);
 
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
+	pdglDisableClientState(GL_VERTEX_ARRAY);
+	pdglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	pdglDisableClientState(GL_NORMAL_ARRAY);
+	pdglDisableClientState(GL_COLOR_ARRAY);
 #endif
 }
 
@@ -1077,12 +1077,12 @@ LBXGL_API void LBXGL_Shader_EndPrim_SetupForShader(int shader)
 	int i, j, k, l;
 
 
-	while(glGetError());	//clear errors
+	while(pdglGetError());	//clear errors
 
 	PDGL_BindShader(shader);
 //	PDGL_Uniform1f("time", lbxgl_state->time_f);
 
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_TEXTURE_2D);
 
 	l=0;
 
@@ -1131,10 +1131,10 @@ LBXGL_API void LBXGL_Shader_EndPrim_SetupForShader(int shader)
 		i=l++;
 		pdglActiveTexture(i);
 		if(lbxgl_shader_tex_usescreen>0)
-			{ glBindTexture(GL_TEXTURE_2D, lbxgl_shader_tex_usescreen); }
+			{	pdglBindTexture(GL_TEXTURE_2D, lbxgl_shader_tex_usescreen); }
 		else
-			{ glBindTexture(GL_TEXTURE_2D, tex_screen); }
-		glEnable(GL_TEXTURE_2D);
+			{	pdglBindTexture(GL_TEXTURE_2D, tex_screen); }
+		pdglEnable(GL_TEXTURE_2D);
 		PDGL_Uniform1i("texScreen", i);
 	}
 
@@ -1163,17 +1163,17 @@ LBXGL_API void LBXGL_Shader_EndPrim_SetupForShader(int shader)
 		i=l++;
 		pdglActiveTexture(i);
 		if(lbxgl_shader_tex_usedepth>0)
-			{ glBindTexture(GL_TEXTURE_2D, lbxgl_shader_tex_usedepth); }
+			{	pdglBindTexture(GL_TEXTURE_2D, lbxgl_shader_tex_usedepth); }
 		else
-			{ glBindTexture(GL_TEXTURE_2D, tex_screen_depth); }
-		glEnable(GL_TEXTURE_2D);
+			{	pdglBindTexture(GL_TEXTURE_2D, tex_screen_depth); }
+		pdglEnable(GL_TEXTURE_2D);
 		PDGL_Uniform1i("texScreenDepth", i);
 
-		i=glGetError();
+		i=pdglGetError();
 		while(i)
 		{
 			printf("LBXGL_Shader_EndPrim_DrawShader(B): Error %08X\n", i);
-			i=glGetError();
+			i=pdglGetError();
 		}
 	}
 
@@ -1182,10 +1182,10 @@ LBXGL_API void LBXGL_Shader_EndPrim_SetupForShader(int shader)
 		i=l++;
 		pdglActiveTexture(i);
 		if(lbxgl_shader_cur->tex_alt>0)
-			{ glBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->tex_alt); }
+			{	pdglBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->tex_alt); }
 		else
-			{ glBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->num); }
-		glEnable(GL_TEXTURE_2D);
+			{	pdglBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->num); }
+		pdglEnable(GL_TEXTURE_2D);
 		PDGL_Uniform1i("texBase", i);
 	}
 
@@ -1193,8 +1193,8 @@ LBXGL_API void LBXGL_Shader_EndPrim_SetupForShader(int shader)
 	{
 		i=l++;
 		pdglActiveTexture(i);
-		glBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->tex_norm);
-		glEnable(GL_TEXTURE_2D);
+		pdglBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->tex_norm);
+		pdglEnable(GL_TEXTURE_2D);
 		PDGL_Uniform1i("texNorm", i);
 	}
 
@@ -1202,8 +1202,8 @@ LBXGL_API void LBXGL_Shader_EndPrim_SetupForShader(int shader)
 	{
 		i=l++;
 		pdglActiveTexture(i);
-		glBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->tex_gloss);
-		glEnable(GL_TEXTURE_2D);
+		pdglBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->tex_gloss);
+		pdglEnable(GL_TEXTURE_2D);
 		PDGL_Uniform1i("texGloss", i);
 	}
 
@@ -1212,8 +1212,8 @@ LBXGL_API void LBXGL_Shader_EndPrim_SetupForShader(int shader)
 	{
 		i=l++;
 		pdglActiveTexture(i);
-		glBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->tex_spec);
-		glEnable(GL_TEXTURE_2D);
+		pdglBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->tex_spec);
+		pdglEnable(GL_TEXTURE_2D);
 		PDGL_Uniform1i("texSpec", i);
 	}
 #endif
@@ -1228,8 +1228,8 @@ LBXGL_API void LBXGL_Shader_EndPrim_SetupForShader(int shader)
 
 		i=l++;
 		pdglActiveTexture(i);
-		glBindTexture(GL_TEXTURE_2D, k);
-		glEnable(GL_TEXTURE_2D);
+		pdglBindTexture(GL_TEXTURE_2D, k);
+		pdglEnable(GL_TEXTURE_2D);
 		PDGL_Uniform1i("texGlow", i);
 	}
 
@@ -1250,9 +1250,9 @@ LBXGL_API void LBXGL_Shader_EndPrim_SetupForShader(int shader)
 
 		i=l++;
 		pdglActiveTexture(i);
-		glBindTexture(GL_TEXTURE_2D,
+		pdglBindTexture(GL_TEXTURE_2D,
 			lbxgl_shader_cur->utex[i]);
-		glEnable(GL_TEXTURE_2D);
+		pdglEnable(GL_TEXTURE_2D);
 //		PDGL_Uniform1i(tb, i);
 		PDGL_Uniform1i(s, i);
 	}
@@ -1325,9 +1325,9 @@ LBXGL_API void LBXGL_Shader_EndPrim_TeardownForShader(int shader)
 	for(i=0; i<l; i++)
 	{
 		pdglActiveTexture(i);
-//		glDisable(GL_TEXTURE_2D);
+//		pdglDisable(GL_TEXTURE_2D);
 		pdglDisableTexture2D();
-		glDisable(GL_TEXTURE_CUBE_MAP);
+		pdglDisable(GL_TEXTURE_CUBE_MAP);
 	}
 	pdglActiveTexture(0);
 
@@ -1339,11 +1339,11 @@ LBXGL_API void LBXGL_Shader_EndPrim_TeardownForShader(int shader)
 		tex_screen_depth_ok=0;
 	}
 
-	i=glGetError();
+	i=pdglGetError();
 	while(i)
 	{
 		printf("LBXGL_Shader_EndPrim_DrawShader: Error %08X\n", i);
-		i=glGetError();
+		i=pdglGetError();
 	}
 }
 
@@ -1359,11 +1359,11 @@ LBXGL_API void LBXGL_Shader_EndPrim_DrawShader(int prim, int shader)
 	tyn=PDGL_GetAttribLocation("vecTdir");
 	txyn=((txn>0)&&(tyn>0))?1:0;
 
-//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	pdglColor4fv(lbxgl_shader_clr);
 
-//	glEnable(GL_TEXTURE_2D);
-//	glBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->num);
+//	pdglEnable(GL_TEXTURE_2D);
+//	pdglBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->num);
 
 	pdglBegin(prim);
 	for(i=0; i<lbxgl_shader_nvec; i++)
@@ -1390,11 +1390,11 @@ LBXGL_API void LBXGL_Shader_EndPrim_DrawGlow(int prim)
 {
 	int i, j, k, l;
 
-	glBlendFunc(GL_SRC_COLOR, GL_ONE);
+	pdglBlendFunc(GL_SRC_COLOR, GL_ONE);
 	pdglColor4f(1, 1, 1, 1);
 
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D,
+	pdglEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D,
 		lbxgl_shader_cur->tex_glow);
 
 	pdglBegin(prim);
@@ -1406,8 +1406,8 @@ LBXGL_API void LBXGL_Shader_EndPrim_DrawGlow(int prim)
 	}
 	pdglEnd();
 
-//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glBlendFunc(lbxgl_shader_blend_src, lbxgl_shader_blend_dst);
+//	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglBlendFunc(lbxgl_shader_blend_src, lbxgl_shader_blend_dst);
 }
 
 LBXGL_API void LBXGL_Shader_EndPrim_DrawTexture(int prim)
@@ -1417,7 +1417,7 @@ LBXGL_API void LBXGL_Shader_EndPrim_DrawTexture(int prim)
 #if 0
 	if(lbxgl_shader_cur->blend_src || lbxgl_shader_cur->blend_dst)
 	{
-		glBlendFunc(
+		pdglBlendFunc(
 			lbxgl_shader_cur->blend_src,
 			lbxgl_shader_cur->blend_dst);
 	}
@@ -1435,19 +1435,19 @@ LBXGL_API void LBXGL_Shader_EndPrim_DrawTexture(int prim)
 		return;
 	}
 
-//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	pdglColor4fv(lbxgl_shader_clr);
 
 #if 0
 	if(lbxgl_shader_cur->tex_alt>0)
 	{
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D,
+		pdglEnable(GL_TEXTURE_2D);
+		pdglBindTexture(GL_TEXTURE_2D,
 			lbxgl_shader_cur->tex_alt);
 	}else
 	{
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->num);
+		pdglEnable(GL_TEXTURE_2D);
+		pdglBindTexture(GL_TEXTURE_2D, lbxgl_shader_cur->num);
 	}
 #endif
 
@@ -1492,31 +1492,31 @@ LBXGL_API void LBXGL_Shader_EndPrim_DrawGloss(int prim)
 	float u, v, w, f, g;
 	int i, j, k, l;
 
-//	glEnable(GL_TEXTURE_2D);
-//	glDisable(GL_LIGHTING);
+//	pdglEnable(GL_TEXTURE_2D);
+//	pdglDisable(GL_LIGHTING);
 	pdglEnableTexture2D();
 	pdglDisableLighting();
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	if(lbxgl_shader_gloss2>0)
 	{
 #ifndef GLES
-//		glDisable(GL_TEXTURE_2D);
+//		pdglDisable(GL_TEXTURE_2D);
 		pdglDisableTexture2D();
 
 		LBXGL_Shader_TransformPointLocal(lbxgl_cam->org, trorg);
 
-		glEnable(GL_TEXTURE_CUBE_MAP);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, lbxgl_shader_gloss2);
+		pdglEnable(GL_TEXTURE_CUBE_MAP);
+		pdglBindTexture(GL_TEXTURE_CUBE_MAP, lbxgl_shader_gloss2);
 
-		glBegin(prim);
+		pdglBegin(prim);
 		for(i=0; i<lbxgl_shader_nvec; i++)
 		{
 			s=lbxgl_shader_clrbuf+i*4;
 			V4F_COPY(s, v0);
 			v0[3]*=lbxgl_shader_cur->gloss;
-			glColor4fv(v0);
+			pdglColor4fv(v0);
 
 			s=lbxgl_shader_xyzbuf+i*4;
 			t=lbxgl_shader_nbuf+i*4;
@@ -1528,22 +1528,22 @@ LBXGL_API void LBXGL_Shader_EndPrim_DrawGloss(int prim)
 			LBXGL_Shader_TransformVector(v0, v0);
 //			LBXGL_Shader_TransformVector(t, v0);
 
-			glTexCoord3fv(v0);
-//			glTexCoord3fv(t);
+			pdglTexCoord3fv(v0);
+//			pdglTexCoord3fv(t);
 
-			glNormal3fv(t);
-			glVertex3fv(s);
+			pdglNormal3fv(t);
+			pdglVertex3fv(s);
 		}
-		glEnd();
+		pdglEnd();
 
-		glDisable(GL_TEXTURE_CUBE_MAP);
-		glEnable(GL_TEXTURE_2D);
+		pdglDisable(GL_TEXTURE_CUBE_MAP);
+		pdglEnable(GL_TEXTURE_2D);
 
-		glBlendFunc(lbxgl_shader_blend_src, lbxgl_shader_blend_dst);
+		pdglBlendFunc(lbxgl_shader_blend_src, lbxgl_shader_blend_dst);
 #endif
 	}else
 	{
-		glBindTexture(GL_TEXTURE_2D, lbxgl_shader_gloss);
+		pdglBindTexture(GL_TEXTURE_2D, lbxgl_shader_gloss);
 
 //		u=0.5;
 		u=lbxgl_shader_cur->gloss;
@@ -1582,7 +1582,7 @@ LBXGL_API void LBXGL_Shader_EndPrim_DrawGloss(int prim)
 		}
 		pdglEnd();
 
-		glBlendFunc(lbxgl_shader_blend_src, lbxgl_shader_blend_dst);
+		pdglBlendFunc(lbxgl_shader_blend_src, lbxgl_shader_blend_dst);
 	}
 }
 
@@ -1617,7 +1617,7 @@ LBXGL_API void LBXGL_Shader_EndPrim(int prim)
 	if(!lbxgl_shader_cur)
 	{
 		pdglColor4fv(lbxgl_shader_clr);
-//		glDisable(GL_TEXTURE_2D);
+//		pdglDisable(GL_TEXTURE_2D);
 		pdglDisableTexture2D();
 
 		PDGL_DrawPrim_DrawArraysNormalFlatRGB(
@@ -1627,14 +1627,14 @@ LBXGL_API void LBXGL_Shader_EndPrim(int prim)
 			4, GL_FLOAT, 4*sizeof(float), lbxgl_shader_clrbuf);
 
 #if 0
-		glBegin(prim);
+		pdglBegin(prim);
 		for(i=0; i<lbxgl_shader_nvec; i++)
 		{
-			glColor4fv(lbxgl_shader_clrbuf+i*4);
-			glNormal3fv(lbxgl_shader_nbuf+i*4);
-			glVertex3fv(lbxgl_shader_xyzbuf+i*4);
+			pdglColor4fv(lbxgl_shader_clrbuf+i*4);
+			pdglNormal3fv(lbxgl_shader_nbuf+i*4);
+			pdglVertex3fv(lbxgl_shader_xyzbuf+i*4);
 		}
-		glEnd();
+		pdglEnd();
 #endif
 
 		return;
@@ -1664,7 +1664,7 @@ LBXGL_API void LBXGL_Shader_EndPrim(int prim)
 		LBXGL_Shader_EndPrim_DrawTexture(prim);
 	}else
 	{
-//		glDisable(GL_TEXTURE_2D);
+//		pdglDisable(GL_TEXTURE_2D);
 		pdglDisableTexture2D();
 
 		PDGL_DrawPrim_DrawArraysNormalFlatRGB(
@@ -1674,14 +1674,14 @@ LBXGL_API void LBXGL_Shader_EndPrim(int prim)
 			4, GL_FLOAT, 4*sizeof(float), lbxgl_shader_clrbuf);
 
 #if 0
-		glBegin(prim);
+		pdglBegin(prim);
 		for(i=0; i<lbxgl_shader_nvec; i++)
 		{
-			glColor4fv(lbxgl_shader_clrbuf+i*4);
-			glNormal3fv(lbxgl_shader_nbuf+i*4);
-			glVertex3fv(lbxgl_shader_xyzbuf+i*4);
+			pdglColor4fv(lbxgl_shader_clrbuf+i*4);
+			pdglNormal3fv(lbxgl_shader_nbuf+i*4);
+			pdglVertex3fv(lbxgl_shader_xyzbuf+i*4);
 		}
-		glEnd();
+		pdglEnd();
 #endif
 	}
 #endif
@@ -1772,15 +1772,15 @@ LBXGL_API void LBXGL_Shader_EndPrimFlat(int prim)
 		4, GL_FLOAT, 4*sizeof(float), lbxgl_shader_clrbuf);
 
 #if 0
-	glBegin(prim);
+	pdglBegin(prim);
 	for(i=0; i<lbxgl_shader_nvec; i++)
 	{
-		glTexCoord2fv(lbxgl_shader_stbuf+i*2);
-		glColor4fv(lbxgl_shader_clrbuf+i*4);
-		glNormal3fv(lbxgl_shader_nbuf+i*4);
-		glVertex3fv(lbxgl_shader_xyzbuf+i*4);
+		pdglTexCoord2fv(lbxgl_shader_stbuf+i*2);
+		pdglColor4fv(lbxgl_shader_clrbuf+i*4);
+		pdglNormal3fv(lbxgl_shader_nbuf+i*4);
+		pdglVertex3fv(lbxgl_shader_xyzbuf+i*4);
 	}
-	glEnd();
+	pdglEnd();
 #endif
 }
 
@@ -1804,15 +1804,15 @@ LBXGL_API void LBXGL_Shader_EndPrimFlatNoRGB(int prim)
 		3, GL_FLOAT, 4*sizeof(float), lbxgl_shader_nbuf);
 
 #if 0
-	glBegin(prim);
+	pdglBegin(prim);
 	for(i=0; i<lbxgl_shader_nvec; i++)
 	{
-		glTexCoord2fv(lbxgl_shader_stbuf+i*2);
-//		glColor4fv(lbxgl_shader_clrbuf+i*4);
-		glNormal3fv(lbxgl_shader_nbuf+i*4);
-		glVertex3fv(lbxgl_shader_xyzbuf+i*4);
+		pdglTexCoord2fv(lbxgl_shader_stbuf+i*2);
+//		pdglColor4fv(lbxgl_shader_clrbuf+i*4);
+		pdglNormal3fv(lbxgl_shader_nbuf+i*4);
+		pdglVertex3fv(lbxgl_shader_xyzbuf+i*4);
 	}
-	glEnd();
+	pdglEnd();
 #endif
 }
 
@@ -1837,15 +1837,15 @@ LBXGL_API void LBXGL_Shader_EndPrimFlatVA(int prim)
 		lbxgl_shader_nvec);
 
 #if 0
-	glBegin(prim);
+	pdglBegin(prim);
 	for(i=0; i<lbxgl_shader_nvec; i++)
 	{
-		glTexCoord2fv(lbxgl_shader_stbuf+i*2);
-		glColor4fv(lbxgl_shader_clrbuf+i*4);
-		glNormal3fv(lbxgl_shader_nbuf+i*4);
-		glVertex3fv(lbxgl_shader_xyzbuf+i*4);
+		pdglTexCoord2fv(lbxgl_shader_stbuf+i*2);
+		pdglColor4fv(lbxgl_shader_clrbuf+i*4);
+		pdglNormal3fv(lbxgl_shader_nbuf+i*4);
+		pdglVertex3fv(lbxgl_shader_xyzbuf+i*4);
 	}
-	glEnd();
+	pdglEnd();
 #endif
 }
 
@@ -2209,10 +2209,10 @@ LBXGL_API void LBXGL_Shader_DrawArraysSimpleFlat(
 	PDGL_DrawPrim_DrawArraysSimpleFlat(prim, base, nxyz,
 		xyzsize, xyztype, xyzstep, xyz);
 #else
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(xyzsize, xyztype, xyzstep, xyz);
-	glDrawArrays(prim, base, nxyz);
-	glDisableClientState(GL_VERTEX_ARRAY);
+	pdglEnableClientState(GL_VERTEX_ARRAY);
+	pdglVertexPointer(xyzsize, xyztype, xyzstep, xyz);
+	pdglDrawArrays(prim, base, nxyz);
+	pdglDisableClientState(GL_VERTEX_ARRAY);
 #endif
 }
 
@@ -2226,13 +2226,13 @@ LBXGL_API void LBXGL_Shader_DrawArraysNormalFlat(
 		xyzsize, xyztype, xyzstep, xyz,
 		normsize, normtype, normstep, norm);
 #else
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glVertexPointer(xyzsize, xyztype, xyzstep, xyz);
-	glNormalPointer(normtype, normstep, norm);
-	glDrawArrays(prim, base, nxyz);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
+	pdglEnableClientState(GL_VERTEX_ARRAY);
+	pdglEnableClientState(GL_NORMAL_ARRAY);
+	pdglVertexPointer(xyzsize, xyztype, xyzstep, xyz);
+	pdglNormalPointer(normtype, normstep, norm);
+	pdglDrawArrays(prim, base, nxyz);
+	pdglDisableClientState(GL_VERTEX_ARRAY);
+	pdglDisableClientState(GL_NORMAL_ARRAY);
 #endif
 }
 
@@ -2248,16 +2248,16 @@ LBXGL_API void LBXGL_Shader_DrawArraysNormalFlatRGB(
 		normsize, normtype, normstep, norm,
 		rgbsize, rgbtype, rgbstep, rgb);
 #else
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	glVertexPointer(xyzsize, xyztype, xyzstep, xyz);
-	glNormalPointer(normtype, normstep, norm);
-	glColorPointer(rgbsize, rgbtype, rgbstep, rgb);
-	glDrawArrays(prim, base, nxyz);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
+	pdglEnableClientState(GL_VERTEX_ARRAY);
+	pdglEnableClientState(GL_NORMAL_ARRAY);
+	pdglEnableClientState(GL_COLOR_ARRAY);
+	pdglVertexPointer(xyzsize, xyztype, xyzstep, xyz);
+	pdglNormalPointer(normtype, normstep, norm);
+	pdglColorPointer(rgbsize, rgbtype, rgbstep, rgb);
+	pdglDrawArrays(prim, base, nxyz);
+	pdglDisableClientState(GL_VERTEX_ARRAY);
+	pdglDisableClientState(GL_NORMAL_ARRAY);
+	pdglDisableClientState(GL_COLOR_ARRAY);
 #endif
 }
 
@@ -2273,19 +2273,19 @@ LBXGL_API void LBXGL_Shader_DrawArraysNormalTex(
 		stsize, sttype, ststep, st,
 		normsize, normtype, normstep, norm);
 #else
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-//	glEnableClientState(GL_COLOR_ARRAY);
-	glVertexPointer(xyzsize, xyztype, xyzstep, xyz);
-	glTexCoordPointer(stsize, sttype, ststep, st);
-	glNormalPointer(normtype, normstep, norm);
-//	glColorPointer(rgbsize, rgbtype, rgbstep, rgb);
-	glDrawArrays(prim, base, nxyz);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-//	glDisableClientState(GL_COLOR_ARRAY);
+	pdglEnableClientState(GL_VERTEX_ARRAY);
+	pdglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	pdglEnableClientState(GL_NORMAL_ARRAY);
+//	pdglEnableClientState(GL_COLOR_ARRAY);
+	pdglVertexPointer(xyzsize, xyztype, xyzstep, xyz);
+	pdglTexCoordPointer(stsize, sttype, ststep, st);
+	pdglNormalPointer(normtype, normstep, norm);
+//	pdglColorPointer(rgbsize, rgbtype, rgbstep, rgb);
+	pdglDrawArrays(prim, base, nxyz);
+	pdglDisableClientState(GL_VERTEX_ARRAY);
+	pdglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	pdglDisableClientState(GL_NORMAL_ARRAY);
+//	pdglDisableClientState(GL_COLOR_ARRAY);
 #endif
 }
 
@@ -2303,19 +2303,19 @@ LBXGL_API void LBXGL_Shader_DrawArraysNormalTexRGB(
 		normsize, normtype, normstep, norm,
 		rgbsize, rgbtype, rgbstep, rgb);
 #else
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	glVertexPointer(xyzsize, xyztype, xyzstep, xyz);
-	glTexCoordPointer(stsize, sttype, ststep, st);
-	glNormalPointer(normtype, normstep, norm);
-	glColorPointer(rgbsize, rgbtype, rgbstep, rgb);
-	glDrawArrays(prim, base, nxyz);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
+	pdglEnableClientState(GL_VERTEX_ARRAY);
+	pdglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	pdglEnableClientState(GL_NORMAL_ARRAY);
+	pdglEnableClientState(GL_COLOR_ARRAY);
+	pdglVertexPointer(xyzsize, xyztype, xyzstep, xyz);
+	pdglTexCoordPointer(stsize, sttype, ststep, st);
+	pdglNormalPointer(normtype, normstep, norm);
+	pdglColorPointer(rgbsize, rgbtype, rgbstep, rgb);
+	pdglDrawArrays(prim, base, nxyz);
+	pdglDisableClientState(GL_VERTEX_ARRAY);
+	pdglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	pdglDisableClientState(GL_NORMAL_ARRAY);
+	pdglDisableClientState(GL_COLOR_ARRAY);
 #endif
 }
 
@@ -2328,11 +2328,11 @@ LBXGL_API void LBXGL_Shader_DrawElementsSimpleFlat(
 //	PDGL_DrawPrim_DrawArraysSimpleFlat(prim, base, nxyz,
 //		xyzsize, xyztype, xyzstep, xyz);
 #else
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(xyzsize, xyztype, xyzstep, xyz);
-//	glDrawArrays(prim, base, nxyz);
-	glDrawElements(prim, nelem, elemtype, elems);
-	glDisableClientState(GL_VERTEX_ARRAY);
+	pdglEnableClientState(GL_VERTEX_ARRAY);
+	pdglVertexPointer(xyzsize, xyztype, xyzstep, xyz);
+//	pdglDrawArrays(prim, base, nxyz);
+	pdglDrawElements(prim, nelem, elemtype, elems);
+	pdglDisableClientState(GL_VERTEX_ARRAY);
 #endif
 }
 
@@ -2352,19 +2352,19 @@ LBXGL_API void LBXGL_Shader_DrawElementsNormalTexRGB(
 		normsize, normtype, normstep, norm,
 		rgbsize, rgbtype, rgbstep, rgb);
 #else
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	glVertexPointer(xyzsize, xyztype, xyzstep, xyz);
-	glTexCoordPointer(stsize, sttype, ststep, st);
-	glNormalPointer(normtype, normstep, norm);
-	glColorPointer(rgbsize, rgbtype, rgbstep, rgb);
-//	glDrawArrays(prim, base, nxyz);
-	glDrawElements(prim, nelem, elemtype, elems);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_COLOR_ARRAY);
+	pdglEnableClientState(GL_VERTEX_ARRAY);
+	pdglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	pdglEnableClientState(GL_NORMAL_ARRAY);
+	pdglEnableClientState(GL_COLOR_ARRAY);
+	pdglVertexPointer(xyzsize, xyztype, xyzstep, xyz);
+	pdglTexCoordPointer(stsize, sttype, ststep, st);
+	pdglNormalPointer(normtype, normstep, norm);
+	pdglColorPointer(rgbsize, rgbtype, rgbstep, rgb);
+//	pdglDrawArrays(prim, base, nxyz);
+	pdglDrawElements(prim, nelem, elemtype, elems);
+	pdglDisableClientState(GL_VERTEX_ARRAY);
+	pdglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	pdglDisableClientState(GL_NORMAL_ARRAY);
+	pdglDisableClientState(GL_COLOR_ARRAY);
 #endif
 }

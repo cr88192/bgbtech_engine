@@ -414,7 +414,7 @@ void LBXGL_BrushGround_DrawGroundFaces(LBXGL_BrushWorld *world)
 
 	lst=LBXGL_BrushGround_GetGroundFaceList(world);
 
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_TEXTURE_2D);
 
 
 	cur=lst; i=0;

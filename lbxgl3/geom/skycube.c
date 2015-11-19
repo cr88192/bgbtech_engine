@@ -500,7 +500,7 @@ void LBXGL_SkyBox_DrawSkyFace(int fn)
 
 #if 1
 	LBXGL_Shader_Color4f(1, 1, 1, alpha);
-//	glEnable(GL_TEXTURE_2D);
+//	pdglEnable(GL_TEXTURE_2D);
 
 	LBXGL_Shader_BeginPoly();
 	LBXGL_Shader_TexCoord2f(sn, tp);
@@ -584,18 +584,18 @@ LBXGL_API void LBXGL_SkyDome_DrawSkyDome()
 
 //	a1=Vec3F_Normalize(lbxgl_skydome_torque, pt1);
 //	a1*=lbxgl_state->time_f;
-//	glRotatef(a1, pt1[0], pt1[1], pt1[2]);
+//	pdglRotatef(a1, pt1[0], pt1[1], pt1[2]);
 
 	LBXGL_Sky_CalcRotateTorque();
 
 	pdglColor4f(1, 1, 1, 1);
 
-//	glDisable(GL_TEXTURE_2D);
+//	pdglDisable(GL_TEXTURE_2D);
 	pdglEnableTexture2D();
 	Draw_Bind(lbxgl_skydome_tex);
 
 #if 0
-//	glBegin(GL_QUADS);
+//	pdglBegin(GL_QUADS);
 	for(i=0; i<16; i++)
 		for(j=0; j<8; j++)
 	{
@@ -653,14 +653,14 @@ LBXGL_API void LBXGL_SkyDome_DrawSkyDome()
 		s3=s3*0.5+0.5;		t3=t3*0.5+0.5;
 		s4=s4*0.5+0.5;		t4=t4*0.5+0.5;
 
-		glBegin(GL_POLYGON);
-		glTexCoord2f(s4, t4);		glVertex3fv(pt4);
-		glTexCoord2f(s3, t3);		glVertex3fv(pt3);
-		glTexCoord2f(s2, t2);		glVertex3fv(pt2);
-		glTexCoord2f(s1, t1);		glVertex3fv(pt1);
-		glEnd();
+		pdglBegin(GL_POLYGON);
+		pdglTexCoord2f(s4, t4);		pdglVertex3fv(pt4);
+		pdglTexCoord2f(s3, t3);		pdglVertex3fv(pt3);
+		pdglTexCoord2f(s2, t2);		pdglVertex3fv(pt2);
+		pdglTexCoord2f(s1, t1);		pdglVertex3fv(pt1);
+		pdglEnd();
 	}
-//	glEnd();
+//	pdglEnd();
 
 #endif
 
@@ -711,18 +711,18 @@ LBXGL_API void LBXGL_SkyDome_DrawSkyDome()
 			s3=s3*0.5+0.5;		t3=t3*0.5+0.5;
 			s4=s4*0.5+0.5;		t4=t4*0.5+0.5;
 
-//			glBegin(GL_POLYGON);
+//			pdglBegin(GL_POLYGON);
 			pdglTexCoord2f(s4, t4);		pdglVertex3fv(pt4);
 			pdglTexCoord2f(s3, t3);		pdglVertex3fv(pt3);
 			pdglTexCoord2f(s2, t2);		pdglVertex3fv(pt2);
 			pdglTexCoord2f(s1, t1);		pdglVertex3fv(pt1);
-//			glEnd();
+//			pdglEnd();
 		}
 		pdglEnd();
 	}
 #endif
 
-//	glDisable(GL_TEXTURE_2D);
+//	pdglDisable(GL_TEXTURE_2D);
 	pdglPopMatrix();
 
 	return;
@@ -743,7 +743,7 @@ void LBXGL_Sky_DrawPlane(int num)
 	Vec3F_Subtract(org, sd, pt4); Vec3F_Add(pt4, td, pt4);
 
 //	pdglColor4f(1, 1, 1, 1);
-//	glDisable(GL_TEXTURE_2D);
+//	pdglDisable(GL_TEXTURE_2D);
 //	pdglEnableTexture2D();
 //	Draw_Bind(lbxgl_sky_planetex[num]);
 

@@ -145,6 +145,11 @@ void LBXGL_BARF_UpdateArrayVBO(
 		arr->sz_vbo=0;
 	}
 
+	if(arr->vbo<=0)
+	{
+		return;
+	}
+
 //	if(arr->sz_vbo>sz)
 //		sz=arr->sz_vbo;
 

@@ -263,7 +263,9 @@ BGBRASW_API void GLDRV_APIENTRY GlDrv_glFlush(void)
 }
 
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glHint(GLenum target, GLenum mode)
-	{ RaGlSetErrorNopStub(); }
+{
+//	RaGlSetErrorNopStub();
+}
 
 /* Depth Buffer */
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glClearDepth(GLclampd depth)
@@ -888,10 +890,16 @@ BGBRASW_API void GLDRV_APIENTRY GlDrv_glBitmap(
 	GLsizei width, GLsizei height, GLfloat xorig, GLfloat yorig,
 	GLfloat xmove, GLfloat ymove, const GLubyte *bitmap)
 	{ RaGlSetErrorNopStub(); }
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glReadPixels(
 		GLint x, GLint y, GLsizei width, GLsizei height,
 		GLenum format, GLenum type, GLvoid *pixels)
-	{ RaGlSetErrorNopStub(); }
+{
+	RASWGL_ReadPixels(GLCTX, x, y, width, height,
+		format, type, pixels);
+//	RaGlSetErrorNopStub();
+}
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glDrawPixels(
 		GLsizei width, GLsizei height, GLenum format, GLenum type,
 		const GLvoid *pixels)
@@ -903,12 +911,23 @@ BGBRASW_API void GLDRV_APIENTRY GlDrv_glCopyPixels(
 /* Stenciling */
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glStencilFunc(
 		GLenum func, GLint ref, GLuint mask)
-	{ RaGlSetErrorNopStub(); }
+{
+	RASWGL_StencilFunc(GLCTX, func, ref, mask);
+}
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glStencilMask(GLuint mask)
-	{ RaGlSetErrorNopStub(); }
+{
+	RASWGL_StencilMask(GLCTX, mask);
+//	RaGlSetErrorNopStub();
+}
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glStencilOp(
 		GLenum fail, GLenum zfail, GLenum zpass)
-	{ RaGlSetErrorNopStub(); }
+{
+	RASWGL_StencilOp(GLCTX, fail, zfail, zpass);
+//	RaGlSetErrorNopStub();
+}
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glClearStencil(GLint s)
 	{ RaGlSetErrorNopStub(); }
 
@@ -1419,7 +1438,10 @@ BGBRASW_API void GLDRV_APIENTRY GlDrv_glGetSeparableFilter(
 /* 1.3 functions */
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glActiveTexture(
 		GLenum texture)
-	{ RaGlSetErrorNopStub(); }
+{
+//	RaGlSetErrorNopStub();
+}
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glClientActiveTexture(
 		GLenum texture)
 	{ RaGlSetErrorNopStub(); }
@@ -1432,7 +1454,14 @@ BGBRASW_API void GLDRV_APIENTRY GlDrv_glCompressedTexImage2D(
 		GLenum target, GLint level, GLenum internalformat,
 		GLsizei width, GLsizei height, GLint border,
 		GLsizei imageSize, const GLvoid *data)
-	{ RaGlSetErrorNopStub(); }
+{
+	RASWGL_CompressedTexImage2D(GLCTX,
+		target, level, internalformat,
+		width, height, border, imageSize,
+		data);
+
+//	RaGlSetErrorNopStub();
+}
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glCompressedTexImage3D(
 		GLenum target, GLint level, GLenum internalformat,
 		GLsizei width, GLsizei height, GLsizei depth, GLint border,

@@ -1049,16 +1049,16 @@ PDGL_API int PDGL_AVI_Screenshot(int doshot)
 
 	PDGL_AVI_FrameUnlock();
 
-	glFinish();
+	pdglFinish();
 
 #ifdef GLES
-	glReadPixels (0, 0, w0, h0, GL_RGBA, GL_UNSIGNED_BYTE, buf); 
+	pdglReadPixels (0, 0, w0, h0, GL_RGBA, GL_UNSIGNED_BYTE, buf); 
 #else
-//	glReadPixels (0, 0, w0, h0, GL_RGBA, GL_UNSIGNED_BYTE, buf); 
-//	glReadPixels (0, 0, w0, h0, GL_BGRA, GL_UNSIGNED_BYTE, buf); 
-//	glReadPixels (0, 0, w0, h0, GL_BGR, GL_UNSIGNED_BYTE, buf); 
+//	pdglReadPixels (0, 0, w0, h0, GL_RGBA, GL_UNSIGNED_BYTE, buf); 
+//	pdglReadPixels (0, 0, w0, h0, GL_BGRA, GL_UNSIGNED_BYTE, buf); 
+//	pdglReadPixels (0, 0, w0, h0, GL_BGR, GL_UNSIGNED_BYTE, buf); 
 
-	glReadPixels (0, 0, w0, h0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, buf); 
+	pdglReadPixels (0, 0, w0, h0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, buf); 
 #endif
 
 //	thLockFastMutex(pdgl_avi_cap->lock);
@@ -1086,7 +1086,7 @@ PDGL_API int PDGL_AVI_Screenshot(int doshot)
 	}
 #endif
 
-//	glFinish();
+//	pdglFinish();
 
 	if(doshot&32)
 	{
@@ -1099,8 +1099,8 @@ PDGL_API int PDGL_AVI_Screenshot(int doshot)
 //	PDGL_AVI_Scale800x600to320x240(buf, buf1);
 //	PDGL_AVI_EncodeFrame(pdgl_avi_cap, buf1, w1, h1);
 
-//	glFinish();
-//	glReadPixels (0, 0, w0, h0, GL_RGBA, GL_UNSIGNED_BYTE, buf); 
+//	pdglFinish();
+//	pdglReadPixels (0, 0, w0, h0, GL_RGBA, GL_UNSIGNED_BYTE, buf); 
 //	v=1;
 
 	return(0);

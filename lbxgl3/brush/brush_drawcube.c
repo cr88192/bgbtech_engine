@@ -32,10 +32,10 @@ void LBXGL_BrushWorld_DrawRenderView(
 //	UI_Camera_SetupView3D(0, 0, xs, ys);
 	UI_Camera_SetupViewAtPersp3D(0, 0, xs, ys, aspect, fov, org, rot);
 
-//	glCullFace(GL_BACK); glEnable(GL_CULL_FACE);
-	glDepthFunc(GL_LEQUAL);
+//	pdglCullFace(GL_BACK);	pdglEnable(GL_CULL_FACE);
+	pdglDepthFunc(GL_LEQUAL);
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if(light)
 	{
@@ -46,9 +46,9 @@ void LBXGL_BrushWorld_DrawRenderView(
 		LBXGL_BrushWorld_DrawWorldFast(world);
 	}
 
-	glFinish();
+	pdglFinish();
 
-//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//	pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	V3F_COPY(org2, lbxgl_cam->org);
 }
@@ -155,10 +155,10 @@ void LBXGL_BrushWorld_DrawRenderViewBuffer(
 //	UI_Camera_SetupView3D(0, 0, xs, ys);
 	UI_Camera_SetupViewAtPersp3D(0, 0, xs, ys, aspect, fov, org, rot);
 
-//	glCullFace(GL_BACK); glEnable(GL_CULL_FACE);
-	glDepthFunc(GL_LEQUAL);
+//	pdglCullFace(GL_BACK);	pdglEnable(GL_CULL_FACE);
+	pdglDepthFunc(GL_LEQUAL);
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if(light)
 	{
@@ -169,16 +169,16 @@ void LBXGL_BrushWorld_DrawRenderViewBuffer(
 		LBXGL_BrushWorld_DrawWorldFast(world);
 	}
 
-	glFinish();
+	pdglFinish();
 	if(stbuf)
 	{
-//		glReadPixels(0, 0, xs, ys, GL_RGBA, GL_UNSIGNED_BYTE, stbuf);
-		glReadPixels(0, 0, xs, ys, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8, stbuf);
+//		pdglReadPixels(0, 0, xs, ys, GL_RGBA, GL_UNSIGNED_BYTE, stbuf);
+		pdglReadPixels(0, 0, xs, ys, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8, stbuf);
 	}
 
 	if(zbuf)
 	{
-		glReadPixels(0, 0, xs, ys,
+		pdglReadPixels(0, 0, xs, ys,
 			GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT, zbuf);
 
 #if 0
@@ -193,8 +193,8 @@ void LBXGL_BrushWorld_DrawRenderViewBuffer(
 #endif
 	}
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//	glClear(GL_COLOR_BUFFER_BIT);
+	pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//	pdglClear(GL_COLOR_BUFFER_BIT);
 
 	V3F_COPY(org2, lbxgl_cam->org);
 }
@@ -345,10 +345,10 @@ LBXGL_API void LBXGL_BrushWorld_DrawRenderToCubeMap(
 			}
 		}
 
-		glDisable(GL_CULL_FACE);
-//		glEnable(GL_CULL_FACE);
-//		glCullFace(GL_FRONT);
-		glCullFace(GL_BACK);
+		pdglDisable(GL_CULL_FACE);
+//		pdglEnable(GL_CULL_FACE);
+//		pdglCullFace(GL_FRONT);
+		pdglCullFace(GL_BACK);
 
 		stbuf[i]=(texnum>0)?malloc(size*size*4):NULL;
 		zbuf[i]=(ztexnum>0)?malloc(size*size*4):NULL;
@@ -359,72 +359,72 @@ LBXGL_API void LBXGL_BrushWorld_DrawRenderToCubeMap(
 	world->shadows=sv0;
 #endif
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+	pdglEnable(GL_CULL_FACE);
+	pdglCullFace(GL_BACK);
 
-	glEnable(GL_TEXTURE_2D);
+	pdglEnable(GL_TEXTURE_2D);
 	
-	glEnable(GL_TEXTURE_CUBE_MAP);
+	pdglEnable(GL_TEXTURE_CUBE_MAP);
 	
 	if((texnum>0) && (flags&LBXGL_LFL_CHANGED))
 	{
-		glBindTexture(GL_TEXTURE_CUBE_MAP, texnum);
+		pdglBindTexture(GL_TEXTURE_CUBE_MAP, texnum);
 
 		for(i=0; i<6; i++)
 		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
+			pdglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
 				0, GL_RGBA8, size, size, 0,
 				GL_BGRA, GL_UNSIGNED_INT_8_8_8_8, NULL);
 		}
 
-		glTexParameteri(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameteri(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameteri(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameteri(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-		glTexParameterf(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameterf(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameterf(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameterf(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			
-		glFinish();
+		pdglFinish();
 	}
 
 	if((ztexnum>0) && (flags&LBXGL_LFL_CHANGED))
 	{
-		glBindTexture(GL_TEXTURE_CUBE_MAP, ztexnum);
+		pdglBindTexture(GL_TEXTURE_CUBE_MAP, ztexnum);
 
 		for(i=0; i<6; i++)
 		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
+			pdglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
 				0, GL_DEPTH_STENCIL_EXT, size, size, 0,
 				GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT, NULL);
 
-//			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
+//			pdglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
 //				0, GL_DEPTH, size, size, 0,
 //				GL_DEPTH, GL_UNSIGNED_INT, NULL);
 		}
 
-		glTexParameteri(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameteri(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameteri(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameteri(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-		glTexParameterf(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameterf(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameterf(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameterf(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glFinish();
+		pdglFinish();
 	}
 
-	glCullFace(GL_FRONT);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-	glDisable(GL_TEXTURE_CUBE_MAP);
+	pdglCullFace(GL_FRONT);
+	pdglBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	pdglDisable(GL_TEXTURE_CUBE_MAP);
 
 
 	// framebuffer object
@@ -433,11 +433,11 @@ LBXGL_API void LBXGL_BrushWorld_DrawRenderToCubeMap(
 
 	pdglBindFramebuffer(GL_FRAMEBUFFER_EXT, cube_fbo);
 
-//	status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+//	status =	pdglCheckFramebufferStatus(GL_FRAMEBUFFER);
 //	printf("%d\"\n", status);
 //	printf("%d\n", GL_FRAMEBUFFER_COMPLETE);
 
-    glViewport(0, 0, size, size);
+	pdglViewport(0, 0, size, size);
 
     for(i=0; i<6; i++)
     {
@@ -540,10 +540,10 @@ LBXGL_API void LBXGL_BrushWorld_DrawRenderToCubeMap(
 			}
 		}
 
-		glDisable(GL_CULL_FACE);
-//		glEnable(GL_CULL_FACE);
-//		glCullFace(GL_FRONT);
-		glCullFace(GL_BACK);
+		pdglDisable(GL_CULL_FACE);
+//		pdglEnable(GL_CULL_FACE);
+//		pdglCullFace(GL_FRONT);
+		pdglCullFace(GL_BACK);
 
 		stbuf[i]=(texnum>0)?malloc(size*size*4):NULL;
 		zbuf[i]=(ztexnum>0)?malloc(size*size*4):NULL;
@@ -553,16 +553,16 @@ LBXGL_API void LBXGL_BrushWorld_DrawRenderToCubeMap(
 	}
 	world->shadows=sv0;
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+	pdglEnable(GL_CULL_FACE);
+	pdglCullFace(GL_BACK);
 
-	glEnable(GL_TEXTURE_2D);
+	pdglEnable(GL_TEXTURE_2D);
 	
-	glEnable(GL_TEXTURE_CUBE_MAP);
+	pdglEnable(GL_TEXTURE_CUBE_MAP);
 	
 	if(texnum>0)
 	{
-		glBindTexture(GL_TEXTURE_CUBE_MAP, texnum);
+		pdglBindTexture(GL_TEXTURE_CUBE_MAP, texnum);
 
 		for(i=0; i<6; i++)
 		{
@@ -573,34 +573,34 @@ LBXGL_API void LBXGL_BrushWorld_DrawRenderToCubeMap(
 //				GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
 //				stbuf, 256, 256);
 
-//			glBindTexture(GL_TEXTURE_CUBE_MAP, texnum);
-//			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
+//			pdglBindTexture(GL_TEXTURE_CUBE_MAP, texnum);
+//			pdglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
 //				0, GL_RGBA8, size, size, 0,
 //				GL_RGBA, GL_UNSIGNED_BYTE, stbuf[i]);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
+			pdglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
 				0, GL_RGBA8, size, size, 0,
 				GL_BGRA, GL_UNSIGNED_INT_8_8_8_8, stbuf[i]);
 			free(stbuf[i]);
 		}
 
-		glTexParameteri(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameteri(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameteri(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameteri(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-		glTexParameterf(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameterf(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameterf(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameterf(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glFinish();
+		pdglFinish();
 	}
 
 	if(ztexnum>0)
 	{
-		glBindTexture(GL_TEXTURE_CUBE_MAP, ztexnum);
+		pdglBindTexture(GL_TEXTURE_CUBE_MAP, ztexnum);
 
 		for(i=0; i<6; i++)
 		{
@@ -611,34 +611,34 @@ LBXGL_API void LBXGL_BrushWorld_DrawRenderToCubeMap(
 //				GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
 //				stbuf, 256, 256);
 
-//			glBindTexture(GL_TEXTURE_CUBE_MAP, texnum);
-//			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
+//			pdglBindTexture(GL_TEXTURE_CUBE_MAP, texnum);
+//			pdglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
 //				0, GL_DEPTH24_STENCIL8_EXT, 256, 256, 0,
 //				GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT, zbuf[i]);
 
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
+			pdglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
 				0, GL_DEPTH_STENCIL_EXT, size, size, 0,
 				GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT, zbuf[i]);
 			free(zbuf[i]);
 		}
 
-		glTexParameteri(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameteri(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameteri(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameteri(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-		glTexParameterf(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameterf(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameterf(GL_TEXTURE_CUBE_MAP,
+		pdglTexParameterf(GL_TEXTURE_CUBE_MAP,
 			GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glFinish();
+		pdglFinish();
 	}
 
-	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-	glDisable(GL_TEXTURE_CUBE_MAP);
+	pdglBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	pdglDisable(GL_TEXTURE_CUBE_MAP);
 
 	V3F_COPY(org2, lbxgl_cam->org);
 
@@ -667,32 +667,32 @@ LBXGL_API void LBXGL_BrushWorld_DrawGlossCubeMap(
 //		GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
 //		stbuf[i], 256, 256);
 
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, lbxgl_shader_gloss);
-	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, stbuf);
+	pdglEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, lbxgl_shader_gloss);
+	pdglGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, stbuf);
 	
-	glEnable(GL_TEXTURE_CUBE_MAP);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, texnum);
+	pdglEnable(GL_TEXTURE_CUBE_MAP);
+	pdglBindTexture(GL_TEXTURE_CUBE_MAP, texnum);
 
 	for(i=0; i<6; i++)
 	{
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
+		pdglTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,
 			0, GL_RGBA8, 256, 256, 0,
 			GL_RGBA, GL_UNSIGNED_BYTE, stbuf);
 	}
 	free(stbuf);
 
-	glTexParameteri(GL_TEXTURE_CUBE_MAP,
+	pdglTexParameteri(GL_TEXTURE_CUBE_MAP,
 		GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP,
+	pdglTexParameteri(GL_TEXTURE_CUBE_MAP,
 		GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP,
+	pdglTexParameteri(GL_TEXTURE_CUBE_MAP,
 		GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	pdglTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	pdglTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	glDisable(GL_TEXTURE_CUBE_MAP);
+	pdglDisable(GL_TEXTURE_CUBE_MAP);
 #endif
 
 }
@@ -735,10 +735,10 @@ LBXGL_API void LBXGL_BrushWorld_DrawRenderToCubeFaces(
 	}
 	world->shadows=sv0;
 
-	glEnable(GL_TEXTURE_2D);
+	pdglEnable(GL_TEXTURE_2D);
 	
-//	glEnable(GL_TEXTURE_CUBE_MAP);
-//	glBindTexture(GL_TEXTURE_CUBE_MAP, texnum);
+//	pdglEnable(GL_TEXTURE_CUBE_MAP);
+//	pdglBindTexture(GL_TEXTURE_CUBE_MAP, texnum);
 
 	for(i=0; i<6; i++)
 	{
@@ -749,17 +749,17 @@ LBXGL_API void LBXGL_BrushWorld_DrawRenderToCubeFaces(
 		if(rtex[i]<=0)
 			rtex[i]=Tex_AllocTexnum();
 
-		glBindTexture(GL_TEXTURE_2D, rtex[i]);
-//		glTexImage2D(GL_TEXTURE_2D,
+		pdglBindTexture(GL_TEXTURE_2D, rtex[i]);
+//		pdglTexImage2D(GL_TEXTURE_2D,
 //			0, GL_RGBA8, xs, xs, 0,
 //			GL_RGBA, GL_UNSIGNED_BYTE, stbuf[i]);
 
-		glTexImage2D(GL_TEXTURE_2D,
+		pdglTexImage2D(GL_TEXTURE_2D,
 			0, GL_RGBA8, xs, xs, 0,
 			GL_BGRA, GL_UNSIGNED_INT_8_8_8_8, stbuf[i]);
 
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		free(stbuf[i]);
 	}

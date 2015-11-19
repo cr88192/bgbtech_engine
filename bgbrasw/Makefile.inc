@@ -3,10 +3,10 @@
 
 OBJS=\
 	base/rasw_api$(OBJSUF) \
-	base/rasw_bitmap$(OBJSUF) \
 	base/rasw_context$(OBJSUF) \
 	base/rasw_drawbox$(OBJSUF) \
 	base/rasw_drawprim$(OBJSUF) \
+	base/rasw_drawline$(OBJSUF) \
 	base/rasw_drawspan$(OBJSUF) \
 	base/rasw_drawtris$(OBJSUF) \
 	base/rasw_drawtris_flat$(OBJSUF) \
@@ -15,7 +15,6 @@ OBJS=\
 	base/rasw_testblend$(OBJSUF) \
 	base/rasw_texture$(OBJSUF) \
 	base/rasw_thread$(OBJSUF) \
-	base/rasw_yytestblend$(OBJSUF) \
 	\
 	raswgl/ragl_begin$(OBJSUF) \
 	raswgl/ragl_clip$(OBJSUF) \
@@ -40,6 +39,9 @@ OBJS=\
 	vecmath/math_vnf$(OBJSUF) \
 	vecmath/mathlib_d$(OBJSUF) \
 	vecmath/mathlib_f$(OBJSUF) \
+
+#	base/rasw_bitmap$(OBJSUF) \
+#	base/rasw_yytestblend$(OBJSUF) \
 
 SRCS=$(OBJS:$(OBJSUF)=.c)
 

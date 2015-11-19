@@ -1296,8 +1296,16 @@ void RASWGL_SetupTabs(
 	tabs->tex=ctx->texture;
 	tabs->ref_clr=ctx->ref_clr;
 	tabs->ref_z=ctx->ref_z;
+	tabs->ref_sten=ctx->ref_sten;
 	tabs->mask_clr=ctx->mask_clr;
 	tabs->mask_z=ctx->mask_z;
+	tabs->mask_sten=ctx->mask_sten;
+
+	tabs->stencil_func=ctx->stencil_func;
+	tabs->stencil_op_sfail=ctx->stencil_op_sfail;
+	tabs->stencil_op_dpfail=ctx->stencil_op_dpfail;
+	tabs->stencil_op_dppass=ctx->stencil_op_dppass;
+
 	BGBRASW_SetupTestBlend(ctx->ractx, ctx->tabs);
 
 	ctx->ractx->tabs=tabs;
@@ -1401,7 +1409,7 @@ void RASWGL_TransformDrawArrays(
 	RASWGL_FinishTabs(ctx);
 }
 
-#if 1
+#if 0
 void RASWGL_DrawBaseArrays(
 	RASWGL_Context *ctx,
 	int prim, int base, int nxyz,

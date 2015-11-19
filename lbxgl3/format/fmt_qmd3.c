@@ -409,7 +409,7 @@ int LBXGL_QuakeMD3_Render(LBXGL_QMDL *mdl, int frame, int skin)
 //	}else j=skin-256;
 //	Draw_Bind(j);
 
-//	glDisable(GL_TEXTURE_2D);
+//	pdglDisable(GL_TEXTURE_2D);
 
 	for(i=0; i<mdl->head.num_surfaces; i++)
 	{
@@ -465,7 +465,7 @@ int LBXGL_QuakeMD3_Render(LBXGL_QMDL *mdl, int frame, int skin)
 		pdglEnd();
 	}
 
-//	glEnable(GL_TEXTURE_2D);
+//	pdglEnable(GL_TEXTURE_2D);
 
 	return(0);
 }
@@ -511,7 +511,7 @@ int LBXGL_QuakeMD3_RenderFlat(LBXGL_QMDL *mdl, int frame, int skin)
 		pdglEnd();
 	}
 
-//	glEnable(GL_TEXTURE_2D);
+//	pdglEnable(GL_TEXTURE_2D);
 
 	return(0);
 }

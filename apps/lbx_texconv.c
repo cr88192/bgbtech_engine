@@ -161,8 +161,8 @@ int pdgl_main_body()
 
 	UI_Camera_Setup3D();
 
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_CULL_FACE);
+	pdglDisable(GL_TEXTURE_2D);
 //	PD3D_DrawGrid(0, 0, 16, 1);
 
 	UI_Camera_Setup2D();
@@ -170,7 +170,7 @@ int pdgl_main_body()
 	Con_Render();
 	PDGLUI_Frame();
 
-//	glDisable(GL_TEXTURE_2D);
+//	pdglDisable(GL_TEXTURE_2D);
 	pdglColor4f(1, 0, 0, 1);
 
 	pdglBegin(PDGL_LINES);

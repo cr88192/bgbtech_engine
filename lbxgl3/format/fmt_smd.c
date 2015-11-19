@@ -973,7 +973,7 @@ int LBXGL_FmtSmd_RenderModel(LBXGL_SkelMesh *mdl, float *xforms)
 	}
 
 	if(vt)glDisable(GL_TEXTURE_2D);
-		else glEnable(GL_TEXTURE_2D);
+		else pdglEnable(GL_TEXTURE_2D);
 
 //	pdglColor4f(1, 1, 1, 1);
 
@@ -1018,7 +1018,7 @@ int LBXGL_FmtSmd_RenderBox(
 	float *pt1, *pt2, *pt3, *pt4;
 
 	pdglDisableTexture2D();
-	glEnable(GL_BLEND);
+	pdglEnable(GL_BLEND);
 
 	for(i=0; i<8; i++)
 	{
@@ -1091,7 +1091,7 @@ int LBXGL_FmtSmd_RenderBones(LBXGL_SkelMesh *mdl, float *xforms)
 	for(i=0; i<3; i++)o[i]=0;
 
 	pdglDisableTexture2D();
-	glDisable(GL_DEPTH_TEST);
+	pdglDisable(GL_DEPTH_TEST);
 
 	pdglBegin(PDGL_LINES);
 	for(i=0; i<mdl->num_bones; i++)
@@ -1143,7 +1143,7 @@ int LBXGL_FmtSmd_RenderBones(LBXGL_SkelMesh *mdl, float *xforms)
 	}
 	pdglEnd();
 
-	glEnable(GL_DEPTH_TEST);
+	pdglEnable(GL_DEPTH_TEST);
 	pdglEnableTexture2D();
 
 	return(0);
@@ -1157,11 +1157,11 @@ int LBXGL_FmtSmd_Render(LBXGL_SkelMesh *mdl, int seq, int frame)
 	xforms=gcalloc(mdl->num_bones*16*sizeof(float));
 	LBXGL_FmtSmd_CalcTransforms(mdl, seq, frame, xforms);
 
-//	glMatrixMode(GL_MODELVIEW);
+//	pdglMatrixMode(GL_MODELVIEW);
 	pdglModelviewMatrix();
 	pdglPushMatrix();
 
-//	glScalef(1.0/36.0, 1.0/36.0, 1.0/36.0);
+//	pdglScalef(1.0/36.0, 1.0/36.0, 1.0/36.0);
 	pdglScalef(1.0/mdl->unit, 1.0/mdl->unit, 1.0/mdl->unit);
 	pdglColor4f(1, 1, 1, 1);
 
@@ -1169,7 +1169,7 @@ int LBXGL_FmtSmd_Render(LBXGL_SkelMesh *mdl, int seq, int frame)
 	LBXGL_FmtSmd_RenderBones(mdl, xforms);
 	LBXGL_FmtSmd_RenderHitboxes(mdl, xforms);
 
-//	glMatrixMode(GL_MODELVIEW);
+//	pdglMatrixMode(GL_MODELVIEW);
 	pdglPopMatrix();
 
 	gcfree(xforms);

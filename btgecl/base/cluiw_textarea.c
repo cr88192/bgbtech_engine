@@ -667,21 +667,21 @@ int BTCLUI_TextArea_Render(BTCLUI_Widget *obj, int ox, int oy)
 //			8, 12, 127, 127, 127, 255);
 	}
 
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_TEXTURE_2D);
 
-	glBegin(GL_LINES);
-	glColor4f(0.3, 0.3, 0.3, 1);
-	glVertex2f(ox+obj->ox,			oy+obj->oy+szo);
-	glVertex2f(ox+obj->ox,			oy+obj->oy+obj->ys);
-	glVertex2f(ox+obj->ox,			oy+obj->oy+obj->ys);
-	glVertex2f(ox+obj->ox+obj->xs-szo,	oy+obj->oy+obj->ys);
+	pdglBegin(GL_LINES);
+	pdglColor4f(0.3, 0.3, 0.3, 1);
+	pdglVertex2f(ox+obj->ox,			oy+obj->oy+szo);
+	pdglVertex2f(ox+obj->ox,			oy+obj->oy+obj->ys);
+	pdglVertex2f(ox+obj->ox,			oy+obj->oy+obj->ys);
+	pdglVertex2f(ox+obj->ox+obj->xs-szo,	oy+obj->oy+obj->ys);
 
-	glColor4f(0.7, 0.7, 0.7, 1);
-	glVertex2f(ox+obj->ox,			oy+obj->oy+szo);
-	glVertex2f(ox+obj->ox+obj->xs-szo,	oy+obj->oy+szo);
-	glVertex2f(ox+obj->ox+obj->xs-szo,	oy+obj->oy+szo);
-	glVertex2f(ox+obj->ox+obj->xs-szo,	oy+obj->oy+obj->ys);
-	glEnd();
+	pdglColor4f(0.7, 0.7, 0.7, 1);
+	pdglVertex2f(ox+obj->ox,			oy+obj->oy+szo);
+	pdglVertex2f(ox+obj->ox+obj->xs-szo,	oy+obj->oy+szo);
+	pdglVertex2f(ox+obj->ox+obj->xs-szo,	oy+obj->oy+szo);
+	pdglVertex2f(ox+obj->ox+obj->xs-szo,	oy+obj->oy+obj->ys);
+	pdglEnd();
 
 	return(0);
 }

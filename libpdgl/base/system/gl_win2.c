@@ -41,7 +41,142 @@ int window_desktop_height=1050;
 int window_max_width=0;
 int window_max_height=0;
 
-char *gl_vendor, *gl_renderer, *gl_version, *gl_extensions;
+char *pdgl_vendor, *pdgl_renderer, *pdgl_version, *pdgl_extensions;
+
+
+BOOL (APIENTRY *pwglCopyContext)(HGLRC hglrc1, HGLRC hglrc2, UINT mask);
+HGLRC (APIENTRY *pwglCreateContext)(HDC hdc);
+BOOL (APIENTRY *pwglDeleteContext)(HGLRC hglrc);
+HGLRC (APIENTRY *pwglGetCurrentContext)(void);
+HDC (APIENTRY *pwglGetCurrentDC)(void);
+BOOL (APIENTRY *pwglMakeCurrent)(HDC hdc, HGLRC hglrc);
+BOOL (APIENTRY *pwglShareLists)(HGLRC a0, HGLRC a1);
+
+int (APIENTRY *pwglChoosePixelFormat)(
+	HDC hdc, CONST PIXELFORMATDESCRIPTOR *ppfd);
+int (APIENTRY *pwglGetPixelFormat)(HDC hdc);
+BOOL (APIENTRY *pwglSetPixelFormat)(
+	HDC hdc, INT iPixelFormat, const PIXELFORMATDESCRIPTOR *ppfd);
+int (APIENTRY *pwglDescribePixelFormat)(
+	HDC hdc, INT iPixelFormat, UINT nBytes, LPPIXELFORMATDESCRIPTOR ppfd);
+BOOL (APIENTRY *pwglSwapBuffers)(HDC  hdc);
+
+
+BOOL pdwglCopyContext(
+		HGLRC hglrc1, HGLRC hglrc2, UINT mask)
+{
+	if(pwglCopyContext)
+		{ return(pwglCopyContext(hglrc1, hglrc2, mask)); }
+	pwglCopyContext=pdglGetProcAddress("wglCopyContext");
+	return(pwglCopyContext(hglrc1, hglrc2, mask));
+}
+
+HGLRC pdwglCreateContext(HDC hdc)
+{
+	if(pwglCreateContext)
+		{ return(pwglCreateContext(hdc)); }
+	pwglCreateContext=pdglGetProcAddress("wglCreateContext");
+	return(pwglCreateContext(hdc));
+}
+
+BOOL pdwglDeleteContext(HGLRC hglrc)
+{
+	if(pwglDeleteContext)
+		{ return(pwglDeleteContext(hglrc)); }
+	pwglDeleteContext=pdglGetProcAddress("wglDeleteContext");
+	return(pwglDeleteContext(hglrc));
+}
+
+HGLRC pdwglGetCurrentContext(void)
+{
+	if(pwglGetCurrentContext)
+		{ return(pwglGetCurrentContext()); }
+	pwglGetCurrentContext=pdglGetProcAddress("wglGetCurrentContext");
+	return(pwglGetCurrentContext());
+}
+
+HDC pdwglGetCurrentDC(void)
+{
+	if(pwglGetCurrentDC)
+		{ return(pwglGetCurrentDC()); }
+	pwglGetCurrentDC=pdglGetProcAddress("wglGetCurrentDC");
+	return(pwglGetCurrentDC());
+}
+
+BOOL pdwglMakeCurrent(HDC hdc, HGLRC hglrc)
+{
+	if(pwglMakeCurrent)
+		{ return(pwglMakeCurrent(hdc, hglrc)); }
+	pwglMakeCurrent=pdglGetProcAddress("wglMakeCurrent");
+	return(pwglMakeCurrent(hdc, hglrc));
+}
+
+BOOL pdwglShareLists(HGLRC a0, HGLRC a1)
+{
+	if(pwglShareLists)
+		{ return(pwglShareLists(a0, a1)); }
+	pwglShareLists=pdglGetProcAddress("wglShareLists");
+	return(pwglShareLists(a0, a1));
+}
+
+int pdwglChoosePixelFormat(
+	HDC hdc, CONST PIXELFORMATDESCRIPTOR *ppfd)
+{
+	if(pwglChoosePixelFormat)
+		{ return(pwglChoosePixelFormat(hdc, ppfd)); }
+	if(!pdglGlDriverIsGL())
+		pwglChoosePixelFormat=pdglGetProcAddress("wglChoosePixelFormat");
+	if(!pwglChoosePixelFormat)
+		pwglChoosePixelFormat=pdglGetProcAddress("ChoosePixelFormat");
+	return(pwglChoosePixelFormat(hdc, ppfd));
+}
+
+int pdwglGetPixelFormat(HDC hdc)
+{
+	if(pwglGetPixelFormat)
+		{ return(pwglGetPixelFormat(hdc)); }
+	if(!pdglGlDriverIsGL())
+		pwglGetPixelFormat=pdglGetProcAddress("wglGetPixelFormat");
+	if(!pwglGetPixelFormat)
+		pwglGetPixelFormat=pdglGetProcAddress("GetPixelFormat");
+	return(pwglGetPixelFormat(hdc));
+}
+
+BOOL pdwglSetPixelFormat(
+	HDC hdc, INT iPixelFormat, const PIXELFORMATDESCRIPTOR *ppfd)
+{
+	if(pwglSetPixelFormat)
+		{ return(pwglSetPixelFormat(hdc, iPixelFormat, ppfd)); }
+	if(!pdglGlDriverIsGL())
+		pwglSetPixelFormat=pdglGetProcAddress("wglSetPixelFormat");
+	if(!pwglSetPixelFormat)
+		pwglSetPixelFormat=pdglGetProcAddress("SetPixelFormat");
+	return(pwglSetPixelFormat(hdc, iPixelFormat, ppfd));
+}
+
+int pdwglDescribePixelFormat(
+	HDC hdc, INT iPixelFormat, UINT nBytes, LPPIXELFORMATDESCRIPTOR ppfd)
+{
+	if(pwglDescribePixelFormat)
+		{ return(pwglDescribePixelFormat(hdc, iPixelFormat, nBytes, ppfd)); }
+	if(!pdglGlDriverIsGL())
+		pwglDescribePixelFormat=pdglGetProcAddress("wglDescribePixelFormat");
+	if(!pwglDescribePixelFormat)
+		pwglDescribePixelFormat=pdglGetProcAddress("DescribePixelFormat");
+	return(pwglDescribePixelFormat(hdc, iPixelFormat, nBytes, ppfd));
+}
+
+BOOL pdwglSwapBuffers(HDC hdc)
+{
+	if(pwglSwapBuffers)
+		{ return(pwglSwapBuffers(hdc)); }
+	if(!pdglGlDriverIsGL())
+		pwglSwapBuffers=pdglGetProcAddress("wglSwapBuffers");
+	if(!pwglSwapBuffers)
+		pwglSwapBuffers=pdglGetProcAddress("SwapBuffers");
+	return(pwglSwapBuffers(hdc));
+}
+
 
 void gfxdrv_lock()
 {
@@ -90,23 +225,24 @@ PDGL_API bool GfxDrv_WindowIsFullscreenP(void)
 PDGL_API void GfxDrv_BeginDrawing()
 {
 	GfxDrv_V_HandleMessages();
-	glViewport(0, 0, window_width, window_height);
-	glClearColor(0, 0, 0, 1);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
+	pdglViewport(0, 0, window_width, window_height);
+	pdglClearColor(0, 0, 0, 1);
+	pdglClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
 }
 
 
 PDGL_API void GfxDrv_EndDrawing(void)
 {
-	glFinish();
-	SwapBuffers(maindc);
+	pdglFinish();
+//	SwapBuffers(maindc);
+	pdwglSwapBuffers(maindc);
 
 	window_lastactive=window_active;
 
 	if(gfxdrv_waitdc)
 	{
 		gfxdrv_lock();
-		wglMakeCurrent(NULL, NULL);
+		pdwglMakeCurrent(NULL, NULL);
 		gfxdrv_waitok=1;
 		gfxdrv_unlock();
 
@@ -116,7 +252,7 @@ PDGL_API void GfxDrv_EndDrawing(void)
 		thSleep(10);
 
 		gfxdrv_lock();
-		wglMakeCurrent(maindc, mainrc);
+		pdwglMakeCurrent(maindc, mainrc);
 		gfxdrv_unlock();
 	}
 }
@@ -264,7 +400,7 @@ void GfxDrv_UpdateMode()
 {
 #if 0
 	gfxdrv_lock();
-	wglMakeCurrent(NULL, NULL);
+	pdwglMakeCurrent(NULL, NULL);
 //	gfxdrv_waitok=1;
 	gfxdrv_unlock();
 
@@ -287,7 +423,7 @@ void GfxDrv_UpdateMode()
 	GfxDrv_SetupMainDC();
 
 	gfxdrv_lock();
-	wglMakeCurrent(maindc, mainrc);
+	pdwglMakeCurrent(maindc, mainrc);
 	gfxdrv_unlock();
 #endif
 }
@@ -351,54 +487,54 @@ int GfxDrv_V_SetupWindow()
 
 void GfxDrv_InitGL()
 {
-	gl_vendor=(char *)glGetString(GL_VENDOR);
-	gl_renderer=(char *)glGetString(GL_RENDERER);
-	gl_version=(char *)glGetString(GL_VERSION);
-	gl_extensions=(char *)glGetString(GL_EXTENSIONS);
+	pdgl_vendor=(char *)pdglGetString(GL_VENDOR);
+	pdgl_renderer=(char *)pdglGetString(GL_RENDERER);
+	pdgl_version=(char *)pdglGetString(GL_VERSION);
+	pdgl_extensions=(char *)pdglGetString(GL_EXTENSIONS);
 
-	printf("OpenGL Vendor=%s\n", gl_vendor);
-	printf("OpenGL Renderer=%s\n", gl_renderer);
-	printf("OpenGL Version=%s\n", gl_version);
-//	printf("OpenGL Extensions=%s\n", gl_extensions);
+	printf("OpenGL Vendor=%s\n", pdgl_vendor);
+	printf("OpenGL Renderer=%s\n", pdgl_renderer);
+	printf("OpenGL Version=%s\n", pdgl_version);
+//	printf("OpenGL Extensions=%s\n", pdgl_extensions);
 
-	BGBBTJ_SetGlExtensions(gl_extensions);
+	BGBBTJ_SetGlExtensions(pdgl_extensions);
 
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glShadeModel(GL_SMOOTH);
+	pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	pdglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	pdglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	pdglShadeModel(GL_SMOOTH);
 
-	glClearColor(0, 0, 0, 1);
-	glCullFace(GL_FRONT);
-	glEnable(GL_TEXTURE_2D);
+	pdglClearColor(0, 0, 0, 1);
+	pdglCullFace(GL_FRONT);
+	pdglEnable(GL_TEXTURE_2D);
 
-	glAlphaFunc(GL_GREATER, 0.75);
-	glDisable(GL_ALPHA_TEST);
+	pdglAlphaFunc(GL_GREATER, 0.75);
+	pdglDisable(GL_ALPHA_TEST);
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void GfxDrv_InitGL2()
 {
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glShadeModel(GL_SMOOTH);
+	pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	pdglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	pdglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	pdglShadeModel(GL_SMOOTH);
 
-	glClearColor(0, 0, 0, 1);
-	glCullFace(GL_FRONT);
-	glEnable(GL_TEXTURE_2D);
+	pdglClearColor(0, 0, 0, 1);
+	pdglCullFace(GL_FRONT);
+	pdglEnable(GL_TEXTURE_2D);
 
-	glAlphaFunc(GL_GREATER, 0.75);
-	glDisable(GL_ALPHA_TEST);
+	pdglAlphaFunc(GL_GREATER, 0.75);
+	pdglDisable(GL_ALPHA_TEST);
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 PDGL_API void GfxDrv_Shutdown()
@@ -409,11 +545,11 @@ PDGL_API void GfxDrv_Shutdown()
 	if(window_fullscreen)
 		{ ChangeDisplaySettings (NULL, 0); }
 
-	hrc=wglGetCurrentContext();
-	hdc=wglGetCurrentDC();
-	wglMakeCurrent(NULL, NULL);
+	hrc=pdwglGetCurrentContext();
+	hdc=pdwglGetCurrentDC();
+	pdwglMakeCurrent(NULL, NULL);
 	if(hrc)
-		wglDeleteContext(hrc);
+		pdwglDeleteContext(hrc);
 	if(hdc && mainwindow)
 		ReleaseDC(mainwindow, hdc);
 	if(maindc && mainwindow)
@@ -611,9 +747,9 @@ PDGL_API int GfxDrv_SetupMainDC()
 	pfd.cStencilBits=16;
 	pfd.iLayerType=PFD_MAIN_PLANE;
 
-	i=ChoosePixelFormat(maindc, &pfd);
+	i=pdwglChoosePixelFormat(maindc, &pfd);
 	if(!i)return(-1);
-	i=SetPixelFormat(maindc, i, &pfd);
+	i=pdwglSetPixelFormat(maindc, i, &pfd);
 	if(!i)return(-1);
 #endif
 	return(0);
@@ -652,10 +788,10 @@ PDGL_API int GfxDrv_Start()
 
 	GfxDrv_SetupMainDC();
 
-	mainrc=wglCreateContext(maindc);
+	mainrc=pdwglCreateContext(maindc);
 	if(!mainrc)return(-1);
 
-	i=wglMakeCurrent(maindc, mainrc);
+	i=pdwglMakeCurrent(maindc, mainrc);
 	if(!i)return(-1);
 
 	SetCursor(NULL);
@@ -680,21 +816,21 @@ PDGL_API int GfxDrv_SetupThreadShareLists()
 
 	gfxdrv_lock();
 
-	altrc=wglCreateContext(maindc);
+	altrc=pdwglCreateContext(maindc);
 	if(!altrc)
 	{
 		gfxdrv_unlock();
 		return(-1);
 	}
 
-	i=wglShareLists(mainrc, altrc);
+	i=pdwglShareLists(mainrc, altrc);
 	if(!i)
 	{
 		gfxdrv_unlock();
 		return(-1);
 	}
 
-	i=wglMakeCurrent(maindc, altrc);
+	i=pdwglMakeCurrent(maindc, altrc);
 	if(!i)
 	{
 		gfxdrv_unlock();
@@ -713,10 +849,10 @@ PDGL_API int GfxDrv_TeardownThreadShareLists()
 {
    	HGLRC hrc;
 
-	hrc=wglGetCurrentContext();
-	wglMakeCurrent(NULL, NULL);
+	hrc=pdwglGetCurrentContext();
+	pdwglMakeCurrent(NULL, NULL);
 	if(hrc)
-		wglDeleteContext(hrc);
+		pdwglDeleteContext(hrc);
 }
 
 PDGL_API int GfxDrv_Init(void *hInstance, int nCmdShow, int *rkill)

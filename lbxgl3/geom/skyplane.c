@@ -146,7 +146,7 @@ int LBXGL_SkyPlane_RenderSky(int t)
 	pdglEnd();
 
 	pdglEnableTexture2D();
-	glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_COLOR);
+	pdglBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_COLOR);
 
 	Draw_Bind(lbxgl_skyplane_sunnum);
 	pdglBegin(PDGL_QUADS);
@@ -166,7 +166,7 @@ int LBXGL_SkyPlane_RenderSky(int t)
 	pdglVertex3f(bx+i, by-i, 30000);
 	pdglEnd();	
 
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	Draw_Bind(lbxgl_skyplane_skynum);
 	pdglBegin(PDGL_QUADS);
 
@@ -257,7 +257,7 @@ int LBXGL_SkyPlane_RenderSky2(int t)
 
 #if 0
 	pdglEnableTexture2D();
-//	glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_COLOR);
+//	pdglBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_COLOR);
 
 //	Draw_Bind(lbxgl_skyplane_sunnum);
 //	pdglBegin(PDGL_QUADS);
@@ -294,7 +294,7 @@ int LBXGL_SkyPlane_RenderSky2(int t)
 
 	pdglEnableTexture2D();
 
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	Draw_Bind(lbxgl_skyplane_skynum);
 	pdglBegin(PDGL_QUADS);
 
@@ -369,8 +369,8 @@ int LBXGL_SkyPlane_RenderSky2(int t)
 
 int LBXGL_SkyPlane_Render(int t)
 {
-//	glDisable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
+//	pdglDisable(GL_DEPTH_TEST);
+	pdglDepthFunc(GL_LEQUAL);
 	if(lbxgl_skyplane_camorg[2]>0)
 	{
 		LBXGL_SkyPlane_RenderGround(t);
@@ -380,12 +380,12 @@ int LBXGL_SkyPlane_Render(int t)
 		LBXGL_SkyPlane_RenderSky2(t);
 		LBXGL_SkyPlane_RenderGround(t);
 	}
-	glEnable(GL_DEPTH_TEST);
+	pdglEnable(GL_DEPTH_TEST);
 	return(0);
 }
 
 #if 0
-		glDisable(GL_DEPTH_TEST);
+		pdglDisable(GL_DEPTH_TEST);
 		pdglDisableTexture2D();
 
 		pdglBegin(PDGL_QUADS);
@@ -446,48 +446,48 @@ int LBXGL_SkyPlane_Render(int t)
 
 		pdglEnd();
 
-		glEnable(GL_DEPTH_TEST);
+		pdglEnable(GL_DEPTH_TEST);
 #endif
 
 #if 0
-		glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, 0);
+		pdglLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, 0);
 
-		glEnable(GL_LIGHTING);
+		pdglEnable(GL_LIGHTING);
 
-//		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
+//		pdglMatrixMode(GL_PROJECTION);
+		pdglPushMatrix();
+		pdglLoadIdentity();
 
-		glRotatef (-ang[1],  0, 1, 0);
-		glRotatef (-ang[0],  1, 0, 0);
-		glRotatef (-ang[2],  0, 0, 1);
-		glTranslatef (-org[0],  -org[1],  -org[2]);
+		pdglRotatef (-ang[1],  0, 1, 0);
+		pdglRotatef (-ang[0],  1, 0, 0);
+		pdglRotatef (-ang[2],  0, 0, 1);
+		pdglTranslatef (-org[0],  -org[1],  -org[2]);
 
 		pt[0]=0;
 		pt[1]=0;
 		pt[2]=0;
 		pt[3]=1;
-		glLightfv(GL_LIGHT0, GL_POSITION, pt);
+		pdglLightfv(GL_LIGHT0, GL_POSITION, pt);
 
 		pt[0]=0;
 		pt[1]=0;
 		pt[2]=1;
 		pt[3]=0;
-		glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, pt);
+		pdglLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, pt);
 
-		glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 180);
-		glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0);
-		glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 1/10.0);
+		pdglLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 180);
+		pdglLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0);
+		pdglLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 1/10.0);
 
-		glEnable(GL_LIGHT0);
+		pdglEnable(GL_LIGHT0);
 
-		glPopMatrix();
-		glMatrixMode(GL_MODELVIEW);
+		pdglPopMatrix();
+		pdglMatrixMode(GL_MODELVIEW);
 
 //		pt[0]=0.5;
 //		pt[1]=0.5;
 //		pt[2]=0.5;
 //		pt[3]=0;
-//		glMaterialfv(GL_FRONT, GL_SPECULAR, pt);
-//		glMaterialf(GL_FRONT, GL_SHININESS, 0.5);
+//		pdglMaterialfv(GL_FRONT, GL_SPECULAR, pt);
+//		pdglMaterialf(GL_FRONT, GL_SHININESS, 0.5);
 #endif

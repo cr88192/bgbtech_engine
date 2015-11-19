@@ -66,10 +66,10 @@ LBXGL_API void LBXGL_BrushMesh_DrawPrimEditOrtho(LBXGL_MeshPrim *prim)
 	int i0, i1, i2;
 	int i, j, k;
 
-	glDepthFunc(GL_LEQUAL);
-	glDisable(GL_TEXTURE_2D);
+	pdglDepthFunc(GL_LEQUAL);
+	pdglDisable(GL_TEXTURE_2D);
 	pdglDisableLighting();
-	glBlendFunc(GL_ONE, GL_ZERO);
+	pdglBlendFunc(GL_ONE, GL_ZERO);
 
 	if(lbxgl_brushmesh_mode==LBXGL_EDMODE_VERTEX)
 	{
@@ -159,10 +159,10 @@ LBXGL_API void LBXGL_BrushMesh_DrawPrimEdit(LBXGL_MeshPrim *prim)
 		return;
 	}
 
-	glDepthFunc(GL_LEQUAL);
-	glDisable(GL_TEXTURE_2D);
+	pdglDepthFunc(GL_LEQUAL);
+	pdglDisable(GL_TEXTURE_2D);
 //	pdglDisableLighting();
-	glBlendFunc(GL_ONE, GL_ZERO);
+	pdglBlendFunc(GL_ONE, GL_ZERO);
 
 	if(lbxgl_brushmesh_mode==LBXGL_EDMODE_VERTEX)
 	{
@@ -243,7 +243,7 @@ LBXGL_API void LBXGL_BrushMesh_DrawPrimEdit(LBXGL_MeshPrim *prim)
 
 		if(!(fl&LBXGL_TXFL_ALPHA))
 		{
-			glBlendFunc(GL_DST_COLOR, GL_ZERO);
+			pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 
 			pdglBegin(PDGL_POLYGON);
 			for(j=0; j<n; j++)
@@ -260,20 +260,20 @@ LBXGL_API void LBXGL_BrushMesh_DrawPrimEdit(LBXGL_MeshPrim *prim)
 //	if(1)
 	{
 		pdglDisableLighting();
-//		glBlendFunc(GL_ONE, GL_ZERO);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//		pdglBlendFunc(GL_ONE, GL_ZERO);
+		pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}else
 	{
-		glEnableLighting();
-		glBlendFunc(GL_DST_COLOR, GL_ZERO);
+		pdglEnableLighting();
+		pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 	}
 #endif
 
 #if 0
 	if(prim->texnum>0)
 	{
-//		glEnable(GL_TEXTURE_2D);
-//		glBindTexture(GL_TEXTURE_2D, prim->texnum);
+//		pdglEnable(GL_TEXTURE_2D);
+//		pdglBindTexture(GL_TEXTURE_2D, prim->texnum);
 
 		LBXGL_Shader_BindTexture(prim->texnum);
 	}else
@@ -306,8 +306,8 @@ LBXGL_API void LBXGL_BrushMesh_DrawPrimEdit(LBXGL_MeshPrim *prim)
 
 		if(!(fl&(LBXGL_TXFL_ALPHA|LBXGL_TXFL_WINDOW)))
 		{
-//			glEnableLighting();
-			glBlendFunc(GL_DST_COLOR, GL_ZERO);
+//			pdglEnableLighting();
+			pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 		}
 
 
@@ -333,9 +333,9 @@ LBXGL_API void LBXGL_BrushMesh_DrawPrimEdit(LBXGL_MeshPrim *prim)
 
 	if(lbxgl_brushmesh_mode==LBXGL_EDMODE_FACE)
 	{
-		glDisable(GL_TEXTURE_2D);
+		pdglDisable(GL_TEXTURE_2D);
 //		pdglDisableLighting();
-		glBlendFunc(GL_ONE, GL_ZERO);
+		pdglBlendFunc(GL_ONE, GL_ZERO);
 
 		pdglColor4f(0, 0, 0, 1);
 		pdglBegin(PDGL_LINES);
@@ -357,11 +357,11 @@ LBXGL_API void LBXGL_BrushMesh_DrawPrimEdit(LBXGL_MeshPrim *prim)
 
 	if((lbxgl_brushmesh_mode==LBXGL_EDMODE_TEXTURE) && (prim==lbxgl_meshsel_prim) && (prim->texnum>=0))
 	{
-		glEnable(GL_TEXTURE_2D);
+		pdglEnable(GL_TEXTURE_2D);
 //		pdglDisableLighting();
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		glBindTexture(GL_TEXTURE_2D, prim->texnum);
+		pdglBindTexture(GL_TEXTURE_2D, prim->texnum);
 		pdglColor4f(1, 1, 1, 0.75);
 
 		if(V3F_LEN(prim->tex_sdir)<0.001)
@@ -464,7 +464,7 @@ LBXGL_API void LBXGL_BrushMesh_DrawPrimEdit(LBXGL_MeshPrim *prim)
 		}
 	}
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	LBXGL_Shader_Color4f(1, 1, 1, 1);
 	pdglColor4f(1, 1, 1, 1);
 }
@@ -491,8 +491,8 @@ LBXGL_API void LBXGL_BrushMesh_DrawPrimEditAlpha(LBXGL_MeshPrim *prim)
 	if(lbxgl_cam->ortho)
 		return;
 
-	glDepthFunc(GL_LEQUAL);
-//	glDisable(GL_TEXTURE_2D);
+	pdglDepthFunc(GL_LEQUAL);
+//	pdglDisable(GL_TEXTURE_2D);
 
 	fl=LBXGL_Texture_GetImageFlags(prim->texnum);
 //	fl|=LBXGL_TXFL_ALPHA;
@@ -501,7 +501,7 @@ LBXGL_API void LBXGL_BrushMesh_DrawPrimEditAlpha(LBXGL_MeshPrim *prim)
 		return;
 
 	pdglDisableLighting();
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	if(prim->texnum>0)
 	{

@@ -71,7 +71,7 @@ PDGLUI_API void UI_MetaUI_Draw()
 	xs2=(pdglui_state->xs/2);
 	ys2=(pdglui_state->ys/2);
 	
-//	glDisable(GL_TEXTURE_2D);
+//	pdglDisable(GL_TEXTURE_2D);
 	pdglDisableTexture2D();
 
 	pdglBegin(PDGL_QUADS);

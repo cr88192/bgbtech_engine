@@ -647,7 +647,7 @@ LBXGL_API void LBXGL_BrushPatch_DrawFacesShadow(LBXGL_Brush *brush)
 
 			LBXGL_Shader_Normal3fv(p0->norm);
 
-			glBlendFunc(GL_DST_COLOR, GL_ZERO);
+			pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 
 			LBXGL_Shader_BeginPoly();
 			LBXGL_Shader_TexCoord2fv(p0->uv);
@@ -661,12 +661,12 @@ LBXGL_API void LBXGL_BrushPatch_DrawFacesShadow(LBXGL_Brush *brush)
 			LBXGL_Shader_EndPoly();
 		}
 
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		return;
 	}
 #endif
 
-	glBlendFunc(GL_DST_COLOR, GL_ZERO);
+	pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 
 	LBXGL_Shader_Begin(PDGL_QUADS);
 
@@ -689,7 +689,7 @@ LBXGL_API void LBXGL_BrushPatch_DrawFacesShadow(LBXGL_Brush *brush)
 
 		LBXGL_Shader_Normal3fv(p0->norm);
 
-//		glBlendFunc(GL_DST_COLOR, GL_ZERO);
+//		pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 
 //		LBXGL_Shader_BeginPoly();
 		LBXGL_Shader_TexCoord2fv(p0->uv);
@@ -708,7 +708,7 @@ LBXGL_API void LBXGL_BrushPatch_DrawFacesShadow(LBXGL_Brush *brush)
 	}
 	LBXGL_Shader_End();
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 LBXGL_API void LBXGL_BrushPatch_DrawShadowVolumeDP(
@@ -976,16 +976,16 @@ LBXGL_API void LBXGL_BrushPatch_DrawBrushLight3(
 			3, GL_FLOAT, 4*sizeof(float), tnorm);
 
 #if 0
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glEnableClientState(GL_NORMAL_ARRAY);
-		glVertexPointer(3, GL_FLOAT, 0, txyz);
-		glTexCoordPointer(2, GL_FLOAT, 0, tst);
-		glNormalPointer(GL_FLOAT, 4*sizeof(float), tnorm);
-		glDrawArrays(GL_QUADS, 0, k);
-		glDisableClientState(GL_VERTEX_ARRAY);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-		glDisableClientState(GL_NORMAL_ARRAY);
+		pdglEnableClientState(GL_VERTEX_ARRAY);
+		pdglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		pdglEnableClientState(GL_NORMAL_ARRAY);
+		pdglVertexPointer(3, GL_FLOAT, 0, txyz);
+		pdglTexCoordPointer(2, GL_FLOAT, 0, tst);
+		pdglNormalPointer(GL_FLOAT, 4*sizeof(float), tnorm);
+		pdglDrawArrays(GL_QUADS, 0, k);
+		pdglDisableClientState(GL_VERTEX_ARRAY);
+		pdglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		pdglDisableClientState(GL_NORMAL_ARRAY);
 #endif
 	}
 }

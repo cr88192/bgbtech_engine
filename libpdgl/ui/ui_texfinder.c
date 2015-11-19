@@ -388,7 +388,7 @@ PDGLUI_API void UI_TexFinder_Draw()
 	char *s, *t;
 	int i, j, w, h;
 
-//	glDisable(GL_TEXTURE_2D);
+//	pdglDisable(GL_TEXTURE_2D);
 	pdglDisableTexture2D();
 
 	pdglBegin(PDGL_QUADS);
@@ -458,7 +458,7 @@ PDGLUI_API void UI_TexFinder_Draw()
 
 		pdglColor4f(1, 1, 1, 1);
 		pdglEnableTexture2D();
-		glBindTexture(GL_TEXTURE_2D, j);
+		pdglBindTexture(GL_TEXTURE_2D, j);
 
 		if(w==h)
 		{

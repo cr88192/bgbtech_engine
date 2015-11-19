@@ -733,10 +733,10 @@ int LBXGL_Mesh_DrawScene()
 		LBXGL_Sky_DrawSky();
 
 #ifndef GLES
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_COLOR_MATERIAL);
+	pdglDisable(GL_CULL_FACE);
+	pdglDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_LIGHTING);
+	pdglDisable(GL_COLOR_MATERIAL);
 
 //	i=1;
 //	if(cam->width>=(4*12))i=12;
@@ -745,38 +745,38 @@ int LBXGL_Mesh_DrawScene()
 	if(cam->width<=(4*12))i=1;
 	if(cam->width<=4)i=2;
 
-	glDisable(GL_TEXTURE_2D);
-//	glDisable(GL_DEPTH_TEST);
+	pdglDisable(GL_TEXTURE_2D);
+//	pdglDisable(GL_DEPTH_TEST);
 
-//	glDepthFunc(GL_LEQUAL);
-	glDepthFunc(GL_ALWAYS);
+//	pdglDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_ALWAYS);
 
 //	switch(cam->mode)
 	switch(cam->ortho)
 	{
 	case 1:
 	case 2:
-		glColor4f(0.25, 0.25, 0.25, 1);
+		pdglColor4f(0.25, 0.25, 0.25, 1);
 		if(i>1)PD3D_DrawXYGrid2(256, 1.0/16);
-		glColor4f(0.5, 0.5, 0.5, 1);
+		pdglColor4f(0.5, 0.5, 0.5, 1);
 		if(i)PD3D_DrawXYGrid2(256, 1);
-		glColor4f(0.75, 0.75, 0.75, 1);
+		pdglColor4f(0.75, 0.75, 0.75, 1);
 		PD3D_DrawXYGrid2(256, 12);
 		break;
 	case 3:
-		glColor4f(0.25, 0.25, 0.25, 1);
+		pdglColor4f(0.25, 0.25, 0.25, 1);
 		if(i>1)PD3D_DrawXZGrid2(256, 1.0/16);
-		glColor4f(0.5, 0.5, 0.5, 1);
+		pdglColor4f(0.5, 0.5, 0.5, 1);
 		if(i)PD3D_DrawXZGrid2(256, 1);
-		glColor4f(0.75, 0.75, 0.75, 1);
+		pdglColor4f(0.75, 0.75, 0.75, 1);
 		PD3D_DrawXZGrid2(256, 12);
 		break;
 	case 4:
-		glColor4f(0.25, 0.25, 0.25, 1);
+		pdglColor4f(0.25, 0.25, 0.25, 1);
 		if(i>1)PD3D_DrawYZGrid2(256, 1.0/16);
-		glColor4f(0.5, 0.5, 0.5, 1);
+		pdglColor4f(0.5, 0.5, 0.5, 1);
 		if(i)PD3D_DrawYZGrid2(256, 1);
-		glColor4f(0.75, 0.75, 0.75, 1);
+		pdglColor4f(0.75, 0.75, 0.75, 1);
 		PD3D_DrawYZGrid2(256, 12);
 		break;
 
@@ -786,61 +786,61 @@ int LBXGL_Mesh_DrawScene()
 
 		if(fabs(cam->org[2])<50)
 		{
-			glColor4f(0.5, 0.5, 0.5, 1);
+			pdglColor4f(0.5, 0.5, 0.5, 1);
 			PD3D_DrawXYGrid2(256, 1);
 		}
 
-		glColor4f(0.75, 0.75, 0.75, 1);
+		pdglColor4f(0.75, 0.75, 0.75, 1);
 		PD3D_DrawXYGrid2(256, 12);
 
-//		glColor4f(0.75, 0.5, 0.5, 1);
+//		pdglColor4f(0.75, 0.5, 0.5, 1);
 //		PD3D_DrawXYGrid2(256, 10);
 #endif
 		break;
 	}
 
-	glDepthFunc(GL_LEQUAL);
-//	glEnable(GL_DEPTH_TEST);
+	pdglDepthFunc(GL_LEQUAL);
+//	pdglEnable(GL_DEPTH_TEST);
 
 
-	glColor4f(1, 1, 1, 1);
-	glDisable(GL_CULL_FACE);
+	pdglColor4f(1, 1, 1, 1);
+	pdglDisable(GL_CULL_FACE);
 
-	glEnable(GL_LIGHTING);
-	glEnable(GL_NORMALIZE);
+	pdglEnable(GL_LIGHTING);
+	pdglEnable(GL_NORMALIZE);
 
-	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	pdglLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
 	if(lbxgl_mesh_mode!=LBXGL_EDMODE_FACE)
 	{
 		pt[0]=1; pt[1]=1; pt[2]=1; pt[3]=1;
-		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pt);
+		pdglMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pt);
 
-//		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pt);
+//		pdglMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pt);
 	}else
 	{
 		pt[0]=1; pt[1]=1; pt[2]=1; pt[3]=1;
-		glMaterialfv(GL_FRONT, GL_DIFFUSE, pt);
+		pdglMaterialfv(GL_FRONT, GL_DIFFUSE, pt);
 
-//		glMaterialfv(GL_FRONT, GL_SPECULAR, pt);
+//		pdglMaterialfv(GL_FRONT, GL_SPECULAR, pt);
 
 		pt[0]=0.5; pt[1]=0.5; pt[2]=0.25; pt[3]=1;
-		glMaterialfv(GL_BACK, GL_DIFFUSE, pt);
-//		glMaterialfv(GL_BACK, GL_SPECULAR, pt);
+		pdglMaterialfv(GL_BACK, GL_DIFFUSE, pt);
+//		pdglMaterialfv(GL_BACK, GL_SPECULAR, pt);
 	}
 
 	UI_Camera_GetOrgFV(pt);
 	pt[3]=1;
-	glLightfv(GL_LIGHT0, GL_POSITION, pt);
-	glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 1.0/1000.0);
-	glEnable(GL_LIGHT0);
+	pdglLightfv(GL_LIGHT0, GL_POSITION, pt);
+	pdglLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 1.0/1000.0);
+	pdglEnable(GL_LIGHT0);
 
 	LBXGL_Mesh_DrawGroupEdit(lbxgl_mesh_mdl);
 
 	if(meshtool_draw3d_fp)
 		meshtool_draw3d_fp();
 
-	glDisable(GL_LIGHTING);
+	pdglDisable(GL_LIGHTING);
 
 	LBXGL_Particle_Step(state->dt_f);
 	LBXGL_Particle_Draw();

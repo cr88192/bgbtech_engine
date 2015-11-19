@@ -1,3 +1,20 @@
+#ifdef _WIN32
+#define PDGL_INC_NOGLHDRS
+
+#include <windows.h>
+
+#include <GL/gl.h>
+
+//#include <GL_2/glext.h>
+//#include <GL_2/wglext.h>
+// #include <GL_3/glcorearb.h>
+#include <GL_3/glext.h>
+#include <GL_3/wglext.h>
+
+// #include <GL/gl.h>
+
+#endif
+
 #include <pdgl.h>
 #include <math.h>
 
@@ -10,18 +27,27 @@
 #endif
 
 
-#include <GL/gl.h>
-#ifdef _WIN32
-#include <GL_2/glext.h>
-#include <GL_2/wglext.h>
-#endif
-
 // #include <bgbccc.h>
 
 char *pdgl_shader_name[1024];
 int pdgl_shader_hdl[1024];
 int pdgl_shader_cnt;
 int pdgl_shader_cur;
+
+typedef void (APIENTRYP PFNGLBINDTEXTUREPROC)	//AH:ignore
+	(GLenum target, GLuint texture);
+
+typedef void (APIENTRYP PFNGLDISABLEPROC) (GLenum cap);	//AH:ignore
+typedef void (APIENTRYP PFNGLENABLEPROC) (GLenum cap);	//AH:ignore
+typedef void (APIENTRYP PFNGLFINISHPROC)	//AH:ignore
+	(void);
+typedef void (APIENTRYP PFNGLFLUSHPROC)	//AH:ignore
+	(void);
+
+PFNGLBINDTEXTUREPROC		pglBindTexture;
+PFNGLDISABLEPROC			pglDisable;
+PFNGLENABLEPROC				pglEnable;
+PFNGLFINISHPROC				pglFinish;
 
 PFNGLATTACHSHADERPROC		pglAttachShader;
 PFNGLBINDATTRIBLOCATIONPROC	pglBindAttribLocation;
@@ -69,10 +95,52 @@ PFNGLUNIFORMMATRIX2FVPROC	pglUniformMatrix2fv;
 PFNGLUNIFORMMATRIX3FVPROC	pglUniformMatrix3fv;
 PFNGLUNIFORMMATRIX4FVPROC	pglUniformMatrix4fv;
 
+#ifdef _WIN32
+PROC (*pdgl_wglGetProcAddress)(LPCSTR  lpszProc);
+#endif
+
+int pdglGlDriverIsGL()
+{
+	char *gllib;
+
+	gllib=btCvarGet("gl_driver");
+	if(!gllib)
+		return(1);
+	if(!strcmp(gllib, "opengl32"))
+		return(1);
+	return(0);
+}
+
 void *pdglGetProcAddress(char *name)
 {
+	char *gllib;
+	void *ptr;
 #ifdef _WIN32
-	return(wglGetProcAddress(name));
+	if(pdgl_wglGetProcAddress)
+	{
+		ptr=pdgl_wglGetProcAddress(name);
+		if(ptr)return(ptr);
+		ptr=dyllGetAddr(name);
+		return(ptr);
+	}
+	
+	gllib=btCvarGet("gl_driver");
+	if(!gllib)gllib="opengl32";
+	dyllLoadLibrary(gllib);
+	
+//	dyllLoadLibrary("opengl32");
+	pdgl_wglGetProcAddress=dyllGetAddr("wglGetProcAddress");
+	if(pdgl_wglGetProcAddress)
+	{
+		ptr=pdgl_wglGetProcAddress(name);
+		if(ptr)return(ptr);
+		ptr=dyllGetAddr(name);
+		return(ptr);
+//		return(pdgl_wglGetProcAddress(name));
+	}
+	return(dyllGetAddr(name));
+//	return(NULL);
+//	return(wglGetProcAddress(name));
 #else
 	return(dyllGetAddr(name));
 #endif
@@ -105,6 +173,10 @@ PDGL_API int PDGL_InitShader()
 //	pglShaderSource=ccGetAddr("glShaderSource");
 //	pglUseProgram=ccGetAddr("glUseProgram");
 
+//	pglBindTexture=pdglGetProcAddress("glBindTexture");
+//	pglDisable=pdglGetProcAddress("glDisable");
+//	pglEnable=pdglGetProcAddress("glEnable");
+//	pglFinish=pdglGetProcAddress("glFinish");
 
 	pglAttachShader=pdglGetProcAddress("glAttachShader");
 	pglBindAttribLocation=pdglGetProcAddress("glBindAttribLocation");
@@ -306,14 +378,14 @@ PDGL_API int PDGL_GetFreeVideoMemory()
 
 	if(PDGL_CheckGlExtension("GL_NVX_gpu_memory_info"))
 	{
-		glGetIntegerv(GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX,
+		pdglGetIntegerv(GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX,
 			&mem[0]);
 //		printf("PDGL_GetFreeVideoMemory: NVidia\n");
 	}
 
 	if(PDGL_CheckGlExtension("GL_ATI_meminfo"))
 	{
-		glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI,
+		pdglGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI,
 			mem);
 //		printf("PDGL_GetFreeVideoMemory: ATI/AMD\n");
 	}
@@ -372,12 +444,12 @@ PDGL_API void PDGL_ErrorStatusUniform(char *name)
 {
 	int i;
 
-	i=glGetError();
+	i=pdglGetError();
 	while(i!=GL_NO_ERROR)
 	{
 //		printf("PDGL_ErrorStatusUniform: Var=%s Error 0x%04X\n", name, i);
 //		*(int *)-1=-1;
-		i=glGetError();
+		i=pdglGetError();
 	}
 }
 
@@ -526,31 +598,31 @@ PDGL_API int PDGL_Uniform4fv(char *name, int cnt, float *pf)
 
 #if 1
 PDGL_API void pdglUniform1f(int var, float x)
-	{ pglUniform1f(var, x); }
+	{ if(pglUniform1f)pglUniform1f(var, x); }
 PDGL_API void pdglUniform2f(int var, float x, float y)
-	{ pglUniform2f(var, x, y); }
+	{ if(pglUniform2f)pglUniform2f(var, x, y); }
 PDGL_API void pdglUniform3f(int var, float x, float y, float z)
-	{ pglUniform3f(var, x, y, z); }
+	{ if(pglUniform3f)pglUniform3f(var, x, y, z); }
 PDGL_API void pdglUniform4f(int var, float x, float y, float z, float w)
-	{ pglUniform4f(var, x, y, z, w); }
+	{ if(pglUniform4f)pglUniform4f(var, x, y, z, w); }
 
 PDGL_API void pdglUniform1i(int var, int x)
-	{ pglUniform1i(var, x); }
+	{ if(pglUniform1i)pglUniform1i(var, x); }
 PDGL_API void pdglUniform2i(int var, int x, int y)
-	{ pglUniform2i(var, x, y); }
+	{ if(pglUniform2i)pglUniform2i(var, x, y); }
 PDGL_API void pdglUniform3i(int var, int x, int y, int z)
-	{ pglUniform3i(var, x, y, z); }
+	{ if(pglUniform3i)pglUniform3i(var, x, y, z); }
 PDGL_API void pdglUniform4i(int var, int x, int y, int z, int w)
-	{ pglUniform4i(var, x, y, z, w); }
+	{ if(pglUniform4i)pglUniform4i(var, x, y, z, w); }
 
 PDGL_API void pdglUniform1fv(int var, int cnt, float *pf)
-	{ pglUniform1fv(var, cnt, pf); }
+	{ if(pglUniform1fv)pglUniform1fv(var, cnt, pf); }
 PDGL_API void pdglUniform2fv(int var, int cnt, float *pf)
-	{ pglUniform2fv(var, cnt, pf); }
+	{ if(pglUniform2fv)pglUniform2fv(var, cnt, pf); }
 PDGL_API void pdglUniform3fv(int var, int cnt, float *pf)
-	{ pglUniform3fv(var, cnt, pf); }
+	{ if(pglUniform3fv)pglUniform3fv(var, cnt, pf); }
 PDGL_API void pdglUniform4fv(int var, int cnt, float *pf)
-	{ pglUniform4fv(var, cnt, pf); }
+	{ if(pglUniform4fv)pglUniform4fv(var, cnt, pf); }
 #endif
 
 PDGL_API int pdglVertexAttrib1f(int index, float v0)
@@ -1106,12 +1178,24 @@ PDGL_API int pdglGenBuffers(int n, int *ids)
 {
 	static PFNGLGENBUFFERSPROC fcn=NULL;
 	static int set=0;
+	int i;
 
 	if(!fcn)
 	{
-		if(set)return(-1); set=1;
+		if(set)
+		{
+			for(i=0; i<n; i++)
+				ids[i]=0;
+			return(-1);
+		}
+		set=1;
 		fcn=pdglGetProcAddress("glGenBuffers");
-		if(!fcn)return(-1);
+		if(!fcn)
+		{
+			for(i=0; i<n; i++)
+				ids[i]=0;
+			return(-1);
+		}
 	}
 
 	fcn(n, ids);

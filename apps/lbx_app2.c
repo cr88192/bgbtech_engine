@@ -71,8 +71,8 @@ int pdgl_main_body()
 
 	UI_Camera_Setup3D();
 
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_CULL_FACE);
+	pdglDisable(GL_TEXTURE_2D);
 	PD3D_DrawGrid(0, 0, 16, 1);
 
 	BS3D_DrawFrame3D();
@@ -84,15 +84,15 @@ int pdgl_main_body()
 	Con_Render();
 	PDGLUI_Frame();
 
-	glDisable(GL_TEXTURE_2D);
-	glColor4f(1, 0, 0, 1);
+	pdglDisable(GL_TEXTURE_2D);
+	pdglColor4f(1, 0, 0, 1);
 
-	glBegin(GL_LINES);
-	glVertex2f(pdgl_mx-10, -pdgl_my);
-	glVertex2f(pdgl_mx+10, -pdgl_my);
-	glVertex2f(pdgl_mx, -pdgl_my-10);
-	glVertex2f(pdgl_mx, -pdgl_my+10);
-	glEnd();
+	pdglBegin(GL_LINES);
+	pdglVertex2f(pdgl_mx-10, -pdgl_my);
+	pdglVertex2f(pdgl_mx+10, -pdgl_my);
+	pdglVertex2f(pdgl_mx, -pdgl_my-10);
+	pdglVertex2f(pdgl_mx, -pdgl_my+10);
+	pdglEnd();
 
 	return(0);
 }

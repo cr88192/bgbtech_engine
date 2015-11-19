@@ -6,6 +6,9 @@ void BGBRASW_DrawPrimitive(
 {
 	switch(prim->type)
 	{
+	case BGBRASW_PTYPE_LINE:
+		BGBRASW_DrawPrimitive_Line(ctx, prim);
+		break;
 	case BGBRASW_PTYPE_BOX:
 		BGBRASW_DrawPrimitive_Box(ctx, prim);
 		break;

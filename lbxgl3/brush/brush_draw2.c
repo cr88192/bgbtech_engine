@@ -666,7 +666,7 @@ void LBXGL_BrushDraw2_DrawWorldFinal(
 	cur=lbxgl_draw2_query->nonbrush; k=LBXGL_DRAW2_CYCLELIMIT;
 	while(cur && k--)
 	{
-		glEnable(GL_CULL_FACE);
+		pdglEnable(GL_CULL_FACE);
 //		LBXGL_Brush_DrawBrushLight3(cur, light);
 		LBXGL_Brush_DrawBrushFinal(cur);
 		cur=cur->chain;
@@ -838,7 +838,7 @@ void LBXGL_BrushDraw2_DrawWorldBasic(
 	{
 		LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		glEnable(GL_CULL_FACE);
+		pdglEnable(GL_CULL_FACE);
 //		LBXGL_Brush_DrawBrushLight3(cur, light);
 //		LBXGL_Brush_DrawBrush(cur);
 		LBXGL_Brush_DrawFaces(cur);
@@ -1034,7 +1034,7 @@ void LBXGL_BrushDraw2_DrawBrushesLight(
 		if(cur->flags&LBXGL_BRFL_PTLIGHT)
 			{ cur=cur->chain; continue; }
 
-		glEnable(GL_CULL_FACE);
+		pdglEnable(GL_CULL_FACE);
 		LBXGL_Brush_DrawBrushLight3(cur, light);
 		cur=cur->chain;
 	}

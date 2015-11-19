@@ -17,15 +17,22 @@ OVR_CFLAGS=/DOVR_BUILD_DEBUG /DPDGLUI_HASRIFT \
 
 AUX_CFLAGS=
 
-CFLAGS=/Iinclude /I../include /O2 /Zi /arch:SSE2 /MP
+CFLAGS=/Iinclude /I../include /Zi /arch:SSE2 /MP
+# CFLAGS=/Iinclude /I../include /O2 /Zi /arch:SSE2 /MP
 DLL_CFLAGS=$(CFLAGS) /DPDGL_DLL
 DLL_CFLAGS2=$(CFLAGS) /DPDGLUI_DLL $(AUX_CFLAGS)
 # LDFLAGS=bgbsvm.lib ../bgbgc.lib ../bgbdy.lib ../bgbasm.lib
-DLL_LDFLAGS=../bgbasm.lib ../bgbgc.lib ../bgbdy.lib \
-		../libbgbmid.lib ../libtrem.lib ../bgbbtjpg.lib \
-		../libvecmath.lib ../btgecm.lib \
-		opengl32.lib gdi32.lib user32.lib winmm.lib
+# DLL_LDFLAGS=../bgbasm.lib ../bgbgc.lib ../bgbdy.lib \
+#		../libbgbmid.lib ../libtrem.lib ../bgbbtjpg.lib \
+#		../libvecmath.lib ../btgecm.lib \
+#		opengl32.lib gdi32.lib user32.lib winmm.lib
 #  ../libbsgen.lib
+
+DLL_LDFLAGS=../bgbasm.lib ../bgbgc.lib ../bgbdy.lib \
+	../libbgbmid.lib ../libtrem.lib ../bgbbtjpg.lib \
+	../libvecmath.lib ../btgecm.lib \
+	gdi32.lib user32.lib winmm.lib
+
 DLL_LDFLAGS2=libpdgl.lib $(DLL_LDFLAGS)
 
 include Makefile.inc

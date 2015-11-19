@@ -123,14 +123,14 @@ LBXGL_API int LBXGL_Sprite_Render(LBXGL_Sprite *spr,
 	rang%=360;
 	rang/=360/scur->n_angles;
 
-	glEnable(GL_TEXTURE_2D);
+	pdglEnable(GL_TEXTURE_2D);
 	Draw_Bind(scur->texnums[fr*scur->n_angles+rang]);
 #endif
 
-//	glEnable(GL_ALPHA_TEST);
-	glDepthMask(GL_FALSE);
+//	pdglEnable(GL_ALPHA_TEST);
+	pdglDepthMask(GL_FALSE);
 
-//	glEnable(GL_TEXTURE_2D);
+//	pdglEnable(GL_TEXTURE_2D);
 	pdglEnableTexture2D();
 	Draw_Bind(fcur->texnum);
 
@@ -188,8 +188,8 @@ LBXGL_API int LBXGL_Sprite_Render(LBXGL_Sprite *spr,
 	pdglVertex3fv(pt3);
 	pdglEnd();
 
-//	glDisable(GL_ALPHA_TEST);
-	glDepthMask(GL_TRUE);
+//	pdglDisable(GL_ALPHA_TEST);
+	pdglDepthMask(GL_TRUE);
 
 	return(0);
 }
@@ -355,12 +355,12 @@ LBXGL_API int LBXGL_Sprite_RenderFlare(LBXGL_LensFlare *flare, float *org, float
 
 	pdglColor4f(da0, da0, da0, 1);
 
-	glBlendFunc(GL_SRC_COLOR, GL_ONE);
+	pdglBlendFunc(GL_SRC_COLOR, GL_ONE);
 
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
+	pdglDisable(GL_DEPTH_TEST);
+	pdglDisable(GL_CULL_FACE);
 
-	glEnable(GL_TEXTURE_2D);
+	pdglEnable(GL_TEXTURE_2D);
 	Draw_Bind(flare->bnum);
 
 	VecNF_ScaleAddScale(
@@ -414,8 +414,8 @@ LBXGL_API int LBXGL_Sprite_RenderFlare(LBXGL_LensFlare *flare, float *org, float
 //		flare->xs2, flare->ys2,
 //		ept);
 
-	glEnable(GL_DEPTH_TEST);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglEnable(GL_DEPTH_TEST);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	return(0);
 }

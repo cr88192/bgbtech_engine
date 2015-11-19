@@ -721,17 +721,17 @@ void LBXGL_BrushWorld_DrawBrushesLightVol(
 
 	LBXGL_BrushWorld_DrawSetupLightScale(world, light, 0.25, 0);
 
-//	glDisable(GL_CULL_FACE);
-	glDisable(GL_STENCIL_TEST);
+//	pdglDisable(GL_CULL_FACE);
+	pdglDisable(GL_STENCIL_TEST);
 
 	pdglDisableTexture2D();
 	LBXGL_Shader_Color4f(0, 1, 1, 0.1);
-	glDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_LEQUAL);
 
-	glEnable(GL_CULL_FACE);
+	pdglEnable(GL_CULL_FACE);
 
-	glDepthMask(0);
-//	glColorMask(0, 0, 0, 0);
+	pdglDepthMask(0);
+//	pdglColorMask(0, 0, 0, 0);
 
 	LBXGL_Shader_BlendFunc(GL_SRC_COLOR, GL_ONE);
 	LBXGL_Shader_Color4f(1, 1, 1, 1);
@@ -755,7 +755,7 @@ void LBXGL_BrushWorld_DrawBrushesLightVol(
 		pdglNormal3fv(tv);
 
 		f=LBXGL_Texture_GetImageAlpha(cur->pf_tex[0]);
-//		glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, light->curval*f);
+//		pdglLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, light->curval*f);
 		PDGL_Light0_ConstantAttenuation(light->curval*f);
 		LBXGL_Brush_DrawShadowVolume(cur, light);
 
@@ -764,10 +764,10 @@ void LBXGL_BrushWorld_DrawBrushesLightVol(
 
 //	LBXGL_BrushWorld_DrawModelsLight(world, light);
 
-	glDepthMask(1);
+	pdglDepthMask(1);
 
 	PDGL_UnbindShader();
-//	glDisable(GL_LIGHTING);
+//	pdglDisable(GL_LIGHTING);
 	pdglDisableLighting();
 }
 
@@ -1157,34 +1157,22 @@ LBXGL_API void LBXGL_BrushWorld_DrawModelList(
 	LBXGL_Brush *cur;
 	float f, g, d;
 
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_TEXTURE_2D);
 	LBXGL_Shader_Color4f(0, 1, 1, 0.1);
 
 //	LBXGL_BrushWorld_DrawModelsShadow(world, light);
 
-	glDepthFunc(GL_LESS);
+	pdglDepthFunc(GL_LESS);
 
-	glDepthMask(0);
-	glColorMask(0, 0, 0, 0);
+	pdglDepthMask(0);
+	pdglColorMask(0, 0, 0, 0);
 
-	glEnable(GL_CULL_FACE);
-	glStencilFunc(GL_ALWAYS, 0, 255);
+	pdglEnable(GL_CULL_FACE);
+	pdglStencilFunc(GL_ALWAYS, 0, 255);
 
 
-	glCullFace(GL_FRONT);
-	glStencilOp(GL_KEEP, GL_INCR_WRAP, GL_KEEP);
-
-	cur=fst;
-	while(cur)
-	{
-		LBXGL_Brush_DrawShadowVolume(cur, light);
-		cur=cur->chain;
-	}
-
-	LBXGL_BrushWorld_DrawModelsShadow(world, light);
-
-	glCullFace(GL_BACK);
-	glStencilOp(GL_KEEP, GL_DECR, GL_KEEP);
+	pdglCullFace(GL_FRONT);
+	pdglStencilOp(GL_KEEP, GL_INCR_WRAP, GL_KEEP);
 
 	cur=fst;
 	while(cur)
@@ -1195,10 +1183,22 @@ LBXGL_API void LBXGL_BrushWorld_DrawModelList(
 
 	LBXGL_BrushWorld_DrawModelsShadow(world, light);
 
-	glDisable(GL_CULL_FACE);
+	pdglCullFace(GL_BACK);
+	pdglStencilOp(GL_KEEP, GL_DECR, GL_KEEP);
 
-	glDepthMask(1);
-	glColorMask(1, 1, 1, 1);
+	cur=fst;
+	while(cur)
+	{
+		LBXGL_Brush_DrawShadowVolume(cur, light);
+		cur=cur->chain;
+	}
+
+	LBXGL_BrushWorld_DrawModelsShadow(world, light);
+
+	pdglDisable(GL_CULL_FACE);
+
+	pdglDepthMask(1);
+	pdglColorMask(1, 1, 1, 1);
 }
 #endif
 
@@ -1213,13 +1213,13 @@ void LBXGL_BrushWorld_DrawShadowsLightDP(
 	LBXGL_Shader_Color4f(0, 1, 1, 0.5);
 
 #if 0
-	glDepthFunc(GL_LEQUAL);
-	glEnable(GL_CULL_FACE);
-//	glDisable(GL_CULL_FACE);
+	pdglDepthFunc(GL_LEQUAL);
+	pdglEnable(GL_CULL_FACE);
+//	pdglDisable(GL_CULL_FACE);
 
-	glDepthMask(0);
+	pdglDepthMask(0);
 
-	glCullFace(GL_BACK);
+	pdglCullFace(GL_BACK);
 	LBXGL_Shader_Color4f(0, 1, 1, 0.5);
 
 	cur=fst;
@@ -1233,22 +1233,22 @@ void LBXGL_BrushWorld_DrawShadowsLightDP(
 		cur=cur->chain;
 	}
 	
-	glDepthMask(1);
+	pdglDepthMask(1);
 
 	return;
 #endif
 
-	glDepthFunc(GL_LESS);
+	pdglDepthFunc(GL_LESS);
 
-	glDepthMask(0);
-	glColorMask(0, 0, 0, 0);
+	pdglDepthMask(0);
+	pdglColorMask(0, 0, 0, 0);
 
-	glEnable(GL_CULL_FACE);
-	glStencilFunc(GL_ALWAYS, 0, 255);
+	pdglEnable(GL_CULL_FACE);
+	pdglStencilFunc(GL_ALWAYS, 0, 255);
 
 
-	glCullFace(GL_BACK);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
+	pdglCullFace(GL_BACK);
+	pdglStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
 
 	if(!(light->flags&LBXGL_LFL_SHADOWMAP))
 	{
@@ -1271,8 +1271,8 @@ void LBXGL_BrushWorld_DrawShadowsLightDP(
 	LBXGL_Voxel_DrawWorldShadows(world, light);
 	LBXGL_BrushWorld_DrawModelsShadow(world, light);
 
-	glCullFace(GL_FRONT);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_DECR);
+	pdglCullFace(GL_FRONT);
+	pdglStencilOp(GL_KEEP, GL_KEEP, GL_DECR);
 
 	cur=fst;
 	while(cur)
@@ -1292,11 +1292,11 @@ void LBXGL_BrushWorld_DrawShadowsLightDP(
 	LBXGL_Voxel_DrawWorldShadows(world, light);
 	LBXGL_BrushWorld_DrawModelsShadow(world, light);
 
-	glDisable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+	pdglDisable(GL_CULL_FACE);
+	pdglCullFace(GL_BACK);
 
-	glDepthMask(1);
-	glColorMask(1, 1, 1, 1);
+	pdglDepthMask(1);
+	pdglColorMask(1, 1, 1, 1);
 }
 
 void LBXGL_BrushWorld_DrawShadowsLight(
@@ -1470,11 +1470,11 @@ float LBXGL_BrushWorld_DrawSetupLightScale(
 	float f, g, h, d, gam, gam2;
 	int i;
 
-	i=glGetError();
+	i=pdglGetError();
 	while(i!=GL_NO_ERROR)
 	{
 //		printf("LBXGL_BrushWorld_DrawSetupLightScale(A): Error 0x%08X\n", i);
-		i=glGetError();
+		i=pdglGetError();
 	}
 
 	if((light->flags&LBXGL_LFL_STATIC) &&
@@ -1504,39 +1504,39 @@ float LBXGL_BrushWorld_DrawSetupLightScale(
 	if(gam2<0)gam2=0;
 
 #ifndef GLES
-	glDisable(GL_COLOR_MATERIAL);
+	pdglDisable(GL_COLOR_MATERIAL);
 #endif
 
 	pt[0]=1; pt[1]=1; pt[2]=1; pt[3]=1;
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, pt);
+//	pdglMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, pt);
 	PDGL_ColorMaterial_Ambient(pt);
 
 	pt[0]=1; pt[1]=1; pt[2]=1; pt[3]=1;
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pt);
+//	pdglMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pt);
 	PDGL_ColorMaterial_Diffuse(pt);
 
 	pt[0]=0.2; pt[1]=0.2; pt[2]=0.2; pt[3]=1;
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pt);
+//	pdglMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pt);
 	PDGL_ColorMaterial_Specular(pt);
 
 	pt[0]=0; pt[1]=0; pt[2]=0; pt[3]=1;
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, pt);
+//	pdglMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, pt);
 	PDGL_ColorMaterial_Emission(pt);
 
 	pt[0]=1;
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, pt);
+//	pdglMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, pt);
 	PDGL_ColorMaterial_Shininess(pt);
 
 
-//	glEnable(GL_LIGHTING);
+//	pdglEnable(GL_LIGHTING);
 	pdglEnableLighting();
 
-//	glEnable(GL_NORMALIZE);
-//	glDisable(GL_NORMALIZE);
+//	pdglEnable(GL_NORMALIZE);
+//	pdglDisable(GL_NORMALIZE);
 
 #ifndef GLES
-	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-	glShadeModel(GL_SMOOTH);
+	pdglLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	pdglShadeModel(GL_SMOOTH);
 #endif
 
 	if(flags&LBXGL_LFL_DETAIL)
@@ -1544,49 +1544,49 @@ float LBXGL_BrushWorld_DrawSetupLightScale(
 		gam=gam2;
 
 		V3F_SCALE(light->clr, light->coeff[0], pt); pt[3]=1;
-//		glLightfv(GL_LIGHT0, GL_AMBIENT, pt);
+//		pdglLightfv(GL_LIGHT0, GL_AMBIENT, pt);
 		PDGL_Light0_Ambient(pt);
 
 		V3F_SCALE(light->clr, light->coeff[1], pt); pt[3]=1;
-//		glLightfv(GL_LIGHT0, GL_DIFFUSE, pt);
+//		pdglLightfv(GL_LIGHT0, GL_DIFFUSE, pt);
 		PDGL_Light0_Diffuse(pt);
 
 		V3F_SCALE(light->clr, light->coeff[2], pt); pt[3]=1;
-//		glLightfv(GL_LIGHT0, GL_SPECULAR, pt);
+//		pdglLightfv(GL_LIGHT0, GL_SPECULAR, pt);
 		PDGL_Light0_Specular(pt);
 	}else
 	{
 		f=light->cur_mcsc;
 	
 		V3F_SCALE(light->clr, light->coeff[0]*f, pt); pt[3]=1;
-//		glLightfv(GL_LIGHT0, GL_AMBIENT, pt);
+//		pdglLightfv(GL_LIGHT0, GL_AMBIENT, pt);
 		PDGL_Light0_Ambient(pt);
 
 		V3F_SCALE(light->clr, light->coeff[1]*f, pt); pt[3]=1;
-//		glLightfv(GL_LIGHT0, GL_DIFFUSE, pt);
+//		pdglLightfv(GL_LIGHT0, GL_DIFFUSE, pt);
 		PDGL_Light0_Diffuse(pt);
 
 		V3F_SCALE(light->clr, light->coeff[2]*f, pt); pt[3]=1;
-//		glLightfv(GL_LIGHT0, GL_SPECULAR, pt);
+//		pdglLightfv(GL_LIGHT0, GL_SPECULAR, pt);
 		PDGL_Light0_Specular(pt);
 	}
 
 #if 0
 //	V3F_SCALE(light->clr, 0.50/0.58, pt); pt[3]=1;
 	V3F_SCALE(light->clr, light->coeff[0], pt); pt[3]=1;
-	glLightfv(GL_LIGHT0, GL_AMBIENT, pt);
+	pdglLightfv(GL_LIGHT0, GL_AMBIENT, pt);
 
 //	V3F_SCALE(light->clr, 0.50/0.58, pt); pt[3]=1;
 	V3F_SCALE(light->clr, light->coeff[1], pt); pt[3]=1;
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, pt);
+	pdglLightfv(GL_LIGHT0, GL_DIFFUSE, pt);
 
 //	pt[0]=1; pt[1]=1; pt[2]=1; pt[3]=1;
 	V3F_SCALE(light->clr, light->coeff[2], pt); pt[3]=1;
-	glLightfv(GL_LIGHT0, GL_SPECULAR, pt);
+	pdglLightfv(GL_LIGHT0, GL_SPECULAR, pt);
 #endif
 
 	V3F_COPY(light->org, pt); pt[3]=1;
-//	glLightfv(GL_LIGHT0, GL_POSITION, pt);
+//	pdglLightfv(GL_LIGHT0, GL_POSITION, pt);
 	PDGL_Light0_Position(pt);
 
 	if(0 && (light->flags&LBXGL_LFL_BOXCULL))
@@ -1597,10 +1597,10 @@ float LBXGL_BrushWorld_DrawSetupLightScale(
 		PDGL_Uniform3fv("light_value", 1, light->boxval);
 
 		pt[0]=0; pt[1]=0; pt[2]=-1; pt[3]=0;
-//		glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, pt);
+//		pdglLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, pt);
 		PDGL_Light0_SpotDirection(pt);
-//		glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 180);
-//		glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 0);
+//		pdglLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 180);
+//		pdglLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 0);
 		PDGL_Light0_SpotCutoff(180);
 		PDGL_Light0_SpotExponent(0);
 
@@ -1611,14 +1611,14 @@ float LBXGL_BrushWorld_DrawSetupLightScale(
 		PDGL_BindShader(shader_phong_spot);
 
 		V3F_COPY(light->dir, pt); pt[3]=0;
-//		glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, pt);
+//		pdglLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, pt);
 		PDGL_Light0_SpotDirection(pt);
-//		glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 0);
+//		pdglLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 0);
 		PDGL_Light0_SpotExponent(0);
 
 		f=light->angle;
 		if(f==0)f=15;
-//		glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, f);
+//		pdglLightf(GL_LIGHT0, GL_SPOT_CUTOFF, f);
 		PDGL_Light0_SpotCutoff(f);
 	}else
 	{
@@ -1627,9 +1627,9 @@ float LBXGL_BrushWorld_DrawSetupLightScale(
 			else PDGL_BindShader(shader_phong2);
 
 		pt[0]=0; pt[1]=0; pt[2]=-1; pt[3]=0;
-//		glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, pt);
-//		glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 180);
-//		glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 0);
+//		pdglLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, pt);
+//		pdglLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 180);
+//		pdglLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 0);
 
 		PDGL_Light0_SpotDirection(pt);
 		PDGL_Light0_SpotCutoff(180);
@@ -1649,9 +1649,9 @@ float LBXGL_BrushWorld_DrawSetupLightScale(
 //		g=36*6.0/255.0;
 		g=36*12.0/255.0;
 		f=g*gam;
-//		glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 1.0/f);
-//		glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.0);
-//		glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.0);
+//		pdglLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 1.0/f);
+//		pdglLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.0);
+//		pdglLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.0);
 
 		PDGL_Light0_LinearAttenuation(1.0/f);
 		PDGL_Light0_QuadraticAttenuation(0.0);
@@ -1659,35 +1659,35 @@ float LBXGL_BrushWorld_DrawSetupLightScale(
 	}else
 	{
 #if 0
-//		glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, gam/0.58);
-//		glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, gam/(256*0.58));
-		glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, gam);
-		glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0);
-//		glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0);
-		glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, gam2);
+//		pdglLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, gam/0.58);
+//		pdglLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, gam/(256*0.58));
+		pdglLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, gam);
+		pdglLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0);
+//		pdglLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0);
+		pdglLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, gam2);
 #endif
 
 		PDGL_Light0_LinearAttenuation(0);
 		PDGL_Light0_QuadraticAttenuation(gam2);
 		PDGL_Light0_ConstantAttenuation(gam);
 	}
-//	glEnable(GL_LIGHT0);
+//	pdglEnable(GL_LIGHT0);
 	PDGL_Enable_Light0();
 
-	i=glGetError();
+	i=pdglGetError();
 	while(i!=GL_NO_ERROR)
 	{
 		printf("LBXGL_BrushWorld_DrawSetupLightScale(B): Error 0x%08X\n", i);
-		i=glGetError();
+		i=pdglGetError();
 	}
 
 	LBXGL_BrushLight_DrawSetupLightImage(light, NULL);
 
-	i=glGetError();
+	i=pdglGetError();
 	while(i!=GL_NO_ERROR)
 	{
 		printf("LBXGL_BrushWorld_DrawSetupLightScale(C): Error 0x%08X\n", i);
-		i=glGetError();
+		i=pdglGetError();
 	}
 
 	return(gam);
@@ -1704,58 +1704,58 @@ float LBXGL_BrushWorld_DrawSetupLightScale_NoPhong(
 //	gam=light->curval*gscale*world->curgamma;
 	gam=light->curval*gscale;
 
-	glDisable(GL_COLOR_MATERIAL);
+	pdglDisable(GL_COLOR_MATERIAL);
 
 	pt[0]=1; pt[1]=1; pt[2]=1; pt[3]=1;
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, pt);
+	pdglMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, pt);
 
 	pt[0]=1; pt[1]=1; pt[2]=1; pt[3]=1;
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pt);
+	pdglMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pt);
 
 	pt[0]=0.2; pt[1]=0.2; pt[2]=0.2; pt[3]=1;
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pt);
+	pdglMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pt);
 
 	pt[0]=0; pt[1]=0; pt[2]=0; pt[3]=1;
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, pt);
+	pdglMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, pt);
 
 	pt[0]=1;
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, pt);
+	pdglMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, pt);
 
 
-	glEnable(GL_LIGHTING);
-//	glEnable(GL_NORMALIZE);
-	glDisable(GL_NORMALIZE);
+	pdglEnable(GL_LIGHTING);
+//	pdglEnable(GL_NORMALIZE);
+	pdglDisable(GL_NORMALIZE);
 
-	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-	glShadeModel(GL_SMOOTH);
-
-	V3F_SCALE(light->clr, 0.50/0.58, pt); pt[3]=1;
-	glLightfv(GL_LIGHT0, GL_AMBIENT, pt);
+	pdglLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	pdglShadeModel(GL_SMOOTH);
 
 	V3F_SCALE(light->clr, 0.50/0.58, pt); pt[3]=1;
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, pt);
+	pdglLightfv(GL_LIGHT0, GL_AMBIENT, pt);
+
+	V3F_SCALE(light->clr, 0.50/0.58, pt); pt[3]=1;
+	pdglLightfv(GL_LIGHT0, GL_DIFFUSE, pt);
 
 	pt[0]=1; pt[1]=1; pt[2]=1; pt[3]=1;
-	glLightfv(GL_LIGHT0, GL_SPECULAR, pt);
+	pdglLightfv(GL_LIGHT0, GL_SPECULAR, pt);
 
 	V3F_COPY(light->org, pt); pt[3]=1;
-	glLightfv(GL_LIGHT0, GL_POSITION, pt);
+	pdglLightfv(GL_LIGHT0, GL_POSITION, pt);
 
 	if(light->flags&LBXGL_LFL_SPOTLIGHT)
 	{
 		V3F_COPY(light->dir, pt); pt[3]=0;
-		glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, pt);
-		glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 0);
+		pdglLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, pt);
+		pdglLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 0);
 
 		f=light->angle;
 		if(f==0)f=15;
-		glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, f);
+		pdglLightf(GL_LIGHT0, GL_SPOT_CUTOFF, f);
 	}else
 	{
 		pt[0]=0; pt[1]=0; pt[2]=-1; pt[3]=0;
-		glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, pt);
-		glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 180);
-		glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 0);
+		pdglLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, pt);
+		pdglLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 180);
+		pdglLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 0);
 	}
 
 
@@ -1764,20 +1764,20 @@ float LBXGL_BrushWorld_DrawSetupLightScale_NoPhong(
 //		g=36*6.0/255.0;
 		g=36*12.0/255.0;
 		f=g*gam;
-		glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 1.0/f);
-		glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.0);
-		glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.0);
+		pdglLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 1.0/f);
+		pdglLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.0);
+		pdglLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.0);
 	}else
 	{
 #if 1
 		// -0.042378 0.045295 0.083003 -0.021884
 		f=1.0/gam;
-		glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.083*f);
-		glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.0453*f);
-		glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, -0.0424*f);
+		pdglLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.083*f);
+		pdglLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.0453*f);
+		pdglLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, -0.0424*f);
 #endif
 	}
-	glEnable(GL_LIGHT0);
+	pdglEnable(GL_LIGHT0);
 
 	return(gam);
 #endif //GLES
@@ -1805,22 +1805,22 @@ void LBXGL_BrushLight_DrawPrimLight_Reset(LBXGL_Light *light)
 		return;
 	lbxgl_lightimg_texnum=0;
 
-//	glDisable(GL_COLOR_MATERIAL);
+//	pdglDisable(GL_COLOR_MATERIAL);
 
 	pt[0]=1; pt[1]=1; pt[2]=1; pt[3]=1;
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, pt);
+//	pdglMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, pt);
 	PDGL_ColorMaterial_Ambient(pt);
 	pt[0]=1; pt[1]=1; pt[2]=1; pt[3]=1;
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pt);
+//	pdglMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pt);
 	PDGL_ColorMaterial_Diffuse(pt);
 	pt[0]=0.2; pt[1]=0.2; pt[2]=0.2; pt[3]=1;
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pt);
+//	pdglMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pt);
 	PDGL_ColorMaterial_Specular(pt);
 	pt[0]=0; pt[1]=0; pt[2]=0; pt[3]=1;
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, pt);
+//	pdglMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, pt);
 	PDGL_ColorMaterial_Emission(pt);
 	pt[0]=1;
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, pt);
+//	pdglMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, pt);
 	PDGL_ColorMaterial_Shininess(pt);
 
 	if(!(shader_phong<=0) && !shader_nophong)
@@ -1868,11 +1868,11 @@ int LBXGL_BrushLight_DrawSetupLightImage(
 	float znear, zfar;
 	int i, l, tn;
 
-	i=glGetError();
+	i=pdglGetError();
 	while(i!=GL_NO_ERROR)
 	{
 //		printf("LBXGL_BrushLight_DrawSetupLightImage(A): Error 0x%08X\n", i);
-		i=glGetError();
+		i=pdglGetError();
 	}
 
 //	znear=1.0/tan(90*(M_PI/360.0));
@@ -1898,13 +1898,13 @@ int LBXGL_BrushLight_DrawSetupLightImage(
 			LBXGL_BrushLight_DrawTeardownLightImage(light, img);
 		}
 	
-//		glEnable(GL_COLOR_MATERIAL);
+//		pdglEnable(GL_COLOR_MATERIAL);
 
-//		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, img->mat_ambient);
-//		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, img->mat_diffuse);
-//		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, img->mat_specular);
-//		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, img->mat_emission);
-//		glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, img->mat_shininess);
+//		pdglMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, img->mat_ambient);
+//		pdglMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, img->mat_diffuse);
+//		pdglMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, img->mat_specular);
+//		pdglMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, img->mat_emission);
+//		pdglMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, img->mat_shininess);
 
 		PDGL_ColorMaterial_Ambient(img->mat_ambient);
 		PDGL_ColorMaterial_Diffuse(img->mat_diffuse);
@@ -1944,24 +1944,24 @@ int LBXGL_BrushLight_DrawSetupLightImage(
 			tn=img->tex_alt;
 			if(tn<=0)tn=img->num;
 			pdglActiveTexture(i);
-			glBindTexture(GL_TEXTURE_2D, tn);
-			glEnable(GL_TEXTURE_2D);
+			pdglBindTexture(GL_TEXTURE_2D, tn);
+			pdglEnable(GL_TEXTURE_2D);
 			PDGL_Uniform1i("texBase", i);
 
 			i=l++;
 			tn=img->tex_norm;
 			if(tn<=0)tn=tex_light_defnorm;
 			pdglActiveTexture(i);
-			glBindTexture(GL_TEXTURE_2D, tn);
-			glEnable(GL_TEXTURE_2D);
+			pdglBindTexture(GL_TEXTURE_2D, tn);
+			pdglEnable(GL_TEXTURE_2D);
 			PDGL_Uniform1i("texNorm", i);
 
 			i=l++;
 			tn=img->tex_gloss;
 			if(tn<=0)tn=tex_light_defgloss;
 			pdglActiveTexture(i);
-			glBindTexture(GL_TEXTURE_2D, tn);
-			glEnable(GL_TEXTURE_2D);
+			pdglBindTexture(GL_TEXTURE_2D, tn);
+			pdglEnable(GL_TEXTURE_2D);
 			PDGL_Uniform1i("texGloss", i);
 
 			if(0 && (light->flags&LBXGL_LFL_BOXCULL))
@@ -1970,16 +1970,16 @@ int LBXGL_BrushLight_DrawSetupLightImage(
 				tn=light->tex_falloff;
 				if(tn<=0)tn=tex_light_def_falloff;
 				pdglActiveTexture(i);
-				glBindTexture(GL_TEXTURE_2D, tn);
-				glEnable(GL_TEXTURE_2D);
+				pdglBindTexture(GL_TEXTURE_2D, tn);
+				pdglEnable(GL_TEXTURE_2D);
 				PDGL_Uniform1i("texFalloffXZ", i);
 
 				i=l++;
 				tn=light->tex_falloff;
 				if(tn<=0)tn=tex_light_def_falloff;
 				pdglActiveTexture(i);
-				glBindTexture(GL_TEXTURE_2D, tn);
-				glEnable(GL_TEXTURE_2D);
+				pdglBindTexture(GL_TEXTURE_2D, tn);
+				pdglEnable(GL_TEXTURE_2D);
 				PDGL_Uniform1i("texFalloffYZ", i);
 			}
 
@@ -2040,16 +2040,16 @@ int LBXGL_BrushLight_DrawSetupLightImage(
 		tn=light->envtex;
 		if(tn<=0)tn=tex_gloss_cubemap;
 		pdglActiveTexture(i);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, tn);
-		glEnable(GL_TEXTURE_CUBE_MAP);
+		pdglBindTexture(GL_TEXTURE_CUBE_MAP, tn);
+		pdglEnable(GL_TEXTURE_CUBE_MAP);
 		PDGL_Uniform1i("texEnvMap", i);
 
 		i=l++;
 		tn=light->envdepthtex;
 		if(tn<=0)tn=tex_gloss_cubemap;
 		pdglActiveTexture(i);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, tn);
-		glEnable(GL_TEXTURE_CUBE_MAP);
+		pdglBindTexture(GL_TEXTURE_CUBE_MAP, tn);
+		pdglEnable(GL_TEXTURE_CUBE_MAP);
 		PDGL_Uniform1i("texEnvDepthMap", i);
 
 //		PDGL_Uniform1i("envShadowMap",
@@ -2076,14 +2076,14 @@ int LBXGL_BrushLight_DrawSetupLightImage(
 	{
 		i=l++;
 		pdglActiveTexture(i);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, tex_gloss_cubemap);
-		glEnable(GL_TEXTURE_CUBE_MAP);
+		pdglBindTexture(GL_TEXTURE_CUBE_MAP, tex_gloss_cubemap);
+		pdglEnable(GL_TEXTURE_CUBE_MAP);
 		PDGL_Uniform1i("texEnvMap", i);
 
 		i=l++;
 		pdglActiveTexture(i);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, tex_gloss_cubemap);
-		glEnable(GL_TEXTURE_CUBE_MAP);
+		pdglBindTexture(GL_TEXTURE_CUBE_MAP, tex_gloss_cubemap);
+		pdglEnable(GL_TEXTURE_CUBE_MAP);
 		PDGL_Uniform1i("texEnvDepthMap", i);
 
 		PDGL_Uniform1i("envShadowMap", 0);
@@ -2095,11 +2095,11 @@ int LBXGL_BrushLight_DrawSetupLightImage(
 	}
 #endif
 
-	i=glGetError();
+	i=pdglGetError();
 	while(i!=GL_NO_ERROR)
 	{
 		printf("LBXGL_BrushLight_DrawSetupLightImage(B): Error 0x%08X\n", i);
-		i=glGetError();
+		i=pdglGetError();
 	}
 	
 	lbxgl_lightimg_light=light;
@@ -2121,8 +2121,8 @@ void LBXGL_BrushLight_DrawTeardownLightImage(
 		for(i=0; i<16; i++)
 		{
 			pdglActiveTexture(i);
-			glDisable(GL_TEXTURE_2D);
-			glDisable(GL_TEXTURE_CUBE_MAP);
+			pdglDisable(GL_TEXTURE_2D);
+			pdglDisable(GL_TEXTURE_CUBE_MAP);
 		}
 		pdglActiveTexture(0);
 #endif
@@ -2138,7 +2138,7 @@ void LBXGL_BrushLight_DrawTeardownLightImage(
 	for(i=0; i<16; i++)
 	{
 		pdglActiveTexture(i);
-		glDisable(GL_TEXTURE_2D);
+		pdglDisable(GL_TEXTURE_2D);
 	}
 	pdglActiveTexture(0);
 #endif
@@ -2152,8 +2152,8 @@ void LBXGL_BrushLight_DrawTeardownLightImage(
 		for(i=lbxgl_lightimg_baselayers; i<lbxgl_lightimg_layers; i++)
 		{
 			pdglActiveTexture(i);
-			glDisable(GL_TEXTURE_2D);
-			glDisable(GL_TEXTURE_CUBE_MAP);
+			pdglDisable(GL_TEXTURE_2D);
+			pdglDisable(GL_TEXTURE_CUBE_MAP);
 		}
 		pdglActiveTexture(0);
 		
@@ -2211,32 +2211,32 @@ void LBXGL_BrushLight_DrawPrimLightImage3(
 
 //	LBXGL_Texture_SetImageMaterial(tex);
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
+	pdglEnableClientState(GL_VERTEX_ARRAY);
+	pdglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	pdglEnableClientState(GL_NORMAL_ARRAY);
 	if(rgba)
-		glEnableClientState(GL_COLOR_ARRAY);
+		pdglEnableClientState(GL_COLOR_ARRAY);
 	pdglEnableVertexAttribArray(txn);
 	pdglEnableVertexAttribArray(tyn);
 
 	i=4*sizeof(float);
-	glVertexPointer(3, GL_FLOAT, i, xyz);
-	glTexCoordPointer(2, GL_FLOAT, 0, st);
+	pdglVertexPointer(3, GL_FLOAT, i, xyz);
+	pdglTexCoordPointer(2, GL_FLOAT, 0, st);
 	if(rgba)
-		glColorPointer(4, GL_FLOAT, 0, rgba);
-	glNormalPointer(GL_FLOAT, 4*sizeof(float), norm);
+		pdglColorPointer(4, GL_FLOAT, 0, rgba);
+	pdglNormalPointer(GL_FLOAT, 4*sizeof(float), norm);
 	pdglVertexAttribPointer(txn, 4, GL_FLOAT, 0, i, xnorm);
 	pdglVertexAttribPointer(tyn, 4, GL_FLOAT, 0, i, ynorm);
 
-	glDrawArrays(prim, 0, nxyz);
+	pdglDrawArrays(prim, 0, nxyz);
 
 	pdglDisableVertexAttribArray(txn);
 	pdglDisableVertexAttribArray(tyn);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
+	pdglDisableClientState(GL_VERTEX_ARRAY);
+	pdglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	pdglDisableClientState(GL_NORMAL_ARRAY);
 	if(rgba)
-		glDisableClientState(GL_COLOR_ARRAY);
+		pdglDisableClientState(GL_COLOR_ARRAY);
 
 #endif	//GLES
 }
@@ -2268,28 +2268,28 @@ void LBXGL_BrushWorld_DrawBrushesLightFlags(
 	pdglDisableTexture2D();
 	LBXGL_Shader_Color4f(1, 1, 1, 1);
 
-	glDepthFunc(GL_LEQUAL);
-	glStencilFunc(GL_EQUAL, 0, 255);
+	pdglDepthFunc(GL_LEQUAL);
+	pdglStencilFunc(GL_EQUAL, 0, 255);
 	LBXGL_Shader_BlendFunc(GL_SRC_COLOR, GL_ONE);
 //	LBXGL_Shader_BlendFunc(GL_SRC_ALPHA, GL_ONE);
 //	LBXGL_Shader_BlendFunc(GL_ONE, GL_ONE);
 
-	glDepthMask(GL_FALSE);
-//	glDepthRange(0, 0.99);
+	pdglDepthMask(GL_FALSE);
+//	pdglDepthRange(0, 0.99);
 
-	glEnable(GL_CULL_FACE);
-//	glDisable(GL_CULL_FACE);
+	pdglEnable(GL_CULL_FACE);
+//	pdglDisable(GL_CULL_FACE);
 
 	LBXGL_BrushDraw2_DrawBrushesLight(world, fst, light);
 	LBXGL_Voxel_DrawWorldLight(world, light);
 
 	LBXGL_BrushWorld_DrawModelsLight(world, light);
 
-//	glDepthRange(0, 1);
-	glDepthMask(GL_TRUE);
+//	pdglDepthRange(0, 1);
+	pdglDepthMask(GL_TRUE);
 
 	PDGL_UnbindShader();
-//	glDisable(GL_LIGHTING);
+//	pdglDisable(GL_LIGHTING);
 	pdglDisableLighting();
 
 //	LBXGL_Terrain_DrawLight(world, light);
@@ -2310,24 +2310,24 @@ void LBXGL_BrushWorld_DrawBrushesHiLight(
 	LBXGL_Shader_SetCurrentLight(light);
 	LBXGL_BrushWorld_DrawSetupHiLight(world, light);
 
-	glDepthFunc(GL_LEQUAL);
-	glStencilFunc(GL_EQUAL, 0, 255);
+	pdglDepthFunc(GL_LEQUAL);
+	pdglStencilFunc(GL_EQUAL, 0, 255);
 	LBXGL_Shader_BlendFunc(GL_SRC_COLOR, GL_ONE);
 
-	glDepthMask(GL_FALSE);
-//	glDepthRange(0, 0.99);
+	pdglDepthMask(GL_FALSE);
+//	pdglDepthRange(0, 0.99);
 
-//	glDisable(GL_CULL_FACE);
+//	pdglDisable(GL_CULL_FACE);
 
 	LBXGL_BrushDraw2_DrawBrushesLight(world, fst, light);
 
 	LBXGL_BrushWorld_DrawModelsLight(world, light);
 
-//	glDepthRange(0, 1);
-	glDepthMask(GL_TRUE);
+//	pdglDepthRange(0, 1);
+	pdglDepthMask(GL_TRUE);
 
 	PDGL_UnbindShader();
-//	glDisable(GL_LIGHTING);
+//	pdglDisable(GL_LIGHTING);
 	pdglDisableLighting();
 
 	LBXGL_Terrain_DrawLight(world, light);
@@ -2377,8 +2377,8 @@ void LBXGL_BrushWorld_UpdateBrushesLight(
 	float tr, tg, tb;
 	int i, j, k, l;
 
-//	glDisable(GL_TEXTURE_2D);
-//	glColor4f(1, 1, 1, 1);
+//	pdglDisable(GL_TEXTURE_2D);
+//	pdglColor4f(1, 1, 1, 1);
 
 	cur=fst;
 	while(cur)
@@ -2403,7 +2403,7 @@ void LBXGL_BrushWorld_UpdateBrushesLight(
 		V3F_SUB(light->org, cur->org, ldir);
 		V3F_NORMALIZE(ldir, ldir);
 	
-//		glEnable(GL_CULL_FACE);
+//		pdglEnable(GL_CULL_FACE);
 //		LBXGL_Brush_DrawBrushLight3(cur, light);
 		d=V3F_DIST(cur->org, light->org);
 //		f=light->val[0]-d;
@@ -2490,8 +2490,8 @@ void LBXGL_BrushWorld_DrawForLightFlags(
 
 	t2=PDGL_TimeMS();
 
-	glClear(GL_STENCIL_BUFFER_BIT);
-	glEnable(GL_STENCIL_TEST);
+	pdglClear(GL_STENCIL_BUFFER_BIT);
+	pdglEnable(GL_STENCIL_TEST);
 
 //	lst=LBXGL_BrushWorld_QueryBrushesLight(world, world->brush, light);
 	lst=LBXGL_BrushWorld_QueryBrushesLightB(world, light);
@@ -2505,7 +2505,7 @@ void LBXGL_BrushWorld_DrawForLightFlags(
 	lst=LBXGL_BrushWorld_QueryBrushesLight2B(world, light);
 	LBXGL_BrushWorld_DrawBrushesLightFlags(world, lst, light, flags);
 //	LBXGL_Voxel_DrawWorldLight(world, light);
-	glDisable(GL_STENCIL_TEST);
+	pdglDisable(GL_STENCIL_TEST);
 
 	t2=PDGL_TimeMS();
 	lbxgl_state->dt_render_shadow_face+=t2-t3;

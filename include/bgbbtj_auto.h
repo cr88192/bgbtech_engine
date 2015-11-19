@@ -1381,6 +1381,10 @@ BGBBTJ_API int BGBBTJ_BCn_TranscodeBC1ToBC3B(byte *sblk, byte *dblk, int xs, int
 BGBBTJ_API int BGBBTJ_BCn_TranscodeBC1ToBC3B_Opaque(byte *sblk, byte *dblk, int xs, int ys);
 BGBBTJ_API int BGBBTJ_BCn_CheckEncodeImageAlpha(byte *rgba, int xs, int ys, int stride);
 BGBBTJ_API void BGBBTJ_BCn_EncodeImageDXTn(byte *block,byte *rgba, int xs, int ys, int stride, int fmt);
+BGBBTJ_API int BGBBTJ_BCn_CheckGlSupportS3TC(void);
+BGBBTJ_API int BGBBTJ_BCn_CheckGlSupportBPTC(void);
+BGBBTJ_API int BGBBTJ_BCn_CheckGlSupportAny(void);
+BGBBTJ_API int BGBBTJ_BCn_CheckGlSupportColorFormat(int fmt);
 BGBBTJ_API void BGBBTJ_BCn_EncodeImageAutoDXTn(byte *block,byte *rgba, int xs, int ys, int stride, int *rfmt);
 BGBBTJ_API void BGBBTJ_BCn_DecodeImageDXTn(byte *block,byte *rgba, int xs, int ys, int stride, int fmt);
 void BGBBTJ_BCn_DecodeBlockDXT1(byte *block,byte *rgba, int xstride, int ystride, int nclr);

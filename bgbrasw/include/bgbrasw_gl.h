@@ -59,8 +59,10 @@ int ractx_n_thread;
 
 bgbrasw_pixel ref_clr;
 bgbrasw_zbuf ref_z;
+bgbrasw_zbuf ref_sten;
 bgbrasw_pixel mask_clr;
 bgbrasw_zbuf mask_z;
+bgbrasw_zbuf mask_sten;
 int alpha_func;
 
 bgbrasw_pixel clear_clr;
@@ -122,6 +124,11 @@ short polygon_mode;
 short shade_model;
 short draw_buffer;
 short read_buffer;
+
+int stencil_func;
+int stencil_op_sfail;
+int stencil_op_dpfail;
+int stencil_op_dppass;
 
 // float matrixstack[16][16];
 // int matrixstackpos=-1;

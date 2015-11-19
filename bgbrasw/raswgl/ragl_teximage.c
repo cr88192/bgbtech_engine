@@ -426,7 +426,9 @@ void RASWGL_TexImage2D(RASWGL_Context *ctx,
 void RASWGL_GetTexImage(RASWGL_Context *ctx, 
 		int target, int level, int format, int type,
 		void *pixels)
-	{ RaGlSetErrorNopStub(); }
+{
+//	RaGlSetErrorNopStub();
+}
 
 
 void RASWGL_TexSubImage1D(RASWGL_Context *ctx, 
@@ -478,3 +480,71 @@ void RASWGL_CopyTexSubImage2D(RASWGL_Context *ctx,
 		int target, int level, int xoffset, int yoffset,
 		int x, int y, int width, int height)
 	{ RaGlSetErrorNopStub(); }
+
+void RASWGL_CompressedTexImage2D(RASWGL_Context *ctx, 
+		int target, int level, int internalFormat,
+		int width, int height, int border, int imgSize,
+		const void *pixels)
+{
+	BGBRASW_Texture *tex;
+	bgbrasw_pixel *pixb;
+	int i, j, h;
+
+	RaGlSetErrorNopStub();
+	
+	if(target!=GL_TEXTURE_2D)
+		{ ctx->glerror=GL_INVALID_ENUM; return; }
+	if((level<0) || (level>=16))
+		{ ctx->glerror=GL_INVALID_VALUE; return; }
+	
+	tex=BGBRASW_GetTexture(ctx->ractx, ctx->texid);
+	BGBRASW_SetTextureSizeMip(ctx->ractx, tex,
+		width, height, level);
+
+//	i=RASWGL_TexImage_ConvPixelsFromSrc(
+//		width, height, format, type,
+//		pixels, tex->rgba[level]);
+	i=1;
+
+	if(i&1)
+		{ tex->flags|=BGBRASW_TEXFLAG_OPAQUE; }
+	else
+		{ tex->flags&=~BGBRASW_TEXFLAG_OPAQUE; }
+	
+	ctx->texture=tex;
+//	BGBRASW_SetTexturePixelsSize(ctx->ractx, tex,
+//		pixb, width, height, level);
+}
+
+void RASWGL_ReadPixels(
+	RASWGL_Context *ctx, 
+	int x, int y, int width, int height,
+	int format, int type, byte *pixels)
+{
+	bgbrasw_pixel pix;
+	bgbrasw_pixel *fb;
+	byte *ct;
+	int cx, cy, fbxs, fbys, xstr, ystr;
+	int i, j, k, l;
+	
+	xstr=4; ystr=xstr*width;
+
+	fb=ctx->ractx->tgt_rgba;
+	fbxs=ctx->ractx->tgt_xs;
+	fbys=ctx->ractx->tgt_ys;
+	
+	for(i=0; i<height; i++)
+		for(j=0; j<width; j++)
+	{
+		cx=x+j; cy=y+i;
+		if((cx<0) || (cx>=fbxs))
+			continue;
+		if((cy<0) || (cy>=fbys))
+			continue;
+		
+		pix=fb[cy*fbxs+cx];
+		ct=pixels+i*ystr+j*xstr;
+		ct[2]=pix;		ct[1]=pix>>8;
+		ct[0]=pix>>16;	ct[3]=pix>>24;
+	}
+}

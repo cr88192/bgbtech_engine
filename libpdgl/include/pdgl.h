@@ -18,6 +18,8 @@
 #include <windows.h>
 #endif
 
+#ifndef PDGL_INC_NOGLHDRS
+
 #ifdef GLES2
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
@@ -26,6 +28,8 @@
 // #include <GL_2/glext.h>
 #include <GL_3/glext.h>
 #endif
+
+#endif	//PDGL_INC_NOGLHDRS
 
 #endif	//BGBMETA
 

@@ -49,7 +49,7 @@ LBXGL_API int PD3D_DrawFlatCube(
 	float *pt1, *pt2, *pt3, *pt4;
 
 	pdglDisableTexture2D();
-//	glEnable(PDGL_BLEND);
+//	pdglEnable(PDGL_BLEND);
 
 	for(i=0; i<8; i++)
 	{
@@ -113,7 +113,7 @@ LBXGL_API int PD3D_DrawFlatLineCube(
 	float *pt1, *pt2, *pt3, *pt4;
 
 	pdglDisableTexture2D();
-//	glEnable(PDGL_BLEND);
+//	pdglEnable(PDGL_BLEND);
 
 	for(i=0; i<8; i++)
 	{
@@ -721,7 +721,7 @@ LBXGL_API float PD3D_DrawGrid(float x, float y, float w, int ax)
 //	printf("for w=%f step=%f bx=%f rx=%f\n", w, step, x-w, rx);
 
 	pdglDisableTexture2D();
-//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//	pdglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	pdglColor4f(0.5, 0.5, 0.5, 1);
 
@@ -795,7 +795,7 @@ LBXGL_API float PD3D_DrawGrid(float x, float y, float w, int ax)
 
 	pdglEnd();
 
-//	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//	pdglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	return(step);
 }
@@ -825,7 +825,7 @@ LBXGL_API void PD3D_DrawGrid2(float w, float step)
 	ex=ceil(w/step)*step;
 	ey=ceil(w/step)*step;
 
-//	glDisable (GL_TEXTURE_2D);
+//	pdglDisable (GL_TEXTURE_2D);
 //	pdglColor4f(0.5, 0.5, 0.5, 1);
 
 	pdglBegin(PDGL_LINES);
@@ -888,7 +888,7 @@ LBXGL_API void PD3D_DrawGrid3(float w, float step, int ax)
 	ex=ceil(w/step)*step;
 	ey=ceil(w/step)*step;
 
-//	glDisable (GL_TEXTURE_2D);
+//	pdglDisable (GL_TEXTURE_2D);
 //	pdglColor4f(0.5, 0.5, 0.5, 1);
 
 	pdglBegin(PDGL_LINES);
@@ -1031,7 +1031,7 @@ LBXGL_API void PD3D_DrawGrid3D(float w, float step)
 	ey=ceil(w/step)*step;
 	ez=ceil(w/step)*step;
 
-//	glDisable (GL_TEXTURE_2D);
+//	pdglDisable (GL_TEXTURE_2D);
 //	pdglColor4f(0.5, 0.5, 0.5, 1);
 
 	cz=rz;

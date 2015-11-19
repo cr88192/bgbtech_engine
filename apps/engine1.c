@@ -227,7 +227,7 @@ void draw_test_box4d()
 	tex=LBXGL_Texture_LoadImageSize(
 		"textures/ground/cs_terrain", &xs, &ys);
 
-	glDisable(GL_CULL_FACE);
+	pdglDisable(GL_CULL_FACE);
 
 	LBXGL_Shader_PushMatrix4D();
 
@@ -273,61 +273,61 @@ void draw_test_defsdr()
 	PDGL_Uniform1i("texBase", 1);
 	PDGL_Uniform1i("texDeform", 2);
 
-//	glDisable(GL_TEXTURE_2D);
+//	pdglDisable(GL_TEXTURE_2D);
 
-//	glBindTexture(GL_TEXTURE_2D, tex_screen);
-//	glEnable(GL_TEXTURE_2D);
+//	pdglBindTexture(GL_TEXTURE_2D, tex_screen);
+//	pdglEnable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(0);
-	glBindTexture(GL_TEXTURE_2D, tex_screen);
-//	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, tex_screen);
+//	pdglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	pdglEnable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(1);
-	glBindTexture(GL_TEXTURE_2D, tex);
-	glEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, tex);
+	pdglEnable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(2);
-	glBindTexture(GL_TEXTURE_2D, def);
-	glEnable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, def);
+	pdglEnable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(0);
 
-//	glColor4f(0.01, 0.01, 0.01, 1);
-	glColor4f(1, 1, 1, 0.75);
+//	pdglColor4f(0.01, 0.01, 0.01, 1);
+	pdglColor4f(1, 1, 1, 0.75);
 
-	glBegin(GL_QUADS);
+	pdglBegin(GL_QUADS);
 
 	pdglMultiTexCoord2f(0, 0, 1);
 	pdglMultiTexCoord2f(1, 0, 1);
-	glVertex3f(-16, 16, 16);
+	pdglVertex3f(-16, 16, 16);
 
 	pdglMultiTexCoord2f(0, 0, 0);
 	pdglMultiTexCoord2f(1, 0, 0);
-	glVertex3f(-16, 16, -16);
+	pdglVertex3f(-16, 16, -16);
 
 	pdglMultiTexCoord2f(0, 1, 0);
 	pdglMultiTexCoord2f(1, 1, 0);
-	glVertex3f(16, 16, -16);
+	pdglVertex3f(16, 16, -16);
 
 	pdglMultiTexCoord2f(0, 1, 1);
 	pdglMultiTexCoord2f(1, 1, 1);
-	glVertex3f(16, 16, 16);
+	pdglVertex3f(16, 16, 16);
 
-	glEnd();
+	pdglEnd();
 
 
 	pdglActiveTexture(0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, 0);
+	pdglDisable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(1);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, 0);
+	pdglDisable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(2);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glDisable(GL_TEXTURE_2D);
+	pdglBindTexture(GL_TEXTURE_2D, 0);
+	pdglDisable(GL_TEXTURE_2D);
 
 	pdglActiveTexture(0);
 
@@ -373,19 +373,19 @@ void draw_test_terrain()
 
 	if(tex>0)
 	{
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, tex);
+		pdglEnable(GL_TEXTURE_2D);
+		pdglBindTexture(GL_TEXTURE_2D, tex);
 		xsc=1.0/xs;
 		ysc=1.0/ys;
 	}else
 	{
-		glDisable(GL_TEXTURE_2D);
+		pdglDisable(GL_TEXTURE_2D);
 		xsc=1.0; ysc=1.0;
 	}
 
-	glCullFace(GL_BACK);
+	pdglCullFace(GL_BACK);
 
-	glColor4f(0.5, 0.5, 0.5, 1);
+	pdglColor4f(0.5, 0.5, 0.5, 1);
 
 	for(i=1; i<256; i++)
 		for(j=1; j<256; j++)
@@ -410,24 +410,24 @@ void draw_test_terrain()
 		st2[0]=v2[0]*xsc; st2[1]=v2[1]*xsc;
 		st3[0]=v3[0]*xsc; st3[1]=v3[1]*xsc;
 
-		glBegin(GL_TRIANGLES);
-		glTexCoord2fv(st0);
-		glVertex3fv(v0);
-		glTexCoord2fv(st1);
-		glVertex3fv(v1);
-		glTexCoord2fv(st2);
-		glVertex3fv(v2);
+		pdglBegin(GL_TRIANGLES);
+		pdglTexCoord2fv(st0);
+		pdglVertex3fv(v0);
+		pdglTexCoord2fv(st1);
+		pdglVertex3fv(v1);
+		pdglTexCoord2fv(st2);
+		pdglVertex3fv(v2);
 
-		glTexCoord2fv(st1);
-		glVertex3fv(v1);
-		glTexCoord2fv(st3);
-		glVertex3fv(v3);
-		glTexCoord2fv(st2);
-		glVertex3fv(v2);
-		glEnd();
+		pdglTexCoord2fv(st1);
+		pdglVertex3fv(v1);
+		pdglTexCoord2fv(st3);
+		pdglVertex3fv(v3);
+		pdglTexCoord2fv(st2);
+		pdglVertex3fv(v2);
+		pdglEnd();
 	}
 
-	glEnable(GL_TEXTURE_2D);
+	pdglEnable(GL_TEXTURE_2D);
 }
 
 void sel_brush_face()
@@ -741,7 +741,7 @@ void draw_ent(LBXGL_SEntity *ent)
 		else { ang[0]=0; ang[1]=0; ang[2]=f; }
 	}
 
-	glColor4f(1, 1, 1, 1);
+	pdglColor4f(1, 1, 1, 1);
 
 	f=ent_radius(ent);
 	g=Vec3F_DistLineSeg(org, cam->morg, cam->mend);
@@ -840,36 +840,36 @@ void draw_ent(LBXGL_SEntity *ent)
 
 	if(tn>=0)
 	{
-		glEnable(GL_ALPHA_TEST);
+		pdglEnable(GL_ALPHA_TEST);
 
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, tn);
+		pdglEnable(GL_TEXTURE_2D);
+		pdglBindTexture(GL_TEXTURE_2D, tn);
 
-		glBegin(GL_POLYGON);
+		pdglBegin(GL_POLYGON);
 
-		glTexCoord2f(0, 0);
+		pdglTexCoord2f(0, 0);
 		V3F_ADDSCALEADDSCALE(org, cam->rt, -f,
 			cam->up, -f, tv);
-		glVertex3fv(tv);
+		pdglVertex3fv(tv);
 
-		glTexCoord2f(1, 0);
+		pdglTexCoord2f(1, 0);
 		V3F_ADDSCALEADDSCALE(org, cam->rt, f,
 			cam->up, -f, tv);
-		glVertex3fv(tv);
+		pdglVertex3fv(tv);
 
-		glTexCoord2f(1, 1);
+		pdglTexCoord2f(1, 1);
 		V3F_ADDSCALEADDSCALE(org, cam->rt, f,
 			cam->up, f, tv);
-		glVertex3fv(tv);
+		pdglVertex3fv(tv);
 
-		glTexCoord2f(0, 1);
+		pdglTexCoord2f(0, 1);
 		V3F_ADDSCALEADDSCALE(org, cam->rt, -f,
 			cam->up, f, tv);
-		glVertex3fv(tv);
+		pdglVertex3fv(tv);
 
-		glEnd();
+		pdglEnd();
 
-		glDisable(GL_ALPHA_TEST);
+		pdglDisable(GL_ALPHA_TEST);
 
 	}
 
@@ -1722,29 +1722,29 @@ int pdgl_main_draw3d()
 
 	LBXGL_Sky_DrawSky();
 
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_CULL_FACE);
+	pdglDisable(GL_TEXTURE_2D);
 //	PD3D_DrawGrid(0, 0, 16, 1);
 
-	glBegin(GL_LINES);
+	pdglBegin(GL_LINES);
 
-	glColor4f(1, 0, 0, 1);
-	glVertex3f(0, 0, 0);
-	glVertex3f(1000, 0, 0);
+	pdglColor4f(1, 0, 0, 1);
+	pdglVertex3f(0, 0, 0);
+	pdglVertex3f(1000, 0, 0);
 
-	glColor4f(0, 1, 0, 1);
-	glVertex3f(0, 0, 0);
-	glVertex3f(0, 1000, 0);
+	pdglColor4f(0, 1, 0, 1);
+	pdglVertex3f(0, 0, 0);
+	pdglVertex3f(0, 1000, 0);
 
-	glColor4f(0, 0, 1, 1);
-	glVertex3f(0, 0, 0);
-	glVertex3f(0, 0, 1000);
+	pdglColor4f(0, 0, 1, 1);
+	pdglVertex3f(0, 0, 0);
+	pdglVertex3f(0, 0, 1000);
 
-	glEnd();
+	pdglEnd();
 
-//	glEnable(GL_CULL_FACE);
+//	pdglEnable(GL_CULL_FACE);
 
-	glEnable(GL_TEXTURE_2D);
+	pdglEnable(GL_TEXTURE_2D);
 
 	setup_light_ents(world->entity);
 
@@ -1817,25 +1817,25 @@ int pdgl_main_body()
 
 	if(0)
 	{
-		glColor4f(1, 1, 1, 1);
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, tex_screen);
+		pdglColor4f(1, 1, 1, 1);
+		pdglEnable(GL_TEXTURE_2D);
+		pdglBindTexture(GL_TEXTURE_2D, tex_screen);
 
-		glBegin(GL_POLYGON);
+		pdglBegin(GL_POLYGON);
 
-		glTexCoord2f(0, 0);
-		glVertex2f(400-16*8, -300);
+		pdglTexCoord2f(0, 0);
+		pdglVertex2f(400-16*8, -300);
 
-		glTexCoord2f(1, 0);
-		glVertex2f(400, -300);
+		pdglTexCoord2f(1, 0);
+		pdglVertex2f(400, -300);
 
-		glTexCoord2f(1, 1);
-		glVertex2f(400, -300+16*8);
+		pdglTexCoord2f(1, 1);
+		pdglVertex2f(400, -300+16*8);
 
-		glTexCoord2f(0, 1);
-		glVertex2f(400-16*8, -300+16*8);
+		pdglTexCoord2f(0, 1);
+		pdglVertex2f(400-16*8, -300+16*8);
 
-		glEnd();
+		pdglEnd();
 	}
 
 	Con_Render();
@@ -1891,25 +1891,25 @@ int pdgl_main_body()
 		sprintf(buf, "resource/textures/%s", world->brush_sel->tex[i]);
 		j=Tex_LoadFile(buf, NULL, NULL);
 
-		glColor4f(1, 1, 1, 1);
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, j);
+		pdglColor4f(1, 1, 1, 1);
+		pdglEnable(GL_TEXTURE_2D);
+		pdglBindTexture(GL_TEXTURE_2D, j);
 
-		glBegin(GL_POLYGON);
+		pdglBegin(GL_POLYGON);
 
-		glTexCoord2f(0, 0);
-		glVertex2f(400-16*8, -300);
+		pdglTexCoord2f(0, 0);
+		pdglVertex2f(400-16*8, -300);
 
-		glTexCoord2f(1, 0);
-		glVertex2f(400, -300);
+		pdglTexCoord2f(1, 0);
+		pdglVertex2f(400, -300);
 
-		glTexCoord2f(1, 1);
-		glVertex2f(400, -300+16*8);
+		pdglTexCoord2f(1, 1);
+		pdglVertex2f(400, -300+16*8);
 
-		glTexCoord2f(0, 1);
-		glVertex2f(400-16*8, -300+16*8);
+		pdglTexCoord2f(0, 1);
+		pdglVertex2f(400-16*8, -300+16*8);
 
-		glEnd();
+		pdglEnd();
 	}
 
 	if(world->entity_sel)
@@ -2015,15 +2015,15 @@ int pdgl_main_body()
 	PDGLUI_Frame();
 	main_handle_events();
 
-	glDisable(GL_TEXTURE_2D);
-	glColor4f(1, 0, 0, 1);
+	pdglDisable(GL_TEXTURE_2D);
+	pdglColor4f(1, 0, 0, 1);
 
-	glBegin(GL_LINES);
-	glVertex2f(state->mx-10, -state->my);
-	glVertex2f(state->mx+10, -state->my);
-	glVertex2f(state->mx, -state->my-10);
-	glVertex2f(state->mx, -state->my+10);
-	glEnd();
+	pdglBegin(GL_LINES);
+	pdglVertex2f(state->mx-10, -state->my);
+	pdglVertex2f(state->mx+10, -state->my);
+	pdglVertex2f(state->mx, -state->my-10);
+	pdglVertex2f(state->mx, -state->my+10);
+	pdglEnd();
 
 	return(0);
 }

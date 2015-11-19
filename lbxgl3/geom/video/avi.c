@@ -769,7 +769,7 @@ void *AVI_FrameTexnum_cb(void *data)
 	
 	ctx=data;
 	AVI_FrameTexnumI(ctx, 0);
-	glFinish();
+	pdglFinish();
 	ctx->flags&=~LBXGL_AVI_FL_UPDATING;
 	return(BGBGC_NULLEND);
 }
@@ -841,14 +841,18 @@ int AVI_FrameTexnumI(LBXGL_AVI_Context *ctx, float dt)
 			continue;
 		}
 
-		if(BGBBTJ_CheckGlExtension(
-			"GL_ARB_texture_compression_bptc") &&
-			(ctx->bmihead->biCompression==RIFF_TAG_bt1c))
+		if(BGBBTJ_BCn_CheckGlSupportAny())
 		{
-			ctx->mjpg_clrs=BGBBTJ_JPG_BC7;
-		}else
-		{
-			ctx->mjpg_clrs=BGBBTJ_JPG_BC3F;
+//			if(BGBBTJ_CheckGlExtension(
+//				"GL_ARB_texture_compression_bptc") &&
+			if(BGBBTJ_BCn_CheckGlSupportBPTC() &&
+				(ctx->bmihead->biCompression==RIFF_TAG_bt1c))
+			{
+				ctx->mjpg_clrs=BGBBTJ_JPG_BC7;
+			}else if(BGBBTJ_BCn_CheckGlSupportS3TC())
+			{
+				ctx->mjpg_clrs=BGBBTJ_JPG_BC3F;
+			}
 		}
 
 //		ctx->mjpg_clrs=BGBBTJ_JPG_BC3F;

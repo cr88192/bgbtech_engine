@@ -46,7 +46,7 @@ void LBXGL_Voxel_DrawRegionQuery(LBXGL_VoxelRegion *rgn)
 		cur=cur->mesh->vnext;
 	}
 
-	glDepthMask(GL_FALSE);
+	pdglDepthMask(GL_FALSE);
 
 	cur=rgn->vischk;
 	while(cur)
@@ -77,7 +77,7 @@ void LBXGL_Voxel_DrawRegionQuery(LBXGL_VoxelRegion *rgn)
 	}
 
 #if 0
-	glDisable(GL_CULL_FACE);
+	pdglDisable(GL_CULL_FACE);
 	cur=rgn->lvischk;
 	while(cur)
 	{
@@ -118,10 +118,10 @@ void LBXGL_Voxel_DrawRegionQuery(LBXGL_VoxelRegion *rgn)
 		}
 		cur=cur->mesh->lvnext;
 	}
-	glEnable(GL_CULL_FACE);
+	pdglEnable(GL_CULL_FACE);
 #endif
 
-	glDepthMask(GL_TRUE);
+	pdglDepthMask(GL_TRUE);
 #endif
 
 	LBXGL_Voxel_DrawEndTranslateForRegion(rgn);

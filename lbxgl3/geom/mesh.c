@@ -202,7 +202,7 @@ LBXGL_API void LBXGL_Mesh_DrawPrim(LBXGL_MeshPrim *prim)
 //	if(prim->texnum>0)
 //	{
 //		pdglEnableTexture2D();
-//		glBindTexture(GL_TEXTURE_2D, prim->texnum);
+//		pdglBindTexture(GL_TEXTURE_2D, prim->texnum);
 //	}
 
 	LBXGL_Shader_BindTexture(prim->texnum);
@@ -233,7 +233,7 @@ LBXGL_API void LBXGL_Mesh_DrawPrim(LBXGL_MeshPrim *prim)
 		V3F_CROSS(dv1, dv0, dv2);
 		V3F_NORMALIZE(dv2, dv2);
 
-//		glNormal3fv(dv2);
+//		pdglNormal3fv(dv2);
 		LBXGL_Shader_Normal3fv(dv2);
 
 #if 0
@@ -359,7 +359,7 @@ LBXGL_API void LBXGL_Mesh_DrawPrimFlat(LBXGL_MeshPrim *prim)
 #if 0
 		if(V3F_DOT(lbxgl_cam->org, dv2)<V3F_DOT(v0, dv2))
 		{
-			glNormal3f(-dv2[0], -dv2[1], -dv2[2]);
+			pdglNormal3f(-dv2[0], -dv2[1], -dv2[2]);
 
 			pdglBegin(PDGL_POLYGON);
 			for(j=n-1; j>=0; j--)
@@ -625,7 +625,7 @@ LBXGL_API void LBXGL_Mesh_DrawPolyShadowVolume(
 		V3F_CROSS(dv1, dv0, dv2);
 		V3F_NORMALIZE(dv2, dv2);
 
-		glNormal3fv(dv2);
+		pdglNormal3fv(dv2);
 
 
 		pdglBegin(PDGL_POLYGON);
@@ -940,7 +940,7 @@ LBXGL_API void LBXGL_Mesh_DrawPrimFinal(LBXGL_MeshPrim *prim)
 		if(i&j)return;
 	}
 
-	glBlendFunc(GL_DST_COLOR, GL_ZERO);
+	pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 
 	if(prim->texnum<=0)
 	{
@@ -950,7 +950,7 @@ LBXGL_API void LBXGL_Mesh_DrawPrimFinal(LBXGL_MeshPrim *prim)
 	}
 
 //	pdglEnableTexture2D();
-//	glBindTexture(GL_TEXTURE_2D, prim->texnum);
+//	pdglBindTexture(GL_TEXTURE_2D, prim->texnum);
 
 	LBXGL_Shader_BindTexture(prim->texnum);
 
@@ -1021,7 +1021,7 @@ LBXGL_API void LBXGL_Mesh_DrawPrimAlpha(LBXGL_MeshPrim *prim)
 		if(!(i&j))return;
 	}
 
-//	glBlendFunc(GL_DST_COLOR, GL_ZERO);
+//	pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 
 	if(prim->texnum<=0)
 	{
@@ -1031,7 +1031,7 @@ LBXGL_API void LBXGL_Mesh_DrawPrimAlpha(LBXGL_MeshPrim *prim)
 	}
 
 //	pdglEnableTexture2D();
-//	glBindTexture(GL_TEXTURE_2D, prim->texnum);
+//	pdglBindTexture(GL_TEXTURE_2D, prim->texnum);
 
 	LBXGL_Shader_BindTexture(prim->texnum);
 

@@ -218,11 +218,11 @@ void LBXGL_Terrain_DrawLight(LBXGL_BrushWorld *world, LBXGL_Light *light)
 	LBXGL_BrushWorld_DrawSetupLight(world, light);
 //	LBXGL_BrushWorld_DrawSetupLightScale_NoPhong(world, light, 1.0);
 
-	glDepthFunc(GL_LEQUAL);
-	glStencilFunc(GL_EQUAL, 0, 255);
-	glBlendFunc(GL_SRC_COLOR, GL_ONE);
+	pdglDepthFunc(GL_LEQUAL);
+	pdglStencilFunc(GL_EQUAL, 0, 255);
+	pdglBlendFunc(GL_SRC_COLOR, GL_ONE);
 
-	glEnable(GL_CULL_FACE);
+	pdglEnable(GL_CULL_FACE);
 #endif
 
 //	r=LBXGL_Shadow_LightGammaEffectRadius(light, 0.01);
@@ -237,14 +237,14 @@ void LBXGL_Terrain_DrawLight(LBXGL_BrushWorld *world, LBXGL_Light *light)
 
 #if 1
 	PDGL_UnbindShader();
-//	glDisable(GL_LIGHTING);
+//	pdglDisable(GL_LIGHTING);
 	pdglDisableLighting();
 #endif
 }
 
 void LBXGL_Terrain_DrawFinal(LBXGL_BrushWorld *world)
 {
-	glBlendFunc(GL_DST_COLOR, GL_ZERO);
+	pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 
 	LBXGL_Terrain_DrawTexture(world);
 }
@@ -264,7 +264,7 @@ void LBXGL_Terrain_DrawTexture(LBXGL_BrushWorld *world)
 	{
 //		pdglEnableTexture2D();
 		pdglEnableTexture2D();
-		glBindTexture(GL_TEXTURE_2D, world->terr_tex);
+		pdglBindTexture(GL_TEXTURE_2D, world->terr_tex);
 		xsc=1.0/world->terr_tex_xs;
 		ysc=1.0/world->terr_tex_ys;
 	}else
@@ -274,8 +274,8 @@ void LBXGL_Terrain_DrawTexture(LBXGL_BrushWorld *world)
 		xsc=1.0; ysc=1.0;
 	}
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+	pdglEnable(GL_CULL_FACE);
+	pdglCullFace(GL_BACK);
 
 	pdglColor4f(1, 1, 1, 1);
 

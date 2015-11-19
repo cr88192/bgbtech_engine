@@ -28,24 +28,24 @@ PDGL_API int Draw_SetSolid_2D(float aspect, int xo, int yo, int xs, int ys)
 	pdgl_view_xs=xs;
 	pdgl_view_ys=ys;
 
-	glViewport(xo, yo, xs, ys);
+	pdglViewport(xo, yo, xs, ys);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(-1000, 1000, -1000/aspect, 1000/aspect, -99999, 99999);
+	pdglMatrixMode(GL_PROJECTION);
+	pdglLoadIdentity();
+	pdglOrtho(-1000, 1000, -1000/aspect, 1000/aspect, -99999, 99999);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	pdglMatrixMode(GL_MODELVIEW);
+	pdglLoadIdentity();
 
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglDisable(GL_DEPTH_TEST);
+	pdglDisable(GL_CULL_FACE);
+	pdglEnable(GL_BLEND);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glEnable(GL_TEXTURE_2D);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	pdglEnable(GL_TEXTURE_2D);
+	pdglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	glColor4f(1,1,1,1);
+	pdglColor4f(1,1,1,1);
 }
 
 PDGL_API int Draw_SetSolid2_2D(float aspect, float size,
@@ -61,38 +61,38 @@ PDGL_API int Draw_SetSolid2_2D(float aspect, float size,
 	pdgl_view_xs=xs;
 	pdgl_view_ys=ys;
 
-	glViewport(xo, yo, xs, ys);
+	pdglViewport(xo, yo, xs, ys);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+	pdglMatrixMode(GL_PROJECTION);
+	pdglLoadIdentity();
 
-	glOrtho(-size, size, -h2, h2, -999999999, 999999999);
+	pdglOrtho(-size, size, -h2, h2, -999999999, 999999999);
 
-	glRotatef(-angles[2],  0, 0, 1);
-	glRotatef(-angles[0],  1, 0, 0);
-	glRotatef(-angles[1],  0, 1, 0);
-	glTranslated(-org[0],  -org[1],  -org[2]);
+	pdglRotatef(-angles[2],  0, 0, 1);
+	pdglRotatef(-angles[0],  1, 0, 0);
+	pdglRotatef(-angles[1],  0, 1, 0);
+	pdglTranslated(-org[0],  -org[1],  -org[2]);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	pdglMatrixMode(GL_MODELVIEW);
+	pdglLoadIdentity();
 
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_ALPHA_TEST);
+	pdglDisable(GL_DEPTH_TEST);
+	pdglDisable(GL_CULL_FACE);
+	pdglDisable(GL_ALPHA_TEST);
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglEnable(GL_BLEND);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glShadeModel(GL_SMOOTH);
+	pdglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	pdglShadeModel(GL_SMOOTH);
 
-	glEnable(GL_TEXTURE_2D);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	pdglEnable(GL_TEXTURE_2D);
+	pdglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-//	glEnable(GL_STENCIL_TEST);
-	glEnable(GL_SCISSOR_TEST);
+//	pdglEnable(GL_STENCIL_TEST);
+	pdglEnable(GL_SCISSOR_TEST);
 
-	glColor4f(1,1,1,1);
+	pdglColor4f(1,1,1,1);
 }
 
 
@@ -106,34 +106,34 @@ PDGL_API int Draw_SetOrtho_3D(float aspect, float size,
 	pdgl_view_xs=w;
 	pdgl_view_ys=h;
 
-	glViewport(x, y, w, h);
+	pdglViewport(x, y, w, h);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+	pdglMatrixMode(GL_PROJECTION);
+	pdglLoadIdentity();
 
 	h2=size/aspect;
-	glOrtho(-size, size, -h2, h2, -999999999, 999999999);
+	pdglOrtho(-size, size, -h2, h2, -999999999, 999999999);
 
 //	if(leftcoords)
-//	glScalef(1, 1, -1);
+//	pdglScalef(1, 1, -1);
 
-	glRotatef(-angles[1],  0, 1, 0);
-	glRotatef(-angles[0],  1, 0, 0);
-	glRotatef(-angles[2],  0, 0, 1);
-	glTranslatef(-org[0],  -org[1],  -org[2]);
+	pdglRotatef(-angles[1],  0, 1, 0);
+	pdglRotatef(-angles[0],  1, 0, 0);
+	pdglRotatef(-angles[2],  0, 0, 1);
+	pdglTranslatef(-org[0],  -org[1],  -org[2]);
 
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglDisable(GL_DEPTH_TEST);
+	pdglDisable(GL_CULL_FACE);
+	pdglEnable(GL_BLEND);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glDisable(GL_TEXTURE_2D);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	pdglDisable(GL_TEXTURE_2D);
+	pdglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	glColor4f(0,0,0,1);
+	pdglColor4f(0,0,0,1);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	pdglMatrixMode(GL_MODELVIEW);
+	pdglLoadIdentity();
 }
 
 PDGL_API int Draw_SetSolid3_2D(float lxs, float lys,
@@ -144,38 +144,38 @@ PDGL_API int Draw_SetSolid3_2D(float lxs, float lys,
 	pdgl_view_xs=xs;
 	pdgl_view_ys=ys;
 
-	glViewport(xo, yo, xs, ys);
+	pdglViewport(xo, yo, xs, ys);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+	pdglMatrixMode(GL_PROJECTION);
+	pdglLoadIdentity();
 
-	glOrtho(0, lxs, 0, lys, 0, 999999999);
-	glTranslated(-org[0],  -org[1],  -org[2]);
+	pdglOrtho(0, lxs, 0, lys, 0, 999999999);
+	pdglTranslated(-org[0],  -org[1],  -org[2]);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	pdglMatrixMode(GL_MODELVIEW);
+	pdglLoadIdentity();
 
-	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_ALPHA_TEST);
+	pdglEnable(GL_DEPTH_TEST);
+	pdglDisable(GL_CULL_FACE);
+	pdglDisable(GL_ALPHA_TEST);
 
-	glDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_LEQUAL);
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglEnable(GL_BLEND);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glShadeModel(GL_SMOOTH);
+	pdglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	pdglShadeModel(GL_SMOOTH);
 
-	glEnable(GL_TEXTURE_2D);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	pdglEnable(GL_TEXTURE_2D);
+	pdglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-//	glEnable(GL_STENCIL_TEST);
-//	glEnable(GL_SCISSOR_TEST);
+//	pdglEnable(GL_STENCIL_TEST);
+//	pdglEnable(GL_SCISSOR_TEST);
 
-	glColor4f(1,1,1,1);
+	pdglColor4f(1,1,1,1);
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
+	pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
 		GL_ACCUM_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
@@ -188,46 +188,46 @@ PDGL_API int Draw_SetSolid4_2D(
 	pdgl_view_xs=xs;
 	pdgl_view_ys=ys;
 
-	glViewport(xo, yo, xs, ys);
+	pdglViewport(xo, yo, xs, ys);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+	pdglMatrixMode(GL_PROJECTION);
+	pdglLoadIdentity();
 
-	glOrtho(mins[0], maxs[0], mins[1], maxs[1], mins[2], maxs[2]);
+	pdglOrtho(mins[0], maxs[0], mins[1], maxs[1], mins[2], maxs[2]);
 
-	glRotatef(-ang[1],  0, 1, 0);
-	glRotatef(-ang[0],  1, 0, 0);
-	glRotatef(-ang[2],  0, 0, 1);
-	glTranslatef(-org[0],  -org[1],  -org[2]);
+	pdglRotatef(-ang[1],  0, 1, 0);
+	pdglRotatef(-ang[0],  1, 0, 0);
+	pdglRotatef(-ang[2],  0, 0, 1);
+	pdglTranslatef(-org[0],  -org[1],  -org[2]);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	pdglMatrixMode(GL_MODELVIEW);
+	pdglLoadIdentity();
 
-	glEnable(GL_DEPTH_TEST);
-//	glDisable(GL_CULL_FACE);
-	glDisable(GL_ALPHA_TEST);
+	pdglEnable(GL_DEPTH_TEST);
+//	pdglDisable(GL_CULL_FACE);
+	pdglDisable(GL_ALPHA_TEST);
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
-	glFrontFace(GL_CCW);
+	pdglEnable(GL_CULL_FACE);
+	pdglCullFace(GL_FRONT);
+	pdglFrontFace(GL_CCW);
 
-	glDepthFunc(GL_LEQUAL);
+	pdglDepthFunc(GL_LEQUAL);
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglEnable(GL_BLEND);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glShadeModel(GL_SMOOTH);
+	pdglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	pdglShadeModel(GL_SMOOTH);
 
-	glEnable(GL_TEXTURE_2D);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	pdglEnable(GL_TEXTURE_2D);
+	pdglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-//	glEnable(GL_STENCIL_TEST);
-//	glEnable(GL_SCISSOR_TEST);
+//	pdglEnable(GL_STENCIL_TEST);
+//	pdglEnable(GL_SCISSOR_TEST);
 
-	glColor4f(1,1,1,1);
+	pdglColor4f(1,1,1,1);
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
+	pdglClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
 		GL_ACCUM_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
@@ -242,10 +242,10 @@ PDGL_API int Draw_SetPerspective_3D(float aspect, float fov, float d,
 	pdgl_view_xs=xs;
 	pdgl_view_ys=ys;
 
-	glViewport(xo, yo, xs, ys);
+	pdglViewport(xo, yo, xs, ys);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+	pdglMatrixMode(GL_PROJECTION);
+	pdglLoadIdentity();
 
 //	if(leftcoords)
 
@@ -257,49 +257,49 @@ PDGL_API int Draw_SetPerspective_3D(float aspect, float fov, float d,
 	ymin=xmin/aspect;
 	ymax=xmax/aspect;
 
-	glFrustum(xmin, xmax, ymin, ymax, dst, 100000);
-//	glFrustum(xmin, xmax, ymin, ymax, dst, 100000000);
-//	glFrustum(xmin, xmax, ymin, ymax, dst, 1000000);
+	pdglFrustum(xmin, xmax, ymin, ymax, dst, 100000);
+//	pdglFrustum(xmin, xmax, ymin, ymax, dst, 100000000);
+//	pdglFrustum(xmin, xmax, ymin, ymax, dst, 1000000);
 
-//	glScalef(1, 1, -1);
+//	pdglScalef(1, 1, -1);
 
-	glTranslatef(0, 0, -d);
+	pdglTranslatef(0, 0, -d);
 
-	glRotatef(-angles[1],  0, 1, 0);
-	glRotatef(-angles[0],  1, 0, 0);
-	glRotatef(-angles[2],  0, 0, 1);
-	glTranslatef(-org[0],  -org[1],  -org[2]);
+	pdglRotatef(-angles[1],  0, 1, 0);
+	pdglRotatef(-angles[0],  1, 0, 0);
+	pdglRotatef(-angles[2],  0, 0, 1);
+	pdglTranslatef(-org[0],  -org[1],  -org[2]);
 
 //	MatN_SwapOrder(pos, pos2, 4);
-//	glMultMatrixd(pos2);
+//	pdglMultMatrixd(pos2);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	pdglMatrixMode(GL_MODELVIEW);
+	pdglLoadIdentity();
 
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
+	pdglEnable(GL_DEPTH_TEST);
+	pdglDepthFunc(GL_LESS);
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
-	glFrontFace(GL_CCW);
+	pdglEnable(GL_CULL_FACE);
+	pdglCullFace(GL_FRONT);
+	pdglFrontFace(GL_CCW);
 
-	glDisable(GL_SCISSOR_TEST);
-	glDisable(GL_ALPHA_TEST);
+	pdglDisable(GL_SCISSOR_TEST);
+	pdglDisable(GL_ALPHA_TEST);
 
-//	glDisable(GL_CULL_FACE);
+//	pdglDisable(GL_CULL_FACE);
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglEnable(GL_BLEND);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glShadeModel(GL_SMOOTH);
+	pdglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	pdglShadeModel(GL_SMOOTH);
 
-	glEnable(GL_TEXTURE_2D);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	pdglEnable(GL_TEXTURE_2D);
+	pdglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	glColor4f(0,0,0,1);
+	pdglColor4f(0,0,0,1);
 
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+	pdglHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 }
 
 PDGL_API int Draw_SetPerspective2_3D(float aspect, float fov, float width,
@@ -313,10 +313,10 @@ PDGL_API int Draw_SetPerspective2_3D(float aspect, float fov, float width,
 	pdgl_view_xs=xs;
 	pdgl_view_ys=ys;
 
-	glViewport(xo, yo, xs, ys);
+	pdglViewport(xo, yo, xs, ys);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+	pdglMatrixMode(GL_PROJECTION);
+	pdglLoadIdentity();
 
 	dst=0.1;
 
@@ -331,11 +331,11 @@ PDGL_API int Draw_SetPerspective2_3D(float aspect, float fov, float width,
 
 	dst=xmax/tan(fov*(M_PI/360.0));
 
-	glFrustum(xmin, xmax, ymin, ymax, dst, 100000);
-//	glFrustum(xmin, xmax, ymin, ymax, dst, 100000000);
+	pdglFrustum(xmin, xmax, ymin, ymax, dst, 100000);
+//	pdglFrustum(xmin, xmax, ymin, ymax, dst, 100000000);
 
-//	glScalef(1, 1, -1);
-	glTranslatef(0, 0, -dst);
+//	pdglScalef(1, 1, -1);
+	pdglTranslatef(0, 0, -dst);
 
 //	Mat3to4F_Transpose(rot, pos);
 
@@ -344,84 +344,84 @@ PDGL_API int Draw_SetPerspective2_3D(float aspect, float fov, float width,
 	pos[8]=rot[2];	pos[9]=rot[5];	pos[10]=rot[8];	pos[11]=0;
 	pos[12]=0;	pos[13]=0;	pos[14]=0;	pos[15]=1;
 
-	glRotatef(-90,  1, 0, 0);
+	pdglRotatef(-90,  1, 0, 0);
 
-	glMultMatrixf(pos);
-	glTranslatef(-org[0],  -org[1],  -org[2]);
+	pdglMultMatrixf(pos);
+	pdglTranslatef(-org[0],  -org[1],  -org[2]);
 
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	pdglMatrixMode(GL_MODELVIEW);
+	pdglLoadIdentity();
 
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
+	pdglEnable(GL_DEPTH_TEST);
+	pdglDepthFunc(GL_LESS);
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
-	glFrontFace(GL_CCW);
+	pdglEnable(GL_CULL_FACE);
+	pdglCullFace(GL_FRONT);
+	pdglFrontFace(GL_CCW);
 
-	glDisable(GL_SCISSOR_TEST);
-	glDisable(GL_ALPHA_TEST);
+	pdglDisable(GL_SCISSOR_TEST);
+	pdglDisable(GL_ALPHA_TEST);
 
-//	glDisable(GL_CULL_FACE);
+//	pdglDisable(GL_CULL_FACE);
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	pdglEnable(GL_BLEND);
+	pdglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glShadeModel(GL_SMOOTH);
+	pdglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	pdglShadeModel(GL_SMOOTH);
 
-	glEnable(GL_TEXTURE_2D);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	pdglEnable(GL_TEXTURE_2D);
+	pdglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	glColor4f(0,0,0,1);
+	pdglColor4f(0,0,0,1);
 
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+	pdglHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 }
 
 PDGL_API int Draw_Square(int x, int y, int w, int h)
 {
-	glBegin(GL_QUADS);
-	glVertex2f(x,	y);
-	glVertex2f(x,	y+h);
-	glVertex2f(x+w,	y+h);
-	glVertex2f(x+w,	y);
-	glEnd();
+	pdglBegin(GL_QUADS);
+	pdglVertex2f(x,	y);
+	pdglVertex2f(x,	y+h);
+	pdglVertex2f(x+w,	y+h);
+	pdglVertex2f(x+w,	y);
+	pdglEnd();
 
 	return(0);
 }
 
 PDGL_API int Draw_FillSquare(int x, int y, int w, int h, float c[4])
 {
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_TEXTURE_2D);
 
-	glColor4fv(c);
+	pdglColor4fv(c);
 
-	glBegin(GL_QUADS);
-	glVertex2f(x,	y);
-	glVertex2f(x,	y+h);
-	glVertex2f(x+w,	y+h);
-	glVertex2f(x+w,	y);
-	glEnd();
+	pdglBegin(GL_QUADS);
+	pdglVertex2f(x,	y);
+	pdglVertex2f(x,	y+h);
+	pdglVertex2f(x+w,	y+h);
+	pdglVertex2f(x+w,	y);
+	pdglEnd();
 
-	glEnable(GL_TEXTURE_2D);
+	pdglEnable(GL_TEXTURE_2D);
 }
 
 PDGL_API int Draw_FillSquareRGBA(int x, int y, int w, int h,
 	int r, int g, int b, int a)
 {
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_TEXTURE_2D);
 
-	glColor4f(r/255.0, g/255.0, b/255.0, a/255.0);
+	pdglColor4f(r/255.0, g/255.0, b/255.0, a/255.0);
 
-	glBegin(GL_QUADS);
-	glVertex2f(x,	y);
-	glVertex2f(x,	y+h);
-	glVertex2f(x+w,	y+h);
-	glVertex2f(x+w,	y);
-	glEnd();
+	pdglBegin(GL_QUADS);
+	pdglVertex2f(x,	y);
+	pdglVertex2f(x,	y+h);
+	pdglVertex2f(x+w,	y+h);
+	pdglVertex2f(x+w,	y);
+	pdglEnd();
 
-	glEnable(GL_TEXTURE_2D);
+	pdglEnable(GL_TEXTURE_2D);
 }
 
 PDGL_API int Draw_Circle(int ox, int oy, int r)
@@ -429,22 +429,22 @@ PDGL_API int Draw_Circle(int ox, int oy, int r)
 	int i;
 	float x, y;
 
-	glBegin(GL_POLYGON);
+	pdglBegin(GL_POLYGON);
 	for(i=0; i<16; i++)
 	{
 		x=ox+(sin(M_PI*(i/8.0))*r);
 		y=oy+(cos(M_PI*(i/8.0))*r);
-		glVertex2f(x, y);
+		pdglVertex2f(x, y);
 	}
-	glEnd();
+	pdglEnd();
 
 	return(0);
 }
 
 PDGL_API int Draw_FillCircle(int ox, int oy, int ra, int r, int g, int b, int a)
 {
-	glDisable(GL_TEXTURE_2D);
-	glColor4f(r/255.0, g/255.0, b/255.0, a/255.0);
+	pdglDisable(GL_TEXTURE_2D);
+	pdglColor4f(r/255.0, g/255.0, b/255.0, a/255.0);
 
 	Draw_Circle(ox, oy, ra);
 	return(0);
@@ -455,7 +455,7 @@ PDGL_API int Draw_PictureCircle(int ox, int oy, int r, int texnum)
 	int i;
 	float a, sa, ca, x, y, s, t;
 
-	glBegin(GL_POLYGON);
+	pdglBegin(GL_POLYGON);
 	for(i=0; i<16; i++)
 	{
 		a=M_PI*(i/8.0);
@@ -467,35 +467,35 @@ PDGL_API int Draw_PictureCircle(int ox, int oy, int r, int texnum)
 		x=ox+(ca*r);
 		y=oy+(sa*r);
 
-		glTexCoord2f(s, t);
-		glVertex2f(x, y);
+		pdglTexCoord2f(s, t);
+		pdglVertex2f(x, y);
 	}
-	glEnd();
+	pdglEnd();
 
 	return(0);
 }
 
 PDGL_API int Draw_Bind(int num)
 {
-	glBindTexture(GL_TEXTURE_2D, num);
+	pdglBindTexture(GL_TEXTURE_2D, num);
 	return(0);
 }
 
 PDGL_API int Draw_DisableTextures()
 {
-	glDisable(GL_TEXTURE_2D);
+	pdglDisable(GL_TEXTURE_2D);
 	return(0);
 }
 
 PDGL_API int Draw_EnableTextures()
 {
-	glEnable(GL_TEXTURE_2D);
+	pdglEnable(GL_TEXTURE_2D);
 	return(0);
 }
 
 PDGL_API int Draw_ColorRGBA(int r, int g, int b, int a)
 {
-	glColor4f(r/255.0, g/255.0, b/255.0, a/255.0);
+	pdglColor4f(r/255.0, g/255.0, b/255.0, a/255.0);
 	return(0);
 }
 
@@ -511,18 +511,18 @@ PDGL_API int Draw_Picture(int x, int y, int w, int h, int num)
 
 //	printf("tex=%d\n", num);
 
-	glBindTexture(GL_TEXTURE_2D, num);
+	pdglBindTexture(GL_TEXTURE_2D, num);
 
-	glBegin(GL_QUADS);
-	glTexCoord2f(s1, t1);
-	glVertex2f(x, y);
-	glTexCoord2f(s1, t2);
-	glVertex2f(x, y+h);
-	glTexCoord2f(s2, t2);
-	glVertex2f(x+w, y+h);
-	glTexCoord2f(s2, t1);
-	glVertex2f(x+w, y);
-	glEnd();
+	pdglBegin(GL_QUADS);
+	pdglTexCoord2f(s1, t1);
+	pdglVertex2f(x, y);
+	pdglTexCoord2f(s1, t2);
+	pdglVertex2f(x, y+h);
+	pdglTexCoord2f(s2, t2);
+	pdglVertex2f(x+w, y+h);
+	pdglTexCoord2f(s2, t1);
+	pdglVertex2f(x+w, y);
+	pdglEnd();
 
 	return(0);
 }
