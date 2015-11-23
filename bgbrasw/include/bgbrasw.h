@@ -8,6 +8,13 @@
 #endif
 
 #include <bgbrasw_conf.h>
+
+#if defined(WIN64) || (_M_IX86_FP>=2)
+#include <xmmintrin.h>
+#include <emmintrin.h>
+#define HAVE_SSE2
+#endif
+
 #include <bgbrasw_raobj.h>
 #include <bgbrasw_gl.h>
 #include <bgbrasw/barf.h>

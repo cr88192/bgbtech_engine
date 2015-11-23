@@ -934,6 +934,7 @@ int BGBRASW_SetupTestBlend(BGBRASW_Context *ctx,
 
 	tabs->drawSpanTex_min=BGBRASW_DrawSpanTextureInterpTestBlend;
 	tabs->drawSpanTex_mag=BGBRASW_DrawSpanTextureInterpTestBlend;
+	tabs->drawSpanTex_mag2=BGBRASW_DrawSpanTextureInterpTestBlend;
 
 	tabs->testAndBlend=BGBRASW_TestAndBlend_Generic;
 //	tabs->doBlend=BGBRASW_DoBlend_Generic;
@@ -946,6 +947,15 @@ int BGBRASW_SetupTestBlend(BGBRASW_Context *ctx,
 	tabs->drawSpanTextureInterp=BGBRASW_DrawSpanTextureInterp;
 	tabs->drawSpanTextureBasicZTest=BGBRASW_DrawSpanTextureBasicZTest;
 	tabs->drawSpanTextureInterpZTest=BGBRASW_DrawSpanTextureInterpZTest;
+
+	tabs->drawSpanTextureBasic_mag=BGBRASW_DrawSpanTextureBasic;
+	tabs->drawSpanTextureInterp_mag=BGBRASW_DrawSpanTextureInterp;
+	tabs->drawSpanTextureBasic_mag2=BGBRASW_DrawSpanTextureBasic;
+	tabs->drawSpanTextureInterp_mag2=BGBRASW_DrawSpanTextureInterp;
+	tabs->drawSpanTextureBasicZTest_mag=BGBRASW_DrawSpanTextureBasicZTest;
+	tabs->drawSpanTextureInterpZTest_mag=BGBRASW_DrawSpanTextureInterpZTest;
+	tabs->drawSpanTextureBasicZTest_mag2=BGBRASW_DrawSpanTextureBasicZTest;
+	tabs->drawSpanTextureInterpZTest_mag2=BGBRASW_DrawSpanTextureInterpZTest;
 
 	tabs->stenOpSfail=BGBRASW_TestAndBlend_StencilOp_Keep;
 	tabs->stenOpDpFail=BGBRASW_TestAndBlend_StencilOp_Keep;
@@ -1057,18 +1067,30 @@ int BGBRASW_SetupTestBlend(BGBRASW_Context *ctx,
 		case BGBRASW_GL_NEAREST_MIPMAP_NEAREST:
 		case BGBRASW_GL_NEAREST_MIPMAP_LINEAR:
 			tabs->drawSpanTex_mag=BGBRASW_DrawSpanTextureInterpTestBlend;
+			tabs->drawSpanTex_mag2=BGBRASW_DrawSpanTextureInterpTestBlend;
 			break;
-#if 0
+#if 1
 		case BGBRASW_GL_LINEAR:
 		case BGBRASW_GL_LINEAR_MIPMAP_NEAREST:
 		case BGBRASW_GL_LINEAR_MIPMAP_LINEAR:
-//			tabs->drawSpanTex_mag=BGBRASW_DrawSpanTextureInterpTestBlend;
-			tabs->drawSpanTex_mag=
+			tabs->drawSpanTex_mag=BGBRASW_DrawSpanTextureInterpTestBlend;
+			tabs->drawSpanTex_mag2=
 				BGBRASW_DrawSpanTextureLinearInterpTestBlend;
+
+			tabs->drawSpanTextureBasic_mag2=
+				BGBRASW_DrawSpanTextureBasicLinear;
+			tabs->drawSpanTextureInterp_mag2=
+				BGBRASW_DrawSpanTextureInterpLinear;
+
+			tabs->drawSpanTextureBasicZTest_mag2=
+				BGBRASW_DrawSpanTextureBasicZTestLinear;
+			tabs->drawSpanTextureInterpZTest_mag2=
+				BGBRASW_DrawSpanTextureInterpZTestLinear;
 			break;
 #endif
 		default:
 			tabs->drawSpanTex_mag=BGBRASW_DrawSpanTextureInterpTestBlend;
+			tabs->drawSpanTex_mag2=BGBRASW_DrawSpanTextureInterpTestBlend;
 			break;
 		}
 	}
@@ -1341,6 +1363,7 @@ void BGBRASW_CopyTestBlend(BGBRASW_Context *ctx,
 	dsttabs->drawSpanFlat=srctabs->drawSpanFlat;
 	dsttabs->drawSpanTex_min=srctabs->drawSpanTex_min;
 	dsttabs->drawSpanTex_mag=srctabs->drawSpanTex_mag;
+	dsttabs->drawSpanTex_mag2=srctabs->drawSpanTex_mag2;
 	dsttabs->testAndBlend=srctabs->testAndBlend;
 	dsttabs->testAlpha=srctabs->testAlpha;
 	dsttabs->testDepth=srctabs->testDepth;
@@ -1362,4 +1385,22 @@ void BGBRASW_CopyTestBlend(BGBRASW_Context *ctx,
 	dsttabs->drawSpanTextureInterp=srctabs->drawSpanTextureInterp;
 	dsttabs->drawSpanTextureBasicZTest=srctabs->drawSpanTextureBasicZTest;
 	dsttabs->drawSpanTextureInterpZTest=srctabs->drawSpanTextureInterpZTest;
+
+	dsttabs->drawSpanTextureBasic_mag=
+		srctabs->drawSpanTextureBasic_mag;
+	dsttabs->drawSpanTextureInterp_mag=
+		srctabs->drawSpanTextureInterp_mag;
+	dsttabs->drawSpanTextureBasic_mag2=
+		srctabs->drawSpanTextureBasic_mag2;
+	dsttabs->drawSpanTextureInterp_mag2=
+		srctabs->drawSpanTextureInterp_mag2;
+
+	dsttabs->drawSpanTextureBasicZTest_mag=
+		srctabs->drawSpanTextureBasicZTest_mag;
+	dsttabs->drawSpanTextureInterpZTest_mag=
+		srctabs->drawSpanTextureInterpZTest_mag;
+	dsttabs->drawSpanTextureBasicZTest_mag2=
+		srctabs->drawSpanTextureBasicZTest_mag2;
+	dsttabs->drawSpanTextureInterpZTest_mag2=
+		srctabs->drawSpanTextureInterpZTest_mag2;
 }

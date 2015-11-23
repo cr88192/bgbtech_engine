@@ -2076,7 +2076,7 @@ BGBBTJ_API int BGBBTJ_BT1C_DecodeBlocksMB5C(BGBBTJ_BTIC1C_ImageInfo *ctx,
 	byte *cs, *csl;
 	byte *tbuf;
 	int xs1, ys1, xs2, ys2;
-	int i, j, k, n;
+	int i, j, k, n, es;
 
 	xs1=(xs+3)/4;
 	ys1=(ys+3)/4;
@@ -2092,9 +2092,12 @@ BGBBTJ_API int BGBBTJ_BT1C_DecodeBlocksMB5C(BGBBTJ_BTIC1C_ImageInfo *ctx,
 //			memcpy(ctx->ladata, ctx->adata, ctx->nblocks*8);
 //			memcpy(blks, ctx->adata, ctx->nblocks*32);
 
-			BGBBTJ_BT1C_DecodeBlocksMB5C_I(ctx, ibuf, isz,
+			es=BGBBTJ_BT1C_DecodeBlocksMB5C_I(ctx, ibuf, isz,
 				blks, lblks, ctx->adata, xs, ys,
 				dfl|BGBBTJ_BTIC1C_DFL_HASAX);
+
+			if(es<0)
+				{ printf("BGBBTJ_BT1C_DecodeBlocksMB5C: Ax-Err=%d\n", es); }
 
 //			j=BGBBTJ_BT1C_DecodeBlocksBC4(ctx, ibuf+i, isz-i,
 //				blks, lblks, xs, ys, 32);
@@ -2106,6 +2109,11 @@ BGBBTJ_API int BGBBTJ_BT1C_DecodeBlocksMB5C(BGBBTJ_BTIC1C_ImageInfo *ctx,
 		{
 			i=BGBBTJ_BT1C_DecodeBlocksMB5C_I(ctx, ibuf, isz,
 				blks, NULL, NULL, xs, ys, dfl);
+
+			if(i<0)
+				{ printf("BGBBTJ_BT1C_DecodeBlocksMB5C: "
+					"No-Ax Err=%d\n", i); }
+
 			cs=ibuf+i;
 			k=cs-ibuf;
 		}
@@ -2117,8 +2125,14 @@ BGBBTJ_API int BGBBTJ_BT1C_DecodeBlocksMB5C(BGBBTJ_BTIC1C_ImageInfo *ctx,
 		BGBBTJ_BT1C_CheckSizeTBuf1(ctx, j);
 		tbuf=ctx->tbuf1;
 		
-		BTLZA_DecodeStreamSzZl(ibuf+6, tbuf, i-6, j, &k, 0);
-		BGBBTJ_BT1C_DecodeBlocksMB5C(ctx, tbuf, k, blks, lblks, xs, ys, dfl);
+		es=BTLZA_DecodeStreamSzZl(ibuf+6, tbuf, i-6, j, &k, 0);
+		if(es<0)
+			{ printf("BGBBTJ_BT1C_DecodeBlocksMB5C: BTLZA Err=%d\n", es); }
+
+		es=BGBBTJ_BT1C_DecodeBlocksMB5C(ctx, tbuf, k,
+			blks, lblks, xs, ys, dfl);
+		if(es<0)
+			{ printf("BGBBTJ_BT1C_DecodeBlocksMB5C: Rec-Err=%d\n", es); }
 		k=i;
 	}else if((ibuf[0]==0xE3) && (ibuf[4]=='J') && (ibuf[5]=='P'))
 	{
@@ -2138,6 +2152,10 @@ BGBBTJ_API int BGBBTJ_BT1C_DecodeBlocksMB5C(BGBBTJ_BTIC1C_ImageInfo *ctx,
 		cs=ibuf+i;
 	}else
 	{
+		printf("BGBBTJ_BT1C_DecodeBlocksMB5C: Invalid Marker "
+				"%02X %02X %02X %02X  %02X %02X %02X %02X\n",
+			ibuf[0], ibuf[1], ibuf[2], ibuf[3],
+			ibuf[4], ibuf[5], ibuf[6], ibuf[7]);
 		return(-1);
 	}
 	return(k);

@@ -717,9 +717,11 @@ void BTLZA_BitDec_MemCpy(byte *dst, byte *src, int len)
 		}
 		if(i>=8)
 //			{ *((double *)t)++=*((double *)s)++; i-=8; }
-			{ *((s64 *)t)++=*((s64 *)s)++; i-=8; }
+//			{ *((s64 *)t)++=*((s64 *)s)++; i-=8; }
+			{ *((s64 *)t)=*((s64 *)s); t+=8; s+=8; i-=8; }
 		if(i>=4)
-			{ *((int *)t)++=*((int *)s)++; i-=4; }
+//			{ *((int *)t)++=*((int *)s)++; i-=4; }
+			{ *((int *)t)=*((int *)s); t+=4; s+=4; i-=4; }
 		if(i>=2)
 			{ *t++=*s++; *t++=*s++; i-=2; }
 		if(i) { *t++=*s++; }

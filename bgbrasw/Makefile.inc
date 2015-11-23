@@ -11,6 +11,8 @@ OBJS=\
 	base/rasw_drawtris$(OBJSUF) \
 	base/rasw_drawtris_flat$(OBJSUF) \
 	base/rasw_drawtris_tex$(OBJSUF) \
+	base/rasw_drsp_flat$(OBJSUF) \
+	base/rasw_drsp_tblend$(OBJSUF) \
 	base/rasw_targa$(OBJSUF) \
 	base/rasw_testblend$(OBJSUF) \
 	base/rasw_texture$(OBJSUF) \
@@ -20,6 +22,7 @@ OBJS=\
 	raswgl/ragl_clip$(OBJSUF) \
 	raswgl/ragl_gldrv$(OBJSUF) \
 	raswgl/ragl_glw$(OBJSUF) \
+	raswgl/ragl_light$(OBJSUF) \
 	raswgl/ragl_raswprim$(OBJSUF) \
 	raswgl/ragl_teximage$(OBJSUF) \
 	raswgl/ragl_transform$(OBJSUF) \

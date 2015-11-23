@@ -9,22 +9,25 @@ DLLPF=lib
 CC_OUTEXE=gcc -o 
 CC_OUTDLL=gcc -shared -o 
 CC_OUTOBJ=gcc -c -o 
+CC_OUTTOOL=gcc -o 
 
-EXE = .elf
-BIN = .bin
+EXESUF = .elf
+BINSUF = .bin
 
-BGBMETA=../bgbmeta$(EXE)
+BGBMETA=../bgbmeta$(BINSUF)
 BGBMETA_EXW=$(BGBMETA) /Fw
 BMETA_CFLAGS=/Iinclude /I../include
 
+BSPKG2C=../bspkg2c$(EXESUF)
+
 CFLAGS=-Iinclude -I../include -g -pg
 DLL_CFLAGS=$(CFLAGS) -DPDGL_DLL
-LDFLAGS=-g -pg -L.. -lbgbgc -lbgbdy -lbgbasm -lbgbsxil -lzpack -lm \
-	-lbsgen -lbgbcc -lvecmath -lGL \
+LDFLAGS=-g -pg -L.. -lbgbgc -lbgbdy -lbgbasm -lzpack -lm \
+	-lvecmath -lGL \
 	-Wl,-rpath,"$$ORIGIN"
 
-DLL_LDFLAGS=-g -pg -L.. -lbgbgc -lbgbdy -lbgbasm -lbgbsxil -lzpack -lm -fPIC \
-	-lbsgen -lbgbcc -lvecmath -lbsde \
+DLL_LDFLAGS=-g -pg -L.. -lbgbgc -lbgbdy -lbgbasm -lzpack -lm -fPIC \
+	-lvecmath -lbsde \
 	-Wl,-rpath,"$$ORIGIN"
 
 include Makefile.inc

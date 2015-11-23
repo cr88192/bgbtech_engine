@@ -68,6 +68,7 @@ int alpha_func;
 bgbrasw_pixel clear_clr;
 bgbrasw_zbuf clear_z;
 u32 caps_enabled;
+u32 lights_enabled;
 
 float *xyzbuf;
 float *stbuf;
@@ -107,6 +108,11 @@ float ntmp[4];
 float clr[4];
 float nxtmp[4];
 float nytmp[4];
+
+float materialfv[8][4];
+
+float lightf[16][8];
+float lightfv[16][16][4];
 
 int init;
 int viewport_x, viewport_y;

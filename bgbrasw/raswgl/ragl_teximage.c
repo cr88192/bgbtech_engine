@@ -524,10 +524,16 @@ void RASWGL_ReadPixels(
 	bgbrasw_pixel pix;
 	bgbrasw_pixel *fb;
 	byte *ct;
-	int cx, cy, fbxs, fbys, xstr, ystr;
+	int cx, cy, fbxs, fbys, xstr, ystr, pxf;
 	int i, j, k, l;
 	
-	xstr=4; ystr=xstr*width;
+	xstr=4; pxf=0;
+	if((format==GL_BGRA) || (format==GL_BGR))
+		pxf|=1;
+	if((format==GL_RGB) || (format==GL_BGR))
+		xstr=3;
+
+	ystr=xstr*width;
 
 	fb=ctx->ractx->tgt_rgba;
 	fbxs=ctx->ractx->tgt_xs;
@@ -544,7 +550,11 @@ void RASWGL_ReadPixels(
 		
 		pix=fb[cy*fbxs+cx];
 		ct=pixels+i*ystr+j*xstr;
-		ct[2]=pix;		ct[1]=pix>>8;
-		ct[0]=pix>>16;	ct[3]=pix>>24;
+		if(pxf&1)
+			{ ct[0]=pix; ct[1]=pix>>8; ct[2]=pix>>16; }
+		else
+			{ ct[2]=pix; ct[1]=pix>>8; ct[0]=pix>>16; }
+		if(xstr==4)
+			ct[3]=pix>>24;
 	}
 }

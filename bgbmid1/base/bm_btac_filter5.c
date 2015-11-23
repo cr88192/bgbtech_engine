@@ -288,7 +288,7 @@ void BTAC_Band0_StatCoeffUValue(void *ctx,
 }
 
 #if 0
-void BTJ_JFEH_EncodeVal(void *ctx, int tab, int z, int v)
+  void BTJ_JFEH_EncodeVal(void *ctx, int tab, int z, int v)
 {
 	int i, j, k;
 

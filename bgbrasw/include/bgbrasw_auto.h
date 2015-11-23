@@ -39,20 +39,14 @@ BGBRASW_API void BGBRASW_DrawPrimitiveList(BGBRASW_Context *ctx, BGBRASW_Primiti
 //AHSRC:base/rasw_drawline.c
 void BGBRASW_DrawPrimitive_Line(BGBRASW_Context *ctx, BGBRASW_Primitive *prim);
 //AHSRC:base/rasw_drawspan.c
-void BGBRASW_DrawSpanFlatBasic(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, int npix, bgbrasw_pixel clr);
-void BGBRASW_DrawSpanFlatInterp(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, int npix, bgbrasw_pixel clr0, bgbrasw_pixel clr1);
-void BGBRASW_DrawSpanFlatBasicZTest(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel clr, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
-void BGBRASW_DrawSpanFlatInterpZTest(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel clr0, bgbrasw_pixel clr1, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
 void BGBRASW_DrawSpanTextureBasic(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, int npix, bgbrasw_pixel *tex, int txs, int tys, int st0s, int st0t, int st1s, int st1t);
 void BGBRASW_DrawSpanTextureInterp(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, int npix, bgbrasw_pixel *tex, int txs, int tys, int st0s, int st0t, int st1s, int st1t, bgbrasw_pixel clr0, bgbrasw_pixel clr1);
 void BGBRASW_DrawSpanTextureBasicZTest(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel *tex, int txs, int tys, int st0s, int st0t, int st1s, int st1t, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
 void BGBRASW_DrawSpanTextureInterpZTest(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel *tex, int txs, int tys, int st0s, int st0t, int st1s, int st1t, bgbrasw_pixel clr0, bgbrasw_pixel clr1, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
-void BGBRASW_DrawSpanFlatBasicTestBlend(BGBRASW_TestBlendData *testData, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel clr, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
-void BGBRASW_DrawSpanFlatInterpTestBlend(BGBRASW_TestBlendData *testData, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel clr0, bgbrasw_pixel clr1, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
-void BGBRASW_DrawSpanTextureBasicTestBlend(BGBRASW_TestBlendData *testData, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel *tex, int txs, int tys, int st0s, int st0t, int st1s, int st1t, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
-void BGBRASW_DrawSpanTextureInterpTestBlend(BGBRASW_TestBlendData *testData, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel *tex, int txs, int tys, int st0s, int st0t, int st1s, int st1t, bgbrasw_pixel clr0, bgbrasw_pixel clr1, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
-bgbrasw_pixel bgbrasw_interp_linear(bgbrasw_pixel clr0, bgbrasw_pixel clr1, bgbrasw_pixel clr2, bgbrasw_pixel clr3, int fx, int fy);
-void BGBRASW_DrawSpanTextureLinearInterpTestBlend(BGBRASW_TestBlendData *testData, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel *tex, int txs, int tys, int st0s, int st0t, int st1s, int st1t, bgbrasw_pixel clr0, bgbrasw_pixel clr1, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
+void BGBRASW_DrawSpanTextureBasicLinear(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, int npix, bgbrasw_pixel *tex, int txs, int tys, int st0s, int st0t, int st1s, int st1t);
+void BGBRASW_DrawSpanTextureInterpLinear(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, int npix, bgbrasw_pixel *tex, int txs, int tys, int st0s, int st0t, int st1s, int st1t, bgbrasw_pixel clr0, bgbrasw_pixel clr1);
+void BGBRASW_DrawSpanTextureBasicZTestLinear(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel *tex, int txs, int tys, int st0s, int st0t, int st1s, int st1t, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
+void BGBRASW_DrawSpanTextureInterpZTestLinear(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel *tex, int txs, int tys, int st0s, int st0t, int st1s, int st1t, bgbrasw_pixel clr0, bgbrasw_pixel clr1, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
 //AHSRC:base/rasw_drawtris.c
 int bgbrasw_log2dn(int val);
 int bgbrasw_log2f8(int val);
@@ -72,6 +66,18 @@ void BGBRASW_DrawPrimitive_TriangleTexInterp(BGBRASW_Context *ctx, BGBRASW_Primi
 void BGBRASW_DrawPrimitive_TriangleTexBasicZTest(BGBRASW_Context *ctx, BGBRASW_Primitive *prim, int flag);
 void BGBRASW_DrawPrimitive_TriangleTexInterpZTest(BGBRASW_Context *ctx, BGBRASW_Primitive *prim, int flag);
 void BGBRASW_DrawPrimitive_TriangleTexTestBlend(BGBRASW_Context *ctx, BGBRASW_Primitive *prim, int flag);
+//AHSRC:base/rasw_drsp_flat.c
+void BGBRASW_DrawSpanFlatBasic(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, int npix, bgbrasw_pixel clr);
+void BGBRASW_DrawSpanFlatInterp(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, int npix, bgbrasw_pixel clr0, bgbrasw_pixel clr1);
+void BGBRASW_DrawSpanFlatBasicZTest(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel clr, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
+void BGBRASW_DrawSpanFlatInterpZTest(BGBRASW_TestBlendData *tabs, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel clr0, bgbrasw_pixel clr1, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
+//AHSRC:base/rasw_drsp_tblend.c
+void BGBRASW_DrawSpanFlatBasicTestBlend(BGBRASW_TestBlendData *testData, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel clr, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
+void BGBRASW_DrawSpanFlatInterpTestBlend(BGBRASW_TestBlendData *testData, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel clr0, bgbrasw_pixel clr1, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
+void BGBRASW_DrawSpanTextureBasicTestBlend(BGBRASW_TestBlendData *testData, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel *tex, int txs, int tys, int st0s, int st0t, int st1s, int st1t, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
+void BGBRASW_DrawSpanTextureInterpTestBlend(BGBRASW_TestBlendData *testData, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel *tex, int txs, int tys, int st0s, int st0t, int st1s, int st1t, bgbrasw_pixel clr0, bgbrasw_pixel clr1, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
+bgbrasw_pixel bgbrasw_interp_linear(bgbrasw_pixel clr0, bgbrasw_pixel clr1, bgbrasw_pixel clr2, bgbrasw_pixel clr3, int fx, int fy);
+void BGBRASW_DrawSpanTextureLinearInterpTestBlend(BGBRASW_TestBlendData *testData, bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix, bgbrasw_pixel *tex, int txs, int tys, int st0s, int st0t, int st1s, int st1t, bgbrasw_pixel clr0, bgbrasw_pixel clr1, bgbrasw_zbuf z0, bgbrasw_zbuf z1);
 //AHSRC:base/rasw_targa.c
 BGBRASW_API byte *BGBRASW_Img_ReadTGA(FILE *fd, int *w, int *h);
 BGBRASW_API int BGBRASW_Img_StoreTGA(FILE *fd, byte *buf, int w, int h);
@@ -261,10 +267,25 @@ BGBRASW_API void RaGlSetContext(RASWGL_Context *ctx);
 BGBRASW_API RASWGL_Context *RaGlCreateContext(int xs, int ys, int flags);
 void RaGlSetErrorNopStub(void);
 //AHSRC:raswgl/ragl_glw.c
+//AHSRC:raswgl/ragl_light.c
+void RASWGL_Lightf(RASWGL_Context *ctx, int target, int pname, float param);
+void RASWGL_Lighti(RASWGL_Context *ctx, int target, int pname, int param);
+void RASWGL_Lightfv(RASWGL_Context *ctx, int target, int pname, const float *params);
+void RASWGL_Lightiv(RASWGL_Context *ctx, int target, int pname, const int *params);
+void RASWGL_LightModelf(RASWGL_Context *ctx, int pname, float param);
+void RASWGL_LightModeli(RASWGL_Context *ctx, int pname, int param);
+void RASWGL_LightModelfv(RASWGL_Context *ctx, int pname, const float *params);
+void RASWGL_LightModeliv(RASWGL_Context *ctx, int pname, const int *params);
+void RASWGL_Materialf(RASWGL_Context *ctx, int target, int pname, float param);
+void RASWGL_Materiali(RASWGL_Context *ctx, int target, int pname, int param);
+void RASWGL_Materialfv(RASWGL_Context *ctx, int target, int pname, const float *params);
+void RASWGL_Materialiv(RASWGL_Context *ctx, int target, int pname, const int *params);
+void RASWGL_CalcLightVertexColor(RASWGL_Context *ctx, float *xyzw, float *srgb, float *drgb);
 //AHSRC:raswgl/ragl_raswprim.c
 void RASWGL_VertexToViewportPixels(RASWGL_Context *ctx, float *sxyz, int *dxy, bgbrasw_zbuf *dz);
 void RASWGL_CoordsToViewportTexels(RASWGL_Context *ctx, BGBRASW_Texture *tex, float *suv, int *duv);
 void RASWGL_ColorsToViewportColors(RASWGL_Context *ctx, float *srgb, bgbrasw_pixel *drgb);
+void RASWGL_ColorsToViewportColors2(RASWGL_Context *ctx, float *xyzw, float *srgb, bgbrasw_pixel *drgb);
 int RASWGL_ClasifyPrimitive_FlatColorP(RASWGL_Context *ctx, BGBRASW_Primitive *prim);
 int RASWGL_ClasifyPrimitive_OpaqueP(RASWGL_Context *ctx, BGBRASW_Primitive *prim);
 int RASWGL_ClasifyPrimitive_BasicOpaqueP(RASWGL_Context *ctx, BGBRASW_Primitive *prim);
@@ -378,6 +399,8 @@ void *VecNF_Ralloc(int sz);
 //AHSRC:base/rasw_drawtris.c
 //AHSRC:base/rasw_drawtris_flat.c
 //AHSRC:base/rasw_drawtris_tex.c
+//AHSRC:base/rasw_drsp_flat.c
+//AHSRC:base/rasw_drsp_tblend.c
 //AHSRC:base/rasw_targa.c
 //AHSRC:base/rasw_testblend.c
 //AHSRC:base/rasw_texture.c
@@ -386,6 +409,7 @@ void *VecNF_Ralloc(int sz);
 //AHSRC:raswgl/ragl_clip.c
 //AHSRC:raswgl/ragl_gldrv.c
 //AHSRC:raswgl/ragl_glw.c
+//AHSRC:raswgl/ragl_light.c
 //AHSRC:raswgl/ragl_raswprim.c
 //AHSRC:raswgl/ragl_teximage.c
 //AHSRC:raswgl/ragl_transform.c

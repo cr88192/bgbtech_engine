@@ -17,7 +17,7 @@
 FILE *btjpg_log=NULL;
 char *btjpg_home;
 
-extern u32 btjpg_drv_defaultCodecFcc;
+u32 btjpg_drv_defaultCodecFcc;
 
 int BTJPG_DriverTryLoadConfig(char *name)
 {

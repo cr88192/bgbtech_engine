@@ -19,7 +19,7 @@ BMETA_CFLAGS=/Iinclude /I../include
 
 CFLAGS=-Iinclude -I../include -g
 DLL_CFLAGS=$(CFLAGS) -DBGBBTJ_DLL -DBGBBTJ_NODY
-LDFLAGS=-g -lbgbbtjpg -L. -L.. -DBGBBTJ_NODY -lm \
+LDFLAGS=-g -lbgbgc -lbgbasm -lbgbdy -lbgbbtjpg -L. -L.. -DBGBBTJ_NODY -lm \
 	-Wl,-rpath,"$$ORIGIN"
 
 DLL_LDFLAGS=-g -O3 -L.. -lm -fPIC \

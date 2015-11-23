@@ -1247,6 +1247,9 @@ bool LBXGL_Voxel_CheckRegionDistance(LBXGL_VoxelRegion *rgn, float dist);
 void LBXGL_Voxel_DrawRegionQuery(LBXGL_VoxelRegion *rgn);
 void LBXGL_Voxel_DrawRegionListQuery(LBXGL_VoxelRegion *lst);
 void LBXGL_Voxel_DrawWorldQuery(LBXGL_BrushWorld *world);
+void LBXGL_Voxel_FakeRegionQuery(LBXGL_VoxelRegion *rgn);
+void LBXGL_Voxel_FakeRegionListQuery(LBXGL_VoxelRegion *lst);
+void LBXGL_Voxel_FakeWorldQuery(LBXGL_BrushWorld *world);
 //AHSRC:geom/barf_array.c
 LBXGL_BARF_RenderArray *LBXGL_BARF_AllocRenderArray();
 LBXGL_BARF_RenderContext *LBXGL_BARF_AllocRenderContext();

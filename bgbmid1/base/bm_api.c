@@ -175,11 +175,14 @@ BMID_API BGBMID_Context *BGBMID_NewContext()
 	ctx=bgbmid_malloc(sizeof(BGBMID_Context));
 	memset(ctx, 0, sizeof(BGBMID_Context));
 
-	ctx->patches=malloc(128*sizeof(char *));
+//	ctx->patches=malloc(128*sizeof(char *));
+	ctx->patches=malloc(8192*sizeof(char *));
 	ctx->drumpatches=malloc(128*sizeof(char *));
-	memset(ctx->patches, 0, 128*sizeof(char *));
+//	memset(ctx->patches, 0, 128*sizeof(char *));
+	memset(ctx->patches, 0, 8192*sizeof(char *));
 	memset(ctx->drumpatches, 0, 128*sizeof(char *));
-	ctx->maxpatches=128;
+//	ctx->maxpatches=128;
+	ctx->maxpatches=8192;
 	ctx->maxdrumpatches=128;
 
 	ctx->noteticks=120;

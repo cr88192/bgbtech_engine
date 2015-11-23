@@ -262,6 +262,10 @@ BMID_API int BGBMID_SoundDev_WriteRawSamples(short *buffer, int cnt, int ovcnt);
 BMID_API int BGBMID_SoundDev_WriteStereoSamples(short *buffer, int cnt);
 BMID_API int BGBMID_SoundDev_WriteStereoSamples2(short *buffer, int cnt, int ovcnt);
 BMID_API int BGBMID_SoundDev_WriteSamples(short *buffer, int cnt);
+BMID_API int BGBMID_SoundDev_RecInit();
+BMID_API int BGBMID_SoundDev_RecDeInit();
+BMID_API int BGBMID_SoundDev_RecReadStereoSamples(short *buffer, int cnt);
+BMID_API int BGBMID_SoundDev_RecReadStereoSamples2(short *buffer, int cnt, int ovcnt);
 //base/snd_win2.c
 BMID_API int BGBMID_SoundDev_DeInit();
 BMID_API int BGBMID_SoundDev_Init();
@@ -377,7 +381,6 @@ void BTAC_Band0_CalcLengths_r(short *nodes, byte *cl, int root, int h);
 int BTAC_Band0_BuildLengths(int *stat, int nc, byte *cl, int ml);
 void BTAC_Band0_EncodeCoeffUValue(void *ctx,int tab, int z, u32 val);
 void BTAC_Band0_StatCoeffUValue(void *ctx,int *stat, int z, u32 val);
-void BTJ_JFEH_EncodeVal(void *ctx, int tab, int z, int v);
 void BTAC_Band0_EncodeBlock(void *ctx,int *buf, int dctab, int actab);
 void BTAC_Band0_StatVal(void *ctx, int *stat, int z, int v);
 void BTAC_Band0_StatBlock(void *ctx,int *buf, int *dcstat, int *acstat);

@@ -194,6 +194,13 @@ void RASWGL_DrawElements(RASWGL_Context *ctx,
 {
 	int i;
 
+	if(count<=0)
+		return;
+	if((indices>=NULL) && (indices<(void *)0x00100000))
+	{
+		return;
+	}
+
 	RASWGL_Begin(ctx, mode);
 
 	switch(type)

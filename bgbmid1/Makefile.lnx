@@ -1,51 +1,31 @@
-CFLAGS = -I. -DLIBBMID_C
+BUILD=.
+MKSUF=.lnx
+LIBSUF=.a
+DLLSUF=.so
+EXESUF=.elf
+OBJSUF=.o
+DLLPF=lib
 
-BMID_SRCS = \
-	bm_util.c \
-	bm_wave.c \
-	bm_patch.c \
-	bm_synth.c \
-	bm_file.c \
-	bm_api.c
-
-BMID_OBJS = $(BMID_SRCS:.c=.o)
-
-EXE=.elf
-DLL=.so
 CC_OUTEXE=gcc -o 
 CC_OUTDLL=gcc -shared -o 
+CC_OUTOBJ=gcc -c -o 
+CC_OUTTOOL=gcc -o 
 
-DLL_CFLAGS=-I. -DLIBBMID_C -DBGBMID_DLL -g -pg
-DLL_LDFLAGS=-lm -fPIC -Wl,-rpath,"$$ORIGIN"
-CFLAGS=-I. -g -pg
-LDFLAGS=-L. -lbgbmid -lm -fPIC -Wl,-rpath,"$$ORIGIN"
+EXESUF = .elf
+BINSUF = .bin
 
-all: includes libs apps
+CFLAGS=-Iinclude -I../include -g -pg -fPIC
+CFLAGS_DLL=$(CFLAGS) -DBGBMID_DLL
 
-autohead$(EXE): autohead.c
-	$(CC_OUTEXE)autohead$(EXE) autohead.c
+LDFLAGS=-g -pg -L. -L.. -lbgbgc -lbgbdy -lbgbasm -lzpack -lm \
+	-lvecmath -lGL \
+	-Wl,-rpath,"$$ORIGIN"
 
-bgbmid_auto.h: autohead$(EXE) $(BMID_SRCS)
-	./autohead$(EXE) -api BMID_API $(BMID_SRCS) > bgbmid_auto.h
+CFLAGS_APP=$(CFLAGS) $(LDFLAGS) -lbgbmid
 
-libbgbmid$(DLL): bgbmid_auto.h $(BMID_SRCS)
-	$(CC_OUTDLL)libbgbmid$(DLL) $(BMID_SRCS) $(DLL_CFLAGS) $(DLL_LDFLAGS)
+DLL_LDFLAGS=-g -pg -L.. -lbgbgc -lbgbdy -lbgbasm -lzpack -lm -fPIC \
+	-lbgbcc -lvecmath -lpdgl -lbgbbtjpg \
+	-Wl,-rpath,"$$ORIGIN"
 
-dmid2$(EXE): dmid2.c libbgbmid$(DLL)
-	$(CC_OUTEXE)dmid2$(EXE) dmid2.c $(CFLAGS) $(LDFLAGS)
-
-mid2asc$(EXE): mid2asc.c libbgbmid$(DLL)
-	$(CC_OUTEXE)mid2asc$(EXE) mid2asc.c $(CFLAGS) $(LDFLAGS)
-
-asc2mid$(EXE): asc2mid.c libbgbmid$(DLL)
-	$(CC_OUTEXE)asc2mid$(EXE) asc2mid.c $(CFLAGS) $(LDFLAGS)
-
-tfmid$(EXE): tfmid0.c libbgbmid$(DLL)
-	$(CC_OUTEXE)tfmid$(EXE) tfmid0.c $(CFLAGS) $(LDFLAGS)
-
-clean:
-
-includes:
-libs: libbgbmid$(DLL)
-apps: dmid2$(EXE) mid2asc$(EXE) asc2mid$(EXE) tfmid$(EXE)
+include Makefile.inc
 

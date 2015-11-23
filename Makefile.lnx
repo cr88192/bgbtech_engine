@@ -3,6 +3,7 @@ MKSUF=.lnx
 LIBSUF=.a
 DLLSUF=.so
 EXESUF=.elf
+BINSUF=.bin
 
 ARCH=$(shell autohead$(EXESUF) -idarch)
 

@@ -219,19 +219,34 @@ BGBBTJ_API int BTLZA_DecodeStreamSzZl(byte *ibuf, byte *obuf, int isz,
 	
 	cs=ibuf; cse=ibuf+isz;
 	i=(*cs)>>4;
-	if((i>=0) && (i<=7))
+//	if((i>=0) && (i<=7))
+//	if((i>=0) && (i<=14))
+//	if((i!=8) || ((*cs)==0x89))
+	if((i==8) || (i==11))
+	{
+		j=(cs[0]<<8)+cs[1];
+		if(j%31)
+		{
+			if(i==11)
+			{
+				j=j&0x8FFF;
+				if(j%31)
+					return(-5);
+			}
+			
+			i=*cs++;
+			cm=i&15;
+		}else
+		{
+			i=(cs[0]<<8)+cs[1]; cs+=2;
+			cm=(i>>8)&15;
+		}
+	}else
 	{
 		i=(cs[0]<<8)+cs[1]; cs+=2;
 		cm=(i>>8)&15;
 		if(i%31)
 			return(-4);
-	}else if(i==8)
-	{
-		i=*cs++;
-		cm=i&15;
-	}else
-	{
-		return(-4);
 	}
 
 	if(cm==9)

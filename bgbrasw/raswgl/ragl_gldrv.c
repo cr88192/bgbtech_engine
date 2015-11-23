@@ -235,10 +235,15 @@ BGBRASW_API GLint GLDRV_APIENTRY GlDrv_glRenderMode(GLenum mode)
 BGBRASW_API GLenum GLDRV_APIENTRY GlDrv_glGetError(void)
 {
 	RASWGL_Context *ctx;
+	int i;
 
 	ctx=RaGlGetContext();
 	if(ctx)
-		return(ctx->glerror);
+	{
+		i=ctx->glerror;
+		ctx->glerror=0;
+		return(i);
+	}
 	return(GL_INVALID_OPERATION);
 	
 //	return(GL_INVALID_OPERATION);
@@ -801,47 +806,96 @@ BGBRASW_API void GLDRV_APIENTRY GlDrv_glShadeModel(GLenum mode)
 }
 
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glLightf(
-		GLenum light, GLenum pname, GLfloat param)
-	{ RaGlSetErrorNopStub(); }
+	GLenum light, GLenum pname, GLfloat param)
+{
+	RASWGL_Lightf(GLCTX, light, pname, param);
+//	RaGlSetErrorNopStub();
+}
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glLighti(
-		GLenum light, GLenum pname, GLint param)
-	{ RaGlSetErrorNopStub(); }
+	GLenum light, GLenum pname, GLint param)
+{
+	RASWGL_Lighti(GLCTX, light, pname, param);
+//	RaGlSetErrorNopStub();
+}
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glLightfv(
-		GLenum light, GLenum pname, const GLfloat *params)
-	{ RaGlSetErrorNopStub(); }
+	GLenum light, GLenum pname, const GLfloat *params)
+{
+	RASWGL_Lightfv(GLCTX, light, pname, params);
+//	RaGlSetErrorNopStub();
+}
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glLightiv(
 		GLenum light, GLenum pname, const GLint *params)
-	{ RaGlSetErrorNopStub(); }
+{
+	RASWGL_Lightiv(GLCTX, light, pname, params);
+//	RaGlSetErrorNopStub();
+}
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glGetLightfv(
 		GLenum light, GLenum pname, GLfloat *params)
 	{ RaGlSetErrorNopStub(); }
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glGetLightiv(
 		GLenum light, GLenum pname, GLint *params)
 	{ RaGlSetErrorNopStub(); }
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glLightModelf(
 		GLenum pname, GLfloat param)
-	{ RaGlSetErrorNopStub(); }
+{
+	RASWGL_LightModelf(GLCTX, pname, param);
+//	RaGlSetErrorNopStub();
+}
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glLightModeli(
 		GLenum pname, GLint param)
-	{ RaGlSetErrorNopStub(); }
+{
+	RASWGL_LightModeli(GLCTX, pname, param);
+//	RaGlSetErrorNopStub();
+}
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glLightModelfv(
 		GLenum pname, const GLfloat *params)
-	{ RaGlSetErrorNopStub(); }
+{
+	RASWGL_LightModelfv(GLCTX, pname, params);
+//	RaGlSetErrorNopStub();
+}
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glLightModeliv(
 		GLenum pname, const GLint *params)
-	{ RaGlSetErrorNopStub(); }
+{
+	RASWGL_LightModeliv(GLCTX, pname, params);
+//	RaGlSetErrorNopStub();
+}
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glMaterialf(
-		GLenum face, GLenum pname, GLfloat param)
-	{ RaGlSetErrorNopStub(); }
+	GLenum face, GLenum pname, GLfloat param)
+{
+	RASWGL_Materialf(GLCTX, face, pname, param);
+//	RaGlSetErrorNopStub();
+}
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glMateriali(
-		GLenum face, GLenum pname, GLint param)
-	{ RaGlSetErrorNopStub(); }
+	GLenum face, GLenum pname, GLint param)
+{
+	RASWGL_Materiali(GLCTX, face, pname, param);
+//	RaGlSetErrorNopStub();
+}
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glMaterialfv(
-		GLenum face, GLenum pname, const GLfloat *params)
-	{ RaGlSetErrorNopStub(); }
+	GLenum face, GLenum pname, const GLfloat *params)
+{
+	RASWGL_Materialfv(GLCTX, face, pname, params);
+//	RaGlSetErrorNopStub();
+}
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glMaterialiv(
 		GLenum face, GLenum pname, const GLint *params)
-	{ RaGlSetErrorNopStub(); }
+{
+	RASWGL_Materialiv(GLCTX, face, pname, params);
+//	RaGlSetErrorNopStub();
+}
+
 BGBRASW_API void GLDRV_APIENTRY GlDrv_glGetMaterialfv(
 		GLenum face, GLenum pname, GLfloat *params)
 	{ RaGlSetErrorNopStub(); }

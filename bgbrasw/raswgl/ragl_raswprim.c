@@ -110,6 +110,31 @@ void RASWGL_ColorsToViewportColors(
 	*drgb=BGBRASW_MAKEPIXEL(cr, cg, cb, ca);
 }
 
+void RASWGL_ColorsToViewportColors2(
+	RASWGL_Context *ctx,
+	float *xyzw, float *srgb,
+	bgbrasw_pixel *drgb)
+{
+	float tv[8];
+	int cr, cg, cb, ca;
+
+	if(!(ctx->caps_enabled&BGBRASW_ENABLE_LIGHTING))
+	{
+		RASWGL_ColorsToViewportColors(ctx, srgb, drgb);
+		return;
+	}
+	
+	RASWGL_CalcLightVertexColor(ctx, xyzw, srgb, tv);
+
+	cr=tv[0]*255;	cg=tv[1]*255;
+	cb=tv[2]*255;	ca=tv[3]*255;
+	cr=BGBRASW_CLAMP(cr, 0, 255);
+	cg=BGBRASW_CLAMP(cg, 0, 255);
+	cb=BGBRASW_CLAMP(cb, 0, 255);
+	ca=BGBRASW_CLAMP(ca, 0, 255);
+	*drgb=BGBRASW_MAKEPIXEL(cr, cg, cb, ca);
+}
+
 int RASWGL_ClasifyPrimitive_FlatColorP(
 	RASWGL_Context *ctx, BGBRASW_Primitive *prim)
 {
@@ -751,11 +776,21 @@ BGBRASW_Primitive *RASWGL_BuildPrimitiveListArrays(
 			RASWGL_CoordsToViewportTexels(ctx, ptmp->tex,
 				st+(base+i*3+2)*stsize, ptmp->st[2]);
 
-			RASWGL_ColorsToViewportColors(ctx,
+//			RASWGL_ColorsToViewportColors(ctx,
+//				rgb+(base+i*3+0)*rgbsize, ptmp->rgba+0);
+//			RASWGL_ColorsToViewportColors(ctx,
+//				rgb+(base+i*3+1)*rgbsize, ptmp->rgba+1);
+//			RASWGL_ColorsToViewportColors(ctx,
+//				rgb+(base+i*3+2)*rgbsize, ptmp->rgba+2);
+
+			RASWGL_ColorsToViewportColors2(ctx,
+				xyz+(base+i*3+0)*xyzsize,
 				rgb+(base+i*3+0)*rgbsize, ptmp->rgba+0);
-			RASWGL_ColorsToViewportColors(ctx,
+			RASWGL_ColorsToViewportColors2(ctx,
+				xyz+(base+i*3+1)*xyzsize,
 				rgb+(base+i*3+1)*rgbsize, ptmp->rgba+1);
-			RASWGL_ColorsToViewportColors(ctx,
+			RASWGL_ColorsToViewportColors2(ctx,
+				xyz+(base+i*3+2)*xyzsize,
 				rgb+(base+i*3+2)*rgbsize, ptmp->rgba+2);
 
 #if 0
@@ -824,13 +859,26 @@ BGBRASW_Primitive *RASWGL_BuildPrimitiveListArrays(
 			RASWGL_CoordsToViewportTexels(ctx, ptmp->tex,
 				st+(base+i*4+3)*stsize, ptmp->st[3]);
 
-			RASWGL_ColorsToViewportColors(ctx,
+//			RASWGL_ColorsToViewportColors(ctx,
+//				rgb+(base+i*4+0)*rgbsize, ptmp->rgba+0);
+//			RASWGL_ColorsToViewportColors(ctx,
+//				rgb+(base+i*4+1)*rgbsize, ptmp->rgba+1);
+//			RASWGL_ColorsToViewportColors(ctx,
+//				rgb+(base+i*4+2)*rgbsize, ptmp->rgba+2);
+//			RASWGL_ColorsToViewportColors(ctx,
+//				rgb+(base+i*4+3)*rgbsize, ptmp->rgba+3);
+
+			RASWGL_ColorsToViewportColors2(ctx,
+				xyz+(base+i*4+0)*xyzsize,
 				rgb+(base+i*4+0)*rgbsize, ptmp->rgba+0);
-			RASWGL_ColorsToViewportColors(ctx,
+			RASWGL_ColorsToViewportColors2(ctx,
+				xyz+(base+i*4+1)*xyzsize,
 				rgb+(base+i*4+1)*rgbsize, ptmp->rgba+1);
-			RASWGL_ColorsToViewportColors(ctx,
+			RASWGL_ColorsToViewportColors2(ctx,
+				xyz+(base+i*4+2)*xyzsize,
 				rgb+(base+i*4+2)*rgbsize, ptmp->rgba+2);
-			RASWGL_ColorsToViewportColors(ctx,
+			RASWGL_ColorsToViewportColors2(ctx,
+				xyz+(base+i*4+3)*xyzsize,
 				rgb+(base+i*4+3)*rgbsize, ptmp->rgba+3);
 
 			ptmp->bbox[0][0]=min(
@@ -988,9 +1036,16 @@ void RASWGL_BuildInsertPrimitiveArrays(
 			RASWGL_CoordsToViewportTexels(ctx, ptmp->tex,
 				st+(base+i*2+1)*stsize, ptmp->st[1]);
 
-			RASWGL_ColorsToViewportColors(ctx,
+//			RASWGL_ColorsToViewportColors(ctx,
+//				rgb+(base+i*2+0)*rgbsize, ptmp->rgba+0);
+//			RASWGL_ColorsToViewportColors(ctx,
+//				rgb+(base+i*2+1)*rgbsize, ptmp->rgba+1);
+
+			RASWGL_ColorsToViewportColors2(ctx,
+				xyz+(base+i*2+0)*xyzsize,
 				rgb+(base+i*2+0)*rgbsize, ptmp->rgba+0);
-			RASWGL_ColorsToViewportColors(ctx,
+			RASWGL_ColorsToViewportColors2(ctx,
+				xyz+(base+i*2+1)*xyzsize,
 				rgb+(base+i*2+1)*rgbsize, ptmp->rgba+1);
 
 			RASWGL_ClasifyPrimitive(ctx, ptmp);
@@ -1051,11 +1106,21 @@ void RASWGL_BuildInsertPrimitiveArrays(
 			RASWGL_CoordsToViewportTexels(ctx, ptmp->tex,
 				st+(base+i*3+2)*stsize, ptmp->st[2]);
 
-			RASWGL_ColorsToViewportColors(ctx,
+//			RASWGL_ColorsToViewportColors(ctx,
+//				rgb+(base+i*3+0)*rgbsize, ptmp->rgba+0);
+//			RASWGL_ColorsToViewportColors(ctx,
+//				rgb+(base+i*3+1)*rgbsize, ptmp->rgba+1);
+//			RASWGL_ColorsToViewportColors(ctx,
+//				rgb+(base+i*3+2)*rgbsize, ptmp->rgba+2);
+
+			RASWGL_ColorsToViewportColors2(ctx,
+				xyz+(base+i*3+0)*xyzsize,
 				rgb+(base+i*3+0)*rgbsize, ptmp->rgba+0);
-			RASWGL_ColorsToViewportColors(ctx,
+			RASWGL_ColorsToViewportColors2(ctx,
+				xyz+(base+i*3+1)*xyzsize,
 				rgb+(base+i*3+1)*rgbsize, ptmp->rgba+1);
-			RASWGL_ColorsToViewportColors(ctx,
+			RASWGL_ColorsToViewportColors2(ctx,
+				xyz+(base+i*3+2)*xyzsize,
 				rgb+(base+i*3+2)*rgbsize, ptmp->rgba+2);
 
 #if 0
@@ -1137,13 +1202,26 @@ void RASWGL_BuildInsertPrimitiveArrays(
 			RASWGL_CoordsToViewportTexels(ctx, ptmp->tex,
 				st+(base+i*4+3)*stsize, ptmp->st[3]);
 
-			RASWGL_ColorsToViewportColors(ctx,
+//			RASWGL_ColorsToViewportColors(ctx,
+//				rgb+(base+i*4+0)*rgbsize, ptmp->rgba+0);
+//			RASWGL_ColorsToViewportColors(ctx,
+//				rgb+(base+i*4+1)*rgbsize, ptmp->rgba+1);
+//			RASWGL_ColorsToViewportColors(ctx,
+//				rgb+(base+i*4+2)*rgbsize, ptmp->rgba+2);
+//			RASWGL_ColorsToViewportColors(ctx,
+//				rgb+(base+i*4+3)*rgbsize, ptmp->rgba+3);
+
+			RASWGL_ColorsToViewportColors2(ctx,
+				xyz+(base+i*4+0)*xyzsize,
 				rgb+(base+i*4+0)*rgbsize, ptmp->rgba+0);
-			RASWGL_ColorsToViewportColors(ctx,
+			RASWGL_ColorsToViewportColors2(ctx,
+				xyz+(base+i*4+1)*xyzsize,
 				rgb+(base+i*4+1)*rgbsize, ptmp->rgba+1);
-			RASWGL_ColorsToViewportColors(ctx,
+			RASWGL_ColorsToViewportColors2(ctx,
+				xyz+(base+i*4+2)*xyzsize,
 				rgb+(base+i*4+2)*rgbsize, ptmp->rgba+2);
-			RASWGL_ColorsToViewportColors(ctx,
+			RASWGL_ColorsToViewportColors2(ctx,
+				xyz+(base+i*4+3)*xyzsize,
 				rgb+(base+i*4+3)*rgbsize, ptmp->rgba+3);
 
 			ptmp->bbox[0][0]=min(

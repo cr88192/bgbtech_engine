@@ -9,18 +9,19 @@ DLLPF=lib
 CC_OUTEXE=gcc -o 
 CC_OUTDLL=gcc -shared -o 
 CC_OUTOBJ=gcc -c -o 
+CC_OUTTOOL=gcc -o 
 
-EXE = .elf
-BIN = .bin
+EXESUF = .elf
+BINSUF = .bin
 
 # MACHTYPE=$(shell echo $MACHTYPE)
 MACHTYPE=$(shell ./getmachine.sh)
 
 CFLAGS=-Iinclude -I../include -g -pg -DMACHTYPE="\"$(MACHTYPE)\""
 DLL_CFLAGS=$(CFLAGS) -DBSDE_DLL
-LDFLAGS=-g -pg -L.. -lbgbgc -lbgbdy -lbgbasm -lbgbsxil -lzpack -lm \
+LDFLAGS=-g -pg -L.. -lbgbgc -lbgbdy -lbgbasm -lzpack -lm \
 	-Wl,-rpath,"$$ORIGIN"
-DLL_LDFLAGS=-g -pg -L.. -lbgbgc -lbgbdy -lbgbasm -lbgbsxil -lzpack -lm -fPIC \
+DLL_LDFLAGS=-g -pg -L.. -lbgbgc -lbgbdy -lbgbasm -lzpack -lm -fPIC \
 	-Wl,-rpath,"$$ORIGIN"
 
 include Makefile.inc

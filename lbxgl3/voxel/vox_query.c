@@ -168,3 +168,60 @@ void LBXGL_Voxel_DrawWorldQuery(LBXGL_BrushWorld *world)
 	
 	LBXGL_Voxel_EmitWorldBarf(world);
 }
+
+
+
+void LBXGL_Voxel_FakeRegionQuery(LBXGL_VoxelRegion *rgn)
+{
+	float mins[3], maxs[3];
+	LBXGL_VoxelChunk *cur;
+	LBXGL_Light *lcur;
+	int i;
+
+	if(!LBXGL_Voxel_CheckRegionFrustum(rgn))
+		return;
+
+	cur=rgn->vischk;
+	while(cur)
+	{
+		cur->flags&=~VOX_CHFL_VISCLIP;
+		cur->flags&=~VOX_CHFL_ALPHAVISCLIP;
+//		else
+//			{ cur->flags|=VOX_CHFL_VISCLIP; }
+//				{ cur->flags|=VOX_CHFL_ALPHAVISCLIP; }
+		cur=cur->mesh->vnext;
+	}
+
+	pdglDepthMask(GL_FALSE);
+}
+
+void LBXGL_Voxel_FakeRegionListQuery(LBXGL_VoxelRegion *lst)
+{
+	LBXGL_VoxelRegion *cur;
+
+	cur=lst;
+	while(cur)
+	{
+		LBXGL_Voxel_FakeRegionQuery(cur);
+		cur=cur->next;
+	}
+}
+
+void LBXGL_Voxel_FakeWorldQuery(LBXGL_BrushWorld *world)
+{
+//	lbxgl_voxel_chkleft=16;
+	lbxgl_voxel_chkleft=64;
+	lbxgl_voxel_chkstart=PDGL_TimeMS();
+
+//	pdglColor4f(0, 0, 0, 1);
+//	pdglColor4f(1, 1, 1, 1);
+
+	world->flags&=~BTGE_WFL_VOXFLUID;
+
+	LBXGL_Voxel_RebuildWorldRegions(world);
+	LBXGL_Voxel_FakeRegionListQuery(world->vox_region);
+
+	LBXGL_Voxel_RebuildWorldVisibleChunks(world, world->vox_region);
+		
+	LBXGL_Voxel_EmitWorldBarf(world);
+}

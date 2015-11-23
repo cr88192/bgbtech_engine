@@ -707,6 +707,30 @@ int PDUNZ_DecodeRun(int sym)
 	s=pdunz_ct-k;
 	i=j;
 
+#if defined(X86) || defined(X86_64)
+	se=s+i;
+#if defined(X86_64)
+	while((s+16)<=se)
+	{
+		((s64 *)pdunz_ct)[0]=((s64 *)s)[0];
+		((s64 *)pdunz_ct)[1]=((s64 *)s)[1];
+		pdunz_ct+=2*sizeof(s64);
+		s+=2*sizeof(s64);
+	}
+#endif
+	while((s+4)<=se)
+	{
+		*((int *)pdunz_ct)=*((int *)s);
+		pdunz_ct+=sizeof(int);
+		s+=sizeof(int);
+	}
+	while(s<se)
+		*pdunz_ct++=*s++;
+#else
+	while(s<se)
+		*pdunz_ct++=*s++;
+#endif
+
 // #if defined(X86) || defined(X86_64)
 #if 0
 	se=s+i;
@@ -727,8 +751,8 @@ int PDUNZ_DecodeRun(int sym)
 	while(s<se)*pdunz_ct++=*s++;
 #endif
 
-#if defined(X86) || defined(X86_64)
-//#if 0
+//#if defined(X86) || defined(X86_64)
+#if 0
 	if(k>=16)
 	{
 #if 1
@@ -743,6 +767,7 @@ int PDUNZ_DecodeRun(int sym)
 #if 1
 		if(i>=8)
 		{
+//			*((double *)pdunz_ct)++=*((double *)s)++;
 			*((double *)pdunz_ct)++=*((double *)s)++;
 			i-=8;
 		}

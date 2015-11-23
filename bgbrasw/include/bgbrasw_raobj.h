@@ -189,6 +189,7 @@ typedef void (*BGBRASW_DrawSpanFlatInterpZTest_ft)(
 	bgbrasw_pixel *span, bgbrasw_zbuf *spanz, int npix,
 	bgbrasw_pixel clr0, bgbrasw_pixel clr1,
 	bgbrasw_zbuf z0, bgbrasw_zbuf z1);
+
 typedef void (*BGBRASW_DrawSpanTextureBasic_ft)(
 	BGBRASW_TestBlendData *tabs,
 	bgbrasw_pixel *span, int npix,
@@ -328,6 +329,7 @@ int refcount;				//reference count
 BGBRASW_DrawSpanFlat_ft drawSpanFlat;
 BGBRASW_DrawSpanTex_ft drawSpanTex_min;
 BGBRASW_DrawSpanTex_ft drawSpanTex_mag;
+BGBRASW_DrawSpanTex_ft drawSpanTex_mag2;
 
 BGBRASW_TestBlendFunc_ft testAndBlend;
 
@@ -354,6 +356,16 @@ BGBRASW_DrawSpanTextureBasic_ft			drawSpanTextureBasic;
 BGBRASW_DrawSpanTextureInterp_ft		drawSpanTextureInterp;
 BGBRASW_DrawSpanTextureBasicZTest_ft	drawSpanTextureBasicZTest;
 BGBRASW_DrawSpanTextureInterpZTest_ft	drawSpanTextureInterpZTest;
+
+BGBRASW_DrawSpanTextureBasic_ft			drawSpanTextureBasic_mag;
+BGBRASW_DrawSpanTextureInterp_ft		drawSpanTextureInterp_mag;
+BGBRASW_DrawSpanTextureBasic_ft			drawSpanTextureBasic_mag2;
+BGBRASW_DrawSpanTextureInterp_ft		drawSpanTextureInterp_mag2;
+
+BGBRASW_DrawSpanTextureBasicZTest_ft	drawSpanTextureBasicZTest_mag;
+BGBRASW_DrawSpanTextureInterpZTest_ft	drawSpanTextureInterpZTest_mag;
+BGBRASW_DrawSpanTextureBasicZTest_ft	drawSpanTextureBasicZTest_mag2;
+BGBRASW_DrawSpanTextureInterpZTest_ft	drawSpanTextureInterpZTest_mag2;
 };
 
 

@@ -27,31 +27,12 @@ bscc: includes_bscc libs_bscc apps_bscc
 # meta_bscc
 
 
-includes_q2core:
-	$(MAKE) -C q2core -f Makefile$(MKSUF) includes
-	cp -rf q2core/include/*		$(BUILD)/include
-
-libs_q2core:
-	$(MAKE) -C q2core -f Makefile$(MKSUF) libs
-#	cp -rf q2core/*$(LIBSUF)		$(BUILD)
-	cp -rf q2core/*$(DLLSUF)		$(BUILD)
-
-apps_q2core:
-	$(MAKE) -C q2core -f Makefile$(MKSUF) apps
-	cp -rf q2core/*$(EXESUF)		$(BUILD)
-
-meta_q2: FORCE
-	./bgbmeta$(EXESUF) /Fngamex86_meta.txt	q2core/game/g_local.h /Iinclude
-	./bgbmeta$(EXESUF) /Fnref_gl_meta.txt	q2core/ref_gl/gl_local.h /Iinclude
-
-q2core: includes_q2core libs_q2core apps_q2core
-
 
 includes: FORCE
 	$(MAKE) -C libbsde21 -f Makefile$(MKSUF) includes
 	$(MAKE) -C libvecmath -f Makefile$(MKSUF) includes
-	$(MAKE) -C bsgen -f Makefile$(MKSUF) includes
-	$(MAKE) -C bgbmid -f Makefile$(MKSUF) includes
+#	$(MAKE) -C bsgen -f Makefile$(MKSUF) includes
+	$(MAKE) -C bgbmid1 -f Makefile$(MKSUF) includes
 	$(MAKE) -C tremor -f Makefile$(MKSUF) includes
 #	$(MAKE) -C bscc -f Makefile$(MKSUF) includes
 
@@ -67,9 +48,9 @@ includes: FORCE
 
 	cp -rf libbsde21/include/*.h	$(BUILD)/include
 	cp -rf libvecmath/*.h		$(BUILD)/include
-	cp -rf bsgen/include/*.h	$(BUILD)/include
-	cp -rf bgbmid/*.h		$(BUILD)/include
-	cp -rf tremor/*.h		$(BUILD)/include
+#	cp -rf bsgen/include/*.h	$(BUILD)/include
+	cp -rf bgbmid1/include/*.h	$(BUILD)/include
+	cp -rf tremor/*.h			$(BUILD)/include
 #	cp -rf bscc/include/*		$(BUILD)/include
 
 #	cp -rf qcommon/*.h		$(BUILD)/include
@@ -100,13 +81,13 @@ libs: FORCE
 #	cp -rf libvecmath/*$(LIBSUF)		$(BUILD)
 	cp -rf libvecmath/*$(DLLSUF)		$(BUILD)
 
-	$(MAKE) -C bsgen -f Makefile$(MKSUF) libs
+#	$(MAKE) -C bsgen -f Makefile$(MKSUF) libs
 #	cp -rf bsgen/*$(LIBSUF)		$(BUILD)
-	cp -rf bsgen/*$(DLLSUF)		$(BUILD)
+#	cp -rf bsgen/*$(DLLSUF)		$(BUILD)
 
-	$(MAKE) -C bgbmid -f Makefile$(MKSUF) libs
-#	cp -rf bgbmid/*$(LIBSUF)		$(BUILD)
-	cp -rf bgbmid/*$(DLLSUF)		$(BUILD)
+	$(MAKE) -C bgbmid1 -f Makefile$(MKSUF) libs
+#	cp -rf bgbmid1/*$(LIBSUF)		$(BUILD)
+	cp -rf bgbmid1/*$(DLLSUF)		$(BUILD)
 
 	$(MAKE) -C tremor -f Makefile$(MKSUF) libs
 #	cp -rf tremor/*$(LIBSUF)		$(BUILD)
@@ -144,8 +125,8 @@ libs: FORCE
 apps: FORCE
 	$(MAKE) -C libbsde21 -f Makefile$(MKSUF) apps
 	$(MAKE) -C libvecmath -f Makefile$(MKSUF) apps
-	$(MAKE) -C bsgen -f Makefile$(MKSUF) apps
-	$(MAKE) -C bgbmid -f Makefile$(MKSUF) apps
+#	$(MAKE) -C bsgen -f Makefile$(MKSUF) apps
+	$(MAKE) -C bgbmid1 -f Makefile$(MKSUF) apps
 	$(MAKE) -C tremor -f Makefile$(MKSUF) apps
 #	$(MAKE) -C bscc -f Makefile$(MKSUF) apps
 
@@ -159,8 +140,8 @@ apps: FORCE
 
 #	cp -rf libbsde21/*$(EXESUF)		$(BUILD)
 #	cp -rf libvecmath/*$(EXESUF)		$(BUILD)
-	cp -rf bsgen/*$(EXESUF)		$(BUILD)
-	cp -rf bgbmid/*$(EXESUF)		$(BUILD)
+#	cp -rf bsgen/*$(EXESUF)		$(BUILD)
+	cp -rf bgbmid1/*$(EXESUF)		$(BUILD)
 	cp -rf tremor/*$(EXESUF)		$(BUILD)
 #	cp -rf bscc/*$(EXESUF)		$(BUILD)
 
@@ -174,7 +155,7 @@ apps: FORCE
 meta_libs: FORCE
 	./bgbmeta$(EXESUF) /Fnlibbsde_meta.txt		libbsde.h /Iinclude
 	./bgbmeta$(EXESUF) /Fnlibvecmath_meta.txt	libvecmath.h /Iinclude
-	./bgbmeta$(EXESUF) /Fnlibbsgen_meta.txt		bsgen.h /Iinclude
+#	./bgbmeta$(EXESUF) /Fnlibbsgen_meta.txt		bsgen.h /Iinclude
 	./bgbmeta$(EXESUF) /Fnlibbgbmid_meta.txt	bgbmid.h /Iinclude
 	./bgbmeta$(EXESUF) /Fnlibtrem_meta.txt		ivorbisfile.h /Iinclude
 	./bgbmeta$(EXESUF) /Fnlibpdgl_meta.txt		pdgl.h /Iinclude

@@ -69,7 +69,7 @@ all: libbsde$(DLLSUF)
 FORCE:
 
 autohead$(BINSUF): autohead.c
-	$(CC_OUTEXE)autohead$(BINSUF) autohead.c
+	$(CC_OUTTOOL)autohead$(BINSUF) autohead.c
 
 include/bsde_auto.h: autohead$(BINSUF) $(BSDE_SRCS)
 	./autohead$(BINSUF) -api BSDE_API $(BSDE_SRCS) > \

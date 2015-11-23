@@ -24,6 +24,7 @@ void BGBRASW_DrawPrimitive_TriangleTexBasic(
 	BGBRASW_Context *ctx,
 	BGBRASW_Primitive *prim, int flag)
 {
+	BGBRASW_DrawSpanTextureBasic_ft drawSpan;
 	bgbrasw_pixel clr;
 	bgbrasw_pixel *tergba;
 	int xs, ys, yc, ys1, ye0, ye1, ye2;
@@ -134,7 +135,9 @@ void BGBRASW_DrawPrimitive_TriangleTexBasic(
 //	mip=bgbrasw_log2dn(j);
 //	i0=st1s-st0s; i1=st1t-st0t;
 	j=(t0*t0+t1*t1)/(xs*xs+ys*ys+1);
-	mip=(bgbrasw_log2dn(j)+1)/2;
+	k=bgbrasw_log2f8(j);
+	mip=((k>>8)+1)/2;
+//	mip=(bgbrasw_log2dn(j)+1)/2;
 //	mip=0;
 
 	tergba=prim->tex->rgba[mip];
@@ -150,6 +153,13 @@ void BGBRASW_DrawPrimitive_TriangleTexBasic(
 		txs=prim->tex->xs;
 		tys=prim->tex->ys;
 	}
+
+	if(k>256)
+		{ drawSpan=prim->tabs->drawSpanTextureBasic; }
+	else if(k>64)
+		{ drawSpan=prim->tabs->drawSpanTextureBasic_mag; }
+	else
+		{ drawSpan=prim->tabs->drawSpanTextureBasic_mag2; }
 
 	ye0=y0>>XY_SHR2;
 	ye1=y1>>XY_SHR2;
@@ -208,7 +218,9 @@ void BGBRASW_DrawPrimitive_TriangleTexBasic(
 			sts1=stsb>>(ST_SHR+mip);		stt1=sttb>>(ST_SHR+mip);
 
 			xa=xc0>>XY_SHR; xb=xc1>>XY_SHR;
-			prim->tabs->drawSpanTextureBasic(prim->tabs,
+//			prim->tabs->drawSpanTextureBasic(
+			drawSpan(
+				prim->tabs,
 				ctx->tgt_rgba+yc*ctx->tgt_xs+xa, xb-xa,
 				tergba, txs, tys,
 				sts0, stt0, sts1, stt1);
@@ -267,7 +279,9 @@ void BGBRASW_DrawPrimitive_TriangleTexBasic(
 			sts1=stsb>>(ST_SHR+mip);		stt1=sttb>>(ST_SHR+mip);
 
 			xa=xc0>>XY_SHR; xb=xc1>>XY_SHR;
-			prim->tabs->drawSpanTextureBasic(prim->tabs,
+//			prim->tabs->drawSpanTextureBasic(
+			drawSpan(
+				prim->tabs,
 				ctx->tgt_rgba+yc*ctx->tgt_xs+xa, xb-xa,
 				tergba, txs, tys,
 				sts0, stt0, sts1, stt1);
@@ -295,6 +309,7 @@ void BGBRASW_DrawPrimitive_TriangleTexInterp(
 	int cba, cbb, cbav, cbbv;
 	int caa, cab, caav, cabv;
 
+	BGBRASW_DrawSpanTextureInterp_ft drawSpan;
 	bgbrasw_pixel *tergba;
 	int xs, ys, yc, ys1, ye0, ye1, ye2;
 	int xc0, xc1, xc0v, xc1v;
@@ -404,7 +419,9 @@ void BGBRASW_DrawPrimitive_TriangleTexInterp(
 //	mip=bgbrasw_log2dn(j);
 //	i0=st1s-st0s; i1=st1t-st0t;
 	j=(t0*t0+t1*t1)/(xs*xs+ys*ys+1);
-	mip=(bgbrasw_log2dn(j)+1)/2;
+	k=bgbrasw_log2f8(j);
+	mip=((k>>8)+1)/2;
+//	mip=(bgbrasw_log2dn(j)+1)/2;
 //	mip=1;
 
 	tergba=prim->tex->rgba[mip];
@@ -420,6 +437,13 @@ void BGBRASW_DrawPrimitive_TriangleTexInterp(
 		txs=prim->tex->xs;
 		tys=prim->tex->ys;
 	}
+
+	if(k>256)
+		{ drawSpan=prim->tabs->drawSpanTextureInterp; }
+	else if(k>64)
+		{ drawSpan=prim->tabs->drawSpanTextureInterp_mag; }
+	else
+		{ drawSpan=prim->tabs->drawSpanTextureInterp_mag2; }
 
 	ye0=y0>>XY_SHR2;
 	ye1=y1>>XY_SHR2;
@@ -486,7 +510,9 @@ void BGBRASW_DrawPrimitive_TriangleTexInterp(
 			sts1=stsb>>(ST_SHR+mip);		stt1=sttb>>(ST_SHR+mip);
 
 			xa=xc0>>XY_SHR; xb=xc1>>XY_SHR;
-			prim->tabs->drawSpanTextureInterp(prim->tabs,
+//			prim->tabs->drawSpanTextureInterp(
+			drawSpan(
+				prim->tabs,
 				ctx->tgt_rgba+yc*ctx->tgt_xs+xa, xb-xa,
 				tergba, txs, tys,
 				sts0, stt0, sts1, stt1,
@@ -564,7 +590,9 @@ void BGBRASW_DrawPrimitive_TriangleTexInterp(
 			crb+=crbv;	cgb+=cgbv;		cbb+=cbbv;	cab+=cabv;
 
 			xa=xc0>>XY_SHR; xb=xc1>>XY_SHR;
-			prim->tabs->drawSpanTextureInterp(prim->tabs,
+//			prim->tabs->drawSpanTextureInterp(
+			drawSpan(
+				prim->tabs,
 				ctx->tgt_rgba+yc*ctx->tgt_xs+xa, xb-xa,
 				tergba, txs, tys,
 				sts0, stt0, sts1, stt1,
@@ -581,6 +609,7 @@ void BGBRASW_DrawPrimitive_TriangleTexBasicZTest(
 	BGBRASW_Context *ctx,
 	BGBRASW_Primitive *prim, int flag)
 {
+	BGBRASW_DrawSpanTextureBasicZTest_ft drawSpan;
 	bgbrasw_pixel clr;
 	bgbrasw_pixel clr0, clr1, clr2, clr3;
 	bgbrasw_pixel clr4, clr5, clr6, clr7;
@@ -708,7 +737,9 @@ void BGBRASW_DrawPrimitive_TriangleTexBasicZTest(
 //	mip=bgbrasw_log2dn(j);
 //	i0=st1s-st0s; i1=st1t-st0t;
 	j=(t0*t0+t1*t1)/(xs*xs+ys*ys+1);
-	mip=(bgbrasw_log2dn(j)+1)/2;
+//	mip=(bgbrasw_log2dn(j)+1)/2;
+	k=bgbrasw_log2f8(j);
+	mip=((k>>8)+1)/2;
 	if(mip>15)mip=15;
 //	mip=0;
 
@@ -725,6 +756,15 @@ void BGBRASW_DrawPrimitive_TriangleTexBasicZTest(
 		txs=prim->tex->xs;
 		tys=prim->tex->ys;
 	}
+
+//	dfcn=prim->tabs->drawSpanTextureBasicZTest;
+
+	if(k>256)
+		{ drawSpan=prim->tabs->drawSpanTextureBasicZTest; }
+	else if(k>64)
+		{ drawSpan=prim->tabs->drawSpanTextureBasicZTest_mag; }
+	else
+		{ drawSpan=prim->tabs->drawSpanTextureBasicZTest_mag2; }
 
 	ye0=y0>>XY_SHR2;
 	ye1=y1>>XY_SHR2;
@@ -802,7 +842,9 @@ void BGBRASW_DrawPrimitive_TriangleTexBasicZTest(
 			sts1=stsb>>(ST_SHR+mip);		stt1=sttb>>(ST_SHR+mip);
 
 			xa=xc0>>XY_SHR; xb=xc1>>XY_SHR;
-			prim->tabs->drawSpanTextureBasicZTest(prim->tabs,
+//			prim->tabs->drawSpanTextureBasicZTest(
+			drawSpan(
+				prim->tabs,
 				ctx->tgt_rgba+yc*ctx->tgt_xs+xa,
 				ctx->tgt_zbuf+yc*ctx->tgt_xs+xa,
 				xb-xa,
@@ -891,7 +933,9 @@ void BGBRASW_DrawPrimitive_TriangleTexBasicZTest(
 //			crb+=crbv;	cgb+=cgbv;		cbb+=cbbv;	cab+=cabv;
 
 			xa=xc0>>XY_SHR; xb=xc1>>XY_SHR;
-			prim->tabs->drawSpanTextureBasicZTest(prim->tabs,
+//			prim->tabs->drawSpanTextureBasicZTest(
+			drawSpan(
+				prim->tabs,
 				ctx->tgt_rgba+yc*ctx->tgt_xs+xa,
 				ctx->tgt_zbuf+yc*ctx->tgt_xs+xa,
 				xb-xa,
@@ -911,6 +955,7 @@ void BGBRASW_DrawPrimitive_TriangleTexInterpZTest(
 	BGBRASW_Context *ctx,
 	BGBRASW_Primitive *prim, int flag)
 {
+	BGBRASW_DrawSpanTextureInterpZTest_ft drawSpan;
 	bgbrasw_pixel clr;
 	bgbrasw_pixel clr0, clr1, clr2, clr3;
 	bgbrasw_pixel clr4, clr5, clr6, clr7;
@@ -1038,7 +1083,9 @@ void BGBRASW_DrawPrimitive_TriangleTexInterpZTest(
 //	mip=bgbrasw_log2dn(j);
 //	i0=st1s-st0s; i1=st1t-st0t;
 	j=(t0*t0+t1*t1)/(xs*xs+ys*ys+1);
-	mip=(bgbrasw_log2dn(j)+1)/2;
+//	mip=(bgbrasw_log2dn(j)+1)/2;
+	k=bgbrasw_log2f8(j);
+	mip=((k>>8)+1)/2;
 //	mip=1;
 
 	tergba=prim->tex->rgba[mip];
@@ -1054,6 +1101,16 @@ void BGBRASW_DrawPrimitive_TriangleTexInterpZTest(
 		txs=prim->tex->xs;
 		tys=prim->tex->ys;
 	}
+
+//	dfcn=prim->tabs->drawSpanTextureInterpZTest;
+	if(k>256)
+		{ drawSpan=prim->tabs->drawSpanTextureInterpZTest; }
+	else if(k>64)
+		{ drawSpan=prim->tabs->drawSpanTextureInterpZTest_mag; }
+	else
+		{ drawSpan=prim->tabs->drawSpanTextureInterpZTest_mag2; }
+
+//	drawSpan=prim->tabs->drawSpanTextureInterpZTest;
 
 	ye0=y0>>XY_SHR2;
 	ye1=y1>>XY_SHR2;
@@ -1131,7 +1188,9 @@ void BGBRASW_DrawPrimitive_TriangleTexInterpZTest(
 			sts1=stsb>>(ST_SHR+mip);		stt1=sttb>>(ST_SHR+mip);
 
 			xa=xc0>>XY_SHR; xb=xc1>>XY_SHR;
-			prim->tabs->drawSpanTextureInterpZTest(prim->tabs,
+//			prim->tabs->drawSpanTextureInterpZTest(
+			drawSpan(
+				prim->tabs,
 				ctx->tgt_rgba+yc*ctx->tgt_xs+xa,
 				ctx->tgt_zbuf+yc*ctx->tgt_xs+xa,
 				xb-xa,
@@ -1220,7 +1279,9 @@ void BGBRASW_DrawPrimitive_TriangleTexInterpZTest(
 			crb+=crbv;	cgb+=cgbv;		cbb+=cbbv;	cab+=cabv;
 
 			xa=xc0>>XY_SHR; xb=xc1>>XY_SHR;
-			prim->tabs->drawSpanTextureInterpZTest(prim->tabs,
+//			prim->tabs->drawSpanTextureInterpZTest(
+			drawSpan(
+				prim->tabs,
 				ctx->tgt_rgba+yc*ctx->tgt_xs+xa,
 				ctx->tgt_zbuf+yc*ctx->tgt_xs+xa,
 				xb-xa,
@@ -1376,8 +1437,10 @@ void BGBRASW_DrawPrimitive_TriangleTexTestBlend(
 
 	if(k>256)
 		{ drawSpan=prim->tabs->drawSpanTex_min; }
-	else
+	else if(k>64)
 		{ drawSpan=prim->tabs->drawSpanTex_mag; }
+	else
+		{ drawSpan=prim->tabs->drawSpanTex_mag2; }
 
 	tergba=prim->tex->rgba[mip];
 	txs=prim->tex->xs>>mip;

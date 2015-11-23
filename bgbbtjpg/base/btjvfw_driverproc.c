@@ -9,7 +9,7 @@
 
 #ifdef BGBBTJ_VFWDRV
 
-u32 btjpg_drv_defaultCodecFcc=BGBBTJ_FCC_bt1c;
+extern u32 btjpg_drv_defaultCodecFcc=BGBBTJ_FCC_bt1c;
 
 HINSTANCE g_hInst;
 

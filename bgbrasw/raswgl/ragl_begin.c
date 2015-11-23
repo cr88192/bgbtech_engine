@@ -594,6 +594,18 @@ void RASWGL_Enable(RASWGL_Context *ctx, int cap)
 		ctx->clip_enabled|=1<<i;
 		break;
 
+	case (GL_LIGHT0+ 0):	case (GL_LIGHT0+ 1):
+	case (GL_LIGHT0+ 2):	case (GL_LIGHT0+ 3):
+	case (GL_LIGHT0+ 4):	case (GL_LIGHT0+ 5):
+	case (GL_LIGHT0+ 6):	case (GL_LIGHT0+ 7):
+	case (GL_LIGHT0+ 8):	case (GL_LIGHT0+ 9):
+	case (GL_LIGHT0+10):	case (GL_LIGHT0+11):
+	case (GL_LIGHT0+12):	case (GL_LIGHT0+13):
+	case (GL_LIGHT0+14):	case (GL_LIGHT0+15):
+		i=cap-GL_LIGHT0;
+		ctx->lights_enabled|=1<<i;
+		break;
+
 	default:
 		break;
 	}
@@ -660,6 +672,18 @@ void RASWGL_Disable(RASWGL_Context *ctx, int cap)
 	case (GL_CLIP_PLANE0+14):	case (GL_CLIP_PLANE0+15):
 		i=cap-GL_CLIP_PLANE0;
 		ctx->clip_enabled&=~(1<<i);
+		break;
+
+	case (GL_LIGHT0+ 0):	case (GL_LIGHT0+ 1):
+	case (GL_LIGHT0+ 2):	case (GL_LIGHT0+ 3):
+	case (GL_LIGHT0+ 4):	case (GL_LIGHT0+ 5):
+	case (GL_LIGHT0+ 6):	case (GL_LIGHT0+ 7):
+	case (GL_LIGHT0+ 8):	case (GL_LIGHT0+ 9):
+	case (GL_LIGHT0+10):	case (GL_LIGHT0+11):
+	case (GL_LIGHT0+12):	case (GL_LIGHT0+13):
+	case (GL_LIGHT0+14):	case (GL_LIGHT0+15):
+		i=cap-GL_LIGHT0;
+		ctx->lights_enabled&=~(1<<i);
 		break;
 
 	default:
@@ -1030,6 +1054,9 @@ void RASWGL_Vertex4f(
 void RASWGL_TexCoord_Ptrv(
 	RASWGL_Context *ctx, int size, int type, void *ptr)
 {
+	if((ptr>=NULL) && (ptr<(void *)0x00100000))
+		{ return; }
+
 	switch(type)
 	{
 	case GL_BYTE:
@@ -1078,6 +1105,9 @@ void RASWGL_TexCoord_Ptrv(
 void RASWGL_Normal_Ptrv(
 	RASWGL_Context *ctx, int size, int type, void *ptr)
 {
+	if((ptr>=NULL) && (ptr<(void *)0x00100000))
+		{ return; }
+
 	switch(type)
 	{
 	case GL_BYTE:
@@ -1133,6 +1163,9 @@ void RASWGL_Normal_Ptrv(
 void RASWGL_Color_Ptrv(
 	RASWGL_Context *ctx, int size, int type, void *ptr)
 {
+	if((ptr>=NULL) && (ptr<(void *)0x00100000))
+		{ return; }
+
 	if(size==3)
 	{
 		switch(type)
@@ -1250,6 +1283,9 @@ void RASWGL_Color_Ptrv(
 void RASWGL_Vertex_Ptrv(
 	RASWGL_Context *ctx, int size, int type, void *ptr)
 {
+	if((ptr>=NULL) && (ptr<(void *)0x00100000))
+		{ return; }
+
 	if(size==2)
 	{
 		switch(type)

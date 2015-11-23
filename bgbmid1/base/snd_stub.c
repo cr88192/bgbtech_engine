@@ -74,5 +74,24 @@ BMID_API int BGBMID_SoundDev_WriteSamples(short *buffer, int cnt)
 	return(i);
 }
 
+BMID_API int BGBMID_SoundDev_RecInit()
+{
+}
+
+BMID_API int BGBMID_SoundDev_RecDeInit()
+{
+}
+
+BMID_API int BGBMID_SoundDev_RecReadStereoSamples(short *buffer, int cnt)
+{
+//	return(BGBMID_SoundDev_RecReadRawSamples(buffer, cnt*2, cnt*2));
+}
+
+BMID_API int BGBMID_SoundDev_RecReadStereoSamples2(
+	short *buffer, int cnt, int ovcnt)
+{
+//	return(BGBMID_SoundDev_RecReadRawSamples(buffer, cnt*2, ovcnt*2));
+}
+
 #endif
 
