@@ -15,6 +15,23 @@ Donations will be appriciated though.
 Other EXEs represent various tools or internal tests or other things.
 
 
+General Build Setup
+===================
+
+My main build setup is the "Visual Studio Command Prompt" or "Developer Command Prompt for VS20XX" or whatever, modified so that it has MinGW in the PATH. MinGW supplies GNU Make and a few other utilities.
+
+Building will generally be something like "make -f Makefile.msvc". If something breaks, then one goes and fixes it (all these makefiles are hand-written).
+
+A Linux build tree also exists, as 'Makefile.lnx'. Remnants of other parallel build trees exist, but haven't been maintained. Linux builds may or may not work, as it is only rarely rebuilt on Linux and usually this involves going and fixing up the makefiles and fixing broken code and other things. YMMV.
+
+Build tree is a recursive make setup which copies DLLs and EXEs from sub-directories.
+
+The VS debugger may be launched via:
+  devenv /debugexe whatever.exe
+or:
+  wdexpress /debugexe whatever.exe
+
+
 Main Contents
 =============
 
