@@ -26,6 +26,9 @@
 #include <commctrl.h>
 #endif
 
+#ifndef _WIN32
+#include <GL_2/glext.h>
+#endif
 
 // #include <bgbccc.h>
 
@@ -831,6 +834,25 @@ PDGL_API int pdglActiveTexture(int idx)
 	fcn(GL_TEXTURE0+idx);
 }
 
+#ifndef _WIN32
+  typedef void (APIENTRYP PFNGLMULTITEXCOORD1FPROC) (
+	GLenum target, GLfloat s);
+  typedef void (APIENTRYP PFNGLMULTITEXCOORD2FPROC) (
+	GLenum target, GLfloat s, GLfloat t);
+  typedef void (APIENTRYP PFNGLMULTITEXCOORD3FPROC) (
+	GLenum target, GLfloat s, GLfloat t, GLfloat r);
+  typedef void (APIENTRYP PFNGLMULTITEXCOORD4FPROC) (
+	GLenum target, GLfloat s, GLfloat t, GLfloat r, GLfloat q);
+  typedef void (APIENTRYP PFNGLMULTITEXCOORD1FVPROC) (
+	GLenum target, const GLfloat *v);
+  typedef void (APIENTRYP PFNGLMULTITEXCOORD2FVPROC) (
+	GLenum target, const GLfloat *v);
+  typedef void (APIENTRYP PFNGLMULTITEXCOORD3FVPROC) (
+	GLenum target, const GLfloat *v);
+  typedef void (APIENTRYP PFNGLMULTITEXCOORD4FVPROC) (
+	GLenum target, const GLfloat *v);
+#endif
+
 PDGL_API int pdglMultiTexCoord1f(int idx, float s)
 {
 	static PFNGLMULTITEXCOORD1FPROC fcn=NULL;
@@ -1225,9 +1247,18 @@ PDGL_API int pdglBindBuffer(int target, int buffer)
 
 	if(!fcn)
 	{
-		if(set)return(-1); set=1;
+		if(set)
+		{
+			*(int *)-1=-1;
+			return(-1);
+		}
+		set=1;
 		fcn=pdglGetProcAddress("glBindBuffer");
-		if(!fcn)return(-1);
+		if(!fcn)
+		{
+			*(int *)-1=-1;
+			return(-1);
+		}
 	}
 
 	fcn(target, buffer);

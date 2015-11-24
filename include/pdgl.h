@@ -34,6 +34,7 @@
 #endif	//BGBMETA
 
 #include <libvecmath.h>
+#include <bgbbtj.h>
 #include <btgecm.h>
 
 #ifndef UINT_T

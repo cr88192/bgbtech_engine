@@ -168,10 +168,10 @@ int main_i()
 			{
 //				Tex_DoScreenshotFrame();
 //				PDGL_AVI_DoScreenshotFrame(pdgl_dt_f);
-				PDGL_AVI_DoScreenshotFrame(state->dt_f);
+				PDGL_AVI_DoScreenshotFrame(state->dt_f, state->doshot);
 			}else
 			{
-				PDGL_AVI_NoCapture();
+				PDGL_AVI_NoCapture(state->doshot);
 			}
 
 			GfxDrv_EndDrawing();
@@ -186,7 +186,7 @@ int main_i()
 		i=pdgl_main_shutdown();
 	}
 
-	PDGL_AVI_NoCapture();
+	PDGL_AVI_NoCapture(state->doshot);
 
 	PDGL_Shutdown();
 	GfxDrv_Shutdown();

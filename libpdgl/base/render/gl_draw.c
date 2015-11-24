@@ -159,6 +159,7 @@ PDGL_API int Draw_SetSolid3_2D(float lxs, float lys,
 	pdglDisable(GL_CULL_FACE);
 	pdglDisable(GL_ALPHA_TEST);
 
+	pdglDepthRange(0.0, 1.0);
 	pdglDepthFunc(GL_LEQUAL);
 
 	pdglEnable(GL_BLEND);
@@ -211,6 +212,7 @@ PDGL_API int Draw_SetSolid4_2D(
 	pdglCullFace(GL_FRONT);
 	pdglFrontFace(GL_CCW);
 
+	pdglDepthRange(0.0, 1.0);
 	pdglDepthFunc(GL_LEQUAL);
 
 	pdglEnable(GL_BLEND);
@@ -276,6 +278,7 @@ PDGL_API int Draw_SetPerspective_3D(float aspect, float fov, float d,
 	pdglMatrixMode(GL_MODELVIEW);
 	pdglLoadIdentity();
 
+	pdglDepthRange(0.0, 1.0);
 	pdglEnable(GL_DEPTH_TEST);
 	pdglDepthFunc(GL_LESS);
 
@@ -353,6 +356,7 @@ PDGL_API int Draw_SetPerspective2_3D(float aspect, float fov, float width,
 	pdglMatrixMode(GL_MODELVIEW);
 	pdglLoadIdentity();
 
+	pdglDepthRange(0.0, 1.0);
 	pdglEnable(GL_DEPTH_TEST);
 	pdglDepthFunc(GL_LESS);
 

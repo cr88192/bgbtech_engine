@@ -63,7 +63,7 @@ BOOL (APIENTRY *pwglSwapBuffers)(HDC  hdc);
 
 
 BOOL pdwglCopyContext(
-		HGLRC hglrc1, HGLRC hglrc2, UINT mask)
+		HGLRC hglrc1, HGLRC hglrc2, UINT mask) //AH:ignore
 {
 	if(pwglCopyContext)
 		{ return(pwglCopyContext(hglrc1, hglrc2, mask)); }
@@ -71,7 +71,7 @@ BOOL pdwglCopyContext(
 	return(pwglCopyContext(hglrc1, hglrc2, mask));
 }
 
-HGLRC pdwglCreateContext(HDC hdc)
+HGLRC pdwglCreateContext(HDC hdc) //AH:ignore
 {
 	if(pwglCreateContext)
 		{ return(pwglCreateContext(hdc)); }
@@ -79,7 +79,7 @@ HGLRC pdwglCreateContext(HDC hdc)
 	return(pwglCreateContext(hdc));
 }
 
-BOOL pdwglDeleteContext(HGLRC hglrc)
+BOOL pdwglDeleteContext(HGLRC hglrc) //AH:ignore
 {
 	if(pwglDeleteContext)
 		{ return(pwglDeleteContext(hglrc)); }
@@ -87,7 +87,7 @@ BOOL pdwglDeleteContext(HGLRC hglrc)
 	return(pwglDeleteContext(hglrc));
 }
 
-HGLRC pdwglGetCurrentContext(void)
+HGLRC pdwglGetCurrentContext(void) //AH:ignore
 {
 	if(pwglGetCurrentContext)
 		{ return(pwglGetCurrentContext()); }
@@ -95,7 +95,7 @@ HGLRC pdwglGetCurrentContext(void)
 	return(pwglGetCurrentContext());
 }
 
-HDC pdwglGetCurrentDC(void)
+HDC pdwglGetCurrentDC(void) //AH:ignore
 {
 	if(pwglGetCurrentDC)
 		{ return(pwglGetCurrentDC()); }
@@ -103,7 +103,7 @@ HDC pdwglGetCurrentDC(void)
 	return(pwglGetCurrentDC());
 }
 
-BOOL pdwglMakeCurrent(HDC hdc, HGLRC hglrc)
+BOOL pdwglMakeCurrent(HDC hdc, HGLRC hglrc) //AH:ignore
 {
 	if(pwglMakeCurrent)
 		{ return(pwglMakeCurrent(hdc, hglrc)); }
@@ -111,7 +111,7 @@ BOOL pdwglMakeCurrent(HDC hdc, HGLRC hglrc)
 	return(pwglMakeCurrent(hdc, hglrc));
 }
 
-BOOL pdwglShareLists(HGLRC a0, HGLRC a1)
+BOOL pdwglShareLists(HGLRC a0, HGLRC a1) //AH:ignore
 {
 	if(pwglShareLists)
 		{ return(pwglShareLists(a0, a1)); }
@@ -120,7 +120,7 @@ BOOL pdwglShareLists(HGLRC a0, HGLRC a1)
 }
 
 int pdwglChoosePixelFormat(
-	HDC hdc, CONST PIXELFORMATDESCRIPTOR *ppfd)
+	HDC hdc, CONST PIXELFORMATDESCRIPTOR *ppfd) //AH:ignore
 {
 	if(pwglChoosePixelFormat)
 		{ return(pwglChoosePixelFormat(hdc, ppfd)); }
@@ -131,7 +131,7 @@ int pdwglChoosePixelFormat(
 	return(pwglChoosePixelFormat(hdc, ppfd));
 }
 
-int pdwglGetPixelFormat(HDC hdc)
+int pdwglGetPixelFormat(HDC hdc) //AH:ignore
 {
 	if(pwglGetPixelFormat)
 		{ return(pwglGetPixelFormat(hdc)); }
@@ -143,7 +143,7 @@ int pdwglGetPixelFormat(HDC hdc)
 }
 
 BOOL pdwglSetPixelFormat(
-	HDC hdc, INT iPixelFormat, const PIXELFORMATDESCRIPTOR *ppfd)
+	HDC hdc, INT iPixelFormat, const PIXELFORMATDESCRIPTOR *ppfd) //AH:ignore
 {
 	if(pwglSetPixelFormat)
 		{ return(pwglSetPixelFormat(hdc, iPixelFormat, ppfd)); }
@@ -155,7 +155,8 @@ BOOL pdwglSetPixelFormat(
 }
 
 int pdwglDescribePixelFormat(
-	HDC hdc, INT iPixelFormat, UINT nBytes, LPPIXELFORMATDESCRIPTOR ppfd)
+	HDC hdc, INT iPixelFormat, UINT nBytes,
+	LPPIXELFORMATDESCRIPTOR ppfd) //AH:ignore
 {
 	if(pwglDescribePixelFormat)
 		{ return(pwglDescribePixelFormat(hdc, iPixelFormat, nBytes, ppfd)); }
@@ -166,7 +167,7 @@ int pdwglDescribePixelFormat(
 	return(pwglDescribePixelFormat(hdc, iPixelFormat, nBytes, ppfd));
 }
 
-BOOL pdwglSwapBuffers(HDC hdc)
+BOOL pdwglSwapBuffers(HDC hdc) //AH:ignore
 {
 	if(pwglSwapBuffers)
 		{ return(pwglSwapBuffers(hdc)); }
@@ -487,6 +488,9 @@ int GfxDrv_V_SetupWindow()
 
 void GfxDrv_InitGL()
 {
+	char tb[1024];
+	char *s;
+
 	pdgl_vendor=(char *)pdglGetString(GL_VENDOR);
 	pdgl_renderer=(char *)pdglGetString(GL_RENDERER);
 	pdgl_version=(char *)pdglGetString(GL_VERSION);
@@ -498,6 +502,17 @@ void GfxDrv_InitGL()
 //	printf("OpenGL Extensions=%s\n", pdgl_extensions);
 
 	BGBBTJ_SetGlExtensions(pdgl_extensions);
+
+	s=pdgl_extensions;
+	printf("OpenGL Extensions=<[[\n");
+	while(strlen(s)>=1024)
+	{
+		memcpy(tb, s, 1020);
+		tb[1020]=0;
+		printf("%s", tb);
+		s+=1020;
+	}
+	printf("%s ]]>\n\n", s);
 
 	pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	pdglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -587,7 +602,7 @@ int GfxDrv_MapKey(int key)
 	return(scantokey[key]);
 }
 
-void GfxDrv_AppActivate(BOOL active, BOOL minimized)
+void GfxDrv_AppActivate(bool active, bool minimized)
 {
 	window_active=active&&(!minimized);
 

@@ -71,6 +71,71 @@ displaywindow *gfx_screen;
 int window_def_width=800;
 int window_def_height=600;
 char *window_def_label="PDGL";
+int window_max_width=0;
+int window_max_height=0;
+
+int window_width;
+int window_height;
+int window_active;
+int window_lastactive;
+int window_fullscreen;
+
+
+static int gfxdrv_log2up(int v)
+{
+	int i, j;
+	
+	i=v; j=0;
+	while(i>1) { i=(i+1)>>1; j++; }
+	return(j);
+}
+
+//PDGL_API void GfxDrv_GetWindowSize(int *xs, int *ys)
+//	{ *xs=window_width; *ys=window_height; }
+
+PDGL_API void GfxDrv_GetWindowTexSize(int *xs, int *ys)
+{
+//	*xs=1<<gfxdrv_log2up(window_width);
+//	*ys=1<<gfxdrv_log2up(window_height);
+
+	*xs=1<<gfxdrv_log2up(gfx_screen->width);
+	*ys=1<<gfxdrv_log2up(gfx_screen->height);
+}
+
+PDGL_API void GfxDrv_GetWindowMaxSize(int *xs, int *ys)
+	{ *xs=window_max_width; *ys=window_max_height; }
+
+PDGL_API void GfxDrv_GetWindowMaxTexSize(int *xs, int *ys)
+{
+	*xs=1<<gfxdrv_log2up(window_max_width);
+	*ys=1<<gfxdrv_log2up(window_max_height);
+}
+
+PDGL_API bool GfxDrv_WindowIsActiveP(void)
+	{ return(window_active); }
+PDGL_API bool GfxDrv_WindowIsFullActiveP(void)
+	{ return(window_active && window_lastactive); }
+PDGL_API bool GfxDrv_WindowIsFullscreenP(void)
+	{ return(window_fullscreen); }
+
+PDGL_API int GfxDrv_SetupThreadShareLists()
+{
+}
+
+PDGL_API int GfxDrv_TeardownThreadShareLists()
+{
+}
+
+PDGL_API void GfxDrv_SetDefaultFullscreen(int fs)
+{
+//	window_def_fullscreen=fs;
+}
+
+PDGL_API void GfxDrv_SetFullscreenResolution(int width, int height)
+{
+//	window_fullscreen_width=width;
+//	window_fullscreen_height=height;
+}
 
 int Window_Init()
 {
@@ -132,6 +197,15 @@ displaywindow *Window_NewWindow(int width, int height) //AH:ignore
 
 	tmp->width=width;
 	tmp->height=height;
+
+	window_width=width;
+	window_height=height;
+	window_active=1;
+	window_lastactive=1;
+	window_fullscreen=0;
+	
+	window_max_width=width;
+	window_max_height=height;
 
 	/* window attributes */
 	attr.background_pixel = 0;
