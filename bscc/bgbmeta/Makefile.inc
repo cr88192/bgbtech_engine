@@ -65,11 +65,11 @@ DEP_HDRS=\
 
 LIBS=$(DLLPF)bgbcc$(DLLSUF)
 # APPS=bgbmeta$(BINSUF) bgbcc$(EXESUF)
-APPS=bgbmeta$(BINSUF)
+# APPS=bgbmeta$(BINSUF)
 
 all: libs apps
 
-libs: $(LIBS)
+libs: $(LIBS) bgbmeta$(BINSUF)
 apps: $(APPS)
 includes: $(DEP_HDRS)
 

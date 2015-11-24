@@ -17,8 +17,9 @@ void BGTE_ClientInit()
 	}
 }
 
-void btge_client_dummy()
+void *btge_client_dummy()
 {
+	return(NULL);
 }
 
 void BTGE_ClientInitFunc(char *name, void **ptr)

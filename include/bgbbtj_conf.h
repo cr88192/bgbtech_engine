@@ -39,9 +39,11 @@
 
 #endif
 
+#ifndef __cplusplus
 #ifndef BOOL_T
 #define BOOL_T
 typedef unsigned char bool;
+#endif
 #endif
 
 #ifndef BYTE_T

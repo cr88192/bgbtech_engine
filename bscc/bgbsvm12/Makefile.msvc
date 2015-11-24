@@ -12,7 +12,7 @@ CC_OUTDLL=cl /LD /Fe
 CC_OUTOBJ=cl /c /Fo
 CC_OUTTOOL=cl /Fe
 
-BGBMETA=../bgbmeta$(EXE)
+BGBMETA=../bgbmeta$(EXESUF)
 BGBMETA_EXW=$(BGBMETA) /Fw
 BMETA_CFLAGS=/Iinclude /I../include
 

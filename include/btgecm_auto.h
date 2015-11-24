@@ -544,7 +544,7 @@ BTGE_API int BGTE_GlobalFlags();
 void btge_server_lock();
 void btge_server_unlock();
 void BGTE_ServerInit();
-void btge_server_dummy();
+void *btge_server_dummy();
 void BTGE_ServerInitFunc(char *name, void **ptr);
 BTGE_API void btSpawnWorld(void);
 BTGE_API bool btStepWorld(float dt);
@@ -567,7 +567,7 @@ BTGE_API void bt2dDrawWorld(void);
 BTGE_API int bt2dHandleInput(void);
 //AHSRC:base/cm_client.c
 void BGTE_ClientInit();
-void btge_client_dummy();
+void *btge_client_dummy();
 void BTGE_ClientInitFunc(char *name, void **ptr);
 BTGE_API BTCL_World_Dummy *btclNewWorld(void);
 BTGE_API void btclBindWorld(BTCL_World_Dummy *wrl);

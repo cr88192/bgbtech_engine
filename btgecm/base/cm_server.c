@@ -145,8 +145,9 @@ void BGTE_ServerInit()
 	}
 }
 
-void btge_server_dummy()
+void *btge_server_dummy()
 {
+	return(NULL);
 }
 
 void BTGE_ServerInitFunc(char *name, void **ptr)

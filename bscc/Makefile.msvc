@@ -106,13 +106,14 @@ libs: FORCE
 #	cp bgbsvm1/*.lib	$(BUILD)
 #	cp bgbsvm1/*.dll	$(BUILD)
 
-	$(MAKE) -C bgbsvm12 -f Makefile.msvc libs
-	cp bgbsvm12/*.lib	$(BUILD)
-	cp bgbsvm12/*.dll	$(BUILD)
-
 	$(MAKE) -C bgbmeta -f Makefile.msvc libs
 	cp bgbmeta/*.lib	$(BUILD)
 	cp bgbmeta/*.dll	$(BUILD)
+	cp bgbmeta/*.exe	$(BUILD)
+
+	$(MAKE) -C bgbsvm12 -f Makefile.msvc libs
+	cp bgbsvm12/*.lib	$(BUILD)
+	cp bgbsvm12/*.dll	$(BUILD)
 
 #	$(MAKE) -C bgbvx86 -f Makefile.msvc libs
 #	cp bgbvx86/*.lib	$(BUILD)
@@ -161,8 +162,8 @@ apps: FORCE
 	$(MAKE) -C bgbsvm12 -f Makefile.msvc apps
 	cp bgbsvm12/*.exe	$(BUILD)
 
-	$(MAKE) -C bgbmeta -f Makefile.msvc apps
-	cp bgbmeta/*.exe	$(BUILD)
+#	$(MAKE) -C bgbmeta -f Makefile.msvc apps
+#	cp bgbmeta/*.exe	$(BUILD)
 
 #	$(MAKE) -C bgbvx86 -f Makefile.msvc apps
 #	cp bgbvx86/*.exe	$(BUILD)
