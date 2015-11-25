@@ -28,26 +28,6 @@ meta_bscc: FORCE
 bscc: includes_bscc libs_bscc apps_bscc
 
 
-includes_q2core:
-	$(MAKE) -C q2core -f Makefile$(MKSUF) includes
-	cp -rf q2core/include/*		$(BUILD)/include
-
-libs_q2core:
-	$(MAKE) -C q2core -f Makefile$(MKSUF) libs
-	cp -rf q2core/*.lib		$(BUILD)
-	cp -rf q2core/*.dll		$(BUILD)
-
-apps_q2core:
-	$(MAKE) -C q2core -f Makefile$(MKSUF) apps
-	cp -rf q2core/*.exe		$(BUILD)
-
-meta_q2: FORCE
-	./bgbmeta.exe /Fngamex86_meta.txt	q2core/game/g_local.h /Iinclude
-	./bgbmeta.exe /Fnref_gl_meta.txt	q2core/ref_gl/gl_local.h /Iinclude
-
-q2core: includes_q2core libs_q2core apps_q2core
-
-
 includes: FORCE
 	$(MAKE) -C libbsde21 -f Makefile$(MKSUF) includes
 	$(MAKE) -C libvecmath -f Makefile$(MKSUF) includes
@@ -56,12 +36,13 @@ includes: FORCE
 	$(MAKE) -C tremor -f Makefile$(MKSUF) includes
 #	$(MAKE) -C bscc -f Makefile$(MKSUF) includes
 
+	$(MAKE) -C bgbbtjpg -f Makefile$(MKSUF) includes
+
 	$(MAKE) -C btgecm -f Makefile$(MKSUF) includes
 	$(MAKE) -C btgesv -f Makefile$(MKSUF) includes
 	$(MAKE) -C btgecl -f Makefile$(MKSUF) includes
 	$(MAKE) -C bttile2d -f Makefile$(MKSUF) includes
 
-	$(MAKE) -C bgbbtjpg -f Makefile$(MKSUF) includes
 	$(MAKE) -C libpdgl -f Makefile$(MKSUF) includes
 	$(MAKE) -C lbxgl3 -f Makefile$(MKSUF) includes
 
@@ -111,13 +92,13 @@ libs: FORCE
 	cp -rf tremor/*.lib		$(BUILD)
 	cp -rf tremor/*.dll		$(BUILD)
 
-	$(MAKE) -C btgecm -f Makefile$(MKSUF) libs
-	cp -rf btgecm/*.lib		$(BUILD)
-	cp -rf btgecm/*.dll		$(BUILD)
-
 	$(MAKE) -C bgbbtjpg -f Makefile$(MKSUF) libs
 	cp -rf bgbbtjpg/*.lib		$(BUILD)
 	cp -rf bgbbtjpg/*.dll		$(BUILD)
+
+	$(MAKE) -C btgecm -f Makefile$(MKSUF) libs
+	cp -rf btgecm/*.lib		$(BUILD)
+	cp -rf btgecm/*.dll		$(BUILD)
 
 	$(MAKE) -C libpdgl -f Makefile$(MKSUF) libs
 	cp -rf libpdgl/*.lib		$(BUILD)

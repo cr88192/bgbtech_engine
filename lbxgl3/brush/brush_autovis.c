@@ -698,12 +698,21 @@ LBXGL_API void LBXGL_BrushWorld_DrawTestAutovis(LBXGL_BrushWorld *world)
 	
 //	if(!stbuf)stbuf=malloc(320*240*4);
 
-	if(!world->lighting)
+	if(!world->lighting || (world->lighting==3) ||
+		btCvarGeti("r_noautovis"))
 	{
 		memset(world->autovis, 255, 4096);
 		memset(world->autovis_shadow, 255, 4096);
 		memset(world->mdlvis, 255, 4096);
+		LBXGL_Voxel_FakeWorldQuery(world);
 
+		if(world->lighting==3)
+		{
+			LBXGL_SkyCoulds_SetEnabled(0);
+		}
+
+		pdglDepthFunc(GL_LEQUAL);
+		pdglDepthMask(GL_TRUE);
 		return;
 	}
 

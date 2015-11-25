@@ -358,6 +358,9 @@ void SkelVBO_ModelRebuildLodVBO(
 
 	sz=vbo->n_elem*sizeof(int);
 	pdglGenBuffers(1, &id);
+	if(id<=0)
+		return;
+
 	pdglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
 	pdglBufferData(GL_ELEMENT_ARRAY_BUFFER,
 		sz, vbo->elems, GL_STATIC_DRAW);
@@ -448,9 +451,12 @@ void SkelVBO_RebuildVBO(LBXGL_Skel2State *ctx)
 //	ctx->vbo_info=ctx->mdl->mesh_lod_vbos[ctx->lod];
 	if(!ctx->vbo_info)
 		return;
-	
+		
 	ctx->vbo_elem=ctx->vbo_info->vbo_elem;
-	
+
+	if(ctx->vbo_elem<=0)
+		return;
+
 	if(!ctx->vbo_vertbuf)
 	{
 		i=vbo_base->sz_vert;
@@ -510,6 +516,8 @@ void SkelVBO_RebuildVBO(LBXGL_Skel2State *ctx)
 	{
 		pdglGenBuffers(1, &id);
 		ctx->vbo_vert=id;
+		if(id<=0)
+			return;
 
 		pdglBindBuffer(GL_ARRAY_BUFFER, id);
 		pdglBufferData(GL_ARRAY_BUFFER,
@@ -547,6 +555,19 @@ void SkelVBO_DestroyVBO(LBXGL_Skel2State *ctx)
 		gcfree(ctx->vbo_vertbuf);
 		ctx->vbo_vertbuf=NULL;
 	}
+}
+
+LBXGL_API int SkelVBO_CheckModelVBO(LBXGL_Skel2State *ctx)
+{
+	LBXGL_Skel2ModelVBO *vbo;
+
+	vbo=ctx->vbo_info;
+	if(!vbo)return(0);
+	if(ctx->vbo_vert<=0)
+		return(0);
+	if(ctx->vbo_elem<=0)
+		return(0);
+	return(1);
 }
 
 LBXGL_API void SkelVBO_DrawModelFlatVL(LBXGL_Skel2State *ctx)

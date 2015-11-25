@@ -200,7 +200,11 @@ LBXGL_API void LBXGL_Particle_Init()
 	LBXGL_Particle_Init2();
 
 	lbxgl_part_cnt=0;
-	lbxgl_part_max=10000;
+//	lbxgl_part_max=10000;
+
+	lbxgl_part_max=btCvarGeti("r_max_particles");
+	if(!lbxgl_part_max)
+		lbxgl_part_max=10000;
 
 //	kseed_string("foo particle seed string");
 }

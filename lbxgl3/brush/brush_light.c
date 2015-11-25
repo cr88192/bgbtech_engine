@@ -1373,8 +1373,14 @@ float LBXGL_BrushWorld_SetupLightFrame(
 			ang=acos(g);
 		}
 
-		LBXGL_SkyCoulds_SetEnabled(true);
-		LBXGL_SkyCoulds_SetSunAngle(ang);
+		if(world->lighting==1)
+		{
+			LBXGL_SkyCoulds_SetEnabled(true);
+			LBXGL_SkyCoulds_SetSunAngle(ang);
+		}else
+		{
+			LBXGL_SkyCoulds_SetEnabled(0);
+		}
 
 		f=f+0.25;
 		if(f>1)f=1;

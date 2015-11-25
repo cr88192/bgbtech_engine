@@ -265,7 +265,7 @@
   sig=()i
 [BGBDY_AllocFloat128]
   _=func
-  sig=()PXHTXF761F089;
+  sig=()PXHTX3B11B066;
 [BGBDY_AllocFloat32]
   _=func
   sig=()Pf
@@ -274,7 +274,7 @@
   sig=()Pd
 [BGBDY_AllocInt128]
   _=func
-  sig=()PXHTXF761F089;
+  sig=()PXHTX3B11B066;
 [BGBDY_AllocInt32]
   _=func
   sig=()Pi
@@ -313,7 +313,7 @@
   sig=(r)r
 [BGBDY_DecFloat128]
   _=func
-  sig=(PPc)XHTXF761F089;
+  sig=(PPc)XHTX3B11B066;
 [BGBDY_DecFloat32]
   _=func
   sig=(PPc)f
@@ -322,7 +322,7 @@
   sig=(PPc)d
 [BGBDY_DecS128]
   _=func
-  sig=(PPc)XHTXF761F089;
+  sig=(PPc)XHTX3B11B066;
 [BGBDY_DecS32]
   _=func
   sig=(PPc)i
@@ -382,7 +382,7 @@
   sig=(Pci)Pc
 [BGBDY_FreeFloat128]
   _=func
-  sig=(PXHTXF761F089;)v
+  sig=(PXHTX3B11B066;)v
 [BGBDY_FreeFloat32]
   _=func
   sig=(Pf)v
@@ -391,7 +391,7 @@
   sig=(Pd)v
 [BGBDY_FreeInt128]
   _=func
-  sig=(PXHTXF761F089;)v
+  sig=(PXHTX3B11B066;)v
 [BGBDY_FreeInt32]
   _=func
   sig=(Pi)v
@@ -1547,6 +1547,12 @@
 [BGBGC_Func]
   _=type
   sig=XHTX1F5E3F0A;
+[BGBGC_GetAddrLastName]
+  _=func
+  sig=(PvPPv)Pc
+[BGBGC_GetAddrName]
+  _=func
+  sig=(Pv)Pc
 [BGBGC_GetBase]
   _=func
   sig=(Pv)Pv
@@ -1556,6 +1562,9 @@
 [BGBGC_GetFreeCells]
   _=func
   sig=()i
+[BGBGC_GetImportFuncs]
+  _=func
+  sig=()PXBGBGC_ImportFuncs_s;
 [BGBGC_GetMemoryUseStatus]
   _=func
   sig=()i
@@ -1582,6 +1591,9 @@
 [BGBGC_GetSizeFast]
   _=func
   sig=(Pv)i
+[BGBGC_GetThreadRegisterState]
+  _=func
+  sig=(PXth_context_s;PXBGBGC_RegisterState_s;)v
 [BGBGC_GetType]
   _=func
   sig=(Pv)PXBGBGC_ObjType_s;
@@ -1624,6 +1636,9 @@
 [BGBGC_HandlePreserve]
   _=func
   sig=(Pv)i
+[BGBGC_HandleThreadStates]
+  _=func
+  sig=(PXHSG8D0D07E3;)v
 [BGBGC_HandleType]
   _=type
   sig=XBGBGC_HandleType_s;
@@ -1658,6 +1673,32 @@
 [BGBGC_HashSourceInfo]
   _=func
   sig=(PXBGBGC_SourceInfo_s;)i
+[BGBGC_ImportFuncs_s]
+  _=struct
+  field.0=GetAddr
+  field.1=GetAddrName
+  field.2=GetAddrLastName
+  field.3=LookupSectionAddrName
+  flags=0
+  [BGBGC_ImportFuncs_s/GetAddr]
+    _=field
+    flags=0
+    sig=PXHSG76189A08;
+  [BGBGC_ImportFuncs_s/GetAddrLastName]
+    _=field
+    flags=0
+    sig=PXHSGFC0CB9E2;
+  [BGBGC_ImportFuncs_s/GetAddrName]
+    _=field
+    flags=0
+    sig=PXHSG761D4708;
+  [BGBGC_ImportFuncs_s/LookupSectionAddrName]
+    _=field
+    flags=0
+    sig=PXHSG761D4708;
+[BGBGC_ImportFuncs_t]
+  _=type
+  sig=XBGBGC_ImportFuncs_s;
 [BGBGC_IncCons]
   _=func
   sig=(Pv)i
@@ -1815,6 +1856,9 @@
 [BGBGC_LookupLObjS2]
   _=func
   sig=(Pv)i
+[BGBGC_LookupSectionAddrName]
+  _=func
+  sig=(Pv)Pc
 [BGBGC_MailBox]
   _=type
   sig=XBGBGC_MailBox_s;
@@ -2196,6 +2240,33 @@
 [BGBGC_ProbeDelayGC]
   _=func
   sig=(i)i
+[BGBGC_ProfileDumpStats]
+  _=func
+  sig=()i
+[BGBGC_ProfileDumpStats_AggAddName]
+  _=func
+  sig=(PcPci)v
+[BGBGC_ProfileDumpStats_Sort]
+  _=func
+  sig=(ii)v
+[BGBGC_ProfileDumpStats_SortAgg]
+  _=func
+  sig=(ii)v
+[BGBGC_ProfileDumpStats_SortSwap]
+  _=func
+  sig=(ii)v
+[BGBGC_ProfileDumpStats_SortSwapAgg]
+  _=func
+  sig=(ii)v
+[BGBGC_ProfileLoop]
+  _=func
+  sig=(Pv)i
+[BGBGC_ProfileLoop_HandleThread]
+  _=func
+  sig=(PXth_context_s;)v
+[BGBGC_ProfilerSetActive]
+  _=func
+  sig=(i)i
 [BGBGC_PushFrameRoot]
   _=func
   sig=(PPv)v
@@ -2232,6 +2303,67 @@
 [BGBGC_RegisterSpawnWorker]
   _=func
   sig=(PXHSGC92E0A3B;)i
+[BGBGC_RegisterState]
+  _=type
+  sig=XBGBGC_RegisterState_s;
+[BGBGC_RegisterState_s]
+  _=struct
+  field.0=dummy
+  field.1=eax
+  field.10=eflags
+  field.2=ecx
+  field.3=edx
+  field.4=ebx
+  field.5=esp
+  field.6=ebp
+  field.7=esi
+  field.8=edi
+  field.9=eip
+  flags=0
+  [BGBGC_RegisterState_s/dummy]
+    _=field
+    flags=0
+    sig=i
+  [BGBGC_RegisterState_s/eax]
+    _=field
+    flags=131072
+    sig=j
+  [BGBGC_RegisterState_s/ebp]
+    _=field
+    flags=131072
+    sig=j
+  [BGBGC_RegisterState_s/ebx]
+    _=field
+    flags=131072
+    sig=j
+  [BGBGC_RegisterState_s/ecx]
+    _=field
+    flags=131072
+    sig=j
+  [BGBGC_RegisterState_s/edi]
+    _=field
+    flags=131072
+    sig=j
+  [BGBGC_RegisterState_s/edx]
+    _=field
+    flags=131072
+    sig=j
+  [BGBGC_RegisterState_s/eflags]
+    _=field
+    flags=131072
+    sig=j
+  [BGBGC_RegisterState_s/eip]
+    _=field
+    flags=131072
+    sig=j
+  [BGBGC_RegisterState_s/esi]
+    _=field
+    flags=131072
+    sig=j
+  [BGBGC_RegisterState_s/esp]
+    _=field
+    flags=131072
+    sig=j
 [BGBGC_ResumeThreads]
   _=func
   sig=()v
@@ -2538,7 +2670,7 @@
   sig=(PXBS2ASM_Context_s;PXBS2ASM_TagEntity_s;)PXBS2ASM_TagEntity_s;
 [BS2ASM_DecFloat128]
   _=func
-  sig=(PPc)XHTXF761F089;
+  sig=(PPc)XHTX3B11B066;
 [BS2ASM_DecFloat32]
   _=func
   sig=(PPc)f
@@ -2547,7 +2679,7 @@
   sig=(PPc)d
 [BS2ASM_DecS128]
   _=func
-  sig=(PPc)XHTXF761F089;
+  sig=(PPc)XHTX3B11B066;
 [BS2ASM_DecS32]
   _=func
   sig=(PPc)i
@@ -10690,6 +10822,9 @@
     _=define
     value=__declspec(dllimport)
   [CPreProc/BGBSVM_H]
+    _=define
+    value=
+  [CPreProc/BOOL_T]
     _=define
     value=
   [CPreProc/BS2ASM_H]
@@ -23222,6 +23357,9 @@
 [HSG8D058D08]
   _=func
   sig=(PcPcPPcPv)v
+[HSG8D0D07E3]
+  _=func
+  sig=(PXth_context_s;)v
 [HSG8EA09A42]
   _=func
   sig=(PXVFILE_s;)i
@@ -23492,6 +23630,9 @@
 [HSGF817B413]
   _=func
   sig=(PXBSVM_SVMState_s;Cr)Cr
+[HSGFC0CB9E2]
+  _=func
+  sig=(PvPPv)c
 [HSGFC0CB9F5]
   _=func
   sig=(PvPPv)v
@@ -23691,6 +23832,29 @@
     _=field
     flags=0
     sig=PXHSGF0761BC6;
+[HTX13888C57]
+  _=union
+  field.0=_Word
+  field.1=_Float
+  field.2=_Double
+  field.3=_Long_double
+  flags=0
+  [HTX13888C57/_Double]
+    _=field
+    flags=0
+    sig=d
+  [HTX13888C57/_Float]
+    _=field
+    flags=0
+    sig=f
+  [HTX13888C57/_Long_double]
+    _=field
+    flags=0
+    sig=d
+  [HTX13888C57/_Word]
+    _=field
+    flags=131072
+    sig=A8;t
 [HTX13CB1509]
   _=union
   field.0=i
@@ -23782,27 +23946,6 @@
     _=field
     flags=0
     sig=i
-[HTX21E6F188]
-  _=struct
-  field.0=x
-  flags=0
-  [HTX21E6F188/x]
-    _=field
-    flags=0
-    sig=d
-[HTX28B5241E]
-  _=union
-  field.0=_Sh
-  field.1=_Val
-  flags=0
-  [HTX28B5241E/_Sh]
-    _=field
-    flags=131072
-    sig=A8;t
-  [HTX28B5241E/_Val]
-    _=field
-    flags=0
-    sig=f
 [HTX29009036]
   _=struct
   field.0=fcn
@@ -23816,19 +23959,50 @@
     _=field
     flags=0
     sig=i
-[HTX319FBAF3]
+[HTX2B50B8FC]
   _=union
   field.0=_Sh
   field.1=_Val
   flags=0
-  [HTX319FBAF3/_Sh]
+  [HTX2B50B8FC/_Sh]
     _=field
     flags=131072
     sig=A8;t
-  [HTX319FBAF3/_Val]
+  [HTX2B50B8FC/_Val]
     _=field
     flags=0
     sig=d
+[HTX3B11B066]
+  _=struct
+  field.0=a
+  field.1=b
+  field.2=c
+  field.3=d
+  flags=0
+  [HTX3B11B066/a]
+    _=field
+    flags=131072
+    sig=j
+  [HTX3B11B066/b]
+    _=field
+    flags=131072
+    sig=j
+  [HTX3B11B066/c]
+    _=field
+    flags=131072
+    sig=j
+  [HTX3B11B066/d]
+    _=field
+    flags=131072
+    sig=j
+[HTX3B91B52A]
+  _=struct
+  field.0=ld12
+  flags=0
+  [HTX3B91B52A/ld12]
+    _=field
+    flags=131072
+    sig=A12;h
 [HTX5896529C]
   _=struct
   field.0=v
@@ -23845,6 +24019,70 @@
     _=field
     flags=0
     sig=A4;f
+[HTX5E5EBBE7]
+  _=struct
+  field.0=x
+  flags=0
+  [HTX5E5EBBE7/x]
+    _=field
+    flags=0
+    sig=d
+[HTX650A08CB]
+  _=struct
+  field.0=a
+  field.1=b
+  field.2=c
+  field.3=d
+  field.4=e
+  field.5=f
+  field.6=g
+  field.7=h
+  flags=0
+  [HTX650A08CB/a]
+    _=field
+    flags=131072
+    sig=j
+  [HTX650A08CB/b]
+    _=field
+    flags=131072
+    sig=j
+  [HTX650A08CB/c]
+    _=field
+    flags=131072
+    sig=j
+  [HTX650A08CB/d]
+    _=field
+    flags=131072
+    sig=j
+  [HTX650A08CB/e]
+    _=field
+    flags=131072
+    sig=j
+  [HTX650A08CB/f]
+    _=field
+    flags=131072
+    sig=j
+  [HTX650A08CB/g]
+    _=field
+    flags=131072
+    sig=j
+  [HTX650A08CB/h]
+    _=field
+    flags=131072
+    sig=j
+[HTX659BE436]
+  _=union
+  field.0=_Sh
+  field.1=_Val
+  flags=0
+  [HTX659BE436/_Sh]
+    _=field
+    flags=131072
+    sig=A8;t
+  [HTX659BE436/_Val]
+    _=field
+    flags=0
+    sig=d
 [HTX69D616E2]
   _=struct
   field.0=stack
@@ -23898,29 +24136,6 @@
     _=field
     flags=0
     sig=i
-[HTX6E669918]
-  _=union
-  field.0=_Word
-  field.1=_Float
-  field.2=_Double
-  field.3=_Long_double
-  flags=0
-  [HTX6E669918/_Double]
-    _=field
-    flags=0
-    sig=d
-  [HTX6E669918/_Float]
-    _=field
-    flags=0
-    sig=f
-  [HTX6E669918/_Long_double]
-    _=field
-    flags=0
-    sig=d
-  [HTX6E669918/_Word]
-    _=field
-    flags=131072
-    sig=A8;t
 [HTX7328080C]
   _=struct
   field.0=fl
@@ -23984,6 +24199,14 @@
     _=field
     flags=0
     sig=i
+[HTX825C3EA7]
+  _=struct
+  field.0=x
+  flags=0
+  [HTX825C3EA7/x]
+    _=field
+    flags=0
+    sig=d
 [HTX83D1C5E9]
   _=struct
   field.0=r
@@ -23994,14 +24217,6 @@
     flags=0
     sig=f
   [HTX83D1C5E9/r]
-    _=field
-    flags=0
-    sig=f
-[HTX8E4C5BC7]
-  _=struct
-  field.0=f
-  flags=0
-  [HTX8E4C5BC7/f]
     _=field
     flags=0
     sig=f
@@ -24018,65 +24233,6 @@
     _=field
     flags=0
     sig=i
-[HTX9751D4FA]
-  _=struct
-  field.0=ld
-  flags=0
-  [HTX9751D4FA/ld]
-    _=field
-    flags=131072
-    sig=A10;h
-[HTXACFBCEC8]
-  _=struct
-  field.0=x
-  flags=0
-  [HTXACFBCEC8/x]
-    _=field
-    flags=0
-    sig=d
-[HTXACFDC6A4]
-  _=struct
-  field.0=a
-  field.1=b
-  field.2=c
-  field.3=d
-  field.4=e
-  field.5=f
-  field.6=g
-  field.7=h
-  flags=0
-  [HTXACFDC6A4/a]
-    _=field
-    flags=131072
-    sig=j
-  [HTXACFDC6A4/b]
-    _=field
-    flags=131072
-    sig=j
-  [HTXACFDC6A4/c]
-    _=field
-    flags=131072
-    sig=j
-  [HTXACFDC6A4/d]
-    _=field
-    flags=131072
-    sig=j
-  [HTXACFDC6A4/e]
-    _=field
-    flags=131072
-    sig=j
-  [HTXACFDC6A4/f]
-    _=field
-    flags=131072
-    sig=j
-  [HTXACFDC6A4/g]
-    _=field
-    flags=131072
-    sig=j
-  [HTXACFDC6A4/h]
-    _=field
-    flags=131072
-    sig=j
 [HTXAD0068EE]
   _=union
   field.0=intval
@@ -24098,6 +24254,19 @@
     _=field
     flags=0
     sig=A16;f
+[HTXB2B93651]
+  _=union
+  field.0=_Sh
+  field.1=_Val
+  flags=0
+  [HTXB2B93651/_Sh]
+    _=field
+    flags=131072
+    sig=A8;t
+  [HTXB2B93651/_Val]
+    _=field
+    flags=0
+    sig=f
 [HTXBA63BC90]
   _=struct
   field.0=self
@@ -24287,19 +24456,22 @@
     _=field
     flags=0
     sig=i
-[HTXD6F364B9]
-  _=union
-  field.0=_Sh
-  field.1=_Val
+[HTXCE43C775]
+  _=struct
+  field.0=ld
   flags=0
-  [HTXD6F364B9/_Sh]
+  [HTXCE43C775/ld]
     _=field
     flags=131072
-    sig=A8;t
-  [HTXD6F364B9/_Val]
+    sig=A10;h
+[HTXD087BE28]
+  _=struct
+  field.0=f
+  flags=0
+  [HTXD087BE28/f]
     _=field
     flags=0
-    sig=d
+    sig=f
 [HTXDAA0606E]
   _=struct
   field.0=vari
@@ -24559,14 +24731,6 @@
     _=field
     flags=0
     sig=i
-[HTXED567DC5]
-  _=struct
-  field.0=ld12
-  flags=0
-  [HTXED567DC5/ld12]
-    _=field
-    flags=131072
-    sig=A12;h
 [HTXF385F72E]
   _=struct
   field.0=sig
@@ -24605,29 +24769,6 @@
     _=field
     flags=0
     sig=i
-[HTXF761F089]
-  _=struct
-  field.0=a
-  field.1=b
-  field.2=c
-  field.3=d
-  flags=0
-  [HTXF761F089/a]
-    _=field
-    flags=131072
-    sig=j
-  [HTXF761F089/b]
-    _=field
-    flags=131072
-    sig=j
-  [HTXF761F089/c]
-    _=field
-    flags=131072
-    sig=j
-  [HTXF761F089/d]
-    _=field
-    flags=131072
-    sig=j
 [J2ArithX86_AddReg]
   _=func
   sig=(PXBSVM_Jit2_Context_s;PXBSVM_Jit2_VarInfo_s;PXBSVM_Jit2_VarInfo_s;PXBSVM_Jit2_TypeInfo_s;)v
@@ -25420,42 +25561,42 @@
     sig=i
 [_CRT_DOUBLE]
   _=type
-  sig=XHTXACFBCEC8;
+  sig=XHTX825C3EA7;
 [_CRT_FLOAT]
   _=type
-  sig=XHTX8E4C5BC7;
+  sig=XHTXD087BE28;
 [_Denorm_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_Eps_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_FDenorm_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_FEps_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_FInf_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_FNan_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_FRteps_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_FSnan_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_FXbig_C]
   _=func
   flagstr=k
@@ -25470,44 +25611,44 @@
 [_Hugeval_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_Inf_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_LDBL12]
   _=type
-  sig=XHTXED567DC5;
+  sig=XHTX3B91B52A;
 [_LDOUBLE]
   _=type
-  sig=XHTX9751D4FA;
+  sig=XHTXCE43C775;
 [_LDenorm_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_LEps_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_LInf_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_LNan_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_LONGDOUBLE]
   _=type
-  sig=XHTX21E6F188;
+  sig=XHTX5E5EBBE7;
 [_LRteps_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_LSnan_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_LXbig_C]
   _=func
   flagstr=k
@@ -25519,15 +25660,15 @@
 [_Nan_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_Rteps_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_Snan_C]
   _=func
   flagstr=k
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_Xbig_C]
   _=func
   flagstr=k
@@ -25661,11 +25802,11 @@
 [_atodbl]
   _=func
   flagstr=c
-  sig=(PXHTXACFBCEC8;Pc)i
+  sig=(PXHTX825C3EA7;Pc)i
 [_atodbl_l]
   _=func
   flagstr=c
-  sig=(PXHTXACFBCEC8;PcPXlocaleinfo_struct;)i
+  sig=(PXHTX825C3EA7;PcPXlocaleinfo_struct;)i
 [_atof_l]
   _=func
   flagstr=c
@@ -25673,11 +25814,11 @@
 [_atoflt]
   _=func
   flagstr=c
-  sig=(PXHTX8E4C5BC7;Pc)i
+  sig=(PXHTXD087BE28;Pc)i
 [_atoflt_l]
   _=func
   flagstr=c
-  sig=(PXHTX8E4C5BC7;PcPXlocaleinfo_struct;)i
+  sig=(PXHTXD087BE28;PcPXlocaleinfo_struct;)i
 [_atoi64]
   _=func
   flagstr=c
@@ -25697,11 +25838,11 @@
 [_atoldbl]
   _=func
   flagstr=c
-  sig=(PXHTX9751D4FA;Pc)i
+  sig=(PXHTXCE43C775;Pc)i
 [_atoldbl_l]
   _=func
   flagstr=c
-  sig=(PXHTX9751D4FA;PcPXlocaleinfo_struct;)i
+  sig=(PXHTXCE43C775;PcPXlocaleinfo_struct;)i
 [_atoll_l]
   _=func
   flagstr=c
@@ -25834,7 +25975,7 @@
   sig=(Ps)s
 [_double_val]
   _=type
-  sig=XHTXD6F364B9;
+  sig=XHTX659BE436;
 [_dpcomp]
   _=func
   flagstr=c
@@ -26008,10 +26149,10 @@
   sig=(PX_iobuf;)i
 [_float_const]
   _=type
-  sig=XHTX6E669918;
+  sig=XHTX13888C57;
 [_float_val]
   _=type
-  sig=XHTX28B5241E;
+  sig=XHTXB2B93651;
 [_flsbuf]
   _=func
   flagstr=c
@@ -26373,7 +26514,7 @@
   sig=(di)d
 [_ldouble_val]
   _=type
-  sig=XHTX319FBAF3;
+  sig=XHTX2B50B8FC;
 [_ldpcomp]
   _=func
   flagstr=c
@@ -27807,7 +27948,7 @@
   sig=(Pc)x
 [atoxl_iv]
   _=func
-  sig=(Pc)XHTXF761F089;
+  sig=(Pc)XHTX3B11B066;
 [bgalAddData]
   _=func
   sig=(PXbgalContext_s;Pv)v
@@ -28362,16 +28503,16 @@
   sig=i
 [bgbrng_ciph0_dec]
   _=func
-  sig=(PcPciPXHTXF761F089;)v
+  sig=(PcPciPXHTX3B11B066;)v
 [bgbrng_ciph0_enc]
   _=func
-  sig=(PcPciPXHTXF761F089;)v
+  sig=(PcPciPXHTX3B11B066;)v
 [bgbrng_ciph0_genkey]
   _=func
-  sig=(Pc)XHTXF761F089;
+  sig=(Pc)XHTX3B11B066;
 [bgbrng_ciph0_kindex]
   _=func
-  sig=(PXHTXF761F089;)i
+  sig=(PXHTX3B11B066;)i
 [bgbrng_ciph0_swap]
   _=func
   sig=(Pcii)v
@@ -28395,7 +28536,7 @@
   sig=()f
 [bgbrng_rand]
   _=func
-  sig=(PXHTXF761F089;)i
+  sig=(PXHTX3B11B066;)i
 [bgbrng_randf]
   _=func
   sig=()d
@@ -29038,10 +29179,10 @@
   sig=(r)x
 [dwUnwrapWRef]
   _=func
-  sig=(r)XHTXF761F089;
+  sig=(r)XHTX3B11B066;
 [dwWrapWRef]
   _=func
-  sig=(XHTXF761F089;)r
+  sig=(XHTX3B11B066;)r
 [dwfree]
   _=func
   sig=(r)i
@@ -29056,7 +29197,7 @@
   sig=(ri)d
 [dwgetdq]
   _=func
-  sig=(ri)XHTXF761F089;
+  sig=(ri)XHTX3B11B066;
 [dwgetdw]
   _=func
   sig=(ri)i
@@ -29098,7 +29239,7 @@
   sig=(rid)i
 [dwputdq]
   _=func
-  sig=(riXHTXF761F089;)i
+  sig=(riXHTX3B11B066;)i
 [dwputdw]
   _=func
   sig=(rii)i
@@ -32397,7 +32538,7 @@
   sig=(f)r
 [dyfloat128]
   _=func
-  sig=(XHTXF761F089;)r
+  sig=(XHTX3B11B066;)r
 [dyfloat128d]
   _=func
   sig=(d)r
@@ -32412,7 +32553,7 @@
   sig=(Pc)r
 [dyfloat128v]
   _=func
-  sig=(r)XHTXF761F089;
+  sig=(r)XHTX3B11B066;
 [dyfloatp]
   _=func
   sig=(r)i
@@ -32454,7 +32595,7 @@
   sig=(i)r
 [dyint128]
   _=func
-  sig=(XHTXF761F089;)r
+  sig=(XHTX3B11B066;)r
 [dyint128ll]
   _=func
   sig=(x)r
@@ -32466,7 +32607,7 @@
   sig=(Pc)r
 [dyint128v]
   _=func
-  sig=(r)XHTXF761F089;
+  sig=(r)XHTX3B11B066;
 [dyintp]
   _=func
   sig=(r)i
@@ -35079,7 +35220,7 @@
   sig=(d)d
 [f128]
   _=type
-  sig=XHTXF761F089;
+  sig=XHTX3B11B066;
 [f16]
   _=type
   sig=XHTX5896529C;
@@ -35310,7 +35451,7 @@
   sig=(PX_iobuf;)l
 [fv128_t]
   _=type
-  sig=XHTXF761F089;
+  sig=XHTX3B11B066;
 [fwprintf]
   _=func
   flagstr=c
@@ -35451,6 +35592,9 @@
 [gc_init2]
   _=func
   sig=(PXHSG761D470E;Pv)v
+[gc_init_nogc]
+  _=func
+  sig=()v
 [gc_logprintf]
   _=func
   sig=(Pcz)v
@@ -35847,142 +35991,142 @@
   sig=i
 [iv128_add]
   _=func
-  sig=(XHTXF761F089;XHTXF761F089;)XHTXF761F089;
+  sig=(XHTX3B11B066;XHTX3B11B066;)XHTX3B11B066;
 [iv128_and]
   _=func
-  sig=(XHTXF761F089;XHTXF761F089;)XHTXF761F089;
+  sig=(XHTX3B11B066;XHTX3B11B066;)XHTX3B11B066;
 [iv128_cmp_eq]
   _=func
-  sig=(XHTXF761F089;XHTXF761F089;)i
+  sig=(XHTX3B11B066;XHTX3B11B066;)i
 [iv128_cmp_g]
   _=func
-  sig=(XHTXF761F089;XHTXF761F089;)i
+  sig=(XHTX3B11B066;XHTX3B11B066;)i
 [iv128_cmp_ge]
   _=func
-  sig=(XHTXF761F089;XHTXF761F089;)i
+  sig=(XHTX3B11B066;XHTX3B11B066;)i
 [iv128_cmp_l]
   _=func
-  sig=(XHTXF761F089;XHTXF761F089;)i
+  sig=(XHTX3B11B066;XHTX3B11B066;)i
 [iv128_cmp_le]
   _=func
-  sig=(XHTXF761F089;XHTXF761F089;)i
+  sig=(XHTX3B11B066;XHTX3B11B066;)i
 [iv128_div]
   _=func
-  sig=(XHTXF761F089;XHTXF761F089;)XHTXF761F089;
+  sig=(XHTX3B11B066;XHTX3B11B066;)XHTX3B11B066;
 [iv128_divb]
   _=func
-  sig=(XHTXF761F089;i)XHTXF761F089;
+  sig=(XHTX3B11B066;i)XHTX3B11B066;
 [iv128_mk2]
   _=func
-  sig=(xx)XHTXF761F089;
+  sig=(xx)XHTX3B11B066;
 [iv128_mk4]
   _=func
-  sig=(iiii)XHTXF761F089;
+  sig=(iiii)XHTX3B11B066;
 [iv128_mkll]
   _=func
-  sig=(x)XHTXF761F089;
+  sig=(x)XHTX3B11B066;
 [iv128_mod]
   _=func
-  sig=(XHTXF761F089;XHTXF761F089;)XHTXF761F089;
+  sig=(XHTX3B11B066;XHTX3B11B066;)XHTX3B11B066;
 [iv128_mul]
   _=func
-  sig=(XHTXF761F089;XHTXF761F089;)XHTXF761F089;
+  sig=(XHTX3B11B066;XHTX3B11B066;)XHTX3B11B066;
 [iv128_mulb]
   _=func
-  sig=(XHTXF761F089;i)XHTXF761F089;
+  sig=(XHTX3B11B066;i)XHTX3B11B066;
 [iv128_mulh]
   _=func
-  sig=(XHTXF761F089;XHTXF761F089;)XHTXF761F089;
+  sig=(XHTX3B11B066;XHTX3B11B066;)XHTX3B11B066;
 [iv128_mulw]
   _=func
-  sig=(XHTXF761F089;XHTXF761F089;)XHTXACFDC6A4;
+  sig=(XHTX3B11B066;XHTX3B11B066;)XHTX650A08CB;
 [iv128_neg]
   _=func
-  sig=(XHTXF761F089;)XHTXF761F089;
+  sig=(XHTX3B11B066;)XHTX3B11B066;
 [iv128_negativep]
   _=func
-  sig=(XHTXF761F089;)i
+  sig=(XHTX3B11B066;)i
 [iv128_not]
   _=func
-  sig=(XHTXF761F089;)XHTXF761F089;
+  sig=(XHTX3B11B066;)XHTX3B11B066;
 [iv128_or]
   _=func
-  sig=(XHTXF761F089;XHTXF761F089;)XHTXF761F089;
+  sig=(XHTX3B11B066;XHTX3B11B066;)XHTX3B11B066;
 [iv128_rol]
   _=func
-  sig=(XHTXF761F089;i)XHTXF761F089;
+  sig=(XHTX3B11B066;i)XHTX3B11B066;
 [iv128_ror]
   _=func
-  sig=(XHTXF761F089;i)XHTXF761F089;
+  sig=(XHTX3B11B066;i)XHTX3B11B066;
 [iv128_s64v]
   _=func
-  sig=(XHTXF761F089;)x
+  sig=(XHTX3B11B066;)x
 [iv128_sar]
   _=func
-  sig=(XHTXF761F089;i)XHTXF761F089;
+  sig=(XHTX3B11B066;i)XHTX3B11B066;
 [iv128_shl]
   _=func
-  sig=(XHTXF761F089;i)XHTXF761F089;
+  sig=(XHTX3B11B066;i)XHTX3B11B066;
 [iv128_shr]
   _=func
-  sig=(XHTXF761F089;i)XHTXF761F089;
+  sig=(XHTX3B11B066;i)XHTX3B11B066;
 [iv128_sub]
   _=func
-  sig=(XHTXF761F089;XHTXF761F089;)XHTXF761F089;
+  sig=(XHTX3B11B066;XHTX3B11B066;)XHTX3B11B066;
 [iv128_t]
   _=type
-  sig=XHTXF761F089;
+  sig=XHTX3B11B066;
 [iv128_udiv]
   _=func
-  sig=(XHTXF761F089;XHTXF761F089;)XHTXF761F089;
+  sig=(XHTX3B11B066;XHTX3B11B066;)XHTX3B11B066;
 [iv128_umod]
   _=func
-  sig=(XHTXF761F089;XHTXF761F089;)XHTXF761F089;
+  sig=(XHTX3B11B066;XHTX3B11B066;)XHTX3B11B066;
 [iv128_xor]
   _=func
-  sig=(XHTXF761F089;XHTXF761F089;)XHTXF761F089;
+  sig=(XHTX3B11B066;XHTX3B11B066;)XHTX3B11B066;
 [iv128_zero]
   _=func
-  sig=(PXHTXF761F089;)v
+  sig=(PXHTX3B11B066;)v
 [iv128_zerop]
   _=func
-  sig=(XHTXF761F089;)i
+  sig=(XHTX3B11B066;)i
 [iv256_add]
   _=func
-  sig=(XHTXACFDC6A4;XHTXACFDC6A4;)XHTXACFDC6A4;
+  sig=(XHTX650A08CB;XHTX650A08CB;)XHTX650A08CB;
 [iv256_cmp_eq]
   _=func
-  sig=(XHTXACFDC6A4;XHTXACFDC6A4;)i
+  sig=(XHTX650A08CB;XHTX650A08CB;)i
 [iv256_cmp_g]
   _=func
-  sig=(XHTXACFDC6A4;XHTXACFDC6A4;)i
+  sig=(XHTX650A08CB;XHTX650A08CB;)i
 [iv256_cmp_ge]
   _=func
-  sig=(XHTXACFDC6A4;XHTXACFDC6A4;)i
+  sig=(XHTX650A08CB;XHTX650A08CB;)i
 [iv256_cmp_l]
   _=func
-  sig=(XHTXACFDC6A4;XHTXACFDC6A4;)i
+  sig=(XHTX650A08CB;XHTX650A08CB;)i
 [iv256_cmp_le]
   _=func
-  sig=(XHTXACFDC6A4;XHTXACFDC6A4;)i
+  sig=(XHTX650A08CB;XHTX650A08CB;)i
 [iv256_neg]
   _=func
-  sig=(XHTXACFDC6A4;)XHTXACFDC6A4;
+  sig=(XHTX650A08CB;)XHTX650A08CB;
 [iv256_shl]
   _=func
-  sig=(XHTXACFDC6A4;i)XHTXACFDC6A4;
+  sig=(XHTX650A08CB;i)XHTX650A08CB;
 [iv256_shr]
   _=func
-  sig=(XHTXACFDC6A4;i)XHTXACFDC6A4;
+  sig=(XHTX650A08CB;i)XHTX650A08CB;
 [iv256_sub]
   _=func
-  sig=(XHTXACFDC6A4;XHTXACFDC6A4;)XHTXACFDC6A4;
+  sig=(XHTX650A08CB;XHTX650A08CB;)XHTX650A08CB;
 [iv256_t]
   _=type
-  sig=XHTXACFDC6A4;
+  sig=XHTX650A08CB;
 [iv256_zero]
   _=func
-  sig=(PXHTXACFDC6A4;)v
+  sig=(PXHTX650A08CB;)v
 [labs]
   _=func
   flagstr=c
@@ -36445,7 +36589,7 @@
   sig=i
 [s128]
   _=type
-  sig=XHTXF761F089;
+  sig=XHTX3B11B066;
 [s16]
   _=type
   sig=s
@@ -37124,7 +37268,7 @@
   sig=(d)d
 [u128]
   _=type
-  sig=XHTXF761F089;
+  sig=XHTX3B11B066;
 [u16]
   _=type
   sig=s
@@ -37571,7 +37715,7 @@
   sig=(Psz)i
 [xltoa_iv]
   _=func
-  sig=(XHTXF761F089;)Pc
+  sig=(XHTX3B11B066;)Pc
 [xu16le_t]
   _=type
   sig=A2;c

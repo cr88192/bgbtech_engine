@@ -1361,8 +1361,10 @@ LBXGL_API void Skel_DrawModelDark(LBXGL_Skel2State *ctx)
 		Skel_DrawMeshStateGroupFlat(ctx, ctx->mesh);
 	}else
 	{
-//		Skel_DrawMeshGroupFlat(ctx, Skel_MeshForLod(ctx));
-		SkelVBO_DrawModelFlatVL(ctx);
+		if(SkelVBO_CheckModelVBO(ctx))
+			{ SkelVBO_DrawModelFlatVL(ctx); }
+		else
+			{ Skel_DrawMeshGroupFlat(ctx, Skel_MeshForLod(ctx)); }
 	}
 }
 
@@ -1380,8 +1382,10 @@ LBXGL_API void Skel_DrawModelLight(LBXGL_Skel2State *ctx)
 		Skel_DrawMeshStateGroupFlat2(ctx, ctx->mesh);
 	}else
 	{
-//		Skel_DrawMeshGroupFlat2(ctx, Skel_MeshForLod(ctx));
-		SkelVBO_DrawModelFlat(ctx);
+		if(SkelVBO_CheckModelVBO(ctx))
+			{ SkelVBO_DrawModelFlat(ctx); }
+		else
+			{ Skel_DrawMeshGroupFlat2(ctx, Skel_MeshForLod(ctx)); }
 	}
 }
 
@@ -1434,8 +1438,10 @@ LBXGL_API void Skel_DrawModelFinal(LBXGL_Skel2State *ctx)
 		Skel_DrawMeshStateGroup(ctx, ctx->mesh);
 	}else
 	{
-//		Skel_DrawMeshGroupFinal(ctx, Skel_MeshForLod(ctx));
-		SkelVBO_DrawModelFinal(ctx);
+		if(SkelVBO_CheckModelVBO(ctx))
+			{ SkelVBO_DrawModelFinal(ctx); }
+		else
+			{ Skel_DrawMeshGroupFinal(ctx, Skel_MeshForLod(ctx)); }
 	}
 	pdglBlendFunc(GL_DST_COLOR, GL_ZERO);
 }

@@ -1796,6 +1796,7 @@ void SkelVBO_ModelRebuildLodVBO(LBXGL_Skel2Model *mdl, int lvl);
 LBXGL_Skel2ModelVBO *SkelVBO_VBOForLod(LBXGL_Skel2State *ctx);
 void SkelVBO_RebuildVBO(LBXGL_Skel2State *ctx);
 void SkelVBO_DestroyVBO(LBXGL_Skel2State *ctx);
+LBXGL_API int SkelVBO_CheckModelVBO(LBXGL_Skel2State *ctx);
 LBXGL_API void SkelVBO_DrawModelFlatVL(LBXGL_Skel2State *ctx);
 LBXGL_API void SkelVBO_DrawModelFlat(LBXGL_Skel2State *ctx);
 LBXGL_API void SkelVBO_DrawModelFinal(LBXGL_Skel2State *ctx);
